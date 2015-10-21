@@ -1,2 +1,2 @@
-##Welcome To my WebSite
-[GitHub]: <http://honmaple.github.io>
+## Welcome To my WebSite
+[GitHub](http://honmaple.github.io)
