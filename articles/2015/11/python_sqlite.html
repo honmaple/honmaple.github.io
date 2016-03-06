@@ -1,132 +1,62 @@
 <!DOCTYPE html>
-<html lang="en"
->
+<html lang="en">
 <head>
-    <title>flask学习——数据库操作 - HonMaple</title>
-    <!-- Using the latest rendering mode for IE -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>flask学习——数据库操作</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../../../theme/css/main.css" type="text/css" />
+   
 
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../../../css/ie.css"/>
+                <script src="../../../js/IE8.js" type="text/javascript"></script><![endif]-->
 
-<link rel="canonical" href="http://honmaple.gq/articles/2015/11/python_sqlite.html">
-
-        <meta name="author" content="honmaple" />
-        <meta name="keywords" content="[ python,flask,sqlite,sql ]" />
-        <meta name="description" content="Summary : flask作为后端数据库操作是必要的,现在记录一下一些flask数据库的相关操作暂时使用较简单的sqlite作为例子 flask 作为后端数据库操作是必要的，现在记录一下一些flask数据库的相关操作， 我将使用三种方法操作数据库 暂时使用较简单的sqlite作为例子 相关环境的安装 建议使用ve虚拟环境 sudo pacman -S sqlite # archlinux sudo pip install virtualenv # 在vertualenv环境下执行 pip install Flask-SQLAlchemy Jinja2 SQLAlchemy 最好是多看文档 1.使用sqlite3模块API 参考资料 这是最简单的方法,不仅适用于flask,python的其他方面也一样适用,如爬虫之类 连接数据库 1 2 3 4 5 6 7#!/usr/bin/env python # -*- coding=UTF-8 -*- import sqlite3 ..." />
-
-        <meta property="og:site_name" content="HonMaple" />
-        <meta property="og:type" content="article"/>
-        <meta property="og:title" content="flask学习——数据库操作"/>
-        <meta property="og:url" content="http://honmaple.gq/articles/2015/11/python_sqlite.html"/>
-        <meta property="og:description" content="Summary : flask作为后端数据库操作是必要的,现在记录一下一些flask数据库的相关操作暂时使用较简单的sqlite作为例子 flask 作为后端数据库操作是必要的，现在记录一下一些flask数据库的相关操作， 我将使用三种方法操作数据库 暂时使用较简单的sqlite作为例子 相关环境的安装 建议使用ve虚拟环境 sudo pacman -S sqlite # archlinux sudo pip install virtualenv # 在vertualenv环境下执行 pip install Flask-SQLAlchemy Jinja2 SQLAlchemy 最好是多看文档 1.使用sqlite3模块API 参考资料 这是最简单的方法,不仅适用于flask,python的其他方面也一样适用,如爬虫之类 连接数据库 1 2 3 4 5 6 7#!/usr/bin/env python # -*- coding=UTF-8 -*- import sqlite3 ..."/>
-        <meta property="article:published_time" content="2015-11-10" />
-            <meta property="article:section" content="python" />
-            <meta property="article:tag" content="[ python" />
-            <meta property="article:tag" content="flask" />
-            <meta property="article:tag" content="sqlite" />
-            <meta property="article:tag" content="sql ]" />
-            <meta property="article:author" content="honmaple" />
-
-
-    <!-- Bootstrap -->
-        <link rel="stylesheet" href="http://honmaple.gq/theme/css/bootstrap.yeti.min.css" type="text/css"/>
-    <link href="http://honmaple.gq/theme/css/font-awesome.min.css" rel="stylesheet">
-
-    <link href="http://honmaple.gq/theme/css/pygments/emacs.css" rel="stylesheet">
-    <link href="http://honmaple.gq/theme/tipuesearch/tipuesearch.css" rel="stylesheet">
-    <link rel="stylesheet" href="http://honmaple.gq/theme/css/style.css" type="text/css"/>
-        <link href="http://honmaple.gq/static/custom.css" rel="stylesheet">
-
-        <link href="http://honmaple.gq/feeds/all.rss.xml" type="application/atom+xml" rel="alternate"
-              title="HonMaple ATOM Feed"/>
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../../../css/ie6.css"/><![endif]-->
 
 </head>
-<body>
 
-<div class="navbar navbar-default navbar-fixed-top" role="navigation">
-	<div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a href="http://honmaple.gq/" class="navbar-brand">
-HonMaple            </a>
-        </div>
-        <div class="collapse navbar-collapse navbar-ex1-collapse">
-            <ul class="nav navbar-nav">
-                         <li><a href="http://honmaple.gq/about.html">
-                             About Me
-                          </a></li>
-                        <li >
-                            <a href="http://honmaple.gq/category/linux.html">Linux</a>
-                        </li>
-                        <li class="active">
-                            <a href="http://honmaple.gq/category/python.html">Python</a>
-                        </li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-              <li><span>
-                <form class="navbar-search" action="/search">
-                  <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input" required>
-                </form></span>
-              </li>
-              <li><a href="http://honmaple.gq/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
-            </ul>
-        </div>
-        <!-- /.navbar-collapse -->
-    </div>
-</div> <!-- /.navbar -->
-<!-- Banner -->
-<!-- End Banner -->
-<div class="container">
-    <div class="row">
-        <div class="col-sm-9">
+<body id="index" class="home">
+<a href="http://github.com/honmaple/honmaple.github.io">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+</a>
+        <header id="banner" class="body">
+                <h1><a href="../../..">HonMaple's Blog </a></h1>
+                <nav><ul>
+                <li><a href="../../..">主页</a></li>
+                    <li ><a href="../../../category/linux.html">linux</a></li>
+                    <li class="active"><a href="../../../category/python.html">Python</a></li>
+                    <li><a href="../archives/index.html">Archives</a></li>
+                    <li><a href="../../../pages/">关于我</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="articles/2015/11/" rel="bookmark"
+           title="Permalink to flask学习——数据库操作">flask学习——数据库操作</a></h1>
+    </header>
 
-    <section id="content">
-        <article>
-            <header class="page-header">
-                <h1>
-                    <a href="http://honmaple.gq/articles/2015/11/python_sqlite.html"
-                       rel="bookmark"
-                       title="Permalink to flask学习——数据库操作">
-                        flask学习——数据库操作
-                    </a>
-                </h1>
-            </header>
-            <div class="entry-content">
-                <div class="panel">
-                    <div class="panel-body">
+    <div class="entry-content">
 <footer class="post-info">
-    <span class="label label-default">Date</span>
-    <span class="published">
-        <i class="fa fa-calendar"></i><time datetime="2015-11-10T00:00:00+08:00"> 二 10 十一月 2015</time>
-    </span>
+        <abbr class="published" title="2015-11-10T00:00:00+01:00">
+                二 10 十一月 2015
+        </abbr>
 
-
-
-<span class="label label-default">Tags</span>
-	<a href="http://honmaple.gq/tags/python.html">[ python</a>
-        /
-	<a href="http://honmaple.gq/tags/flask.html">flask</a>
-        /
-	<a href="http://honmaple.gq/tags/sqlite.html">sqlite</a>
-        /
-	<a href="http://honmaple.gq/tags/sql.html">sql ]</a>
-    
-</footer><!-- /.post-info -->                    </div>
-                </div>
-                <p>Summary : flask作为后端数据库操作是必要的,现在记录一下一些flask数据库的相关操作</br>暂时使用较简单的sqlite作为例子  </p>
+        <address class="vcard author">
+                By <a class="url fn" href="../../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../../category/python.html">python</a>. </p>
+<p>tags: <a href="../../../tag/python/">[ python</a><a href="../../../tag/flask/">flask</a><a href="../../../tag/sqlite/">sqlite</a><a href="../../../tag/sql/">sql ]</a></p></footer><!-- /.post-info -->      <p>Summary : flask作为后端数据库操作是必要的,现在记录一下一些flask数据库的相关操作</br>暂时使用较简单的sqlite作为例子  </p>
 <p>flask 作为后端数据库操作是必要的，现在记录一下一些flask数据库的相关操作，
 我将使用三种方法操作数据库<br />
 暂时使用较简单的sqlite作为例子</p>
 <h2>相关环境的安装</h2>
 <p><em>建议使用ve虚拟环境</em></p>
-<div class="highlight"><pre>sudo pacman -S sqlite # archlinux
+<div class="highlight"><pre><span></span>sudo pacman -S sqlite # archlinux
 sudo pip install virtualenv 
 # 在vertualenv环境下执行
 pip install Flask-SQLAlchemy Jinja2 SQLAlchemy
@@ -144,19 +74,19 @@ pip install Flask-SQLAlchemy Jinja2 SQLAlchemy
 4
 5
 6
-7</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
-<span class="c"># -*- coding=UTF-8 -*-</span>
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding=UTF-8 -*-</span>
 <span class="kn">import</span> <span class="nn">sqlite3</span>
-<span class="n">database</span> <span class="o">=</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">test</span><span class="o">.</span><span class="n">db</span>  <span class="c">#数据库文件路径</span>
-<span class="n">test</span> <span class="o">=</span> <span class="n">sqlite</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;database&#39;</span><span class="p">)</span> <span class="c">#连接数据库，如果数据库文件不存在则创建</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;connect database successfully&#39;</span><span class="p">)</span>
-<span class="n">test</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c">#关闭数据库连接</span>
+<span class="n">database</span> <span class="o">=</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">test</span><span class="o">.</span><span class="n">db</span>  <span class="c1">#数据库文件路径</span>
+<span class="n">test</span> <span class="o">=</span> <span class="n">sqlite</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;database&#39;</span><span class="p">)</span> <span class="c1">#连接数据库，如果数据库文件不存在则创建</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;connect database successfully&#39;</span><span class="p">)</span>
+<span class="n">test</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1">#关闭数据库连接</span>
 </pre></div>
 </td></tr></table>
 
 <p>如果将数据库名改为<strong>:memory:</strong>,则在内存中打开数据库而不是磁盘</p>
 <h4>创建表</h4>
-<div class="highlight"><pre>database = /path/test.db
+<div class="highlight"><pre><span></span>database = /path/test.db
 test = sqlite.connect(&#39;database&#39;)
 test.execute(&#39;&#39;&#39;CREATE TABLE BOOKS
        (ID INT PRIMARY KEY     NOT NULL,
@@ -169,7 +99,7 @@ test.close()
 
 
 <h4>插入数据</h4>
-<div class="highlight"><pre>database = /path/test.db
+<div class="highlight"><pre><span></span>database = /path/test.db
 test = sqlite.connect(&#39;database&#39;)
 test.execute(&quot;INSERT INTO BOOKS (ID,TYPE,NAME,CONTENT) \
       VALUES (1, &#39;hello&#39;, &#39;world&#39;, &#39;helloworld&#39;)&quot;);
@@ -182,7 +112,7 @@ test.close()
 
 
 <h4>查询数据</h4>
-<div class="highlight"><pre>database = /path/test.db
+<div class="highlight"><pre><span></span>database = /path/test.db
 test = sqlite.connect(&#39;database&#39;)
 cursor = test.execute(&quot;SELECT ID,TYPE,NAME,CONTENT  from BOOKS&quot;)
 for row in cursor:
@@ -195,7 +125,7 @@ test.close()
 
 
 <h4>更新数据</h4>
-<div class="highlight"><pre>database = /path/test.db
+<div class="highlight"><pre><span></span>database = /path/test.db
 test = sqlite.connect(&#39;database&#39;)
 test.execute(&quot;UPDATE BOOKS SET CONTENT = &#39;hello&#39; WHERE ID=2&quot;)
 test.commit
@@ -204,7 +134,7 @@ test.close()
 
 
 <h4>删除数据</h4>
-<div class="highlight"><pre>database = /path/test.db
+<div class="highlight"><pre><span></span>database = /path/test.db
 test = sqlite.connect(&#39;database&#39;)
 test.execute(&quot;DELETE FROM BOOKS WHERE ID=2&quot;)
 test.commit
@@ -217,24 +147,24 @@ test.close()
 <p>参考资料<br />
 <a href="http://flask.readthedocs.org/en/0.2/patterns/sqlite3/">英文</a>
 <a href="http://docs.jinkan.org/docs/flask/patterns/sqlite3.html">中文</a></p>
-<div class="highlight"><pre><span class="kn">import</span> <span class="nn">sqlite3</span>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sqlite3</span>
 <span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">g</span>
 
-<span class="n">DATABASE</span> <span class="o">=</span> <span class="s">&#39;/path/to/database.db&#39;</span>
+<span class="n">DATABASE</span> <span class="o">=</span> <span class="s1">&#39;/path/to/database.db&#39;</span>
 
 <span class="k">def</span> <span class="nf">connect_db</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">DATABASE</span><span class="p">)</span>
 
-<span class="nd">@app.before_request</span> <span class="c">#使用app_request装饰器打开数据库</span>
+<span class="nd">@app.before_request</span> <span class="c1">#使用app_request装饰器打开数据库</span>
 <span class="k">def</span> <span class="nf">before_request</span><span class="p">():</span>
     <span class="n">g</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">connect_db</span><span class="p">()</span>
 
-<span class="nd">@app.teardown_request</span> <span class="c">#使用app_request装饰器关闭数据库</span>
+<span class="nd">@app.teardown_request</span> <span class="c1">#使用app_request装饰器关闭数据库</span>
 <span class="k">def</span> <span class="nf">teardown_request</span><span class="p">(</span><span class="n">exception</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s">&#39;db&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s1">&#39;db&#39;</span><span class="p">):</span>
         <span class="n">g</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">query_db</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>  <span class="c">#数据库简化查询</span>
+<span class="k">def</span> <span class="nf">query_db</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">one</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>  <span class="c1">#数据库简化查询</span>
     <span class="n">cur</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
     <span class="n">rv</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">((</span><span class="n">cur</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span>
                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span>
@@ -243,7 +173,7 @@ test.close()
 
 
 <p>需要使用时(主要是查询)  </p>
-<div class="highlight"><pre><span class="x">for book in query_db(&#39;select * from BOOKS&#39;):</span>
+<div class="highlight"><pre><span></span><span class="x">for book in query_db(&#39;select * from BOOKS&#39;):</span>
 <span class="x">    print book[&#39;NAME&#39;], &#39;has the id&#39;, book[&#39;ID&#39;]</span>
 <span class="x">#由于flask一般不使用print，可以这样</span>
 <span class="x">book = query_db(&#39;select * from BOOKS&#39;)</span>
@@ -253,7 +183,7 @@ test.close()
 
 
 <p>如果只希望得到一个单独的结果  </p>
-<div class="highlight"><pre>book = query_db(&#39;select * from BOOKS where NAME = ?&#39;,
+<div class="highlight"><pre><span></span>book = query_db(&#39;select * from BOOKS where NAME = ?&#39;,
                 [the_bookname], one=True)
 if book is None:
     print &#39;No such user&#39;
@@ -264,11 +194,11 @@ else:
 
 <p>创建，更新，插入，删除数据请使用第一个方法  </p>
 <h3>初始化数据库模型</h3>
-<div class="highlight"><pre><span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">closing</span>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">closing</span>
 
 <span class="k">def</span> <span class="nf">init_db</span><span class="p">():</span>
     <span class="k">with</span> <span class="n">closing</span><span class="p">(</span><span class="n">connect_db</span><span class="p">())</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">app</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="s">&#39;schema.sql&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">app</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="s1">&#39;schema.sql&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
         <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 </pre></div>
@@ -279,12 +209,12 @@ else:
 <a href="http://www.pythondoc.com/flask-sqlalchemy/index.html">中文</a>
 <a href="https://pythonhosted.org/Flask-SQLAlchemy/">英文</a></p>
 <h3>一个最小应用</h3>
-<div class="highlight"><pre><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
 <span class="kn">from</span> <span class="nn">flask.ext.sqlalchemy</span> <span class="kn">import</span> <span class="n">SQLAlchemy</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
-<span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;SQLALCHEMY_DATABASE_URI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;sqlite:////tmp/test.db&#39;</span>
-<span class="c"># sqlite打开的格式是sql:///三个&quot;/&quot;,接着是数据库文件的**绝对路径**</span>
+<span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;SQLALCHEMY_DATABASE_URI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;sqlite:////tmp/test.db&#39;</span>
+<span class="c1"># sqlite打开的格式是sql:///三个&quot;/&quot;,接着是数据库文件的**绝对路径**</span>
 <span class="n">db</span> <span class="o">=</span> <span class="n">SQLAlchemy</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
@@ -297,32 +227,32 @@ else:
         <span class="bp">self</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">email</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s">&#39;&lt;User </span><span class="si">%r</span><span class="s">&gt;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;User </span><span class="si">%r</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span>
 </pre></div>
 
 
 <h4>使用</h4>
 <p>假若上面代码保存为test.py  <br />
     打开python shell</p>
-<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">test</span> <span class="kn">import</span> <span class="n">db</span><span class="p">,</span><span class="n">User</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">db</span><span class="o">.</span><span class="n">create_all</span><span class="p">()</span> <span class="c">#创建表</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">admin</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="s">&#39;admin&#39;</span><span class="p">,</span> <span class="s">&#39;admin@example.com&#39;</span><span class="p">)</span> <span class="c">#创建数据</span>
-<span class="c"># 这时数据还未真正写入数据库,需要提交</span>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">test</span> <span class="kn">import</span> <span class="n">db</span><span class="p">,</span><span class="n">User</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">db</span><span class="o">.</span><span class="n">create_all</span><span class="p">()</span> <span class="c1">#创建表</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">admin</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="s1">&#39;admin@example.com&#39;</span><span class="p">)</span> <span class="c1">#创建数据</span>
+<span class="c1"># 这时数据还未真正写入数据库,需要提交</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">admin</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span> <span class="c">#这时数据已经写入数据库中</span>
-<span class="c"># 简单数据查询</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span> <span class="c1">#这时数据已经写入数据库中</span>
+<span class="c1"># 简单数据查询</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">users</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="k">print</span><span class="p">(</span><span class="n">users</span><span class="p">)</span>
-<span class="p">[</span><span class="o">&lt;</span><span class="n">User</span> <span class="s">u&#39;admin&#39;</span><span class="o">&gt;</span><span class="p">]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">admin</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s">&#39;admin&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+<span class="p">[</span><span class="o">&lt;</span><span class="n">User</span> <span class="s1">u&#39;admin&#39;</span><span class="o">&gt;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">admin</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s1">&#39;admin&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="k">print</span><span class="p">(</span><span class="n">admin</span><span class="p">)</span>
-<span class="o">&lt;</span><span class="n">User</span> <span class="s">u&#39;admin&#39;</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">User</span> <span class="s1">u&#39;admin&#39;</span><span class="o">&gt;</span>
 </pre></div>
 
 
 <p>如果想要简单的查看数据,推荐firefox的一个sqlite插件 <strong>sqlite manager</strong></p>
 <h4>配置</h4>
-<div class="highlight"><pre>SQLALCHEMY_DATABASE_URI #用于连接的数据库
+<div class="highlight"><pre><span></span>SQLALCHEMY_DATABASE_URI #用于连接的数据库
 SQLALCHEMY_BINDS #连接多个数据库
 # 比如
 SQLALCHEMY_BINDS = {
@@ -342,15 +272,15 @@ class User(db.Model):
 
 <h4>选择，插入，删除</h4>
 <p>插入  </p>
-<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">test</span> <span class="kn">import</span> <span class="n">User</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">me</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="s">&#39;admin&#39;</span><span class="p">,</span> <span class="s">&#39;admin@example.com&#39;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">test</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">me</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="s1">&#39;admin@example.com&#39;</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">me</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 </pre></div>
 
 
 <p>删除  </p>
-<div class="highlight"><pre>&gt;&gt;&gt; db.session.delete(me)
+<div class="highlight"><pre><span></span>&gt;&gt;&gt; db.session.delete(me)
 &gt;&gt;&gt; db.session.commit()
 </pre></div>
 
@@ -388,7 +318,7 @@ class User(db.Model):
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre>&gt;&gt;&gt; admin = User.query.filter_by(username=&#39;admin&#39;).first()
+<div class="highlight"><pre><span></span>&gt;&gt;&gt; admin = User.query.filter_by(username=&#39;admin&#39;).first()
 &gt;&gt;&gt; print(admin.id)
 1
 &gt;&gt;&gt; print(admin.email)
@@ -397,32 +327,32 @@ u&#39;admin@example.com&#39;
 
 
 <p>查找不存在的用户名:  </p>
-<div class="highlight"><pre>&gt;&gt;&gt; missing = User.query.filter_by(username=&#39;missing&#39;).first()
+<div class="highlight"><pre><span></span>&gt;&gt;&gt; missing = User.query.filter_by(username=&#39;missing&#39;).first()
 &gt;&gt;&gt; missing is None
 True
 </pre></div>
 
 
 <p>使用更复杂的表达式查询一些用户:  </p>
-<div class="highlight"><pre>&gt;&gt;&gt; User.query.filter(User.email.endswith(&#39;@example.com&#39;)).all()
+<div class="highlight"><pre><span></span>&gt;&gt;&gt; User.query.filter(User.email.endswith(&#39;@example.com&#39;)).all()
 [&lt;User u&#39;admin&#39;&gt;, &lt;User u&#39;guest&#39;&gt;]
 </pre></div>
 
 
 <p>按某种规则对用户排序:</p>
-<div class="highlight"><pre>&gt;&gt;&gt; User.query.order_by(User.username)
+<div class="highlight"><pre><span></span>&gt;&gt;&gt; User.query.order_by(User.username)
 [&lt;User u&#39;admin&#39;&gt;, &lt;User u&#39;guest&#39;&gt;, &lt;User u&#39;peter&#39;&gt;]
 </pre></div>
 
 
 <p>限制返回用户的数量:</p>
-<div class="highlight"><pre>&gt;&gt;&gt; User.query.limit(1).all()
+<div class="highlight"><pre><span></span>&gt;&gt;&gt; User.query.limit(1).all()
 [&lt;User u&#39;admin&#39;&gt;]
 </pre></div>
 
 
 <p>用主键查询用户:</p>
-<div class="highlight"><pre>&gt;&gt;&gt; User.query.get(1)
+<div class="highlight"><pre><span></span>&gt;&gt;&gt; User.query.get(1)
 &lt;User u&#39;admin&#39;&gt;
 </pre></div>
 
@@ -430,7 +360,7 @@ True
 <h4>在视图中使用</h4>
 <p>使用 get_or_404() 来代替 get()，使用 first_or_404() 来代替 first()。
 这样会抛出一个 404 错误，而不是返回 None:</p>
-<div class="highlight"><pre>@app.route(&#39;/user/&lt;username&gt;&#39;)
+<div class="highlight"><pre><span></span>@app.route(&#39;/user/&lt;username&gt;&#39;)
 def show_user(username):
     user = User.query.filter_by(username=username).first_or_404()
     return render_template(&#39;show_user.html&#39;, user=user)
@@ -439,161 +369,53 @@ def show_user(username):
 
 <p><em>主要就是这样，最好看完整的文档</em><br />
 具体例子可以查看<a href="http://github.com/honmaple/flask">GitHub</a></p>
-            </div>
-            <!-- /.entry-content -->
-    <hr/>
-    <section class="comments" id="comments">
-        <h2>Comments</h2>
-
-        <div id="disqus_thread"></div>
-        <script type="text/javascript">
-            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-            var disqus_shortname = 'honmaple'; // required: replace example with your forum shortname
-
-                    var disqus_identifier = 'python_sqlite';
-                var disqus_url = 'http://honmaple.gq/articles/2015/11/python_sqlite.html';
-
-            var disqus_config = function () {
-                this.language = "en";
-            };
-
-            /* * * DON'T EDIT BELOW THIS LINE * * */
-            (function () {
-                var dsq = document.createElement('script');
-                dsq.type = 'text/javascript';
-                dsq.async = true;
-                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-            })();
-        </script>
-        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
-            Disqus.</a></noscript>
-        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-
-    </section>
-        </article>
-    </section>
-
-        </div>
-        <div class="col-sm-3" id="sidebar">
-            <aside>
-<div id="aboutme">
-        <p>
-            <img width="100%" class="img-thumbnail" src="images/header.png"/>
-        </p>
-    <p>
-        <strong>About honmaple</strong><br/>
-        
-I like solitude, yearning for freedom
-<br/>
-
-    </p>
-</div>
-<section class="well well-sm">
-    <ul class="list-group list-group-flush">
-            <li class="list-group-item"><h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
-              <ul class="list-group" id="social">
-                <li class="list-group-item"><a href="http://github.com/honmaple"><i class="fa fa-github-square fa-lg"></i> GitHub</a></li>
-              </ul>
-            </li>
-
-
-
-            <li class="list-group-item"><a href="http://honmaple.gq/tags.html"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
-                <ul class="list-group " id="tags">
-                </ul>
-            </li>
-
-    <li class="list-group-item"><h4><i class="fa fa-github fa-lg"></i><span class="icon-label">GitHub Repos</span></h4>
-        <div id="gh_repos">
-            <p class="list-group-item">Status updating...</p>
-        </div>
-    </li>
-    <li class="list-group-item"><h4><i class="fa fa-external-link-square fa-lg"></i><span class="icon-label">Links</span></h4>
-      <ul class="list-group" id="links">
-        <li class="list-group-item">
-            <a href="http://getpelican.com/" target="_blank">
-                Pelican
-            </a>
-        </li>
-        <li class="list-group-item">
-            <a href="http://python.org/" target="_blank">
-                Python.org
-            </a>
-        </li>
-        <li class="list-group-item">
-            <a href="http://honmaple.cl" target="_blank">
-                Openshit
-            </a>
-        </li>
-      </ul>
-    </li>
-    </ul>
-</section>
-            </aside>
-        </div>
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "articles/2015/11/";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'https://honmaple.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
     </div>
-</div>
-<footer>
-   <div class="container">
-      <hr>
-      <div class="row">
-         <div class="col-xs-10">&copy; 2015 honmaple
-            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
-            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
-            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>              <p><small>  <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="//i.creativecommons.org/l/by/4.0/80x15.png" /></a>
-    Content
-  licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>, except where indicated otherwise.
-</small></p>
-         </div>
-         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
-      </div>
-   </div>
-</footer>
-<script src="http://honmaple.gq/theme/js/jquery.min.js"></script>
 
-<!-- Include all compiled plugins (below), or include individual files as needed -->
-<script src="http://honmaple.gq/theme/js/bootstrap.min.js"></script>
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="https://honmaple.com">个人博客</a></li>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            
+                            <li><a href="https://github.com/honmaple">GitHub</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
 
-<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
-<script src="http://honmaple.gq/theme/js/respond.min.js"></script>
+        <footer id="contentinfo" class="body">
 
-    <!-- GitHub JS -->
-    <script type="text/javascript">
-        $(document).ready(function () {
-            if (!window.jXHR) {
-                var jxhr = document.createElement('script');
-                jxhr.type = 'text/javascript';
-                jxhr.src = 'http://honmaple.gq/theme/js/jXHR.js';
-                var s = document.getElementsByTagName('script')[0];
-                s.parentNode.insertBefore(jxhr, s);
-            }
+        </footer><!-- /#contentinfo -->
 
-            github.showRepos({
-                user: 'honmaple',
-                count: 5,
-                skip_forks: true,
-                target: '#gh_repos'
-            });
-        });
-    </script>
-    <script src="http://honmaple.gq/theme/js/github.js" type="text/javascript"></script>
-    <!-- End GitHub JS Code -->
-    <!-- Disqus -->
-    <script type="text/javascript">
-        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-        var disqus_shortname = 'honmaple'; // required: replace example with your forum shortname
-
-        /* * * DON'T EDIT BELOW THIS LINE * * */
-        (function () {
-            var s = document.createElement('script');
-            s.async = true;
-            s.type = 'text/javascript';
-            s.src = '//' + disqus_shortname + '.disqus.com/count.js';
-            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-        }());
-    </script>
-    <!-- End Disqus Code -->
-
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

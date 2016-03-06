@@ -1,5 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>HonMaple</title><link href="http://honmaple.gq/" rel="alternate"></link><link href="http://honmaple.gq/feeds/python.rss.xml" rel="self"></link><id>http://honmaple.gq/</id><updated>2015-12-21T00:00:00+08:00</updated><entry><title>flask项目结构</title><link href="http://honmaple.gq/articles/2015/12/%E6%88%91%E7%9A%84flask%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84.html" rel="alternate"></link><updated>2015-12-21T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-12-21:articles/2015/12/我的flask项目结构.html</id><summary type="html">&lt;p&gt;听说每个flask应用最后都会写成自己的django,原来真的会是这样  &lt;/p&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>HonMaple's Blog</title><link>http://honmaple.gq/</link><description></description><atom:link href="http://honmaple.gq/feeds/python.rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 02 Feb 2016 00:00:00 +0100</lastBuildDate><item><title>flask_wtf学习</title><link>http://honmaple.gq/articles/2016/02/</link><description>&lt;p&gt;才发现写的代码有很多不必要的东西，可以进行很多优化  &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;以前都是"吃快餐",利用别人的例子进行修改，弄得自己不明不白的，这次放假，静下心来好好的看看官方文档，
+才发现写的代码有很多不必要的东西，可以进行很多优化  &lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;flask-wtforms是一个优秀的flask扩展，可惜官方文档说的不明不白，只是简单的说了大概的
+功能,如果想要更好的利用这个扩展，请google wtforms,或者&lt;a href="http://wtforms.readthedocs.org/en/latest/"&gt;看这里&lt;/a&gt;  &lt;/p&gt;
+&lt;p&gt;这里记录一下wtforms的&lt;strong&gt;validators&lt;/strong&gt;&lt;br /&gt;
+&lt;a href="http://wtforms.simplecodes.com/docs/1.0.1/validators.html"&gt;参考文档&lt;/a&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="n"&gt;RegisterForm&lt;/span&gt;(&lt;span class="n"&gt;Form&lt;/span&gt;):
+    &lt;span class="nb"&gt;name&lt;/span&gt; = &lt;span class="n"&gt;StringField&lt;/span&gt;(&lt;span class="s"&gt;&amp;#39;用户名:&amp;#39;&lt;/span&gt;)
+    &lt;span class="n"&gt;email&lt;/span&gt; = &lt;span class="n"&gt;StringField&lt;/span&gt;(&lt;span class="s"&gt;&amp;#39;邮箱:&amp;#39;&lt;/span&gt;)
+    &lt;span class="n"&gt;passwd&lt;/span&gt; = &lt;span class="n"&gt;PasswordField&lt;/span&gt;(&lt;span class="s"&gt;&amp;#39;密码:&amp;#39;&lt;/span&gt;)
+    &lt;span class="n"&gt;repasswd&lt;/span&gt; = &lt;span class="n"&gt;PasswordField&lt;/span&gt;(&lt;span class="s"&gt;&amp;#39;重复密码:&amp;#39;&lt;/span&gt;)
+    &lt;span class="n"&gt;register&lt;/span&gt; = &lt;span class="n"&gt;SubmitField&lt;/span&gt;(&lt;span class="s"&gt;&amp;#39;注册&amp;#39;&lt;/span&gt;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这只是一个最简单注册表单&lt;/p&gt;
+&lt;h4&gt;慢慢地加上一些要求:&lt;/h4&gt;
+&lt;h4&gt;输入不能为空&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;wtforms.validators&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Required&lt;/span&gt;
+&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;StringField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;用户名:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Required&lt;/span&gt;&lt;span class="p"&gt;()])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;限制name长度&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;wtforms.validators&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Length&lt;/span&gt;
+&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;StringField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;用户名:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Length&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;min&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                           &lt;span class="nb"&gt;max&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;)])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;判断邮箱格式是否正确&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;wtforms.validators&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Email&lt;/span&gt;
+&lt;span class="n"&gt;email&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;StringField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;邮箱&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Email&lt;/span&gt;&lt;span class="p"&gt;()])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;比较两次密码是否一致&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;wtforms.validators&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Email&lt;/span&gt;
+&lt;span class="n"&gt;passwd&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;PasswordField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;密码:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;EqualTo&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;repasswd&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)])&lt;/span&gt;
+&lt;span class="n"&gt;repasswd&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;PasswordField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;重复密码:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;自定义错误信息&lt;/h4&gt;
+&lt;p&gt;默认错误信息可以通过  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;form = RegisterForm()
+print(form.errors) //或者print(form.name.errors)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;查看&lt;br /&gt;
+比如输入不能为空的默认错误信息  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;#39;This field is required.&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;想要修改默认信息,请使用&lt;em&gt;message&lt;/em&gt;&lt;br /&gt;
+比如:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;name = StringField(&amp;#39;用户名:&amp;#39;,
+                   [Required(message=u&amp;#39;输入不能为空&amp;#39;)])
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;同样的  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Length(min=4,
+       max=25,
+       message=u&amp;#39;用户名长度在4到25个字符之间&amp;#39;)
+Email(message=u&amp;#39;错误的邮箱地址&amp;#39;)
+EqualTo(&amp;#39;confirm&amp;#39;,message=u&amp;#39;两次密码不一致&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这样就不用在视图文件不停地判断了,不要像我原先那样  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;if form.name.data == &amp;#39;&amp;#39; or form.passwd.data == &amp;#39;&amp;#39;:
+    flash(u&amp;#39;输入不能为空&amp;#39;)
+if form.repasswd.data != form.passwd.data:
+    flash(u&amp;#39;两次密码不一致&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ok,就这样,这里写的不完善，不过对于我来说暂时够用了&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Tue, 02 Feb 2016 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2016-02-02:articles/2016/02/</guid><category>[python</category><category>flask]</category></item><item><title>flask使用ajax</title><link>http://honmaple.gq/articles/2016/02/</link><description>&lt;p&gt;&lt;a href="http://www.w3school.com.cn/jquery/jquery_ref_ajax.asp"&gt;参考文档&lt;/a&gt;  &lt;/p&gt;
+&lt;h3&gt;简单使用ajax&lt;/h3&gt;
+&lt;p&gt;&lt;a href="http://www.w3school.com.cn/jquery/jquery_ref_ajax.asp"&gt;参考文档&lt;/a&gt;  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;script&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;text/javascript&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+$(document).ready(function(){
+    $(&amp;#39;button#ajax&amp;#39;).click(function() {
+        $.ajax ({
+            type : &amp;quot;POST&amp;quot;,
+            url : &amp;quot;&lt;span class="cp"&gt;{{&lt;/span&gt; &lt;span class="nv"&gt;url_for&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;index.login&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="cp"&gt;}}&lt;/span&gt;&amp;quot;,
+            data:JSON.stringify({
+                name: $(&amp;#39;input[name=&amp;quot;name&amp;quot;]&amp;#39;).val(),
+                passwd: $(&amp;#39;input[name=&amp;quot;passwd&amp;quot;]&amp;#39;).val()
+            }),
+            contentType: &amp;#39;application/json;charset=UTF-8&amp;#39;,
+            success: function(result) {
+                if (result.judge == true)
+                {
+                    window.location = &amp;#39;/&amp;#39;;
+                }
+                else 
+                {
+                    $(&amp;quot;#showerror&amp;quot;).show();
+                    $(&amp;quot;#error&amp;quot;).text(result.error);
+                }
+            }
+        });
+    });
+});
+&lt;span class="nt"&gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;ajax使用CSRF&lt;/h3&gt;
+&lt;p&gt;&lt;a href="http://flask-wtf.readthedocs.org/en/latest/csrf.html"&gt;参考文档&lt;/a&gt;  &lt;/p&gt;
+&lt;h4&gt;首先注册CSRF&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask_wtf.csrf&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;CsrfProtect&lt;/span&gt;
+&lt;span class="n"&gt;csrf&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;CsrfProtect&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;csrf&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;init_app&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;在模板中使用&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="x"&gt;var csrftoken = &amp;quot;&lt;/span&gt;&lt;span class="cp"&gt;{{&lt;/span&gt; &lt;span class="nv"&gt;csrf_token&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="cp"&gt;}}&lt;/span&gt;&lt;span class="x"&gt;&amp;quot;&lt;/span&gt;
+&lt;span class="x"&gt;    $.ajaxSetup({&lt;/span&gt;
+&lt;span class="x"&gt;        beforeSend: function(xhr, settings) {&lt;/span&gt;
+&lt;span class="x"&gt;            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) &amp;amp;&amp;amp; !this.crossDomain) {&lt;/span&gt;
+&lt;span class="x"&gt;                xhr.setRequestHeader(&amp;quot;X-CSRFToken&amp;quot;, csrftoken)&lt;/span&gt;
+&lt;span class="x"&gt;            }&lt;/span&gt;
+&lt;span class="x"&gt;        }&lt;/span&gt;
+&lt;span class="x"&gt;    });&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Tue, 02 Feb 2016 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2016-02-02:articles/2016/02/</guid><category>[python</category><category>flask</category><category>ajax]</category></item><item><title>flask项目结构</title><link>http://honmaple.gq/articles/2015/12/</link><description>&lt;p&gt;听说每个flask应用最后都会写成自己的django,原来真的会是这样  &lt;/p&gt;
 &lt;h2&gt;总的结构&lt;/h2&gt;
 &lt;p&gt;|── app/&lt;br /&gt;
 │   ├── &lt;strong&gt;init&lt;/strong&gt;.py&lt;br /&gt;
@@ -93,13 +229,13 @@
 &lt;p&gt;email/&lt;br /&gt;
 ├── email.py&lt;br /&gt;
 ├── &lt;strong&gt;init&lt;/strong&gt;.py&lt;br /&gt;
-└── token.py  &lt;/p&gt;</summary><category term="[python"></category><category term="flask]"></category></entry><entry><title>flask学习——数据库操作</title><link href="http://honmaple.gq/articles/2015/11/python_sqlite.html" rel="alternate"></link><updated>2015-11-10T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-11-10:articles/2015/11/python_sqlite.html</id><summary type="html">&lt;p&gt;Summary : flask作为后端数据库操作是必要的,现在记录一下一些flask数据库的相关操作&lt;/br&gt;暂时使用较简单的sqlite作为例子  &lt;/p&gt;
+└── token.py  &lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Mon, 21 Dec 2015 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2015-12-21:articles/2015/12/</guid><category>[python</category><category>flask]</category></item><item><title>flask学习——数据库操作</title><link>http://honmaple.gq/articles/2015/11/</link><description>&lt;p&gt;Summary : flask作为后端数据库操作是必要的,现在记录一下一些flask数据库的相关操作&lt;/br&gt;暂时使用较简单的sqlite作为例子  &lt;/p&gt;
 &lt;p&gt;flask 作为后端数据库操作是必要的，现在记录一下一些flask数据库的相关操作，
 我将使用三种方法操作数据库&lt;br /&gt;
 暂时使用较简单的sqlite作为例子&lt;/p&gt;
 &lt;h2&gt;相关环境的安装&lt;/h2&gt;
 &lt;p&gt;&lt;em&gt;建议使用ve虚拟环境&lt;/em&gt;&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;sudo pacman -S sqlite # archlinux
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo pacman -S sqlite # archlinux
 sudo pip install virtualenv 
 # 在vertualenv环境下执行
 pip install Flask-SQLAlchemy Jinja2 SQLAlchemy
@@ -117,19 +253,19 @@ pip install Flask-SQLAlchemy Jinja2 SQLAlchemy
 4
 5
 6
-7&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/usr/bin/env python&lt;/span&gt;
-&lt;span class="c"&gt;# -*- coding=UTF-8 -*-&lt;/span&gt;
+7&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/usr/bin/env python&lt;/span&gt;
+&lt;span class="c1"&gt;# -*- coding=UTF-8 -*-&lt;/span&gt;
 &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;sqlite3&lt;/span&gt;
-&lt;span class="n"&gt;database&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;  &lt;span class="c"&gt;#数据库文件路径&lt;/span&gt;
-&lt;span class="n"&gt;test&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sqlite&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;database&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="c"&gt;#连接数据库，如果数据库文件不存在则创建&lt;/span&gt;
-&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;connect database successfully&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;  &lt;span class="c"&gt;#关闭数据库连接&lt;/span&gt;
+&lt;span class="n"&gt;database&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;  &lt;span class="c1"&gt;#数据库文件路径&lt;/span&gt;
+&lt;span class="n"&gt;test&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sqlite&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;database&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;#连接数据库，如果数据库文件不存在则创建&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;connect database successfully&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;  &lt;span class="c1"&gt;#关闭数据库连接&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 
 &lt;p&gt;如果将数据库名改为&lt;strong&gt;:memory:&lt;/strong&gt;,则在内存中打开数据库而不是磁盘&lt;/p&gt;
 &lt;h4&gt;创建表&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;database = /path/test.db
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;database = /path/test.db
 test = sqlite.connect(&amp;#39;database&amp;#39;)
 test.execute(&amp;#39;&amp;#39;&amp;#39;CREATE TABLE BOOKS
        (ID INT PRIMARY KEY     NOT NULL,
@@ -142,7 +278,7 @@ test.close()
 
 
 &lt;h4&gt;插入数据&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;database = /path/test.db
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;database = /path/test.db
 test = sqlite.connect(&amp;#39;database&amp;#39;)
 test.execute(&amp;quot;INSERT INTO BOOKS (ID,TYPE,NAME,CONTENT) \
       VALUES (1, &amp;#39;hello&amp;#39;, &amp;#39;world&amp;#39;, &amp;#39;helloworld&amp;#39;)&amp;quot;);
@@ -155,7 +291,7 @@ test.close()
 
 
 &lt;h4&gt;查询数据&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;database = /path/test.db
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;database = /path/test.db
 test = sqlite.connect(&amp;#39;database&amp;#39;)
 cursor = test.execute(&amp;quot;SELECT ID,TYPE,NAME,CONTENT  from BOOKS&amp;quot;)
 for row in cursor:
@@ -168,7 +304,7 @@ test.close()
 
 
 &lt;h4&gt;更新数据&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;database = /path/test.db
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;database = /path/test.db
 test = sqlite.connect(&amp;#39;database&amp;#39;)
 test.execute(&amp;quot;UPDATE BOOKS SET CONTENT = &amp;#39;hello&amp;#39; WHERE ID=2&amp;quot;)
 test.commit
@@ -177,7 +313,7 @@ test.close()
 
 
 &lt;h4&gt;删除数据&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;database = /path/test.db
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;database = /path/test.db
 test = sqlite.connect(&amp;#39;database&amp;#39;)
 test.execute(&amp;quot;DELETE FROM BOOKS WHERE ID=2&amp;quot;)
 test.commit
@@ -190,24 +326,24 @@ test.close()
 &lt;p&gt;参考资料&lt;br /&gt;
 &lt;a href="http://flask.readthedocs.org/en/0.2/patterns/sqlite3/"&gt;英文&lt;/a&gt;
 &lt;a href="http://docs.jinkan.org/docs/flask/patterns/sqlite3.html"&gt;中文&lt;/a&gt;&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;sqlite3&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;sqlite3&lt;/span&gt;
 &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;
 
-&lt;span class="n"&gt;DATABASE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;/path/to/database.db&amp;#39;&lt;/span&gt;
+&lt;span class="n"&gt;DATABASE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;/path/to/database.db&amp;#39;&lt;/span&gt;
 
 &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;connect_db&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;sqlite3&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;DATABASE&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
-&lt;span class="nd"&gt;@app.before_request&lt;/span&gt; &lt;span class="c"&gt;#使用app_request装饰器打开数据库&lt;/span&gt;
+&lt;span class="nd"&gt;@app.before_request&lt;/span&gt; &lt;span class="c1"&gt;#使用app_request装饰器打开数据库&lt;/span&gt;
 &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;before_request&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
     &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;connect_db&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 
-&lt;span class="nd"&gt;@app.teardown_request&lt;/span&gt; &lt;span class="c"&gt;#使用app_request装饰器关闭数据库&lt;/span&gt;
+&lt;span class="nd"&gt;@app.teardown_request&lt;/span&gt; &lt;span class="c1"&gt;#使用app_request装饰器关闭数据库&lt;/span&gt;
 &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;teardown_request&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;exception&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;hasattr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;db&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;hasattr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;db&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
         &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;query_db&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt; &lt;span class="n"&gt;one&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;  &lt;span class="c"&gt;#数据库简化查询&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;query_db&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt; &lt;span class="n"&gt;one&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;  &lt;span class="c1"&gt;#数据库简化查询&lt;/span&gt;
     &lt;span class="n"&gt;cur&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;execute&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
     &lt;span class="n"&gt;rv&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;dict&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;cur&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;description&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;idx&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
                &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;idx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;row&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;row&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;cur&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fetchall&lt;/span&gt;&lt;span class="p"&gt;()]&lt;/span&gt;
@@ -216,7 +352,7 @@ test.close()
 
 
 &lt;p&gt;需要使用时(主要是查询)  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="x"&gt;for book in query_db(&amp;#39;select * from BOOKS&amp;#39;):&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="x"&gt;for book in query_db(&amp;#39;select * from BOOKS&amp;#39;):&lt;/span&gt;
 &lt;span class="x"&gt;    print book[&amp;#39;NAME&amp;#39;], &amp;#39;has the id&amp;#39;, book[&amp;#39;ID&amp;#39;]&lt;/span&gt;
 &lt;span class="x"&gt;#由于flask一般不使用print，可以这样&lt;/span&gt;
 &lt;span class="x"&gt;book = query_db(&amp;#39;select * from BOOKS&amp;#39;)&lt;/span&gt;
@@ -226,7 +362,7 @@ test.close()
 
 
 &lt;p&gt;如果只希望得到一个单独的结果  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;book = query_db(&amp;#39;select * from BOOKS where NAME = ?&amp;#39;,
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;book = query_db(&amp;#39;select * from BOOKS where NAME = ?&amp;#39;,
                 [the_bookname], one=True)
 if book is None:
     print &amp;#39;No such user&amp;#39;
@@ -237,11 +373,11 @@ else:
 
 &lt;p&gt;创建，更新，插入，删除数据请使用第一个方法  &lt;/p&gt;
 &lt;h3&gt;初始化数据库模型&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;contextlib&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;closing&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;contextlib&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;closing&lt;/span&gt;
 
 &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;init_db&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
     &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;closing&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;connect_db&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;open_resource&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;schema.sql&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;open_resource&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;schema.sql&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
             &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cursor&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;executescript&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
         &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;commit&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -252,12 +388,12 @@ else:
 &lt;a href="http://www.pythondoc.com/flask-sqlalchemy/index.html"&gt;中文&lt;/a&gt;
 &lt;a href="https://pythonhosted.org/Flask-SQLAlchemy/"&gt;英文&lt;/a&gt;&lt;/p&gt;
 &lt;h3&gt;一个最小应用&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;
 &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask.ext.sqlalchemy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;SQLAlchemy&lt;/span&gt;
 
 &lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;__name__&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;SQLALCHEMY_DATABASE_URI&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;sqlite:////tmp/test.db&amp;#39;&lt;/span&gt;
-&lt;span class="c"&gt;# sqlite打开的格式是sql:///三个&amp;quot;/&amp;quot;,接着是数据库文件的**绝对路径**&lt;/span&gt;
+&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;SQLALCHEMY_DATABASE_URI&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;sqlite:////tmp/test.db&amp;#39;&lt;/span&gt;
+&lt;span class="c1"&gt;# sqlite打开的格式是sql:///三个&amp;quot;/&amp;quot;,接着是数据库文件的**绝对路径**&lt;/span&gt;
 &lt;span class="n"&gt;db&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;SQLAlchemy&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
 &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;User&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
@@ -270,32 +406,32 @@ else:
         &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;email&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;email&lt;/span&gt;
 
     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__repr__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;lt;User &lt;/span&gt;&lt;span class="si"&gt;%r&lt;/span&gt;&lt;span class="s"&gt;&amp;gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;username&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;lt;User &lt;/span&gt;&lt;span class="si"&gt;%r&lt;/span&gt;&lt;span class="s1"&gt;&amp;gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;username&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h4&gt;使用&lt;/h4&gt;
 &lt;p&gt;假若上面代码保存为test.py  &lt;br /&gt;
     打开python shell&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;test&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;User&lt;/span&gt;
-&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_all&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="c"&gt;#创建表&lt;/span&gt;
-&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;admin&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;User&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;admin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;admin@example.com&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="c"&gt;#创建数据&lt;/span&gt;
-&lt;span class="c"&gt;# 这时数据还未真正写入数据库,需要提交&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;test&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;User&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create_all&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="c1"&gt;#创建表&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;admin&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;User&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;admin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;admin@example.com&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;#创建数据&lt;/span&gt;
+&lt;span class="c1"&gt;# 这时数据还未真正写入数据库,需要提交&lt;/span&gt;
 &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;admin&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;commit&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="c"&gt;#这时数据已经写入数据库中&lt;/span&gt;
-&lt;span class="c"&gt;# 简单数据查询&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;commit&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="c1"&gt;#这时数据已经写入数据库中&lt;/span&gt;
+&lt;span class="c1"&gt;# 简单数据查询&lt;/span&gt;
 &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;users&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;User&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;all&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;users&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;User&lt;/span&gt; &lt;span class="s"&gt;u&amp;#39;admin&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;admin&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;User&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;filter_by&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;username&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;admin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;first&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;User&lt;/span&gt; &lt;span class="s1"&gt;u&amp;#39;admin&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;admin&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;User&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;filter_by&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;username&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;admin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;first&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;admin&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;User&lt;/span&gt; &lt;span class="s"&gt;u&amp;#39;admin&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;User&lt;/span&gt; &lt;span class="s1"&gt;u&amp;#39;admin&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;如果想要简单的查看数据,推荐firefox的一个sqlite插件 &lt;strong&gt;sqlite manager&lt;/strong&gt;&lt;/p&gt;
 &lt;h4&gt;配置&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;SQLALCHEMY_DATABASE_URI #用于连接的数据库
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;SQLALCHEMY_DATABASE_URI #用于连接的数据库
 SQLALCHEMY_BINDS #连接多个数据库
 # 比如
 SQLALCHEMY_BINDS = {
@@ -315,15 +451,15 @@ class User(db.Model):
 
 &lt;h4&gt;选择，插入，删除&lt;/h4&gt;
 &lt;p&gt;插入  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;test&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;User&lt;/span&gt;
-&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;me&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;User&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;admin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;admin@example.com&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;test&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;User&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;me&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;User&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;admin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;admin@example.com&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;me&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;commit&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;删除  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&amp;gt;&amp;gt;&amp;gt; db.session.delete(me)
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; db.session.delete(me)
 &amp;gt;&amp;gt;&amp;gt; db.session.commit()
 &lt;/pre&gt;&lt;/div&gt;
 
@@ -361,7 +497,7 @@ class User(db.Model):
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&amp;gt;&amp;gt;&amp;gt; admin = User.query.filter_by(username=&amp;#39;admin&amp;#39;).first()
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; admin = User.query.filter_by(username=&amp;#39;admin&amp;#39;).first()
 &amp;gt;&amp;gt;&amp;gt; print(admin.id)
 1
 &amp;gt;&amp;gt;&amp;gt; print(admin.email)
@@ -370,32 +506,32 @@ u&amp;#39;admin@example.com&amp;#39;
 
 
 &lt;p&gt;查找不存在的用户名:  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&amp;gt;&amp;gt;&amp;gt; missing = User.query.filter_by(username=&amp;#39;missing&amp;#39;).first()
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; missing = User.query.filter_by(username=&amp;#39;missing&amp;#39;).first()
 &amp;gt;&amp;gt;&amp;gt; missing is None
 True
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;使用更复杂的表达式查询一些用户:  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&amp;gt;&amp;gt;&amp;gt; User.query.filter(User.email.endswith(&amp;#39;@example.com&amp;#39;)).all()
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; User.query.filter(User.email.endswith(&amp;#39;@example.com&amp;#39;)).all()
 [&amp;lt;User u&amp;#39;admin&amp;#39;&amp;gt;, &amp;lt;User u&amp;#39;guest&amp;#39;&amp;gt;]
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;按某种规则对用户排序:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&amp;gt;&amp;gt;&amp;gt; User.query.order_by(User.username)
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; User.query.order_by(User.username)
 [&amp;lt;User u&amp;#39;admin&amp;#39;&amp;gt;, &amp;lt;User u&amp;#39;guest&amp;#39;&amp;gt;, &amp;lt;User u&amp;#39;peter&amp;#39;&amp;gt;]
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;限制返回用户的数量:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&amp;gt;&amp;gt;&amp;gt; User.query.limit(1).all()
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; User.query.limit(1).all()
 [&amp;lt;User u&amp;#39;admin&amp;#39;&amp;gt;]
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;用主键查询用户:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&amp;gt;&amp;gt;&amp;gt; User.query.get(1)
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; User.query.get(1)
 &amp;lt;User u&amp;#39;admin&amp;#39;&amp;gt;
 &lt;/pre&gt;&lt;/div&gt;
 
@@ -403,7 +539,7 @@ True
 &lt;h4&gt;在视图中使用&lt;/h4&gt;
 &lt;p&gt;使用 get_or_404() 来代替 get()，使用 first_or_404() 来代替 first()。
 这样会抛出一个 404 错误，而不是返回 None:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;@app.route(&amp;#39;/user/&amp;lt;username&amp;gt;&amp;#39;)
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;@app.route(&amp;#39;/user/&amp;lt;username&amp;gt;&amp;#39;)
 def show_user(username):
     user = User.query.filter_by(username=username).first_or_404()
     return render_template(&amp;#39;show_user.html&amp;#39;, user=user)
@@ -411,14 +547,14 @@ def show_user(username):
 
 
 &lt;p&gt;&lt;em&gt;主要就是这样，最好看完整的文档&lt;/em&gt;&lt;br /&gt;
-具体例子可以查看&lt;a href="http://github.com/honmaple/flask"&gt;GitHub&lt;/a&gt;&lt;/p&gt;</summary><category term="[ python"></category><category term="flask"></category><category term="sqlite"></category><category term="sql ]"></category></entry><entry><title>flask学习笔记——3</title><link href="http://honmaple.gq/articles/2015/11/python_flask_3.html" rel="alternate"></link><updated>2015-11-04T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-11-04:articles/2015/11/python_flask_3.html</id><summary type="html">&lt;p&gt;Summary : 好久没有写东西的，主要是最近在用flask写一个网站，由于写前端界面时为了让UI好看一点，搞得自己晕头转向，方向都错了&lt;/p&gt;
+具体例子可以查看&lt;a href="http://github.com/honmaple/flask"&gt;GitHub&lt;/a&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Tue, 10 Nov 2015 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2015-11-10:articles/2015/11/</guid><category>[ python</category><category>flask</category><category>sqlite</category><category>sql ]</category></item><item><title>flask学习笔记——3</title><link>http://honmaple.gq/articles/2015/11/</link><description>&lt;p&gt;Summary : 好久没有写东西的，主要是最近在用flask写一个网站，由于写前端界面时为了让UI好看一点，搞得自己晕头转向，方向都错了&lt;/p&gt;
 &lt;p&gt;好久没有写东西的，主要是最近在用flask写一个网站，由于写前端界面时为了让UI好看一点，搞得自己晕头转向，方向都错了,
 在此期间也遇到很多问题，虽然绝大部分已经解决了，但是还有很多没有解决。其实，做一个项目是最能检验能力的。  &lt;/p&gt;
 &lt;h2&gt;中文网站链接编码&lt;/h2&gt;
 &lt;p&gt;如果访问一个含中文字符的网站，很大可能会提示错误&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;urllib&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;urllib&lt;/span&gt;
 &lt;span class="n"&gt;urllib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parse&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;quote&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</summary><category term="[ python"></category><category term="flask ]"></category></entry><entry><title>flask学习笔记--2</title><link href="http://honmaple.gq/articles/2015/10/python_flask_2.html" rel="alternate"></link><updated>2015-10-25T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-25:articles/2015/10/python_flask_2.html</id><summary type="html">&lt;p&gt;Summary : 今天被flask的项目结构或者说是蓝图搞得晕头转脑，各种文档也没说清，从github搜索并clone了几个用flask做成的网站，无奈水平太低，看不懂&lt;/p&gt;
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Wed, 04 Nov 2015 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2015-11-04:articles/2015/11/</guid><category>[ python</category><category>flask ]</category></item><item><title>flask学习笔记--2</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;p&gt;Summary : 今天被flask的项目结构或者说是蓝图搞得晕头转脑，各种文档也没说清，从github搜索并clone了几个用flask做成的网站，无奈水平太低，看不懂&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;今天被flask的项目结构或者说是蓝图搞得晕头转脑，各种文档也没说清，从github搜索并clone了几个用flask做成的网站，无奈水平太低，看不懂&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;记录一下今天学到的&lt;/p&gt;
 &lt;h2&gt;蓝图&lt;/h2&gt;
@@ -462,71 +598,71 @@ def show_user(username):
 &lt;/table&gt;
 &lt;h3&gt;run.py&lt;/h3&gt;
 &lt;p&gt;输入&lt;code&gt;python run.py&lt;/code&gt;就可以运行程序&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;app&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="c"&gt;#从app包中调用app模块&lt;/span&gt;
-&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="c"&gt;#运行程序&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;app&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="c1"&gt;#从app包中调用app模块&lt;/span&gt;
+&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="c1"&gt;#运行程序&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;config.py&lt;/h3&gt;
 &lt;p&gt;一些基本的配置&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;DEBUG = True #打开调试模式
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;DEBUG = True #打开调试模式
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;app/&lt;strong&gt;init&lt;/strong&gt;.py&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;redirect&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url_for&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; \
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;redirect&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url_for&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; \
      &lt;span class="n"&gt;abort&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;render_template&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;flash&lt;/span&gt;
 
 &lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;__name__&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;from_object&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;config&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="c"&gt;#调用config.py配置文件&lt;/span&gt;
+&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;from_object&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;config&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  &lt;span class="c1"&gt;#调用config.py配置文件&lt;/span&gt;
 
-&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;app&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;views&lt;/span&gt; &lt;span class="c"&gt;#从app包中导入views模块&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;app&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;views&lt;/span&gt; &lt;span class="c1"&gt;#从app包中导入views模块&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;app/views.py&lt;/h3&gt;
 &lt;p&gt;视图文件&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;app&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;app&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt;
 &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;redirect&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url_for&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; \
      &lt;span class="n"&gt;abort&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;render_template&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;flash&lt;/span&gt;
-&lt;span class="nd"&gt;@app.route.&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="nd"&gt;@app.route.&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;Index&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;hello,world&amp;#39;&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;hello,world&amp;#39;&lt;/span&gt;
 &lt;span class="nd"&gt;@app.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;Show_page&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;render_template&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;index.html&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;render_template&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;index.html&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;app/templates/&lt;/h3&gt;
 &lt;p&gt;放置模板&lt;/p&gt;
 &lt;h3&gt;app/templates/index.html&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="cp"&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;/span&gt;
-&lt;span class="nt"&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
-        &lt;span class="nt"&gt;&amp;lt;meta&lt;/span&gt; &lt;span class="na"&gt;charset=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;utf-8&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class="nt"&gt;&amp;lt;meta&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;viewport&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;content=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;width=device-width&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class="nt"&gt;&amp;lt;link&lt;/span&gt; &lt;span class="na"&gt;rel=&lt;/span&gt;&lt;span class="s"&gt;stylesheet&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;text/css&lt;/span&gt; &lt;span class="na"&gt;href=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="cp"&gt;{{&lt;/span&gt; &lt;span class="nv"&gt;url_for&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;static&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;style.css&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="cp"&gt;}}&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;/span&gt;
+&lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;html&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;head&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;meta&lt;/span&gt; &lt;span class="na"&gt;charset&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;utf-8&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;meta&lt;/span&gt; &lt;span class="na"&gt;name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;viewport&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;content&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;width=device-width&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;link&lt;/span&gt; &lt;span class="na"&gt;rel&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;stylesheet&lt;/span&gt; &lt;span class="na"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;text/css&lt;/span&gt; &lt;span class="na"&gt;href&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="cp"&gt;{{&lt;/span&gt; &lt;span class="nv"&gt;url_for&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;static&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;style.css&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="cp"&gt;}}&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
         #使用static文件夹中的css，js
-        &lt;span class="nt"&gt;&amp;lt;title&amp;gt;&lt;/span&gt;
+        &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;title&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
         hello
-        &lt;span class="nt"&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
+        &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;title&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
 
-    &lt;span class="nt"&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
-        &lt;span class="nt"&gt;&amp;lt;ul&amp;gt;&lt;/span&gt;
-            &lt;span class="nt"&gt;&amp;lt;li&amp;gt;&lt;/span&gt;hello&lt;span class="nt"&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
-            &lt;span class="nt"&gt;&amp;lt;li&amp;gt;&lt;/span&gt;world&lt;span class="nt"&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
-            &lt;span class="nt"&gt;&amp;lt;li&amp;gt;&lt;/span&gt;hello world&lt;span class="nt"&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
-        &lt;span class="nt"&gt;&amp;lt;/ul&amp;gt;&lt;/span&gt;
-    &lt;span class="nt"&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
-&lt;span class="nt"&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+    &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;head&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;body&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;ul&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;li&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;hello&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;li&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;li&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;world&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;li&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;li&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;hello world&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;li&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;ul&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;body&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;html&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;app/static&lt;/h3&gt;
 &lt;p&gt;放置一些静态文件
-css,js等&lt;/p&gt;</summary><category term="[ python"></category><category term="flask ]"></category></entry><entry><title>flask学习笔记--1</title><link href="http://honmaple.gq/articles/2015/10/python_flask_1.html" rel="alternate"></link><updated>2015-10-24T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-24:articles/2015/10/python_flask_1.html</id><summary type="html">&lt;h2&gt;基本知识&lt;/h2&gt;
+css,js等&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 25 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-25:articles/2015/10/</guid><category>[ python</category><category>flask ]</category></item><item><title>flask学习笔记--1</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;h2&gt;基本知识&lt;/h2&gt;
 &lt;p&gt;python html/css javascript http等&lt;/p&gt;
 &lt;h2&gt;flask安装&lt;/h2&gt;
 &lt;p&gt;Flask 依赖两个外部库： Werkzeug 和 Jinja2 。
@@ -535,32 +671,32 @@ Jinja2 是用于渲染 模板的。&lt;/p&gt;
 &lt;h3&gt;virtualenv&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;关于virtualenv&lt;/strong&gt;  &lt;/p&gt;
 &lt;p&gt;安装 virtualenv  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo pip install virtualenv
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo pip install virtualenv
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;安装完virtualenv后创建自己的文件夹  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;mkdir flask
-&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd &lt;/span&gt;flask
-&lt;span class="nv"&gt;$ &lt;/span&gt;virtualenv venv
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ mkdir flask
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; flask
+$ virtualenv venv
 New python executable in env/bin/python
 Installing setuptools............done.
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;以后要使用virtualenv只用输入  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;. venv/bin/activate   &lt;span class="c"&gt;#不要忘记了&amp;quot;.&amp;quot;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ . venv/bin/activate   &lt;span class="c1"&gt;#不要忘记了&amp;quot;.&amp;quot;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;你会发现在终端PS1前会出现(venv),代表你已经进入virtualenv虚拟环境&lt;br /&gt;
 退出virtualenv  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;deactivate
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ deactivate
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;在virtualenv中安装flask&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="p"&gt;$&lt;/span&gt;&lt;span class="nv"&gt;pip&lt;/span&gt;&lt;span class="x"&gt; install flask&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;$&lt;/span&gt;&lt;span class="nv"&gt;pip&lt;/span&gt;&lt;span class="x"&gt; install flask&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -584,23 +720,23 @@ Installing setuptools............done.
 &lt;/blockquote&gt;
 &lt;h3&gt;创建第一个应用过过隐&lt;/h3&gt;
 &lt;p&gt;&lt;em&gt;暂时可以不用进行项目结构编排&lt;/em&gt;&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="p"&gt;$&lt;/span&gt;&lt;span class="nv"&gt;vim&lt;/span&gt;&lt;span class="x"&gt; hello.py&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;$&lt;/span&gt;&lt;span class="nv"&gt;vim&lt;/span&gt;&lt;span class="x"&gt; hello.py&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;输入&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;
-&lt;span class="c"&gt;#导入Flask类&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;
+&lt;span class="c1"&gt;#导入Flask类&lt;/span&gt;
 &lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;__name__&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="c"&gt;#__name__模块名，必须的&lt;/span&gt;
-&lt;span class="nd"&gt;@app.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="c"&gt;#使用 route() 装饰器来告诉 Flask 触发函数的 URL &lt;/span&gt;
+&lt;span class="c1"&gt;#__name__模块名，必须的&lt;/span&gt;
+&lt;span class="nd"&gt;@app.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="c1"&gt;#使用 route() 装饰器来告诉 Flask 触发函数的 URL &lt;/span&gt;
 &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;hello_world&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Hello World!&amp;#39;&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Hello World!&amp;#39;&lt;/span&gt;
 
-&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
     &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-&lt;span class="c"&gt;#使用 run() 函数来运行本地服务器和应用&lt;/span&gt;
+&lt;span class="c1"&gt;#使用 run() 函数来运行本地服务器和应用&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -610,49 +746,49 @@ Installing setuptools............done.
 &lt;/blockquote&gt;
 &lt;p&gt;打开浏览器输入网址&lt;a href="http://127.0.0.1:5000/"&gt;http://127.0.0.1:5000/&lt;/a&gt;&lt;/p&gt;
 &lt;h3&gt;打开调试模式&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;app.debug = True
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;app.debug = True
 app.run()
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;或者是  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;app.run(debug=True)
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;app.run(debug=True)
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;注意&lt;/h2&gt;
 &lt;blockquote&gt;
 &lt;p&gt;调试模式仅限在本地使用，在生产环境中不要打开&lt;/p&gt;
-&lt;/blockquote&gt;</summary><category term="[ python"></category><category term="flask ]"></category></entry><entry><title>flask学习--jinja模板</title><link href="http://honmaple.gq/articles/2015/10/python_flask_jinja.md.html" rel="alternate"></link><updated>2015-10-24T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-24:articles/2015/10/python_flask_jinja.md.html</id><summary type="html">&lt;h2&gt;jinja介绍&lt;/h2&gt;
+&lt;/blockquote&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sat, 24 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-24:articles/2015/10/</guid><category>[ python</category><category>flask ]</category></item><item><title>flask学习--jinja模板</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;h2&gt;jinja介绍&lt;/h2&gt;
 &lt;p&gt;Jinja是flask的默认模板引擎。&lt;/p&gt;
 &lt;h2&gt;jinja设置&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;在扩展名为 .html 、 .htm 、 .xml 和 .xhtml 的模板中开启自动 转义。&lt;/li&gt;
 &lt;li&gt;在模板中可以使用 {% autoescape %} 来手动设置是否转义。&lt;/li&gt;
 &lt;li&gt;Flask 在 Jinja2 环境中加入一些全局函数和辅助对象，以增强模板的功能。&lt;/li&gt;
-&lt;/ul&gt;</summary><category term="[ python"></category><category term="flask"></category><category term="jinja ]"></category></entry><entry><title>使用pelican搭建个人博客</title><link href="http://honmaple.gq/articles/2015/10/pelican.html" rel="alternate"></link><updated>2015-10-15T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-15:articles/2015/10/pelican.html</id><summary type="html">&lt;h2&gt;pelican介绍&lt;/h2&gt;
+&lt;/ul&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sat, 24 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-24:articles/2015/10/</guid><category>[ python</category><category>flask</category><category>jinja ]</category></item><item><title>使用pelican搭建个人博客</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;h2&gt;pelican介绍&lt;/h2&gt;
 &lt;p&gt;Pelican是一个用Python语言编写的静态网站生成器，支持使用restructuredText和Markdown写文章，配置灵活，扩展性强  &lt;/p&gt;
 &lt;h2&gt;pelican安装&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo pip install pelican
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo pip install pelican
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;安装markdown&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo pip install markdown
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo pip install markdown
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;pelican使用&lt;/h2&gt;
 &lt;p&gt;工具准备好了，接下来就开始使用&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd &lt;/span&gt;git
-&lt;span class="nv"&gt;$ &lt;/span&gt;mkdir pelican  &lt;span class="c"&gt;#建立一个文件夹(位置和名称随意，自己记得就行)&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd &lt;/span&gt;pelican
-&lt;span class="nv"&gt;$ &lt;/span&gt;pelican-quickstart
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; git
+$ mkdir pelican  &lt;span class="c1"&gt;#建立一个文件夹(位置和名称随意，自己记得就行)&lt;/span&gt;
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; pelican
+$ pelican-quickstart
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;显示  (也可以直接回车默认)&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;Welcome to pelican-quickstart v3.4.0.
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Welcome to pelican-quickstart v3.4.0.
 
 This script will help you create a new Pelican-based website.
 
@@ -693,15 +829,15 @@ pelican/&lt;br /&gt;
 ├── pelicanconf.py       # Main settings file&lt;br /&gt;
 └── publishconf.py       # Settings to use when ready to publish  &lt;/p&gt;
 &lt;p&gt;现在可以开始写第一篇文章了&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd &lt;/span&gt;content
-&lt;span class="nv"&gt;$ &lt;/span&gt;mkdir articles pages extra impages
-&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd &lt;/span&gt;articles
-&lt;span class="nv"&gt;$ &lt;/span&gt;vim hello.md
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; content
+$ mkdir articles pages extra impages
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; articles
+$ vim hello.md
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;在文件开头输入下列内容&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;Title&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="err"&gt;文章标题&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Title&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="err"&gt;文章标题&lt;/span&gt;
 &lt;span class="n"&gt;Author&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="err"&gt;作者&lt;/span&gt; 
 &lt;span class="n"&gt;Date&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;2015&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;15&lt;/span&gt;
 &lt;span class="n"&gt;Category&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="err"&gt;文章类别&lt;/span&gt;
@@ -713,24 +849,24 @@ pelican/&lt;br /&gt;
 
 
 &lt;p&gt;保存退出后输入&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; ../../ &lt;span class="c"&gt;#进入pelican文件夹下&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;make html
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; ../../ &lt;span class="c1"&gt;#进入pelican文件夹下&lt;/span&gt;
+$ make html
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;可以看实际效果&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;google-chrome-stable output/index.html
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ google-chrome-stable output/index.html
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;提交内容&lt;/h2&gt;
 &lt;p&gt;编辑好内容并且&lt;code&gt;make html&lt;/code&gt;后需要将内容push到github&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd &lt;/span&gt;output/
-&lt;span class="nv"&gt;$ &lt;/span&gt;git init
-&lt;span class="nv"&gt;$ &lt;/span&gt;git remote add origin git@github.com:honmaple/honmaple.github.io.git &lt;span class="c"&gt;#关联远程仓库&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git add *
-&lt;span class="nv"&gt;$ &lt;/span&gt;git commit -m &lt;span class="s2"&gt;&amp;quot;My first blog by pelican&amp;quot;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; output/
+$ git init
+$ git remote add origin git@github.com:honmaple/honmaple.github.io.git &lt;span class="c1"&gt;#关联远程仓库&lt;/span&gt;
+$ git add *
+$ git commit -m &lt;span class="s2"&gt;&amp;quot;My first blog by pelican&amp;quot;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;过几分钟后就可以看到内容了&lt;/p&gt;</summary><category term="[ python"></category><category term="pelican ]"></category></entry></feed>
+&lt;p&gt;过几分钟后就可以看到内容了&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Thu, 15 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-15:articles/2015/10/</guid><category>[ python</category><category>pelican ]</category></item></channel></rss>

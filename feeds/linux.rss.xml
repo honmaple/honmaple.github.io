@@ -1,10 +1,431 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>HonMaple</title><link href="http://honmaple.gq/" rel="alternate"></link><link href="http://honmaple.gq/feeds/linux.rss.xml" rel="self"></link><id>http://honmaple.gq/</id><updated>2015-11-26T00:00:00+08:00</updated><entry><title>如何上传文件到服务器</title><link href="http://honmaple.gq/articles/2015/11/scp_sftp.md.html" rel="alternate"></link><updated>2015-11-26T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-11-26:articles/2015/11/scp_sftp.md.html</id><summary type="html">&lt;h2&gt;scp介绍&lt;/h2&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>HonMaple's Blog</title><link>http://honmaple.gq/</link><description></description><atom:link href="http://honmaple.gq/feeds/linux.rss.xml" rel="self"></atom:link><lastBuildDate>Sun, 10 Jan 2016 00:00:00 +0100</lastBuildDate><item><title>redis记录用户操作</title><link>http://honmaple.gq/articles/2016/01/</link><description>&lt;p&gt;必须得记下来，否则等那天看到又要浪费时间了,主要记录访问时间这里&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &amp;#39;&amp;#39;&amp;#39;记录访问的时间&amp;#39;&amp;#39;&amp;#39;
+    now_time = int(time()) #首先得到当前时间戳 
+    &amp;#39;&amp;#39;&amp;#39;查询上次访问的时间和最近访问的时间&amp;#39;&amp;#39;&amp;#39;
+    query_last_time = redis_data.zscore(visited_users,&amp;#39;last_time&amp;#39;)
+    query_now_time = redis_data.zscore(visited_users,&amp;#39;time&amp;#39;)
+    &amp;#39;&amp;#39;&amp;#39;判断查询是否为空,一般是第一次访问还未记录的IP&amp;#39;&amp;#39;&amp;#39;
+    if query_last_time is None:
+        query_last_time = now_time
+        pipe.zadd(visited_users,query_last_time,&amp;#39;last_time&amp;#39;)
+    if query_now_time is None:
+        query_now_time = now_time
+    &amp;#39;&amp;#39;&amp;#39;将当前时间与last_time进行对比,十分钟之内不记录&amp;#39;&amp;#39;&amp;#39;
+    if now_time - query_last_time &amp;gt;= 600:
+        &amp;#39;&amp;#39;&amp;#39;这里类似交换更新数据,把query_now_time变成last_time,把now_time更新&amp;#39;&amp;#39;&amp;#39;
+        pipe.zadd(visited_users,query_now_time,&amp;#39;last_time&amp;#39;)
+        pipe.zadd(visited_users,now_time,&amp;#39;time&amp;#39;)
+    else:
+        pipe.zadd(visited_users,now_time,&amp;#39;time&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 10 Jan 2016 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2016-01-10:articles/2016/01/</guid><category>[redis</category><category>linux]</category></item><item><title>centos7安装并配置nginx</title><link>http://honmaple.gq/articles/2016/01/</link><description>&lt;p&gt;虽然以前安装过但是没有记录，这次重新安装，趁机记录下来，省得满世界地找  &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;环境: centos7  &lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;安装nginx&lt;/h3&gt;
+&lt;p&gt;&lt;a href="https://www.nginx.com/resources/wiki/start/topics/tutorials/install/"&gt;参考资料&lt;/a&gt;&lt;br /&gt;
+使用&lt;code&gt;yum list nginx&lt;/code&gt;会发现nginx是1.6的版本,但现在nginx已经到了1.9，虽然不必那么新，
+但是过旧的版本说不定会出现安全问题  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim /etc/yum.repos.d/nginx.repo
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;输入  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[nginx]&lt;/span&gt;
+&lt;span class="na"&gt;name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;nginx repo&lt;/span&gt;
+&lt;span class="na"&gt;baseurl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;http://nginx.org/packages/centos/$releasever/$basearch/&lt;/span&gt;
+&lt;span class="na"&gt;gpgcheck&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;0&lt;/span&gt;
+&lt;span class="na"&gt;enabled&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# yum list nginx  #你会发现nginx已经是1.8的版本
+# yum install nginx
+# systemctl start nginx #启动nginx
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;安装python3&lt;/h3&gt;
+&lt;p&gt;centos7默认安装了python2.7的版本，但我习惯用python3,但是centos无法通过yum install python3安装,
+只好自己编译了  &lt;/p&gt;
+&lt;h4&gt;安装必要的文件&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# yum groupinstall &amp;quot;Development tools&amp;quot;
+# yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel 
+readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;下载python3源码&lt;/h4&gt;
+&lt;p&gt;&lt;em&gt;python3已到的python3.5，请按自己的需求下载&lt;/em&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ wget https://www.python.org/ftp/python/3.4.4/Python-3.4.4.tgz
+$ tar xz Python-3.4.4.tgz
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; Python-3.4.4
+$ ./configure
+$ make
+&lt;span class="c1"&gt;# make install&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;blockquote&gt;
+&lt;p&gt;如果提示c 编译器未找到 &lt;br /&gt;
+yum install gcc gcc-c++&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;安装supervisor&lt;/h3&gt;
+&lt;p&gt;编译安装python3的时候python3-pip就已经安装好了  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# pip3 install supervisor
+Collecting supervisor
+  Downloading supervisor-3.2.0.tar.gz (409kB)
+    100% |################################| 413kB 972kB/s 
+    Complete output from command python setup.py egg_info:
+    Supervisor requires Python 2.4 or later but does not work on any version of Python 3.  You are using version 3.4.4 (default, Jan  6 2016, 11:01:55)
+    [GCC 4.8.3 20140911 (Red Hat 4.8.3-9)].  Please install using a supported version.
+
+    ----------------------------------------
+Command &amp;quot;python setup.py egg_info&amp;quot; failed with error code 1 in /tmp/pip-build-qp0f7ft9/supervisor
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;报错，错误提示很明显,&lt;strong&gt;supervisor&lt;/strong&gt;不支持python3  &lt;/p&gt;
+&lt;h4&gt;安装python2的pip&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# yum install python-pip
+# yum install python-devel #最好把这个也装上，以后会用到的
+# pip install supervisor # 这里又有一个提示
+You are using pip version 7.1.0, however version 7.1.2 is available.
+You should consider upgrading via the &amp;#39;pip install --upgrade pip&amp;#39; command.
+# pip install --upgrade pip
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;安装python的虚拟环境virtualenv&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# pip3 install virtualenv
+$ mkdir www
+$ cd www
+$ virtualenv-3.4 venv
+Using base prefix &amp;#39;/usr/local&amp;#39;
+New python executable in venv/bin/python3.4
+Also creating executable in venv/bin/python
+Installing setuptools, pip, wheel...done.
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;建议在~/.bashrc中添加  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;alias ve=&amp;#39;. venv/bin/activate&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;以后只要使用&lt;strong&gt;ve&lt;/strong&gt;就能进入虚拟环境&lt;/p&gt;
+&lt;p&gt;关于数据库的安装请参考我的另一篇文章&lt;a href="https://honmaple.com/blog/pages/13"&gt;postgresql学习1——安装&lt;/a&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Wed, 06 Jan 2016 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2016-01-06:articles/2016/01/</guid><category>[linux</category><category>nginx]</category></item><item><title>supervisor使用</title><link>http://honmaple.gq/articles/2016/01/</link><description>&lt;blockquote&gt;
+&lt;p&gt;supervisor安装请参考&lt;a href="https://honmaple.com/blog/pages/31"&gt;flask应用部署——安装环境&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4&gt;生成配置文件&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# cd /etc
+# mkdir -p supervisord/conf.d
+# echo_supervisord_conf &amp;gt; /etc/supervisord/supervisord.conf
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;修改supervisord.conf&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim supervisord.conf # G直接跳到最后一行
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;取消下面注释并修改&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[include]&lt;/span&gt;
+&lt;span class="na"&gt;files&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;/etc/supervisord/conf.d/*.ini&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ok，现在可以在/etc/supervisord/conf.d/目录下创建配置文件了  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim honmaple.com.ini
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;输入以下内容  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 进程的名字
+[program:website]
+# 命令
+command=/home/www/honmaple.com/venv/bin/gunicorn run:app -c /home/www/honmaple.com/gunicorn.conf
+# 网站目录
+directory=/home/www/honmaple.com
+# 进程所属用户
+user=www
+# 自动重启设置。
+autostart=true
+autorestart=true
+# 日志存放位置。
+stdout_logfile=/home/www/honmaple.com/logs/gunicorn_supervisor.log
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;上面有几处需要注意的地方  &lt;/p&gt;
+&lt;h5&gt;创建新用户www&lt;/h5&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# useradd www
+# passwd www #设置密码
+# su - www
+$ cd
+$ mkdir -p honmaple.com/logs
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h5&gt;建立虚拟环境(honmaple.com/目录下)&lt;/h5&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ virtualenv-3.4 venv
+$ . venv/bin/activate
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h5&gt;gunicorn配置&lt;/h5&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# gunicorn.conf
+workers = 4
+bind = &amp;#39;127.0.0.1:8000&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;简单的web应用&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;#run.py&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;
+&lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;__name__&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="nd"&gt;@app.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;hello_world&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Hello World!&amp;#39;&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;加载supervisor配置&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# supervisord -c /etc/supervisord/supervisord.conf
+# supervisorctl -c /etc/supervisord/supervisord.conf reload
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;supervisor遇到的问题&lt;/h4&gt;
+&lt;p&gt;提示  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Error&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Another&lt;/span&gt; &lt;span class="n"&gt;program&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;already&lt;/span&gt; &lt;span class="n"&gt;listening&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;port&lt;/span&gt; &lt;span class="n"&gt;that&lt;/span&gt; &lt;span class="n"&gt;one&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;our&lt;/span&gt; &lt;span class="n"&gt;HTTP&lt;/span&gt; &lt;span class="n"&gt;servers&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;configured&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;  &lt;span class="n"&gt;Shut&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt; &lt;span class="n"&gt;program&lt;/span&gt; &lt;span class="n"&gt;down&lt;/span&gt; &lt;span class="n"&gt;first&lt;/span&gt; &lt;span class="n"&gt;before&lt;/span&gt; &lt;span class="n"&gt;starting&lt;/span&gt; &lt;span class="n"&gt;supervisord&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
+&lt;span class="n"&gt;For&lt;/span&gt; &lt;span class="n"&gt;help&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="sr"&gt;/usr/bin/s&lt;/span&gt;&lt;span class="n"&gt;upervisord&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;h&lt;/span&gt;
+&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="n"&gt;fail&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;解决办法&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# unlink /tmp/supervisor.sock
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;提示  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;error: &amp;lt;class &amp;#39;socket.error&amp;#39;&amp;gt;, [Errno 111] Connection refused: file: /usr/lib64/python2.6/socket.py line: 567
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;解决办法&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# supervisord -c /etc/supervisord/supervisord.conf
+# supervisorctl -c /etc/supervisord/supervisord.conf reload
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;提示&lt;br /&gt;
+ERROR (no such process),请仔细查看配置文件是否有误&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Wed, 06 Jan 2016 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2016-01-06:articles/2016/01/</guid><category>[supervisor</category><category>linux]</category></item><item><title>如何备份postgresql数据库</title><link>http://honmaple.gq/articles/2015/12/</link><description>&lt;p&gt;对于网站来说数据无疑是最重要的，而养成备份数据的习惯更加重要，
+忽然想到一句经典台词  &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;曾经有一份数据摆在我的面前，&lt;br /&gt;
+可我没有备份，&lt;br /&gt;
+直到数据丢失后才后悔莫及,&lt;br /&gt;
+人世间最痛苦的事莫过于此，&lt;br /&gt;
+如果上天能给我一次再来一次的机会，&lt;br /&gt;
+我会对那份数据说五个字：我要备份你，&lt;br /&gt;
+如果非要在这份备份上加一个期限，我希望是每天！&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;进入主题,这只是对数据进行简单的备份&lt;/p&gt;
+&lt;h2&gt;怎么备份数据&lt;/h2&gt;
+&lt;p&gt;shell脚本&lt;/p&gt;
+&lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt;1
+2
+3
+4
+5
+6&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/bin/bash&lt;/span&gt;
+
+&lt;span class="nv"&gt;backup_time&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="sb"&gt;`&lt;/span&gt;date +%Y%m%d&lt;span class="sb"&gt;`&lt;/span&gt;
+pg_dump articledb &amp;gt; /home/xxx/backup/article_&lt;span class="nv"&gt;$backup_time&lt;/span&gt;.sql
+&lt;span class="c1"&gt;# articledb是要备份的数据库名称&lt;/span&gt;
+&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;backup finished&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+
+&lt;p&gt;保存为backup_db.sh&lt;br /&gt;
+&lt;strong&gt;注意&lt;/strong&gt;&lt;br /&gt;
+xxx是数据库用户,并且是super权限&lt;br /&gt;
+可以这样  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo -i -u postgres
+$ &lt;span class="o"&gt;[&lt;/span&gt;sudo&lt;span class="o"&gt;]&lt;/span&gt; xxx 的密码:
+postgres~ $ createuser xxx --interactive 
+&lt;span class="c1"&gt;# 创建数据库用户,我的是archlinux,不同系统可能有所不同&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;定时备份数据&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;crontab -e
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;输入  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;0 22 * * * /home/xxx/backup/backup_db.sh
+#表示每天22点定时备份数据
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果你需要在其他时间段备份数据，请查阅crontab文档&lt;/p&gt;
+&lt;p&gt;ok，就这样&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sat, 26 Dec 2015 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2015-12-26:articles/2015/12/</guid><category>[postgresql</category><category>sql</category><category>linux]</category></item><item><title>为网站启用https并增加ssl证书</title><link>http://honmaple.gq/articles/2015/12/</link><description>&lt;h2&gt;HTTPS和HTTP的区别&lt;/h2&gt;
+&lt;p&gt;超文本传输协议HTTP协议被用于在Web浏览器和网站服务器之间传递信息。HTTP协议以明文方式发送内容，不提供任何方式的数据加密，如果攻击者截取了Web浏览器和网站服务器之间的传输报文，就可以直接读懂其中的信息，因此HTTP协议不适合传输一些敏感信息，比如信用卡号、密码等。
+为了解决HTTP协议的这一缺陷，需要使用另一种协议：安全套接字层超文本传输协议HTTPS。为了数据传输的安全，HTTPS在HTTP的基础上加入了SSL协议，SSL依靠证书来验证服务器的身份，并为浏览器和服务器之间的通信加密。
+HTTPS和HTTP的区别主要为以下四点：
++ https协议需要到ca申请证书，一般免费证书很少，需要交费。
++ http是超文本传输协议，信息是明文传输，https 则是具有安全性的ssl加密传输协议。
++ http和https使用的是完全不同的连接方式，用的端口也不一样，前者是80，后者是443。
++ http的连接很简单，是无状态的；HTTPS协议是由SSL+HTTP协议构建的可进行加密传输、身份认证的网络协议，比http协议安全。&lt;/p&gt;
+&lt;h2&gt;申请ssl证书&lt;/h2&gt;
+&lt;p&gt;对于像我这样的穷学生或者不希望花钱的同学可以使用&lt;a href="https://www.startssl.com/"&gt;startssl免费ssl证书&lt;/a&gt;&lt;br /&gt;
+当然如果可以，最好购买ssl证书,安全性上更有保障&lt;/p&gt;
+&lt;p&gt;对于怎么申请startssl免费证书这里不多说，网上很多教程，其中有几点是我在申请中遇到的问题，希望对大家有所帮助&lt;br /&gt;
++ 在进行域名验证时不论如何startssl&lt;strong&gt;搜索不到我的域名注册邮箱&lt;/strong&gt;,我已将whois保护关闭后还是一样&lt;br /&gt;
+&lt;strong&gt;解决办法&lt;/strong&gt;：一个不是办法的办法，因为我在qq邮箱使用了域名邮箱,所以我将域名邮箱管理员admin@honmaple.com
+更改为postmaster@honmaple.com,然后发送验证邮件到该邮箱对域名进行验证&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;如何导出公钥&lt;/strong&gt;&lt;br /&gt;
+如果申请成功，在Tool Box点击Certificate List,Action中选择Retrieve导出zip包到本地,
+在本地解压就会发现里面有对应服务器类型的crt证书&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;如何导出私钥&lt;/strong&gt;&lt;br /&gt;
+在申请过程中保存了一个.key文件，这个文件就可以作为私钥(请妥善保管)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果在申请中对私钥设置了密码,每次重启ngnix都要输入密码,如果不想每次输入密码,
+在startssl的Tool Box的Decrypt Private Key中填入保存的私钥以及私钥密码,对私钥进行解密,
+将解密后的字符串保存为.key文件&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;关于nginx配置&lt;/h2&gt;
+&lt;p&gt;在/etc/nginx/conf.d/ssl.conf中添加&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+     &lt;span class="n"&gt;listen&lt;/span&gt;       &lt;span class="m"&gt;443&lt;/span&gt; &lt;span class="n"&gt;ssl&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+     &lt;span class="n"&gt;server_name&lt;/span&gt;  &lt;span class="n"&gt;honmaple&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+     &lt;span class="err"&gt;#请更改成你的文件地址&lt;/span&gt;
+     &lt;span class="n"&gt;ssl_certificate&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ssl&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="n"&gt;_honmaple&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+     &lt;span class="n"&gt;ssl_certificate_key&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ssl&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="n"&gt;_honmaple&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+     &lt;span class="n"&gt;ssl_session_cache&lt;/span&gt; &lt;span class="n"&gt;shared&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;SSL&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+     &lt;span class="n"&gt;ssl_session_timeout&lt;/span&gt; &lt;span class="m"&gt;5&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+     &lt;span class="err"&gt;#下面这些请根据实际更改&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="err"&gt;我的是&lt;/span&gt;&lt;span class="n"&gt;flask&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;nginx&lt;/span&gt;
+     &lt;span class="n"&gt;location&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+                        &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;Pass&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;Gunicorn&lt;/span&gt;
+                &lt;span class="n"&gt;proxy_pass&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="o"&gt;://&lt;/span&gt;&lt;span class="m"&gt;127&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="m"&gt;0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="m"&gt;0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="m"&gt;8000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="n"&gt;proxy_redirect&lt;/span&gt;     &lt;span class="n"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+                &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;Set&lt;/span&gt; &lt;span class="n"&gt;some&lt;/span&gt; &lt;span class="n"&gt;HTTP&lt;/span&gt; &lt;span class="n"&gt;headers&lt;/span&gt; &lt;span class="n"&gt;so&lt;/span&gt; &lt;span class="n"&gt;that&lt;/span&gt; &lt;span class="n"&gt;our&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="n"&gt;knows&lt;/span&gt; &lt;span class="n"&gt;where&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt;
+                &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="n"&gt;really&lt;/span&gt; &lt;span class="n"&gt;came&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt;
+                &lt;span class="n"&gt;proxy_set_header&lt;/span&gt; &lt;span class="n"&gt;Host&lt;/span&gt; &lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="n"&gt;host&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="n"&gt;proxy_set_header&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Real&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;IP&lt;/span&gt; &lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="n"&gt;remote_addr&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="n"&gt;proxy_set_header&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Forwarded&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;For&lt;/span&gt; &lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="n"&gt;proxy_add_x_forwarded_for&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="err"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;注意:&lt;/strong&gt;
+我不知道是我的原因还是其他,启动ngnix时总报错&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;SSL_CTX_use_PrivateKey_file(&amp;quot;/root/ssl/1_honmaple.com.key&amp;quot;) 
+failed (SSL: error:0D07207B:asn1 encoding routines:ASN1_get_object:
+header too long error:0D068066:asn1 encoding routines:ASN1_CHECK_TLEN:bad object 
+header error:0D07803A:asn1 encoding routines:ASN1_ITEM_EX_D2I:nested asn1 error:
+Type=PKCS8_PRIV_KEY_INFO error:2306A065:PKCS12 routines:PKCS12_item_decrypt_d2i:
+decode error error:0907B00D:PEM routines:PEM_READ_BIO_PRIVATEKEY:ASN1 lib error:
+140B0009:SSL routines:SSL_CTX_use_PrivateKey_file:PEM lib)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;所以我将.crt文件改成.pem,后面我发现还是报错，我将公钥里的  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;之间的空行去除&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果还是报错，请将.key文件解密&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;其他配置&lt;/h2&gt;
+&lt;p&gt;如果要全站启用https,并将http定向到https,可以这样&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;listen&lt;/span&gt; &lt;span class="m"&gt;80&lt;/span&gt; &lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;server_name&lt;/span&gt; &lt;span class="n"&gt;honmaple&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;rewrite&lt;/span&gt; &lt;span class="o"&gt;^/&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="o"&gt;://&lt;/span&gt;&lt;span class="n"&gt;honmaple&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt; &lt;span class="n"&gt;permanent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;记得更改成自己的域名&lt;/p&gt;
+&lt;p&gt;ok,就这样&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Fri, 25 Dec 2015 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2015-12-25:articles/2015/12/</guid><category>[seo</category><category>web</category><category>ssl</category><category>nginx]</category></item><item><title>无题</title><link>http://honmaple.gq/articles/2015/12/</link><description>&lt;p&gt;记录一下随手写的诗，或者也不算诗  &lt;/p&gt;
+&lt;p&gt;大漠孤烟无边关&lt;br /&gt;
+地上重楼忘记人&lt;br /&gt;
+天涯海角难磨灭&lt;br /&gt;
+怎奈何  &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这里有两句类似候补的最后一句&lt;br /&gt;
++ 夜迹血月怎奈何&lt;br /&gt;
++ 万千奴隶怎奈何&lt;/p&gt;
+&lt;p&gt;不想说明当时是怎样的心境,毕竟当时的心境是没有办法重来的
+我从未爱过这世界，&lt;br /&gt;
+它对我也一样；&lt;br /&gt;
+我没有阿谀过它腐臭的气息，&lt;br /&gt;
+也不曾忍从地屈膝，&lt;br /&gt;
+膜拜它的各种偶像；&lt;br /&gt;
+我没有在脸上堆着笑，&lt;br /&gt;
+更没有高声叫嚷着，&lt;br /&gt;
+崇拜一种回音；&lt;br /&gt;
+纷纭的世人不能把我看作他们一伙；&lt;br /&gt;
+我站在人群中却不属于他们；&lt;br /&gt;
+也没有把头脑放进&lt;br /&gt;
+那并非而又算作他们的思想的尸衣中，&lt;br /&gt;
+一齐列队行进，&lt;br /&gt;
+因此才被压抑而至温顺。&lt;br /&gt;
+我没有爱过这世界，它对我也一样——&lt;br /&gt;
+但是，尽管彼此敌视，&lt;br /&gt;
+让我们方方便便分手吧；&lt;br /&gt;
+虽然我自己不曾看到，&lt;br /&gt;
+在这世上我相信或许会有不骗人的希望，&lt;br /&gt;
+真实的语言，&lt;br /&gt;
+也许还有些美德，&lt;br /&gt;
+它们的确怀有仁心，&lt;br /&gt;
+并不给失败的人安排陷阱；&lt;br /&gt;
+我还这样想：&lt;br /&gt;
+当人们伤心的时候，&lt;br /&gt;
+有些人真的在伤心，&lt;br /&gt;
+有那么一两个，&lt;br /&gt;
+几乎就是所表现的那样——&lt;br /&gt;
+我还认为：&lt;br /&gt;
+善不只是空话，幸福并不只是梦想&lt;br /&gt;
+——拜伦《I Have Not Loved the World》  &lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;1.我们生活的世界其实是别人的梦境，梦醒，便是这世界某个人一生的终结，入梦，便是一段新人生的开始，换句话说，就是轮回。至于其他人会不会时时做梦，不做分析。&lt;br /&gt;
+2.一个平面上任意一点，它的反面必定有一点与之相对应。所以，是不是任意物体，都有一个与之对应的比它小，但其他完全相似的物体。而这个物体又有一个比它小，但完全相似的物体，以此无限循环下去。&lt;br /&gt;
+3.这世界是由无数的轨道所构成（组成）的，像地球的自转和公转，如果将整个太阳系竖着看，不是正像一个在近似椭圆轨道上运动吗，近日点是顶点，远日点是最底点。&lt;br /&gt;
+4.任何群居性生物都是一种整体的特殊的生物。如蚂蚁，和人类相比，蚁后是大脑，控制整个蚁群的活动，同时生育后代（细胞），工蚁是运输系统，兵蚁是组织防卫系统，把蚂蚁比做细胞，蚁群的活动整体上就是完整生物不同形式的活动。&lt;br /&gt;
+5.人类是四维的虫子，任何生物都是四维的虫子，而所有非生物是三维虫子。人从出生起，用时间轴把一个人的一生串起来，就是一个以时间为长度的大虫子，例如从家到学校，所有的动作，所经过的路，等等，在不同时间里组成一个完整的个体，类似虫子的生物。&lt;br /&gt;
+6.梦很熟悉，一个人所做的梦其实是前生或来生或今生经历的事或即将经历的事。&lt;br /&gt;
+7.珍爱生命，远离镜子。我们怎么能保证自己是真实的，而不是生活在别人的镜子里，我坐在这里，镜子里还有一个我坐在那里也许他才是真实的，也许他也是假的，再加上一个镜子，就多了一个自己，到底哪一个才是真实的自己。&lt;br /&gt;
+8.一个人或任意生物绝对不可能在不借用其他外力的情况下举起比自己重的物品。  &lt;br /&gt;
+理论推导:滑轮，绳子，一头物品，一头是人，绳子绝对竖直向下，物品比人重，人向下出力后绝对是人悬空，只有物品比人轻时，人才能使物品悬空（举起物品），相等情况下两者都不动或两者都悬空（平衡）。  &lt;br /&gt;
+像举重或蚂蚁举起比自身重的物品，实际上借用了摩擦力。  &lt;br /&gt;
+不过感觉不太对  &lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Tue, 22 Dec 2015 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2015-12-22:articles/2015/12/</guid><category>[linux]</category></item><item><title>如何上传文件到服务器</title><link>http://honmaple.gq/articles/2015/11/</link><description>&lt;h2&gt;scp介绍&lt;/h2&gt;
 &lt;p&gt;SCP的全称是secure copy (remote file copy program)，此命令是openssh-clients附带
 的,它的作用就是在机器之间实现拷贝，且机器之间的传输完全是加密的。&lt;/p&gt;
 &lt;h2&gt;scp简单操作&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;scp 帐号@主机:path/filename path/ &lt;span class="c"&gt;#从服务器下载文件到本地&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;scp path/filename 帐号@主机:path/  &lt;span class="c"&gt;#上传文件到服务器指定文件夹&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ scp 帐号@主机:path/filename path/ &lt;span class="c1"&gt;#从服务器下载文件到本地&lt;/span&gt;
+$ scp path/filename 帐号@主机:path/  &lt;span class="c1"&gt;#上传文件到服务器指定文件夹&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -15,9 +436,9 @@
 -l ：可以限制传输的速度，单位为 Kb/s ，例如 [-l 100] 代表传输速限 100Kb/s&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h2&gt;scp实例&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;scp /home/xxx/test.md xxx@xxxx:~/ &lt;span class="c"&gt;#在使用本地~/目录时，使用tab自动补全会转化为绝对路径&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ scp /home/xxx/test.md xxx@xxxx:~/ &lt;span class="c1"&gt;#在使用本地~/目录时，使用tab自动补全会转化为绝对路径&lt;/span&gt;
 test.md                                       100%   &lt;span class="m"&gt;86&lt;/span&gt;     0.1KB/s   00:00
-&lt;span class="nv"&gt;$ &lt;/span&gt;scp xxxx@xxxx:~/test.md /home/xxxx/web/
+$ scp xxxx@xxxx:~/test.md /home/xxxx/web/
 test.md                                       100%   &lt;span class="m"&gt;86&lt;/span&gt;     0.1KB/s   00:00
 &lt;/pre&gt;&lt;/div&gt;
 
@@ -35,14 +456,14 @@ test.md                                       100%   &lt;span class="m"&gt;86&lt
 方式使用了加密/解密技术，所以传输效率比普通的FTP要低得多，如果您对网络安全性要
 求更高时，可以使用SFTP代替FTP。&lt;/p&gt;
 &lt;h2&gt;sftp基本操作&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sftp xxxx@xxxx  &lt;span class="c"&gt;#类似ssh登陆&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sftp xxxx@xxxx  &lt;span class="c1"&gt;#类似ssh登陆&lt;/span&gt;
 Connected to xxxx
 sftp&amp;gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;针对服务器  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;sftp&amp;gt;cd /home/xxx/test/ 切换目录
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sftp&amp;gt;cd /home/xxx/test/ 切换目录
 sftp&amp;gt;ls   #就是一些linux上的基本操作(ls mkdir chown rm mv)
 sftp&amp;gt;pwd  #显示目前所在的目录
 sftp&amp;gt;exit #退出
@@ -50,7 +471,7 @@ sftp&amp;gt;exit #退出
 
 
 &lt;p&gt;针对本地  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;sftp&amp;gt;lcd /home/xxx/test/
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sftp&amp;gt;lcd /home/xxx/test/
 sftp&amp;gt;lls #在基本命令前加l(L小写l)
 sftp&amp;gt;lpwd  #显示目前所在的目录
 sftp&amp;gt;exit #退出
@@ -59,34 +480,34 @@ sftp&amp;gt;exit #退出
 
 &lt;h2&gt;上传下载文件&lt;/h2&gt;
 &lt;p&gt;上传  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;put ~/test.md /home/xxx/test/ &lt;span class="c"&gt;# 将本机的test.md文件上传到服务器&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ put ~/test.md /home/xxx/test/ &lt;span class="c1"&gt;# 将本机的test.md文件上传到服务器&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;下载  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;get /home/xxx/test/test.md ~/web/ &lt;span class="c"&gt;#将服务器上的test.md下载到本地&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ get /home/xxx/test/test.md ~/web/ &lt;span class="c1"&gt;#将服务器上的test.md下载到本地&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;这些命令对我来说就足够了，如果你还有其他要求&lt;strong&gt;man&lt;/strong&gt;是最好的伙伴&lt;/p&gt;</summary><category term="[linux"></category><category term="vps]"></category></entry><entry><title>postgresql学习1——安装</title><link href="http://honmaple.gq/articles/2015/11/postgresql.md.html" rel="alternate"></link><updated>2015-11-24T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-11-24:articles/2015/11/postgresql.md.html</id><summary type="html">&lt;h3&gt;archlinux&lt;/h3&gt;
+&lt;p&gt;这些命令对我来说就足够了，如果你还有其他要求&lt;strong&gt;man&lt;/strong&gt;是最好的伙伴&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Thu, 26 Nov 2015 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2015-11-26:articles/2015/11/</guid><category>[linux</category><category>vps]</category></item><item><title>postgresql学习1——安装</title><link>http://honmaple.gq/articles/2015/11/</link><description>&lt;h3&gt;archlinux&lt;/h3&gt;
 &lt;p&gt;&lt;a href="https://wiki.archlinux.org/index.php/PostgreSQL"&gt;参考资料&lt;/a&gt;&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo pacman -S postgresql
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo mkdir /var/lib/postgres/data &lt;span class="c"&gt;#如果已存在则可以不建立&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo chmod -R postgres:postgres /var/lib/postgres/data
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo pacman -S postgresql
+$ sudo mkdir /var/lib/postgres/data &lt;span class="c1"&gt;#如果已存在则可以不建立&lt;/span&gt;
+$ sudo chmod -R postgres:postgres /var/lib/postgres/data
 由于我安装系统时没有生成en_US_UTF-8本地化文件&lt;span class="o"&gt;(&lt;/span&gt;如果已经生成了的就
 不必再生成&lt;span class="o"&gt;)&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo vim /etc/locale.gen &lt;span class="c"&gt;#找到en_US_UTF-8，注释掉&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;locale-gen
+$ sudo vim /etc/locale.gen &lt;span class="c1"&gt;#找到en_US_UTF-8，注释掉&lt;/span&gt;
+$ locale-gen
 
 然后运行
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo -i -u postgres &lt;span class="c"&gt;#或者使用root账户su - postgres&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;initdb --locale en_US.UTF-8 -E UTF8 -D &lt;span class="s1"&gt;&amp;#39;/var/lib/postgres/data&amp;#39;&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;createuser -i &lt;span class="c"&gt;#输入你的账户名称,并给管理员权限&lt;/span&gt;
+$ sudo -i -u postgres &lt;span class="c1"&gt;#或者使用root账户su - postgres&lt;/span&gt;
+$ initdb --locale en_US.UTF-8 -E UTF8 -D &lt;span class="s1"&gt;&amp;#39;/var/lib/postgres/data&amp;#39;&lt;/span&gt;
+$ createuser -i &lt;span class="c1"&gt;#输入你的账户名称,并给管理员权限&lt;/span&gt;
 
 最好给postgres用户设置密码
 &lt;span class="o"&gt;(&lt;/span&gt;注意不是linux系统帐号&lt;span class="o"&gt;)&lt;/span&gt;
-&lt;span class="c"&gt;# su - postgres&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;psql
+&lt;span class="c1"&gt;# su - postgres&lt;/span&gt;
+$ psql
 &amp;gt;ALTER USER postgres WITH PASSWORD &lt;span class="s1"&gt;&amp;#39;yourpasswd&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
@@ -96,7 +517,7 @@ sftp&amp;gt;exit #退出
 &lt;p&gt;到&lt;a href="http://yum.postgresql.org/"&gt;这里&lt;/a&gt;
 下载所需要的rpm安装包&lt;br /&gt;
 或者直接  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;# yum localinstall http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-centos94-9.4-1.noarch.rpm
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# yum localinstall http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-centos94-9.4-1.noarch.rpm
 # yum list postgres*
 # yum install postgresql94-server
 # yum install postgresql94-contrib
@@ -109,102 +530,102 @@ sftp&amp;gt;exit #退出
 # su - postgres
 $ psql
 &amp;gt;ALTER USER postgres WITH PASSWORD &amp;#39;yourpasswd&amp;#39;;
-&lt;/pre&gt;&lt;/div&gt;</summary><category term="[sql"></category><category term="postgresql"></category><category term="linux]"></category></entry><entry><title>postgresql学习2——使用</title><link href="http://honmaple.gq/articles/2015/11/postgresql_2.md.html" rel="alternate"></link><updated>2015-11-24T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-11-24:articles/2015/11/postgresql_2.md.html</id><summary type="html">&lt;h2&gt;python&lt;/h2&gt;
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Tue, 24 Nov 2015 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2015-11-24:articles/2015/11/</guid><category>[sql</category><category>postgresql</category><category>linux]</category></item><item><title>postgresql学习2——使用</title><link>http://honmaple.gq/articles/2015/11/</link><description>&lt;h2&gt;python&lt;/h2&gt;
 &lt;p&gt;&lt;a href="http://www.yiibai.com/html/postgresql/2013/080998.html"&gt;参考资料&lt;/a&gt;&lt;/p&gt;
 &lt;h3&gt;安装psycopg2&lt;/h3&gt;
 &lt;p&gt;推荐使用venv虚拟环境  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;pip install psycopg2
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pip install psycopg2
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;这个API打开一个连接到PostgreSQL数据库。如果成功打开数据库时，它返回一个连接对象  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;psycopg2.connect(database=&amp;quot;testdb&amp;quot;, user=&amp;quot;postgres&amp;quot;, password=&amp;quot;cohondob&amp;quot;, host=&amp;quot;127.0.0.1&amp;quot;, port=&amp;quot;5432&amp;quot;)
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;psycopg2.connect(database=&amp;quot;testdb&amp;quot;, user=&amp;quot;postgres&amp;quot;, password=&amp;quot;cohondob&amp;quot;, host=&amp;quot;127.0.0.1&amp;quot;, port=&amp;quot;5432&amp;quot;)
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;该程序创建一个光标将用于整个数据库使用Python编程。  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;connection.cursor()
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;connection.cursor()
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;此例程执行SQL语句。可被参数化的SQL语句（即占位符，而不是SQL文字）。 psycopg2的模块支持占位符用％s标志  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;cursor.execute(sql [, optional parameters])
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;cursor.execute(sql [, optional parameters])
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;该程序执行SQL命令对所有参数序列或序列中的sql映射  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;curosr.executemany(sql, seq_of_parameters)
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;curosr.executemany(sql, seq_of_parameters)
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;这个程序执行的存储数据库程序给定的名称。该程序预计为每一个参数，参数的顺序必须包含一个条目。  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;curosr.callproc(procname[, parameters])
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;curosr.callproc(procname[, parameters])
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;这个只读属性，它返回数据库中的行的总数已修改，插入或删除最后 execute*().  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;cursor.rowcount
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;cursor.rowcount
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;此方法提交当前事务。如果不调用这个方法，无论做了什么修改，自从上次调用commit()是不可见的，从其他的数据库连接。  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;connection.commit()
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;connection.commit()
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;此方法会回滚任何更改数据库自上次调用commit（）方法  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;connection.rollback()
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;connection.rollback()
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;此方法关闭数据库连接。请注意，这并不自动调用commit（）。如果你只是关闭数据库连接而不调用commit（）方法首先，那么所有更改将会丢失！  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;connection.close()
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;connection.close()
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;这种方法提取的查询结果集的下一行，返回一个序列，或者无当没有更多的数据是可用的。  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;cursor.fetchone()
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;cursor.fetchone()
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;这个例程中取出下一个组的查询结果的行数，返回一个列表。当没有找到记录，返回空列表。该方法试图获取尽可能多的行所显示的大小参数。  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;cursor.fetchmany([size=cursor.arraysize])
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;cursor.fetchmany([size=cursor.arraysize])
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;这个例程获取所有查询结果（剩余）行，返回一个列表。空行时则返回空列表  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;cursor.fetchall()
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;cursor.fetchall()
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4&gt;可以看出,psycopg2的操作与sqlite类似除了连接数据库&lt;/h4&gt;</summary><category term="[sql"></category><category term="postgresql"></category><category term="linux]"></category></entry><entry><title>一些vim插件的使用方法</title><link href="http://honmaple.gq/articles/2015/10/vim-plugin.html" rel="alternate"></link><updated>2015-10-19T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-19:articles/2015/10/vim-plugin.html</id><summary type="html">&lt;h2&gt;tpope/vim-surround&lt;/h2&gt;
+&lt;h4&gt;可以看出,psycopg2的操作与sqlite类似除了连接数据库&lt;/h4&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Tue, 24 Nov 2015 00:00:00 +0100</pubDate><guid>tag:honmaple.gq,2015-11-24:articles/2015/11/</guid><category>[sql</category><category>postgresql</category><category>linux]</category></item><item><title>一些vim插件的使用方法</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;h2&gt;tpope/vim-surround&lt;/h2&gt;
 &lt;p&gt;光标在&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&amp;quot;Hello world!&amp;quot;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;quot;Hello world!&amp;quot;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;中时按下 cs"' ，则会替换双引号为单引号：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&amp;#39;Hello world!&amp;#39;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;#39;Hello world!&amp;#39;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;继续按下 cs'&lt;q&gt; ，则会替换单引号为 标签&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nt"&gt;&amp;lt;q&amp;gt;&lt;/span&gt;Hello world!&lt;span class="nt"&gt;&amp;lt;/q&amp;gt;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;q&amp;gt;&lt;/span&gt;Hello world!&lt;span class="nt"&gt;&amp;lt;/q&amp;gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;按下 cst" ，则回到初始的双引号：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt; &amp;quot;Hello world!&amp;quot;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt; &amp;quot;Hello world!&amp;quot;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;要删除符号，则按下 ds"&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;Hello world!
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Hello world!
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;当光标在hello上时，按下 ysiw] ，则会变为&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;[Hello] world!
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[Hello] world!
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -227,10 +648,10 @@ $ psql
 再说一个小技巧：在包围符号为括时，输入左括号 (或者{ ,则会留一个空格&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Hello w*orld!             ysiw(       Hello ( world )!&lt;/p&gt;
-&lt;/blockquote&gt;</summary><category term="[ linux"></category><category term="vim ]"></category></entry><entry><title>linux下C51开发</title><link href="http://honmaple.gq/articles/2015/10/linux-C51.html" rel="alternate"></link><updated>2015-10-17T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-17:articles/2015/10/linux-C51.html</id><summary type="html">&lt;h2&gt;开发工具mcu8051ide&lt;/h2&gt;
+&lt;/blockquote&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Mon, 19 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-19:articles/2015/10/</guid><category>[ linux</category><category>vim ]</category></item><item><title>linux下C51开发</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;h2&gt;开发工具mcu8051ide&lt;/h2&gt;
 &lt;p&gt;下载地址&lt;a href="http://sourceforge.net/projects/mcu8051ide/"&gt;http://sourceforge.net/projects/mcu8051ide/&lt;/a&gt;&lt;br /&gt;
 安装sdcc  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo pacman -S sdcc
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo pacman -S sdcc
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -290,52 +711,52 @@ $ psql
 &lt;/table&gt;
 &lt;p&gt;&lt;em&gt;注:安装必要依赖可以下载源码包自己编译安装,因为我的是Archlinux,以下命令以Arch为主&lt;/em&gt;&lt;/p&gt;
 &lt;h4&gt;安装tcl,tk,tcllib,bwidget&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo pacman -S tcl tk tcllib bwidget
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo pacman -S tcl tk tcllib bwidget
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h4&gt;安装itcl,tdom,tkimg,tclx&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;yaourt -Ss itcl
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ yaourt -Ss itcl
 aur/eclipse-dltk-itcl 5.0-1 &lt;span class="o"&gt;(&lt;/span&gt;3&lt;span class="o"&gt;)&lt;/span&gt;
     incr Tcl IDE &lt;span class="k"&gt;for&lt;/span&gt; Eclipse
 aur/itcl3 3.4.1-1 &lt;span class="o"&gt;[&lt;/span&gt;installed&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;1&lt;span class="o"&gt;)&lt;/span&gt;
     Provides the extra language support needed to build large Tcl/Tk 
     applications, version 3.4
-&lt;span class="nv"&gt;$ &lt;/span&gt;yaourt -S itcl3 &lt;span class="c"&gt;#具体步骤略过&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;yaourt -S tdom
+$ yaourt -S itcl3 &lt;span class="c1"&gt;#具体步骤略过&lt;/span&gt;
+$ yaourt -S tdom
 aur/tdom 0.8.3-1 &lt;span class="o"&gt;[&lt;/span&gt;installed&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;13&lt;span class="o"&gt;)&lt;/span&gt;
     A fast XML/DOM/XPath package &lt;span class="k"&gt;for&lt;/span&gt; Tcl written in C
 aur/tdom-git 0.8.3.r92.g363cbda-1 &lt;span class="o"&gt;(&lt;/span&gt;4&lt;span class="o"&gt;)&lt;/span&gt;
     A fast XML/DOM/XPath package &lt;span class="k"&gt;for&lt;/span&gt; Tcl written in C
-&lt;span class="nv"&gt;$ &lt;/span&gt;yaourt -S tdom
-&lt;span class="nv"&gt;$ &lt;/span&gt;yaourt -Ss tkimg
+$ yaourt -S tdom
+$ yaourt -Ss tkimg
 aur/tkimg 1.4.2-1 &lt;span class="o"&gt;[&lt;/span&gt;installed&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;3&lt;span class="o"&gt;)&lt;/span&gt;
     This package enhances Tk, adding support &lt;span class="k"&gt;for&lt;/span&gt; many other Image formats: 
     BMP, XBM, XPM, GIF, PNG, JPEG, TIFF and postscript.
-&lt;span class="nv"&gt;$ &lt;/span&gt;yaourt -S tkimg
-&lt;span class="nv"&gt;$ &lt;/span&gt;yaourt -Ss tclx
+$ yaourt -S tkimg
+$ yaourt -Ss tclx
 aur/tclx 8.4-4 &lt;span class="o"&gt;(&lt;/span&gt;19&lt;span class="o"&gt;)&lt;/span&gt;
     Provides OS primitives, file scanning, data records etc. &lt;span class="k"&gt;for&lt;/span&gt; Tcl
 aur/tclxml 3.2-2 &lt;span class="o"&gt;(&lt;/span&gt;4&lt;span class="o"&gt;)&lt;/span&gt;
     XML support &lt;span class="k"&gt;for&lt;/span&gt; the Tcl scripting language
 aur/tclxosd 0.20-2 &lt;span class="o"&gt;(&lt;/span&gt;2&lt;span class="o"&gt;)&lt;/span&gt;
     A Tcl bindings &lt;span class="k"&gt;for&lt;/span&gt; libxosd &lt;span class="o"&gt;(&lt;/span&gt;On Screen Display&lt;span class="o"&gt;)&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;yaourt -S tclx &lt;span class="c"&gt;#这里发现一个问题，我tclx没有装但mcu8051ide也能正常使用&lt;/span&gt;
+$ yaourt -S tclx &lt;span class="c1"&gt;#这里发现一个问题，我tclx没有装但mcu8051ide也能正常使用&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;安装mcu8051ide&lt;/h3&gt;
 &lt;p&gt;解压源码包,进入源码包目录&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;cmake . -DCMAKE_INSTALL_PREFIX&lt;span class="o"&gt;=&lt;/span&gt;/opt/mcu8051ide/ &lt;span class="c"&gt;#不要忘记&amp;quot;.&amp;quot;,后面的是要安装到的目录&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;make
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo make install
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ cmake . -DCMAKE_INSTALL_PREFIX&lt;span class="o"&gt;=&lt;/span&gt;/opt/mcu8051ide/ &lt;span class="c1"&gt;#不要忘记&amp;quot;.&amp;quot;,后面的是要安装到的目录&lt;/span&gt;
+$ make
+$ sudo make install
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;打开使用mcu8051ide&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; /opt/bin
-&lt;span class="nv"&gt;$ &lt;/span&gt;./mcu8051ide --check-libraries &lt;span class="c"&gt;#检查依赖是否安装好&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;./mcu8051ide &lt;span class="c"&gt;#打开软件&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; /opt/bin
+$ ./mcu8051ide --check-libraries &lt;span class="c1"&gt;#检查依赖是否安装好&lt;/span&gt;
+$ ./mcu8051ide &lt;span class="c1"&gt;#打开软件&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -347,29 +768,29 @@ aur/tclxosd 0.20-2 &lt;span class="o"&gt;(&lt;/span&gt;2&lt;span class="o"&gt;)&
 &lt;/blockquote&gt;
 &lt;h3&gt;安装gSTCISP&lt;/h3&gt;
 &lt;p&gt;解压缩软件&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd &lt;/span&gt;gSTC-ISP
-&lt;span class="nv"&gt;$ &lt;/span&gt;./configure --prefix&lt;span class="o"&gt;=&lt;/span&gt;/opt/gSTCISP/
-&lt;span class="nv"&gt;$ &lt;/span&gt;make  &lt;span class="c"&gt;#如果直接make会出错,cd 到src目录，vim Makefile将CFLAGS = -g -O2更改为CFLAGS = -g -O2 -I/usr/include/vte-0.0/&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo make install
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; gSTC-ISP
+$ ./configure --prefix&lt;span class="o"&gt;=&lt;/span&gt;/opt/gSTCISP/
+$ make  &lt;span class="c1"&gt;#如果直接make会出错,cd 到src目录，vim Makefile将CFLAGS = -g -O2更改为CFLAGS = -g -O2 -I/usr/include/vte-0.0/&lt;/span&gt;
+$ sudo make install
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;使用gSTCISP&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo gSTCISP  &lt;span class="c"&gt;#如果直接使用gSTCISP打开,烧写时会提示没有权限,请使用root权限打开&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo gSTCISP  &lt;span class="c1"&gt;#如果直接使用gSTCISP打开,烧写时会提示没有权限,请使用root权限打开&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;选择 /dev/ttyUSB0 (or 1) 和 4800 bauds&lt;br /&gt;
 然后点击下载&lt;/p&gt;
 &lt;hr /&gt;
-&lt;p&gt;&lt;em&gt;ok,可以在linux系统下开发C51单片机了&lt;/em&gt;&lt;/p&gt;</summary><category term="[ linux"></category><category term="C51 ]"></category></entry><entry><title>fedora22成功安装bumblebee-nvidia</title><link href="http://honmaple.gq/articles/2015/10/bumvlebee.html" rel="alternate"></link><updated>2015-10-15T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-15:articles/2015/10/bumvlebee.html</id><summary type="html">&lt;p&gt;有一些错误，现更正&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;ok,可以在linux系统下开发C51单片机了&lt;/em&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sat, 17 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-17:articles/2015/10/</guid><category>[ linux</category><category>C51 ]</category></item><item><title>fedora22成功安装bumblebee-nvidia</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;p&gt;有一些错误，现更正&lt;/p&gt;
 &lt;h3&gt;将selinux设置为disabled&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;# vim /etc/sysconfig/selinux
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim /etc/sysconfig/selinux
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;安装及必要的依赖&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;# dnf install -y libbsd-devel libbsd glibc-devel libX11-devel help2man autoconf git tar glib2 glib2-devel kernel-devel kernel-headers automake gcc gtk2-devel 
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# dnf install -y libbsd-devel libbsd glibc-devel libX11-devel help2man autoconf git tar glib2 glib2-devel kernel-devel kernel-headers automake gcc gtk2-devel 
 # dnf install VirtualGL 
 # dnf install VirtualGL.i686  # 即使是在64位操作系统上，这个也是必装的
 # dnf -y install http://install.linux.ncsu.edu/pub/yum/itecs/public/bumblebee/fedora22/noarch/bumblebee-release-1.2-1.noarch.rpm 
@@ -380,25 +801,25 @@ aur/tclxosd 0.20-2 &lt;span class="o"&gt;(&lt;/span&gt;2&lt;span class="o"&gt;)&
 
 
 &lt;h3&gt;安装完成后加入用户组&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo usermod -a -G video username 
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo usermod -a -G bumblebee username   &lt;span class="c"&gt;#username是用户名&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo usermod -a -G video username 
+$ sudo usermod -a -G bumblebee username   &lt;span class="c1"&gt;#username是用户名&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;启动必要服务&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo systemctl &lt;span class="nb"&gt;enable &lt;/span&gt;dkms 
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo systemctl &lt;span class="nb"&gt;enable &lt;/span&gt;bumblebeed
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo systemctl &lt;span class="nb"&gt;enable&lt;/span&gt; dkms 
+$ sudo systemctl &lt;span class="nb"&gt;enable&lt;/span&gt; bumblebeed
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;重启&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;reboot
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ reboot
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;测试bumblebee&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;optirun glxgears -info &lt;span class="p"&gt;|&lt;/span&gt; grep &lt;span class="s2"&gt;&amp;quot;GL_VENDOR&amp;quot;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</summary><category term="[ linux"></category><category term="fedora"></category><category term="nvidia ]"></category></entry><entry><title>fedora安装后设置</title><link href="http://honmaple.gq/articles/2015/10/fedora-setting.html" rel="alternate"></link><updated>2015-10-15T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-15:articles/2015/10/fedora-setting.html</id><summary type="html">&lt;h2&gt;1.增加sudo用户组&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ optirun glxgears -info &lt;span class="p"&gt;|&lt;/span&gt; grep &lt;span class="s2"&gt;&amp;quot;GL_VENDOR&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Thu, 15 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-15:articles/2015/10/</guid><category>[ linux</category><category>fedora</category><category>nvidia ]</category></item><item><title>fedora安装后设置</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;h2&gt;1.增加sudo用户组&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;$ su&lt;/code&gt;&lt;br /&gt;
 转到root用户，输入密码&lt;br /&gt;
 &lt;code&gt;# visudo&lt;/code&gt;&lt;/p&gt;
@@ -406,98 +827,98 @@ aur/tclxosd 0.20-2 &lt;span class="o"&gt;(&lt;/span&gt;2&lt;span class="o"&gt;)&
 &lt;code&gt;yourname ALL=(ALL) ALL&lt;/code&gt;&lt;br /&gt;
 如果不想每次输入密码更改为&lt;br /&gt;
 &lt;code&gt;yourname ALL=(ALL) NOPASSWD:ALL&lt;/code&gt;  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;:wq #保存退出  
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;:wq #保存退出  
 exit #回到一般用户  
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;2.备份的主题，图标,字体拷贝到home目录&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;cp -r files ~/.theme 
-&lt;span class="nv"&gt;$ &lt;/span&gt;cp -r files ~/.icons
-&lt;span class="nv"&gt;$ &lt;/span&gt;cp -r files ~/.fonts
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo chmod -R &lt;span class="m"&gt;755&lt;/span&gt; files  
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ cp -r files ~/.theme 
+$ cp -r files ~/.icons
+$ cp -r files ~/.fonts
+$ sudo chmod -R &lt;span class="m"&gt;755&lt;/span&gt; files  
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;## 3. 启用RPM Fusion仓库&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo rpm -Uhv http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-22.noarch.rpm
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo rpm -Uhv http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-22.noarch.rpm
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo rpm -Uhv http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-22.noarch.rpm
+$ sudo rpm -Uhv http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-22.noarch.rpm
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;4.使用 dnf 缓存与dnf 最快源&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;# vim /etc/dnf/dnf.conf
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim /etc/dnf/dnf.conf
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;添加 keepcache=true 与 fastestmirror=true&lt;/p&gt;
 &lt;h2&gt;5. 安装Flash播放器&lt;/h2&gt;
 &lt;p&gt;&lt;strong&gt;32位系统&lt;/strong&gt;&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;rpm&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ivh&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;linuxdownload&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;release&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;release&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;i386&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.0&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.&lt;/span&gt;&lt;span class="n"&gt;noarch&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rpm&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;rpm&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ivh&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;linuxdownload&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;release&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;release&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;i386&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.0&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.&lt;/span&gt;&lt;span class="n"&gt;noarch&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rpm&lt;/span&gt;
 &lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;rpm&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pki&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;rpm&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;gpg&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;RPM&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;GPG&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;KEY&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;linux&lt;/span&gt;
 &lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;dnf&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;flash&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;plugin&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;&lt;strong&gt;64位系统&lt;/strong&gt;&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;rpm&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ivh&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;linuxdownload&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;release&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;release&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;x86_64&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.0&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.&lt;/span&gt;&lt;span class="n"&gt;noarch&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rpm&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;rpm&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ivh&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;linuxdownload&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;release&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;release&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;x86_64&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.0&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;1.&lt;/span&gt;&lt;span class="n"&gt;noarch&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rpm&lt;/span&gt;
 &lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;rpm&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pki&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;rpm&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;gpg&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;RPM&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;GPG&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;KEY&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;adobe&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;linux&lt;/span&gt;
 &lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;dnf&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;flash&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;plugin&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;6.安装解压缩插件&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install unrar unzip p7zip
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install unrar unzip p7zip
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;7.安装gcc 和g++&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install gcc gcc-c++
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install gcc gcc-c++
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;8.安装播放器&lt;/h2&gt;
 &lt;p&gt;vlc视频播放器&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install vlc mplayer
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install vlc mplayer
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;音乐播放器 &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install moc
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install moc
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;歌词&lt;br /&gt;
 osdlyrics&lt;/p&gt;
 &lt;h2&gt;9.安装火狐&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install firefox
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install firefox
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;10.安装code::blocks&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install codeblocks
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install codeblocks
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;11.开机默认进文本模式&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo rm /etc/systemd/system/default.target
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target  &lt;span class="c"&gt;#文本模式&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo ln -sf /lib/systemd/system/graphical.target /etc/systemd/system/default.target   &lt;span class="c"&gt;#图形模式&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo rm /etc/systemd/system/default.target
+$ sudo ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target  &lt;span class="c1"&gt;#文本模式&lt;/span&gt;
+$ sudo ln -sf /lib/systemd/system/graphical.target /etc/systemd/system/default.target   &lt;span class="c1"&gt;#图形模式&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;12.安装头文件&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install kernel-headers kernel-devel
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install kernel-headers kernel-devel
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;13.一些必要的编译工具&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install cscope ctags pylint cmake clang gtk2-devel ncurses ncurses-devel
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install cscope ctags pylint cmake clang gtk2-devel ncurses ncurses-devel
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;14.游戏&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install asciiquarium sl fortune oneko
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install asciiquarium sl fortune oneko
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -505,86 +926,86 @@ osdlyrics&lt;/p&gt;
 gnome-sudoku   数独&lt;br /&gt;
 gnome-mahjongg 对对碰&lt;/p&gt;
 &lt;h2&gt;15.输入法&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install fcitx fcitx-configtool fcitx-qt fcitx-sunpinyin
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install fcitx fcitx-configtool fcitx-qt fcitx-sunpinyin
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;16.联网程序&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt; $ sudo yum install w3m w3m-img bcloud uget git wget firefox google-chrome-stable
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt; $ sudo yum install w3m w3m-img bcloud uget git wget firefox google-chrome-stable
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;17.系统清理&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install bleachbit
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install bleachbit
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;18.图像与文字&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo yum install wps gimp shotwell
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install wps gimp shotwell
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;19.其他&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;# vim /etc/sysconfig/selinux  #selinux配置位置
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim /etc/sysconfig/selinux  #selinux配置位置
 # vim /etc/sysconfig/iptables  #防火墙配置位置
-&lt;/pre&gt;&lt;/div&gt;</summary><category term="[ linux"></category><category term="fedora ]"></category></entry><entry><title>git学习</title><link href="http://honmaple.gq/articles/2015/10/git.html" rel="alternate"></link><updated>2015-10-15T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-15:articles/2015/10/git.html</id><summary type="html">&lt;p&gt;参考资料
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Thu, 15 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-15:articles/2015/10/</guid><category>[ linux</category><category>fedora ]</category></item><item><title>git学习</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;p&gt;参考资料
 &lt;a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000"&gt;廖雪峰Git教程&lt;/a&gt;&lt;br /&gt;
 记忆一下主要内容：&lt;/p&gt;
 &lt;h3&gt;安装git&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo dnf install git
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo dnf install git
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;安装后配置&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;git config --global user.name &lt;span class="s2"&gt;&amp;quot;Your Name&amp;quot;&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git config --global user.email &lt;span class="s2"&gt;&amp;quot;email@example.com&amp;quot;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git config --global user.name &lt;span class="s2"&gt;&amp;quot;Your Name&amp;quot;&lt;/span&gt;
+$ git config --global user.email &lt;span class="s2"&gt;&amp;quot;email@example.com&amp;quot;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;创建版本库&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;mkdir git
-&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd &lt;/span&gt;git
-&lt;span class="nv"&gt;$ &lt;/span&gt;mkdir &lt;span class="s2"&gt;&amp;quot;目录名&amp;quot;&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;目录名&amp;quot;&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git init &lt;span class="c"&gt;#将该目录变成可用于git管理的仓库&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ mkdir git
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; git
+$ mkdir &lt;span class="s2"&gt;&amp;quot;目录名&amp;quot;&lt;/span&gt;
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;目录名&amp;quot;&lt;/span&gt;
+$ git init &lt;span class="c1"&gt;#将该目录变成可用于git管理的仓库&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;git操作指令&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;git add filename &lt;span class="c"&gt;#将文件添加到仓库&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git commit -m &lt;span class="s2"&gt;&amp;quot;注释内容&amp;quot;&lt;/span&gt;  &lt;span class="c"&gt;#将文件提交到仓库，-m后面是本次提交的内容说明&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git add file1.txt
-&lt;span class="nv"&gt;$ &lt;/span&gt;git add file2.txt file3.txt
-&lt;span class="nv"&gt;$ &lt;/span&gt;git commit -m &lt;span class="s2"&gt;&amp;quot;add 3 files.&amp;quot;&lt;/span&gt; &lt;span class="c"&gt;#git commit 可以一次性提交多个文件&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git add filename &lt;span class="c1"&gt;#将文件添加到仓库&lt;/span&gt;
+$ git commit -m &lt;span class="s2"&gt;&amp;quot;注释内容&amp;quot;&lt;/span&gt;  &lt;span class="c1"&gt;#将文件提交到仓库，-m后面是本次提交的内容说明&lt;/span&gt;
+$ git add file1.txt
+$ git add file2.txt file3.txt
+$ git commit -m &lt;span class="s2"&gt;&amp;quot;add 3 files.&amp;quot;&lt;/span&gt; &lt;span class="c1"&gt;#git commit 可以一次性提交多个文件&lt;/span&gt;
 
-&lt;span class="nv"&gt;$ &lt;/span&gt;git status &lt;span class="c"&gt;#查看仓库当前状态&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git diff filename &lt;span class="c"&gt;#查看文件修改状态&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git log --pretty&lt;span class="o"&gt;=&lt;/span&gt;oneline &lt;span class="c"&gt;#查看提交日志&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git reset --hard HEAD^ &lt;span class="c"&gt;#从当前状态回退到上个版本状态 ，上上版本HEAD^^,100个上版本HEAD~100&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git diff HEAD -- filename &lt;span class="c"&gt;#查看工作区与版本库里的最新版本的区别&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git checkout -- filename &lt;span class="c"&gt;#让工作区文件回退到上次提交状态&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git reset HEAD readme.txt &lt;span class="c"&gt;#把暂存区的修改撤销掉&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git rm filename &lt;span class="c"&gt;#删除仓库文件&lt;/span&gt;
+$ git status &lt;span class="c1"&gt;#查看仓库当前状态&lt;/span&gt;
+$ git diff filename &lt;span class="c1"&gt;#查看文件修改状态&lt;/span&gt;
+$ git log --pretty&lt;span class="o"&gt;=&lt;/span&gt;oneline &lt;span class="c1"&gt;#查看提交日志&lt;/span&gt;
+$ git reset --hard HEAD^ &lt;span class="c1"&gt;#从当前状态回退到上个版本状态 ，上上版本HEAD^^,100个上版本HEAD~100&lt;/span&gt;
+$ git diff HEAD -- filename &lt;span class="c1"&gt;#查看工作区与版本库里的最新版本的区别&lt;/span&gt;
+$ git checkout -- filename &lt;span class="c1"&gt;#让工作区文件回退到上次提交状态&lt;/span&gt;
+$ git reset HEAD readme.txt &lt;span class="c1"&gt;#把暂存区的修改撤销掉&lt;/span&gt;
+$ git rm filename &lt;span class="c1"&gt;#删除仓库文件&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;远程仓库&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;ssh-keygen -t rsa -C&lt;span class="s2"&gt;&amp;quot;youremail@example.com&amp;quot;&lt;/span&gt; &lt;span class="c"&gt;#生成公钥与私钥&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ssh-keygen -t rsa -C&lt;span class="s2"&gt;&amp;quot;youremail@example.com&amp;quot;&lt;/span&gt; &lt;span class="c1"&gt;#生成公钥与私钥&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;将公钥上传到到&lt;a href="https://github/com"&gt;GitHub&lt;/a&gt;账户&lt;br /&gt;
 &lt;strong&gt;保存好私钥&lt;/strong&gt;&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;git remote add origin git@github.com:honmaple/vim.git &lt;span class="c"&gt;#关联远程仓库&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git push -u origin master &lt;span class="c"&gt;#把本地库内容推送到远程库&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git push origin master &lt;span class="c"&gt;#以后提交本地内容只要输入这个命令就行&lt;/span&gt;
-&lt;span class="nv"&gt;$ &lt;/span&gt;git clone git@github.com：honmaple/honmaple.git &lt;span class="c"&gt;#从远程库克隆到本地&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git remote add origin git@github.com:honmaple/vim.git &lt;span class="c1"&gt;#关联远程仓库&lt;/span&gt;
+$ git push -u origin master &lt;span class="c1"&gt;#把本地库内容推送到远程库&lt;/span&gt;
+$ git push origin master &lt;span class="c1"&gt;#以后提交本地内容只要输入这个命令就行&lt;/span&gt;
+$ git clone git@github.com：honmaple/honmaple.git &lt;span class="c1"&gt;#从远程库克隆到本地&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;我这里出现问题(远程的commit比本地的commit要新),需要&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;git pull origin master
-&lt;/pre&gt;&lt;/div&gt;</summary><category term="[ linux"></category><category term="git ]"></category></entry><entry><title>linux的一些操作命令</title><link href="http://honmaple.gq/articles/2015/10/linuxcommand.html" rel="alternate"></link><updated>2015-10-15T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-15:articles/2015/10/linuxcommand.html</id><summary type="html">&lt;h3&gt;命令行快捷操作&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git pull origin master
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Thu, 15 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-15:articles/2015/10/</guid><category>[ linux</category><category>git ]</category></item><item><title>linux的一些操作命令</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;h3&gt;命令行快捷操作&lt;/h3&gt;
 &lt;p&gt;&lt;code&gt;ctrl + 左右键&lt;/code&gt;:在单词间跳转&lt;br /&gt;
 &lt;code&gt;ctrl+a&lt;/code&gt;:跳到本行的行首&lt;br /&gt;
 &lt;code&gt;ctrl+e&lt;/code&gt;:跳到页尾&lt;br /&gt;
@@ -595,36 +1016,36 @@ gnome-mahjongg 对对碰&lt;/p&gt;
 &lt;code&gt;Ctrl+w&lt;/code&gt;:删除光标前面的单词的字符&lt;br /&gt;
 &lt;code&gt;Alt – d&lt;/code&gt; ：由光标位置开始，往右删除单词。往行尾删  &lt;/p&gt;
 &lt;h3&gt;字符界面播放ascii视频&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;mplayer -vo caca MovieName
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ mplayer -vo caca MovieName
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;打开nvidia设置&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;optirun nvidia-settings -c :8
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ optirun nvidia-settings -c :8
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;更新google禁用 GPG 签名检查&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo dnf update google-chrome-stable* --nogpgcheck
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo dnf update google-chrome-stable* --nogpgcheck
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;字符界面使用鼠标&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;sudo dnf install gpm
-&lt;span class="nv"&gt;$ &lt;/span&gt;sudo service gpm start
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo dnf install gpm
+$ sudo service gpm start
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;新字体安装&lt;/h3&gt;
 &lt;p&gt;字体目录下运行&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;mkfontscale
-&lt;span class="nv"&gt;$ &lt;/span&gt;mkfontdir
-&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;fc&lt;/span&gt;-cache -fv
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ mkfontscale
+$ mkfontdir
+$ fc-cache -fv
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;ssh代理&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;ssh -qTfnN -D &lt;span class="m"&gt;7070&lt;/span&gt; ~@~
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ssh -qTfnN -D &lt;span class="m"&gt;7070&lt;/span&gt; ~@~
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -632,51 +1053,51 @@ gnome-mahjongg 对对碰&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;./vimcdoc.sh -i&lt;/code&gt; 安装&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;./vimcdoc.sh -u&lt;/code&gt; 卸载&lt;/p&gt;
 &lt;h3&gt;编译Youcompleteme&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;./install.sh --clang-completer
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ./install.sh --clang-completer
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h3&gt;vim安装bundle插件管理&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
-&lt;/pre&gt;&lt;/div&gt;</summary><category term="[ linux ]"></category></entry><entry><title>centos搭建shadowsocks服务端</title><link href="http://honmaple.gq/articles/2015/10/shadowsocks.html" rel="alternate"></link><updated>2015-10-15T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-15:articles/2015/10/shadowsocks.html</id><summary type="html">&lt;h2&gt;1.安装必要组建&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;# yum install build-essential autoconf libtool openssl-devel gcc -y
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Thu, 15 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-15:articles/2015/10/</guid><category>[ linux ]</category></item><item><title>centos搭建shadowsocks服务端</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;h2&gt;1.安装必要组建&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# yum install build-essential autoconf libtool openssl-devel gcc -y
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;2.安装git&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;# yum install git -y 
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# yum install git -y 
 # git --version #安装完后查看版本
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;3.下载shadowsocks-libev源码包并且编译安装&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;git clone https://github.com/madeye/shadowsocks-libev.git
-&lt;span class="nv"&gt;$ &lt;/span&gt;&lt;span class="nb"&gt;cd &lt;/span&gt;shadowsocks-libev
-&lt;span class="nv"&gt;$ &lt;/span&gt;./configure 
-&lt;span class="c"&gt;# make &amp;amp;&amp;amp; make install&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/madeye/shadowsocks-libev.git
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; shadowsocks-libev
+$ ./configure 
+&lt;span class="c1"&gt;# make &amp;amp;&amp;amp; make install&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;.配置shadowsocks&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;# nohup /usr/local/bin/ss-server -s IP地址 -p 端口 -k 密码 -m 加密方式 &amp;amp;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# nohup /usr/local/bin/ss-server -s IP地址 -p 端口 -k 密码 -m 加密方式 &amp;amp;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;注：&lt;em&gt;ip地址为当前服务器ip，端口随意，加密方式建议为aes-256-cfb&lt;/em&gt;&lt;/p&gt;
 &lt;h2&gt;5.加入开机启动&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;# echo &amp;quot;nohup /usr/local/bin/ss-server -s IP地址 -p 端口 -k 密码 -m 加密方式 &amp;amp;&amp;quot; &amp;gt;&amp;gt; /etc/rc.local
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# echo &amp;quot;nohup /usr/local/bin/ss-server -s IP地址 -p 端口 -k 密码 -m 加密方式 &amp;amp;&amp;quot; &amp;gt;&amp;gt; /etc/rc.local
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;6.加入防火墙&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;# vim /etc/sysconfig/iptables
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim /etc/sysconfig/iptables
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;增加&lt;br /&gt;
 &lt;code&gt;-A INPUT -m state --state NEW -m tcp -p tcp --dport 端口 -j ACCEPT&lt;/code&gt;&lt;br /&gt;
 重启防火墙  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;# service iptables restart
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# service iptables restart
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -686,7 +1107,7 @@ gnome-mahjongg 对对碰&lt;/p&gt;
 &lt;em&gt;客户端中两个端口，一个是服务端（自己设的端口)
 ，另一个本地端口（默认1080），配置完成启用系统代理，并且选PAC模式&lt;/em&gt;&lt;/p&gt;
 &lt;hr /&gt;
-&lt;p&gt;&lt;strong&gt;&lt;em&gt;ok，就这样&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</summary><category term="[ linux"></category><category term="centos"></category><category term="shadowsocks ]"></category></entry><entry><title>vim配置</title><link href="http://honmaple.gq/articles/2015/10/vim.html" rel="alternate"></link><updated>2015-10-15T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.gq,2015-10-15:articles/2015/10/vim.html</id><summary type="html">&lt;h1&gt;vim操作&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;ok，就这样&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Thu, 15 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-15:articles/2015/10/</guid><category>[ linux</category><category>centos</category><category>shadowsocks ]</category></item><item><title>vim配置</title><link>http://honmaple.gq/articles/2015/10/</link><description>&lt;h1&gt;vim操作&lt;/h1&gt;
 &lt;h2&gt;一、移动光标&lt;/h2&gt;
 &lt;p&gt;1.左移h、右移l、下移j、上移k  &lt;br /&gt;
 2.向下翻页ctrl + f，向上翻页ctrl + b&lt;br /&gt;
@@ -790,7 +1211,7 @@ gnome-mahjongg 对对碰&lt;/p&gt;
 8.启动vim时恢复状态 vim -S name.vim  &lt;/p&gt;
 &lt;h2&gt;vim配置&lt;/h2&gt;
 &lt;p&gt;&lt;a href="http://github.com/honmaple/vim"&gt;我的vimrc配置&lt;/a&gt;  &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;let&lt;/span&gt; &lt;span class="nl"&gt;g&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;iswindows&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;  
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;let&lt;/span&gt; &lt;span class="nl"&gt;g&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;iswindows&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;  
 &lt;span class="n"&gt;let&lt;/span&gt; &lt;span class="nl"&gt;g&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;islinux&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;  
 &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;has&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;win32&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="n"&gt;has&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;win64&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="n"&gt;has&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;win95&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="n"&gt;has&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;win16&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;  
     &lt;span class="n"&gt;let&lt;/span&gt; &lt;span class="nl"&gt;g&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;iswindows&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;  
@@ -801,7 +1222,7 @@ gnome-mahjongg 对对碰&lt;/p&gt;
 &lt;span class="s"&gt;&amp;quot; -----------------------------------------------------------------------------  &lt;/span&gt;
 &lt;span class="s"&gt;&amp;quot;  &amp;lt; 判断是终端还是 Gvim &amp;gt;  &lt;/span&gt;
 &lt;span class="s"&gt;&amp;quot; -----------------------------------------------------------------------------  &lt;/span&gt;
-&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;has&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;gui_running&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nf"&gt;has&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;gui_running&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
     &lt;span class="n"&gt;let&lt;/span&gt; &lt;span class="nl"&gt;g&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;isGUI&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;  
 &lt;span class="k"&gt;else&lt;/span&gt;  
     &lt;span class="n"&gt;let&lt;/span&gt; &lt;span class="nl"&gt;g&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;isGUI&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;  
@@ -1113,7 +1534,7 @@ gnome-mahjongg 对对碰&lt;/p&gt;
 &lt;span class="s"&gt;&amp;quot;  &amp;lt; cscope 工具配置 &amp;gt;  &lt;/span&gt;
 &lt;span class="s"&gt;&amp;quot; ===========================================  &lt;/span&gt;
 &lt;span class="s"&gt;&amp;quot; 用Cscope自己的话说 你可以把它当做是超过频的ctags  &lt;/span&gt;
-&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;has&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;cscope&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nf"&gt;has&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;cscope&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
     &lt;span class="s"&gt;&amp;quot;设定可以使用 quickfix 窗口来查看 cscope 结果  &lt;/span&gt;
     &lt;span class="n"&gt;set&lt;/span&gt; &lt;span class="n"&gt;cscopequickfix&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;  
     &lt;span class="s"&gt;&amp;quot;使支持用 Ctrl+]  和 Ctrl+t 快捷键在代码间跳转  &lt;/span&gt;
@@ -1169,7 +1590,7 @@ gnome-mahjongg 对对碰&lt;/p&gt;
 &lt;span class="s"&gt;&amp;quot;当打开vim且没有文件时自动打开NERDTree  &lt;/span&gt;
 &lt;span class="n"&gt;autocmd&lt;/span&gt; &lt;span class="n"&gt;vimenter&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="n"&gt;argc&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;NERDTree&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;endif&lt;/span&gt;  
 &lt;span class="s"&gt;&amp;quot; 只剩 NERDTree时自动关闭  &lt;/span&gt;
-&lt;span class="n"&gt;autocmd&lt;/span&gt; &lt;span class="n"&gt;bufenter&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;winnr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;$&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;exists&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;b:NERDTreeType&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nl"&gt;b&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;NERDTreeType&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;primary&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;endif&lt;/span&gt;  
+&lt;span class="n"&gt;autocmd&lt;/span&gt; &lt;span class="n"&gt;bufenter&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="nf"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;winnr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;$&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;exists&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;b:NERDTreeType&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nl"&gt;b&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;NERDTreeType&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;primary&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;endif&lt;/span&gt;  
 &lt;span class="s"&gt;&amp;quot;显示文件  &lt;/span&gt;
 &lt;span class="n"&gt;let&lt;/span&gt; &lt;span class="n"&gt;NERDTreeShowFiles&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;  
 &lt;span class="s"&gt;&amp;quot;显示隐藏文件  &lt;/span&gt;
@@ -1276,7 +1697,7 @@ gnome-mahjongg 对对碰&lt;/p&gt;
     &lt;span class="n"&gt;set&lt;/span&gt; &lt;span class="n"&gt;laststatus&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;                         &lt;span class="s"&gt;&amp;quot;启用状态栏信息  &lt;/span&gt;
 &lt;span class="s"&gt;&amp;quot;    set statusline=%&amp;lt;%f\                     &amp;quot;&lt;/span&gt; &lt;span class="n"&gt;Filename&lt;/span&gt;  
 &lt;span class="s"&gt;&amp;quot;    set statusline+=%w%h%m%r                 &amp;quot;&lt;/span&gt; &lt;span class="n"&gt;Options&lt;/span&gt;  
-&lt;span class="s"&gt;&amp;quot;    set statusline+=\ [%{&amp;amp;ff}/%Y]            &amp;quot;&lt;/span&gt; &lt;span class="n"&gt;Filetype&lt;/span&gt;  
+&lt;span class="s"&gt;&amp;quot;    set statusline+=\ [%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;ff&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="o"&gt;/%&lt;/span&gt;&lt;span class="n"&gt;Y&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;            &lt;span class="s"&gt;&amp;quot; Filetype  &lt;/span&gt;
 &lt;span class="s"&gt;&amp;quot;    set statusline+=\ [%{getcwd()}]          &amp;quot;&lt;/span&gt; &lt;span class="n"&gt;Current&lt;/span&gt; &lt;span class="n"&gt;dir&lt;/span&gt;  
 &lt;span class="s"&gt;&amp;quot;    set statusline+=%=%-14.(%l,%c%V%)\ %p%%  &amp;quot;&lt;/span&gt; &lt;span class="n"&gt;Right&lt;/span&gt; &lt;span class="n"&gt;aligned&lt;/span&gt; &lt;span class="n"&gt;file&lt;/span&gt; &lt;span class="n"&gt;nav&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;  
 &lt;span class="s"&gt;&amp;quot;endif  &lt;/span&gt;
@@ -1379,7 +1800,7 @@ gnome-mahjongg 对对碰&lt;/p&gt;
 &lt;span class="s"&gt;&amp;quot; ===============================  &lt;/span&gt;
 
 &lt;span class="s"&gt;&amp;quot; 显示/隐藏菜单栏、工具栏、滚动条，可用 Ctrl + F11 切换  &lt;/span&gt;
-&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;has&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;gui_running&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nf"&gt;has&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;gui_running&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
     &lt;span class="n"&gt;winpos&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;                 &lt;span class="s"&gt;&amp;quot;指定窗口出现的位置，坐标原点在屏幕左上角  &lt;/span&gt;
     &lt;span class="n"&gt;set&lt;/span&gt; &lt;span class="n"&gt;lines&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;38&lt;/span&gt; &lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;120&lt;/span&gt;   
     &lt;span class="n"&gt;set&lt;/span&gt; &lt;span class="n"&gt;guioptions&lt;/span&gt;&lt;span class="o"&gt;-=&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt;  
@@ -1478,8 +1899,8 @@ gnome-mahjongg 对对碰&lt;/p&gt;
         &lt;span class="n"&gt;call&lt;/span&gt; &lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;   Created Time: &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strftime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%c&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;   
         &lt;span class="n"&gt;call&lt;/span&gt; &lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;**************************************************************************/&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
         &lt;span class="n"&gt;call&lt;/span&gt; &lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;#include&amp;lt;iostream&amp;gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
-        &lt;span class="n"&gt;call&lt;/span&gt; &lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;using namespace std;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
-        &lt;span class="n"&gt;call&lt;/span&gt; &lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
+        &lt;span class="n"&gt;call&lt;/span&gt; &lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;using namespace std&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;)  &lt;/span&gt;
+        &lt;span class="n"&gt;call&lt;/span&gt; &lt;span class="nf"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;  
     &lt;span class="n"&gt;endif&lt;/span&gt;  
     &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;filetype&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="sc"&gt;&amp;#39;c&amp;#39;&lt;/span&gt;  
         &lt;span class="n"&gt;call&lt;/span&gt; &lt;span class="n"&gt;setline&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;/**************************************************************************&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;   
@@ -1701,7 +2122,7 @@ gnome-mahjongg 对对碰&lt;/p&gt;
                 &lt;span class="n"&gt;exe&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;:!%&amp;lt;.exe&amp;quot;&lt;/span&gt;  
             &lt;span class="k"&gt;else&lt;/span&gt;  
                 &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nl"&gt;g&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;isGUI&lt;/span&gt;  
-                    &lt;span class="n"&gt;exe&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;:!xfce4-terminal -x bash -c &amp;#39;./%&amp;lt;; echo; echo 请按 Enter 键继续; read&amp;#39;&amp;quot;&lt;/span&gt;  
+                    &lt;span class="n"&gt;exe&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;:!xfce4-terminal -x bash -c &amp;#39;./%&amp;lt;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;echo&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;echo&lt;/span&gt; &lt;span class="err"&gt;请按&lt;/span&gt; &lt;span class="n"&gt;Enter&lt;/span&gt; &lt;span class="err"&gt;键继续&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;  &lt;/span&gt;
                 &lt;span class="k"&gt;else&lt;/span&gt;  
                     &lt;span class="n"&gt;exe&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;:!clear; ./%&amp;lt;&amp;quot;&lt;/span&gt;  
                 &lt;span class="n"&gt;endif&lt;/span&gt;  
@@ -1876,4 +2297,4 @@ gnome-mahjongg 对对碰&lt;/p&gt;
 &lt;span class="s"&gt;&amp;quot;&amp;lt;Leader&amp;gt;be　　全屏方式打来 buffer 列表  &lt;/span&gt;
 &lt;span class="s"&gt;&amp;quot;&amp;lt;Leader&amp;gt;bs　　水平窗口打来 buffer 列表  &lt;/span&gt;
 &lt;span class="s"&gt;&amp;quot;&amp;lt;Leader&amp;gt;bv　　垂直窗口打开 buffer 列表  &lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</summary><category term="[ vim"></category><category term="linux ]"></category></entry></feed>
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Thu, 15 Oct 2015 00:00:00 +0200</pubDate><guid>tag:honmaple.gq,2015-10-15:articles/2015/10/</guid><category>[ vim</category><category>linux ]</category></item></channel></rss>

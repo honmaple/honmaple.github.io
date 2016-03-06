@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>supervisor使用</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../../../theme/css/main.css" type="text/css" />
+   
+
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../../../css/ie.css"/>
+                <script src="../../../js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../../../css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+<a href="http://github.com/honmaple/honmaple.github.io">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+</a>
+        <header id="banner" class="body">
+                <h1><a href="../../..">HonMaple's Blog </a></h1>
+                <nav><ul>
+                <li><a href="../../..">主页</a></li>
+                    <li class="active"><a href="../../../category/linux.html">linux</a></li>
+                    <li ><a href="../../../category/python.html">Python</a></li>
+                    <li><a href="../archives/index.html">Archives</a></li>
+                    <li><a href="../../../pages/">关于我</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="articles/2016/01/" rel="bookmark"
+           title="Permalink to supervisor使用">supervisor使用</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-01-06T00:00:00+01:00">
+                三 06 一月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../../category/linux.html">linux</a>. </p>
+<p>tags: <a href="../../../tag/supervisor/">[supervisor</a><a href="../../../tag/linux/">linux]</a></p></footer><!-- /.post-info -->      <blockquote>
+<p>supervisor安装请参考<a href="https://honmaple.com/blog/pages/31">flask应用部署——安装环境</a></p>
+</blockquote>
+<h4>生成配置文件</h4>
+<div class="highlight"><pre><span></span># cd /etc
+# mkdir -p supervisord/conf.d
+# echo_supervisord_conf &gt; /etc/supervisord/supervisord.conf
+</pre></div>
+
+
+<h4>修改supervisord.conf</h4>
+<div class="highlight"><pre><span></span># vim supervisord.conf # G直接跳到最后一行
+</pre></div>
+
+
+<p>取消下面注释并修改</p>
+<div class="highlight"><pre><span></span><span class="k">[include]</span>
+<span class="na">files</span> <span class="o">=</span> <span class="s">/etc/supervisord/conf.d/*.ini</span>
+</pre></div>
+
+
+<p>ok，现在可以在/etc/supervisord/conf.d/目录下创建配置文件了  </p>
+<div class="highlight"><pre><span></span># vim honmaple.com.ini
+</pre></div>
+
+
+<p>输入以下内容  </p>
+<div class="highlight"><pre><span></span># 进程的名字
+[program:website]
+# 命令
+command=/home/www/honmaple.com/venv/bin/gunicorn run:app -c /home/www/honmaple.com/gunicorn.conf
+# 网站目录
+directory=/home/www/honmaple.com
+# 进程所属用户
+user=www
+# 自动重启设置。
+autostart=true
+autorestart=true
+# 日志存放位置。
+stdout_logfile=/home/www/honmaple.com/logs/gunicorn_supervisor.log
+</pre></div>
+
+
+<p>上面有几处需要注意的地方  </p>
+<h5>创建新用户www</h5>
+<div class="highlight"><pre><span></span># useradd www
+# passwd www #设置密码
+# su - www
+$ cd
+$ mkdir -p honmaple.com/logs
+</pre></div>
+
+
+<h5>建立虚拟环境(honmaple.com/目录下)</h5>
+<div class="highlight"><pre><span></span>$ virtualenv-3.4 venv
+$ . venv/bin/activate
+</pre></div>
+
+
+<h5>gunicorn配置</h5>
+<div class="highlight"><pre><span></span># gunicorn.conf
+workers = 4
+bind = &#39;127.0.0.1:8000&#39;
+</pre></div>
+
+
+<h4>简单的web应用</h4>
+<div class="highlight"><pre><span></span><span class="c1">#run.py</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="nd">@app.route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello_world</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s1">&#39;Hello World!&#39;</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+
+
+<h4>加载supervisor配置</h4>
+<div class="highlight"><pre><span></span># supervisord -c /etc/supervisord/supervisord.conf
+# supervisorctl -c /etc/supervisord/supervisord.conf reload
+</pre></div>
+
+
+<h4>supervisor遇到的问题</h4>
+<p>提示  </p>
+<div class="highlight"><pre><span></span><span class="n">Error</span><span class="o">:</span> <span class="n">Another</span> <span class="n">program</span> <span class="k">is</span> <span class="n">already</span> <span class="n">listening</span> <span class="n">on</span> <span class="n">a</span> <span class="n">port</span> <span class="n">that</span> <span class="n">one</span> <span class="n">of</span> <span class="n">our</span> <span class="n">HTTP</span> <span class="n">servers</span> <span class="k">is</span> <span class="n">configured</span> <span class="n">to</span> <span class="n">use</span><span class="o">.</span>  <span class="n">Shut</span> <span class="k">this</span> <span class="n">program</span> <span class="n">down</span> <span class="n">first</span> <span class="n">before</span> <span class="n">starting</span> <span class="n">supervisord</span><span class="o">.</span>
+<span class="n">For</span> <span class="n">help</span><span class="o">,</span> <span class="n">use</span> <span class="sr">/usr/bin/s</span><span class="n">upervisord</span> <span class="o">-</span><span class="n">h</span>
+<span class="o">...</span><span class="n">fail</span><span class="o">!</span>
+</pre></div>
+
+
+<p>解决办法</p>
+<div class="highlight"><pre><span></span># unlink /tmp/supervisor.sock
+</pre></div>
+
+
+<p>提示  </p>
+<div class="highlight"><pre><span></span>error: &lt;class &#39;socket.error&#39;&gt;, [Errno 111] Connection refused: file: /usr/lib64/python2.6/socket.py line: 567
+</pre></div>
+
+
+<p>解决办法</p>
+<div class="highlight"><pre><span></span># supervisord -c /etc/supervisord/supervisord.conf
+# supervisorctl -c /etc/supervisord/supervisord.conf reload
+</pre></div>
+
+
+<p>提示<br />
+ERROR (no such process),请仔细查看配置文件是否有误</p>
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "articles/2016/01/";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'https://honmaple.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="https://honmaple.com">个人博客</a></li>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            
+                            <li><a href="https://github.com/honmaple">GitHub</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>
