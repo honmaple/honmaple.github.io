@@ -153,7 +153,953 @@ $ psql
 
 &lt;h3&gt;app/static&lt;/h3&gt;
 &lt;p&gt;放置一些静态文件
-css,js等&lt;/p&gt;</summary><category term="[python"></category><category term="flask]"></category></entry><entry><title>flask实现分页</title><link href="http://honmaple.org/articles/2016/04/flaskshi-xian-fen-ye.html" rel="alternate"></link><updated>2016-04-14T00:00:00+02:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-04-14:articles/2016/04/flaskshi-xian-fen-ye.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
+css,js等&lt;/p&gt;</summary><category term="[python"></category><category term="flask]"></category></entry><entry><title>flask日志处理</title><link href="http://honmaple.org/articles/2016/05/flask%E6%97%A5%E5%BF%97%E5%A4%84%E7%90%86.html" rel="alternate"></link><updated>2016-05-24T00:00:00+02:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-05-24:articles/2016/05/flask日志处理.html</id><summary type="html">&lt;p&gt;使用文档上的一句话:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Applications fail, servers fail. Sooner or later you will see an exception in production. Even if your code is 100% correct, you will still see exceptions from time to time. Why? Because everything else involved will fail.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;应用发生错误时发送邮件&lt;a id="orgheadline3"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;这里文档上个人认为说的不清不楚,毕竟想要使用还要看&lt;a href="https://docs.python.org/2/library/logging.html"&gt;logging的文档&lt;/a&gt;&lt;/p&gt;
+&lt;h4&gt;原文档&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;ADMINS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;yourname@example.com&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;logging&lt;/span&gt;
+    &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;logging.handlers&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;SMTPHandler&lt;/span&gt;
+    &lt;span class="n"&gt;mail_handler&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;SMTPHandler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;127.0.0.1&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                               &lt;span class="s1"&gt;&amp;#39;server-error@example.com&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                               &lt;span class="n"&gt;ADMINS&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;YourApplication Failed&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;mail_handler&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setLevel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;logging&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ERROR&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;logger&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;addHandler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mail_handler&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;实际上这里的好多参数没有交代清楚,具体可以看&lt;a href="https://docs.python.org/2/library/logging.handlers.html#smtp-handler"&gt;https://docs.python.org/2/library/logging.handlers.html#smtp-handler&lt;/a&gt;&lt;/p&gt;
+&lt;h4&gt;具体代码&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;logging&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;logging.handlers&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;SMTPHandler&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;logging&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Formatter&lt;/span&gt;
+&lt;span class="n"&gt;config&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;
+&lt;span class="n"&gt;credentials&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;MAIL_USERNAME&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;MAIL_PASSWORD&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="n"&gt;mail_handler&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;SMTPHandler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+    &lt;span class="n"&gt;secure&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+    &lt;span class="n"&gt;mailhost&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;MAIL_SERVER&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;MAIL_PORT&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]),&lt;/span&gt;
+    &lt;span class="n"&gt;fromaddr&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="n"&gt;toaddrs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="n"&gt;subject&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;YourApplication Failed&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="n"&gt;credentials&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;credentials&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;mail_handler&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setFormatter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Formatter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
+&lt;span class="s1"&gt;Message type:       &lt;/span&gt;&lt;span class="si"&gt;%(levelname)s&lt;/span&gt;&lt;span class="s1"&gt;&lt;/span&gt;
+&lt;span class="s1"&gt;Location:           &lt;/span&gt;&lt;span class="si"&gt;%(pathname)s&lt;/span&gt;&lt;span class="s1"&gt;:&lt;/span&gt;&lt;span class="si"&gt;%(lineno)d&lt;/span&gt;&lt;span class="s1"&gt;&lt;/span&gt;
+&lt;span class="s1"&gt;Module:             &lt;/span&gt;&lt;span class="si"&gt;%(module)s&lt;/span&gt;&lt;span class="s1"&gt;&lt;/span&gt;
+&lt;span class="s1"&gt;Function:           &lt;/span&gt;&lt;span class="si"&gt;%(funcName)s&lt;/span&gt;&lt;span class="s1"&gt;&lt;/span&gt;
+&lt;span class="s1"&gt;Time:               &lt;/span&gt;&lt;span class="si"&gt;%(asctime)s&lt;/span&gt;&lt;span class="s1"&gt;&lt;/span&gt;
+
+&lt;span class="s1"&gt;Message:&lt;/span&gt;
+
+&lt;span class="si"&gt;%(message)s&lt;/span&gt;&lt;span class="s1"&gt;&lt;/span&gt;
+&lt;span class="s1"&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;mail_handler&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setLevel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;logging&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ERROR&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;logger&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;addHandler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mail_handler&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;其他方面不多说，这个多了一个 &lt;em&gt;secure = ()&lt;/em&gt; ，这是因为我的smtp服务需要使用TLS，
+如果不加这行，会出现连接被拒绝的报错&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;smtplib.SMTPServerDisconnected: Connection unexpectedly closed
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;记录应用错误到文件&lt;a id="orgheadline4"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;这个是google到的,&lt;a href="http://stackoverflow.com/questions/14037975/how-do-i-write-flasks-excellent-debug-log-message-to-a-file-in-production"&gt;参考资料&lt;/a&gt;&lt;br /&gt;
+具体代码&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;logging&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;logging.handlers&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;RotatingFileHandler&lt;/span&gt;
+&lt;span class="n"&gt;file_handler&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;RotatingFileHandler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;python.log&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;maxBytes&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1024&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;1024&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;backupCount&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;file_handler&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setLevel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;logging&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ERROR&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;formatter&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;logging&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Formatter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="si"&gt;%(asctime)s&lt;/span&gt;&lt;span class="s2"&gt; - &lt;/span&gt;&lt;span class="si"&gt;%(name)s&lt;/span&gt;&lt;span class="s2"&gt; - &lt;/span&gt;&lt;span class="si"&gt;%(levelname)s&lt;/span&gt;&lt;span class="s2"&gt; - &lt;/span&gt;&lt;span class="si"&gt;%(message)s&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;file_handler&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;setFormatter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;formatter&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;logger&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;addHandler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;file_handler&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="python"></category><category term="flask"></category><category term="log"></category></entry><entry><title>解决evil-escape下visual-state不能使用'jj'的问题</title><link href="http://honmaple.org/articles/2016/05/%E8%A7%A3%E5%86%B3evil-escape%E4%B8%8Bvisual-state%E4%B8%8D%E8%83%BD%E4%BD%BF%E7%94%A8'jj'%E7%9A%84%E9%97%AE%E9%A2%98.html" rel="alternate"></link><updated>2016-05-21T00:00:00+02:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-05-21:articles/2016/05/解决evil-escape下visual-state不能使用'jj'的问题.html</id><summary type="html">&lt;p&gt;在一个多月前我给 &lt;em&gt;evil-escape&lt;/em&gt; 开发者提了一个issue,但是不幸的是，没人理我，人理我，理我，我·····
+于是这一个多月来我使用visual-state下选择段落的方式是: &lt;strong&gt;跳到段落最后,按k从下往上选择&lt;/strong&gt;,
+现如今都快成为习惯了,今天终于有人解决了我的问题,非常感谢 &lt;strong&gt;ZzAntares&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;之前我用&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(setq evil-escape-excluded-major-modes &amp;#39;(dired-mode neotree-mode evil-visual-state))
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;解决了'jj'在 &lt;em&gt;dired-mode neotree-mode&lt;/em&gt; 下的问题,但是遗憾的是 &lt;em&gt;visual-state&lt;/em&gt; 下的选择问题仍然没有解决&lt;/p&gt;
+&lt;p&gt;现在终于解决了, &lt;a href="https://github.com/syl20bnr/evil-escape/issues/66"&gt;issue&lt;/a&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(setq evil-escape-inhibit-functions &amp;#39;(evil-visual-state-p))
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="linux"></category><category term="emacs"></category></entry><entry><title>flask生成atom</title><link href="http://honmaple.org/articles/2016/05/flask%E7%94%9F%E6%88%90atom.html" rel="alternate"></link><updated>2016-05-17T00:00:00+02:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-05-17:articles/2016/05/flask生成atom.html</id><summary type="html">&lt;p&gt;&lt;a href="http://flask.pocoo.org/snippets/10/"&gt;参考资料&lt;/a&gt;1
+&lt;a href="http://werkzeug-docs-cn.readthedocs.io/zh_CN/latest/contrib/atom.html"&gt;参考资料2&lt;/a&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;下面是具体代码&lt;/span&gt;
+&lt;span class="c1"&gt;# from urlparse import urljoin #python2&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;urllib.parse&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;urljoin&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;werkzeug.contrib.atom&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;AtomFeed&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;make_external&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;urljoin&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;url_root&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+&lt;span class="nd"&gt;@site.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/atom.xml&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;feed&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;feed&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;AtomFeed&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Recent Articles&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="n"&gt;feed_url&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;url_root&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="n"&gt;subtitle&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;I like solitude, yearning for freedom&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;articles&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Articles&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;limit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;15&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;all&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;article&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;articles&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;feed&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+            &lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;content&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;content_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;html&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;author&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;author&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;make_external&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url_for&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;blog.view&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt;
+            &lt;span class="n"&gt;updated&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;publish&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;published&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;publish&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;feed&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_response&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="python"></category><category term="flask"></category><category term="feed"></category></entry><entry><title>ssh连接virtualbox中的虚拟机</title><link href="http://honmaple.org/articles/2016/05/ssh%E8%BF%9E%E6%8E%A5virtualbox%E4%B8%AD%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA.html" rel="alternate"></link><updated>2016-05-08T00:00:00+02:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-05-08:articles/2016/05/ssh连接virtualbox中的虚拟机.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline1"&gt;1. 虚拟机设置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline2"&gt;2. 连接虚拟机&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;a href="http://my.oschina.net/dmdgeeker/blog/229044"&gt;参考文档&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;虚拟机设置&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;从机设置&lt;/p&gt;
+&lt;p&gt;$ sudo pacman -S openssh
+$ sudo systemctl start sshd # 可能还需要一些其他的安全设置，这里不再多说&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;虚拟机设置
+    设置里，选择网络,端口转发，主机端口9022,从机端口22&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1&gt;连接虚拟机&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;主机&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;ssh&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="mi"&gt;9022&lt;/span&gt; &lt;span class="n"&gt;username&lt;/span&gt;&lt;span class="mf"&gt;@127.0.0.1&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="linux"></category><category term="archlinux"></category><category term="ssh"></category><category term="virtualbox"></category></entry><entry><title>emacs解决evil-visual下剪贴板问题</title><link href="http://honmaple.org/articles/2016/04/emacs%E8%A7%A3%E5%86%B3evil-visual%E4%B8%8B%E5%89%AA%E8%B4%B4%E6%9D%BF%E9%97%AE%E9%A2%98.html" rel="alternate"></link><updated>2016-04-29T00:00:00+02:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-04-29:articles/2016/04/emacs解决evil-visual下剪贴板问题.html</id><summary type="html">&lt;p&gt;&lt;a href="http://emacs.stackexchange.com/questions/14940/emacs-doesnt-paste-in-evils-visual-mode-with-every-os-clipboard"&gt;参考问题&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;其实也就是加一行代码就行&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(fset &amp;#39;evil-visual-update-x-selection &amp;#39;ignore)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt; 需要加载 &lt;strong&gt;evil&lt;/strong&gt; 后增加
+也就是&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(require &amp;#39;evil)
+(fset &amp;#39;evil-visual-update-x-selection &amp;#39;ignore)
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="linux"></category><category term="emacs"></category></entry><entry><title>python的os模块学习</title><link href="http://honmaple.org/articles/2016/04/python%E7%9A%84os%E6%A8%A1%E5%9D%97%E5%AD%A6%E4%B9%A0.html" rel="alternate"></link><updated>2016-04-29T00:00:00+02:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-04-29:articles/2016/04/python的os模块学习.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline3"&gt;1. Process Parameters&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline1"&gt;1.1. os.environ(环境变量)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline2"&gt;1.2. os.getenv(key, default=None)&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline37"&gt;2. os.path&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline4"&gt;2.1. os.path.abspath(path) #返回绝对路径&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline5"&gt;2.2. os.path.basename(path) #返回文件名&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline6"&gt;2.3. os.path.commonprefix(list) #返回list(多个路径)中，所有path共有的最长的路径。&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline7"&gt;2.4. os.path.dirname(path) #返回文件路径&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline8"&gt;2.5. os.path.exists(path)  #路径存在则返回True,路径不存在返回False&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline9"&gt;2.6. os.path.lexists  #路径存在则返回True,路径不存在也返回False&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline10"&gt;2.7. os.path.expanduser(path)  #把path中包含的"~"和"~user"转换成用户目录&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline11"&gt;2.8. os.path.expandvars(path)  #根据环境变量的值替换path中包含的”\(name”和”\){name}”&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline12"&gt;2.9. os.path.getatime(path)  #返回最后一次进入此path的时间。&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline13"&gt;2.10. os.path.getmtime(path)  #返回在此path下最后一次修改的时间。&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline14"&gt;2.11. os.path.getctime(path)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline15"&gt;2.12. os.path.getsize(path)  #返回文件大小，如果文件不存在就返回错误&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline16"&gt;2.13. os.path.isabs(path)  #判断是否为绝对路径&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline17"&gt;2.14. os.path.isfile(path)  #判断路径是否为文件&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline18"&gt;2.15. os.path.isdir(path)  #判断路径是否为目录&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline19"&gt;2.16. os.path.islink(path)  #判断路径是否为链接&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline20"&gt;2.17. os.path.ismount(path)  #判断路径是否为挂载点（）&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline21"&gt;2.18. os.path.join(path1[, path2[, &amp;#x2026;]])  #把目录和文件名合成一个路径&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline22"&gt;2.19. os.path.normcase(path)  #转换path的大小写和斜杠&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline23"&gt;2.20. os.path.normpath(path)  #规范path字符串形式&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline24"&gt;2.21. os.path.realpath(path)  #返回path的真实路径&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline25"&gt;2.22. os.path.relpath(path[, start])  #从start开始计算相对路径&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline26"&gt;2.23. os.path.samefile(path1, path2)  #判断目录或文件是否相同&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline27"&gt;2.24. os.path.sameopenfile(fp1, fp2)  #判断fp1和fp2是否指向同一文件&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline28"&gt;2.25. os.path.samestat(stat1, stat2)  #判断stat tuple stat1和stat2是否指向同一个文件&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline29"&gt;2.26. os.path.split(path)  #把路径分割成dirname和basename，返回一个元组&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline30"&gt;2.27. os.path.splitdrive(path)   #一般用在windows下，返回驱动器名和路径组成的元组&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline31"&gt;2.28. os.path.splitext(path)  #分割路径，返回路径名和文件扩展名的元组&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline32"&gt;2.29. os.path.splitunc(path)  #把路径分割为加载点与文件&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline33"&gt;2.30. os.path.walk(path, visit, arg)  #遍历path，进入每个目录都调用visit函数，visit函数必须有&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline34"&gt;2.31. 3个参数(arg, dirname, names)，dirname表示当前目录的目录名，names代表当前目录下的所有&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline35"&gt;2.32. 文件名，args则为walk的第三个参数&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline36"&gt;2.33. os.path.supports&lt;sub&gt;unicode&lt;/sub&gt;&lt;sub&gt;filenames&lt;/sub&gt;  #设置是否支持unicode路径名&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h1&gt;Process Parameters&lt;a id="orgheadline3"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;h2&gt;os.environ(环境变量)&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.environ[&amp;#39;HOME&amp;#39;]
+&amp;#39;/home/xxx&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.getenv(key, default=None)&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.getenv(&amp;quot;HOME&amp;quot;)
+&amp;#39;/home/xxx&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h1&gt;os.path&lt;a id="orgheadline37"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;h2&gt;os.path.abspath(path) #返回绝对路径&lt;a id="orgheadline4"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.abspath(&amp;#39;aa.py&amp;#39;)
+&amp;#39;/home/jianglin/test/aa.py&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.basename(path) #返回文件名&lt;a id="orgheadline5"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.basename(&amp;#39;aa.py&amp;#39;)
+&amp;#39;aa.py&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.commonprefix(list) #返回list(多个路径)中，所有path共有的最长的路径。&lt;a id="orgheadline6"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.commonprefix([&amp;#39;aa.py&amp;#39;,&amp;#39;a.py&amp;#39;])
+&amp;#39;a&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; os.path.commonprefix([&amp;#39;aa.py&amp;#39;,&amp;#39;c.py&amp;#39;])
+&amp;#39;&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; os.path.commonprefix([&amp;#39;~/test/aa.py&amp;#39;,&amp;#39;~/test/c.py&amp;#39;])
+&amp;#39;~/test/&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; os.path.commonprefix([&amp;#39;~/test/aa.py&amp;#39;,&amp;#39;~/test/c.py&amp;#39;,&amp;#39;~/test/git/.git/config&amp;#39;])
+&amp;#39;~/test/&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.dirname(path) #返回文件路径&lt;a id="orgheadline7"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.dirname(&amp;#39;~/test/aa.py&amp;#39;)
+&amp;#39;~/test&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.exists(path)  #路径存在则返回True,路径不存在返回False&lt;a id="orgheadline8"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;os.path.exists(&amp;#39;aa.py&amp;#39;)
+True
+&amp;gt;&amp;gt;&amp;gt; os.path.exists(&amp;#39;aa.pp&amp;#39;)
+False
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.lexists  #路径存在则返回True,路径不存在也返回False&lt;a id="orgheadline9"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.lexists(&amp;#39;aa.py&amp;#39;)
+True
+&amp;gt;&amp;gt;&amp;gt; os.path.lexists(&amp;#39;aa.pp&amp;#39;)
+False
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.expanduser(path)  #把path中包含的"~"和"~user"转换成用户目录&lt;a id="orgheadline10"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.expanduser(&amp;#39;aa.py&amp;#39;)
+&amp;#39;aa.py&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; os.path.expanduser(&amp;#39;~/test/aa.py&amp;#39;)
+&amp;#39;/home/jianglin/test/aa.py&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.expandvars(path)  #根据环境变量的值替换path中包含的”(name”和”){name}”&lt;a id="orgheadline11"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.getatime(path)  #返回最后一次进入此path的时间。&lt;a id="orgheadline12"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;aa.py&amp;#39;)
+1461933601.0809627
+&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;~/git/&amp;#39;)
+Traceback (most recent call last):
+  File &amp;quot;&amp;lt;stdin&amp;gt;&amp;quot;, line 1, in &amp;lt;module&amp;gt;
+  File &amp;quot;/usr/lib/python3.5/genericpath.py&amp;quot;, line 60, in getatime
+    return os.stat(filename).st_atime
+FileNotFoundError: [Errno 2] No such file or directory: &amp;#39;~/git/&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;~/git/maple-bbs/.gitignore&amp;#39;)
+Traceback (most recent call last):
+  File &amp;quot;&amp;lt;stdin&amp;gt;&amp;quot;, line 1, in &amp;lt;module&amp;gt;
+  File &amp;quot;/usr/lib/python3.5/genericpath.py&amp;quot;, line 60, in getatime
+    return os.stat(filename).st_atime
+FileNotFoundError: [Errno 2] No such file or directory: &amp;#39;~/git/maple-bbs/.gitignore&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;a.py&amp;#39;)
+1461418983.486829
+&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;~/git&amp;#39;)
+Traceback (most recent call last):
+  File &amp;quot;&amp;lt;stdin&amp;gt;&amp;quot;, line 1, in &amp;lt;module&amp;gt;
+  File &amp;quot;/usr/lib/python3.5/genericpath.py&amp;quot;, line 60, in getatime
+    return os.stat(filename).st_atime
+FileNotFoundError: [Errno 2] No such file or directory: &amp;#39;~/git&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;./git/.git/config&amp;#39;)
+1461856107.9136002
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.getmtime(path)  #返回在此path下最后一次修改的时间。&lt;a id="orgheadline13"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.getmtime(&amp;#39;aa.py&amp;#39;)
+1461933858.6676357
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.getctime(path)&lt;a id="orgheadline14"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.getctime(&amp;#39;aa.py&amp;#39;)
+1461933858.6676357
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.getsize(path)  #返回文件大小，如果文件不存在就返回错误&lt;a id="orgheadline15"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.getsize(&amp;#39;aa.py&amp;#39;)
+448
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.isabs(path)  #判断是否为绝对路径&lt;a id="orgheadline16"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.isabs(&amp;#39;aa.py&amp;#39;)
+False
+&amp;gt;&amp;gt;&amp;gt; os.path.isabs(&amp;#39;~/test/aa.py&amp;#39;)
+False
+&amp;gt;&amp;gt;&amp;gt; os.path.isabs(&amp;#39;/home/jianglin/test/aa.py&amp;#39;)
+True
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.isfile(path)  #判断路径是否为文件&lt;a id="orgheadline17"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.isfile(&amp;#39;aa.py&amp;#39;)
+True
+&amp;gt;&amp;gt;&amp;gt; os.path.isfile(&amp;#39;~/test&amp;#39;)
+False
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.isdir(path)  #判断路径是否为目录&lt;a id="orgheadline18"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.isdir(&amp;#39;~/test&amp;#39;)
+False
+&amp;gt;&amp;gt;&amp;gt; os.path.isdir(&amp;#39;/home/jianglin/test/aa.py&amp;#39;)
+False
+&amp;gt;&amp;gt;&amp;gt; os.path.isdir(&amp;#39;/home/jianglin/test&amp;#39;)
+True
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.islink(path)  #判断路径是否为链接&lt;a id="orgheadline19"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.ismount(path)  #判断路径是否为挂载点（）&lt;a id="orgheadline20"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.join(path1[, path2[, &amp;#x2026;]])  #把目录和文件名合成一个路径&lt;a id="orgheadline21"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.join(&amp;#39;/home/jianglin/test&amp;#39;,&amp;#39;aa.py&amp;#39;)
+&amp;#39;/home/jianglin/test/aa.py&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; os.path.join(&amp;#39;/home/jianglin&amp;#39;,&amp;#39;test/aa.py&amp;#39;)
+&amp;#39;/home/jianglin/test/aa.py&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; os.path.join(&amp;#39;~&amp;#39;,&amp;#39;test/aa.py&amp;#39;)
+&amp;#39;~/test/aa.py&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.normcase(path)  #转换path的大小写和斜杠&lt;a id="orgheadline22"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.normpath(path)  #规范path字符串形式&lt;a id="orgheadline23"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.realpath(path)  #返回path的真实路径&lt;a id="orgheadline24"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.relpath(path[, start])  #从start开始计算相对路径&lt;a id="orgheadline25"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.samefile(path1, path2)  #判断目录或文件是否相同&lt;a id="orgheadline26"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.sameopenfile(fp1, fp2)  #判断fp1和fp2是否指向同一文件&lt;a id="orgheadline27"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.samestat(stat1, stat2)  #判断stat tuple stat1和stat2是否指向同一个文件&lt;a id="orgheadline28"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.split(path)  #把路径分割成dirname和basename，返回一个元组&lt;a id="orgheadline29"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.split(&amp;#39;~/test/aa.py&amp;#39;)
+(&amp;#39;~/test&amp;#39;, &amp;#39;aa.py&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;os.path.splitdrive(path)   #一般用在windows下，返回驱动器名和路径组成的元组&lt;a id="orgheadline30"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.splitext(path)  #分割路径，返回路径名和文件扩展名的元组&lt;a id="orgheadline31"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.splitunc(path)  #把路径分割为加载点与文件&lt;a id="orgheadline32"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.walk(path, visit, arg)  #遍历path，进入每个目录都调用visit函数，visit函数必须有&lt;a id="orgheadline33"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;3个参数(arg, dirname, names)，dirname表示当前目录的目录名，names代表当前目录下的所有&lt;a id="orgheadline34"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;文件名，args则为walk的第三个参数&lt;a id="orgheadline35"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h2&gt;os.path.supports&lt;sub&gt;unicode&lt;/sub&gt;&lt;sub&gt;filenames&lt;/sub&gt;  #设置是否支持unicode路径名&lt;a id="orgheadline36"&gt;&lt;/a&gt;&lt;/h2&gt;</summary><category term="python"></category><category term="os"></category></entry><entry><title>sqlalchemy学习(一)</title><link href="http://honmaple.org/articles/2016/04/sqlalchemy%E5%AD%A6%E4%B9%A0(%E4%B8%80).html" rel="alternate"></link><updated>2016-04-25T00:00:00+02:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-04-25:articles/2016/04/sqlalchemy学习(一).html</id><summary type="html">&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline19"&gt;1. sqlalchemy&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline6"&gt;1.1. 数据库连接&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline5"&gt;1.1.1. 各种数据库连接方式&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline11"&gt;1.2. 声明样式&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline7"&gt;1.2.1. 样式参数说明&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline10"&gt;1.2.2. 字段类型及说明&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline12"&gt;1.3. 创建表&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline13"&gt;1.4. 为表创建实例&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline14"&gt;1.5. 创建session&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline18"&gt;1.6. 插入和更新数据&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline15"&gt;1.6.1. 插入&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline16"&gt;1.6.2. 更新&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline17"&gt;1.6.3. 必须提交才能生效&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h1&gt;sqlalchemy&lt;a id="orgheadline19"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;系统的学一下sqlalchemyA,不过没有中文文档,只能用我的渣英文能力慢慢看原文档了&lt;/p&gt;
+&lt;h2&gt;数据库连接&lt;a id="orgheadline6"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sqlalchemy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;create_engine&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;engine&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;create_engine&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;sqlite:///:memory:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;echo&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;echo为True输出日志&lt;/p&gt;
+&lt;h3&gt;各种数据库连接方式&lt;a id="orgheadline5"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dialect+driver://username:password@host:port/database
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Postgresql&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# default
+engine = create_engine(&amp;#39;postgresql://scott:tiger@localhost/mydatabase&amp;#39;)
+# psycopg2
+engine = create_engine(&amp;#39;postgresql+psycopg2://scott:tiger@localhost/mydatabase&amp;#39;)
+# pg8000
+engine = create_engine(&amp;#39;postgresql+pg8000://scott:tiger@localhost/mydatabase&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;MySQL&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# default
+engine = create_engine(&amp;#39;mysql://scott:tiger@localhost/foo&amp;#39;)
+# mysql-python
+engine = create_engine(&amp;#39;mysql+mysqldb://scott:tiger@localhost/foo&amp;#39;)
+# MySQL-connector-python
+engine = create_engine(&amp;#39;mysql+mysqlconnector://scott:tiger@localhost/foo&amp;#39;)
+# OurSQL
+engine = create_engine(&amp;#39;mysql+oursql://scott:tiger@localhost/foo&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Oracle&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;engine&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;create_engine&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="nl"&gt;oracle&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="c1"&gt;//scott:tiger@127.0.0.1:1521/sidname&amp;#39;)&lt;/span&gt;
+&lt;span class="n"&gt;engine&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;create_engine&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="n"&gt;oracle&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="nl"&gt;cx_oracle&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="c1"&gt;//scott:tiger@tnsname&amp;#39;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SQLite&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# sqlite://&amp;lt;nohostname&amp;gt;/&amp;lt;path&amp;gt;
+# where &amp;lt;path&amp;gt; is relative:
+engine = create_engine(&amp;#39;sqlite:///foo.db&amp;#39;)
+#Unix/Mac - 4 initial slashes in total
+engine = create_engine(&amp;#39;sqlite:////absolute/path/to/foo.db&amp;#39;)
+#Windows
+engine = create_engine(&amp;#39;sqlite:///C:\\path\\to\\foo.db&amp;#39;)
+#Windows alternative using raw string
+engine = create_engine(r&amp;#39;sqlite:///C:\path\to\foo.db&amp;#39;)
+# To use a SQLite :memory: database, specify an empty URL:
+engine = create_engine(&amp;#39;sqlite://&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;声明样式&lt;a id="orgheadline11"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sqlalchemy.ext.declarative&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;declarative_base&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sqlalchemy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Column&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Integer&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt;
+
+&lt;span class="n"&gt;Base&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;declarative_base&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;User&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Base&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+     &lt;span class="n"&gt;__tablename__&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;users&amp;#39;&lt;/span&gt;
+
+     &lt;span class="nb"&gt;id&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Column&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Integer&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;primary_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+     &lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Column&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+     &lt;span class="n"&gt;fullname&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Column&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+     &lt;span class="n"&gt;password&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Column&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__repr__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;&amp;lt;User(name=&amp;#39;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s2"&gt;&amp;#39;, fullname=&amp;#39;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s2"&gt;&amp;#39;, password=&amp;#39;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s2"&gt;&amp;#39;)&amp;gt;&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
+                             &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fullname&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;password&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;样式参数说明&lt;a id="orgheadline7"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+&lt;colgroup&gt;
+&lt;col  class="org-left" /&gt;
+
+&lt;col  class="org-left" /&gt;
+&lt;/colgroup&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;td class="org-left"&gt;说明&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;**\_&lt;sub&gt;tablename&lt;/sub&gt;\_\_**&lt;/td&gt;
+&lt;td class="org-left"&gt;表名&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3&gt;字段类型及说明&lt;a id="orgheadline10"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;&lt;a href="http://docs.sqlalchemy.org/en/rel_1_0/core/type_basics.html#sqlalchemy.types.Integer"&gt;字段类型及文档&lt;/a&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Generic Types&lt;/p&gt;
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+&lt;p&gt;&lt;colgroup&gt;
+&lt;col  class="org-left" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;col  class="org-left" /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th scope="col" class="org-left"&gt;字段类型&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-left"&gt;BigInteger&lt;/td&gt;
+&lt;td class="org-left"&gt;大数&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Boolean(create&lt;sub&gt;constraint&lt;/sub&gt;=True, name=None, _create&lt;sub&gt;events&lt;/sub&gt;=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;布尔&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Data&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;DateTime(timezone=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;时间&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Enum(*enums, **kw)&lt;/td&gt;
+&lt;td class="org-left"&gt;枚举&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Float(precision=None, asdecimal=False, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;浮点型&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Integer&lt;/td&gt;
+&lt;td class="org-left"&gt;整型&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Interval(native=True, second&lt;sub&gt;precision&lt;/sub&gt;=None, day&lt;sub&gt;precision&lt;/sub&gt;=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;时间间隔&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;LargeBinary(length=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;二进制大对象&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;MatchType(create&lt;sub&gt;constraint&lt;/sub&gt;=True, name=None, _create&lt;sub&gt;events&lt;/sub&gt;=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Numeric(precision=None, scale=None, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, asdecimal=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;PickleType(protocol=2, pickler=None, comparator=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;SchemaType(name=None, schema=None, metadata=None, inherit&lt;sub&gt;schema&lt;/sub&gt;=False, quote=None, _create&lt;sub&gt;events&lt;/sub&gt;=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;SmallInteger&lt;/td&gt;
+&lt;td class="org-left"&gt;小整型&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;String(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;字符串&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Text(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;文本对象&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Time(timezone=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;时间&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Unicode(length=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;UnicodeText(length=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SQL Standard Types&lt;/p&gt;
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+&lt;p&gt;&lt;colgroup&gt;
+&lt;col  class="org-left" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;col  class="org-left" /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th scope="col" class="org-left"&gt;字段类型&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-left"&gt;BIGINT&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;BINARY(length=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;BLOB(length=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;BOOLEAN(create&lt;sub&gt;constraint&lt;/sub&gt;=True, name=None, _create&lt;sub&gt;events&lt;/sub&gt;=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;CHAR(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;CLOB(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;DATE&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;DATETIME(timezone=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;DECIMAL(precision=None, scale=None, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, asdecimal=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;FLOAT(precision=None, asdecimal=False, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;INT&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;INTEGER&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;NCHAR(length=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;NVARCHAR(length=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;NUMERIC(precision=None, scale=None, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, asdecimal=True)¶&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;REAL(precision=None, asdecimal=False, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;SMALLINT&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;TEXT(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;TIME(timezone=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;TIMESTAMP(timezone=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;VARBINARY(length=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;VARCHAR(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;创建表&lt;a id="orgheadline12"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Base.metadata.create_all(engine)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;为表创建实例&lt;a id="orgheadline13"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; ed_user = User(name=&amp;#39;ed&amp;#39;, fullname=&amp;#39;Ed Jones&amp;#39;, password=&amp;#39;edspassword&amp;#39;)
+&amp;gt;&amp;gt;&amp;gt; ed_user.name
+&amp;#39;ed&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; ed_user.password
+&amp;#39;edspassword&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; str(ed_user.id)
+&amp;#39;None&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;创建session&lt;a id="orgheadline14"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sqlalchemy.orm&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;sessionmaker&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;Session&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sessionmaker&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;bind&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;engine&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;你也可以先创建Session,在创建应用前&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; Session = sessionmaker()
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;当你创建了应用,可以这样配置&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; Session.configure(bind=engine)  # once engine is available
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;插入和更新数据&lt;a id="orgheadline18"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h3&gt;插入&lt;a id="orgheadline15"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;插入一条数据&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; ed_user = User(name=&amp;#39;ed&amp;#39;, fullname=&amp;#39;Ed Jones&amp;#39;, password=&amp;#39;edspassword&amp;#39;)
+&amp;gt;&amp;gt;&amp;gt; session.add(ed_user)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;插入多条数据&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; session.add_all([
+...     User(name=&amp;#39;wendy&amp;#39;, fullname=&amp;#39;Wendy Williams&amp;#39;, password=&amp;#39;foobar&amp;#39;),
+...     User(name=&amp;#39;mary&amp;#39;, fullname=&amp;#39;Mary Contrary&amp;#39;, password=&amp;#39;xxg527&amp;#39;),
+...     User(name=&amp;#39;fred&amp;#39;, fullname=&amp;#39;Fred Flinstone&amp;#39;, password=&amp;#39;blah&amp;#39;)])
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;更新&lt;a id="orgheadline16"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; ed_user.password = &amp;#39;f8s7ccs&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;查看&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; session.dirty
+IdentitySet([&amp;lt;User(name=&amp;#39;ed&amp;#39;, fullname=&amp;#39;Ed Jones&amp;#39;, password=&amp;#39;f8s7ccs&amp;#39;)&amp;gt;])
+&amp;gt;&amp;gt;&amp;gt; session.new  # doctest: +SKIP
+IdentitySet([&amp;lt;User(name=&amp;#39;wendy&amp;#39;, fullname=&amp;#39;Wendy Williams&amp;#39;, password=&amp;#39;foobar&amp;#39;)&amp;gt;,
+&amp;lt;User(name=&amp;#39;mary&amp;#39;, fullname=&amp;#39;Mary Contrary&amp;#39;, password=&amp;#39;xxg527&amp;#39;)&amp;gt;,
+&amp;lt;User(name=&amp;#39;fred&amp;#39;, fullname=&amp;#39;Fred Flinstone&amp;#39;, password=&amp;#39;blah&amp;#39;)&amp;gt;])
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;必须提交才能生效&lt;a id="orgheadline17"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; session.commit()
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="sqlalchemy"></category><category term="sql"></category></entry><entry><title>sqlalchemy常见数据类型及配置</title><link href="http://honmaple.org/articles/2016/04/sqlalchemy%E5%B8%B8%E8%A7%81%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%8F%8A%E9%85%8D%E7%BD%AE.html" rel="alternate"></link><updated>2016-04-25T00:00:00+02:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-04-25:articles/2016/04/sqlalchemy常见数据类型及配置.html</id><summary type="html">&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+&lt;colgroup&gt;
+&lt;col  class="org-left" /&gt;
+
+&lt;col  class="org-left" /&gt;
+
+&lt;col  class="org-left" /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th scope="col" class="org-left"&gt;类型名称&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;python类型&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-left"&gt;Integer&lt;/td&gt;
+&lt;td class="org-left"&gt;int&lt;/td&gt;
+&lt;td class="org-left"&gt;常规整形，通常为32位&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;SmallInteger&lt;/td&gt;
+&lt;td class="org-left"&gt;int&lt;/td&gt;
+&lt;td class="org-left"&gt;短整形，通常为16位&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;BigInteger&lt;/td&gt;
+&lt;td class="org-left"&gt;int或long&lt;/td&gt;
+&lt;td class="org-left"&gt;精度不受限整形&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;Float&lt;/td&gt;
+&lt;td class="org-left"&gt;float&lt;/td&gt;
+&lt;td class="org-left"&gt;浮点数&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;Numeric&lt;/td&gt;
+&lt;td class="org-left"&gt;decimal.Decimal&lt;/td&gt;
+&lt;td class="org-left"&gt;定点数&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;String&lt;/td&gt;
+&lt;td class="org-left"&gt;str&lt;/td&gt;
+&lt;td class="org-left"&gt;可变长度字符串&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;Text&lt;/td&gt;
+&lt;td class="org-left"&gt;str&lt;/td&gt;
+&lt;td class="org-left"&gt;可变长度字符串，适合大量文本&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;Unicode&lt;/td&gt;
+&lt;td class="org-left"&gt;unicode&lt;/td&gt;
+&lt;td class="org-left"&gt;可变长度Unicode字符串&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;Boolean&lt;/td&gt;
+&lt;td class="org-left"&gt;bool&lt;/td&gt;
+&lt;td class="org-left"&gt;布尔型&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;Date&lt;/td&gt;
+&lt;td class="org-left"&gt;datetime.date&lt;/td&gt;
+&lt;td class="org-left"&gt;日期类型&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;Time&lt;/td&gt;
+&lt;td class="org-left"&gt;datetime.time&lt;/td&gt;
+&lt;td class="org-left"&gt;时间类型&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;Interval&lt;/td&gt;
+&lt;td class="org-left"&gt;datetime.timedelta&lt;/td&gt;
+&lt;td class="org-left"&gt;时间间隔&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;Enum&lt;/td&gt;
+&lt;td class="org-left"&gt;str&lt;/td&gt;
+&lt;td class="org-left"&gt;字符列表&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;PickleType&lt;/td&gt;
+&lt;td class="org-left"&gt;任意Python对象&lt;/td&gt;
+&lt;td class="org-left"&gt;自动Pickle序列化&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;LargeBinary&lt;/td&gt;
+&lt;td class="org-left"&gt;str&lt;/td&gt;
+&lt;td class="org-left"&gt;二进制&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+&lt;colgroup&gt;
+&lt;col  class="org-left" /&gt;
+
+&lt;col  class="org-left" /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th scope="col" class="org-left"&gt;可选参数&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-left"&gt;primary&lt;sub&gt;key&lt;/sub&gt;&lt;/td&gt;
+&lt;td class="org-left"&gt;如果设置为True，则为该列表的主键&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;unique&lt;/td&gt;
+&lt;td class="org-left"&gt;如果设置为True，该列不允许相同值&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;index&lt;/td&gt;
+&lt;td class="org-left"&gt;如果设置为True，为该列创建索引，查询效率会更高&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;nullable&lt;/td&gt;
+&lt;td class="org-left"&gt;如果设置为True，该列允许为空。如果设置为False，该列不允许空值&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;default&lt;/td&gt;
+&lt;td class="org-left"&gt;定义该列的默认值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;</summary><category term="sqlalchemy"></category><category term="sql"></category></entry><entry><title>flask分页</title><link href="http://honmaple.org/articles/2016/04/flaskfen-ye.html" rel="alternate"></link><updated>2016-04-12T00:00:00+02:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-04-12:articles/2016/04/flaskfen-ye.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents&lt;/h2&gt;
 &lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
@@ -4294,52 +5240,37 @@ $ git clone git@github.com：honmaple/honmaple.git &lt;span class="c1"&gt;#从�
 参考文档&lt;a href="https://wiki.archlinux.org/index.php/Steam"&gt;Steam&lt;/a&gt;&lt;/p&gt;
 &lt;h1&gt;准备工作&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h1&gt;
 &lt;p&gt;因为我的是64位操作系统,所以需要启用 &lt;strong&gt;multilib&lt;/strong&gt;&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo vim /etc/pacman.conf
-&lt;span class="c1"&gt;# 取消下面注释&lt;/span&gt;
-&lt;span class="o"&gt;[&lt;/span&gt;multilib&lt;span class="o"&gt;]&lt;/span&gt;
-&lt;span class="nv"&gt;Include&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; /etc/pacman.d/mirrorlist
-&lt;/pre&gt;&lt;/div&gt;
-
-
+&lt;p&gt;$ sudo vim /etc/pacman.conf&lt;/p&gt;
+&lt;h1&gt;取消下面注释&lt;/h1&gt;
+&lt;p&gt;[multilib]
+Include = /etc/pacman.d/mirrorlist&lt;/p&gt;
 &lt;h1&gt;双显卡bumblebee&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h1&gt;
 &lt;p&gt;我的又是双显卡,需要安装32位驱动&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;lib32-nvidia-utils
+&lt;p&gt;lib32-nvidia-utils
 lib32-mesa-libgl
-lib32-mesa
-&lt;/pre&gt;&lt;/div&gt;
-
-
+lib32-mesa&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;
 除此之外，参考 &lt;a href="https://github.com/Bumblebee-Project/Bumblebee/wiki/Troubleshooting"&gt;bumblebee报错信息&lt;/a&gt;
 还需要安装 &lt;em&gt;virtualgl-libs:i386&lt;/em&gt; ( arch上是lib32-virtualgl )
 否则报错&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;ERROR&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;ld&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;so&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;object&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;libdlfaker.so&amp;#39;&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;LD_PRELOAD&lt;/span&gt; &lt;span class="n"&gt;cannot&lt;/span&gt; &lt;span class="n"&gt;be&lt;/span&gt; &lt;span class="n"&gt;preloaded&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;ignored&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
+&lt;p&gt;ERROR: ld.so: object 'libdlfaker.so' from LD_PRELOAD cannot be preloaded: ignored.&lt;/p&gt;
 &lt;h1&gt;安装steam&lt;a id="orgheadline3"&gt;&lt;/a&gt;&lt;/h1&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo pacman -Syu steam
-&lt;/pre&gt;&lt;/div&gt;
-
-
+&lt;p&gt;$ sudo pacman -Syu steam&lt;/p&gt;
 &lt;h1&gt;打开steam&lt;a id="orgheadline4"&gt;&lt;/a&gt;&lt;/h1&gt;
 &lt;p&gt;直接启动报错&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ steam
+&lt;p&gt;$ steam
 /home/jianglin/.local/share/Steam/steam.sh:行161: VERSION_ID: 未绑定的变量
 /home/jianglin/.local/share/Steam/steam.sh:行161: VERSION_ID: 未绑定的变量
 Running Steam on arch  64-bit
 /home/jianglin/.local/share/Steam/steam.sh:行161: VERSION_ID: 未绑定的变量
-STEAM_RUNTIME is enabled automatically
-Installing breakpad exception handler &lt;span class="k"&gt;for&lt;/span&gt; appid&lt;span class="o"&gt;(&lt;/span&gt;steam&lt;span class="o"&gt;)&lt;/span&gt;/version&lt;span class="o"&gt;(&lt;/span&gt;1459463254&lt;span class="o"&gt;)&lt;/span&gt;
-libGL error: unable to load driver: i965_dri.so
-libGL error: driver pointer missing
-libGL error: failed to load driver: i965
-libGL error: unable to load driver: swrast_dri.so
-libGL error: failed to load driver: swrast
-....
-&lt;/pre&gt;&lt;/div&gt;
-
-
+    STEAM_RUNTIME is enabled automatically
+    Installing breakpad exception handler for appid(steam)/version(1459463254)
+    libGL error: unable to load driver: i965_dri.so
+    libGL error: driver pointer missing
+    libGL error: failed to load driver: i965
+    libGL error: unable to load driver: swrast_dri.so
+    libGL error: failed to load driver: swrast
+    ....&lt;/p&gt;
 &lt;p&gt;换个方式启动&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ optirun steam
 &lt;/pre&gt;&lt;/div&gt;

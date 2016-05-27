@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <title>archlinux安装steam</title>
+        <title>ssh连接virtualbox中的虚拟机</title>
         <meta charset="utf-8" />
         <link rel="stylesheet" href="../../../theme/css/main.css" type="text/css" />
         <link rel="stylesheet" href="../../../theme/css/pygments/monokai.css" type="text/css" />
@@ -38,97 +38,53 @@
   <article>
     <header>
       <h1 class="entry-title">
-        <a href="articles/2015/04/archlinuxan-zhuang-steam.html" rel="bookmark"
-           title="Permalink to archlinux安装steam">archlinux安装steam</a></h1>
+        <a href="articles/2016/05/ssh连接virtualbox中的虚拟机.html" rel="bookmark"
+           title="Permalink to ssh连接virtualbox中的虚拟机">ssh连接virtualbox中的虚拟机</a></h1>
     </header>
 
     <div class="entry-content">
 <footer class="post-info">
-        <abbr class="published" title="2015-04-25T00:00:00+02:00">
-                六 25 四月 2015
+        <abbr class="published" title="2016-05-08T00:00:00+02:00">
+                日 08 五月 2016
         </abbr>
 
         <address class="vcard author">
                 By <a class="url fn" href="../../../author/honmaple.html">honmaple</a>
         </address>
 <p>In <a href="../../../category/linux.html">Linux</a>. </p>
-<p>tags: <a href="../../../tag/linux/">linux</a><a href="../../../tag/archlinux/">archlinux</a><a href="../../../tag/steam/">steam</a></p></footer><!-- /.post-info -->      <div id="table-of-contents">
+<p>tags: <a href="../../../tag/linux/">linux</a><a href="../../../tag/archlinux/">archlinux</a><a href="../../../tag/ssh/">ssh</a><a href="../../../tag/virtualbox/">virtualbox</a></p></footer><!-- /.post-info -->      <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgheadline1">1. 准备工作</a></li>
-<li><a href="#orgheadline2">2. 双显卡bumblebee</a></li>
-<li><a href="#orgheadline3">3. 安装steam</a></li>
-<li><a href="#orgheadline4">4. 打开steam</a></li>
+<li><a href="#orgheadline1">1. 虚拟机设置</a></li>
+<li><a href="#orgheadline2">2. 连接虚拟机</a></li>
 </ul>
 </div>
 </div>
 
-<p>最近想要玩会儿游戏，但是又不想切换到windows,所以准备安装steam,在linux下玩游戏,
-参考文档<a href="https://wiki.archlinux.org/index.php/Steam">Steam</a></p>
-<h1>准备工作<a id="orgheadline1"></a></h1>
-<p>因为我的是64位操作系统,所以需要启用 <strong>multilib</strong></p>
-<p>$ sudo vim /etc/pacman.conf</p>
-<h1>取消下面注释</h1>
-<p>[multilib]
-Include = /etc/pacman.d/mirrorlist</p>
-<h1>双显卡bumblebee<a id="orgheadline2"></a></h1>
-<p>我的又是双显卡,需要安装32位驱动</p>
-<p>lib32-nvidia-utils
-lib32-mesa-libgl
-lib32-mesa</p>
-<p><strong>注意</strong>
-除此之外，参考 <a href="https://github.com/Bumblebee-Project/Bumblebee/wiki/Troubleshooting">bumblebee报错信息</a>
-还需要安装 <em>virtualgl-libs:i386</em> ( arch上是lib32-virtualgl )
-否则报错</p>
-<p>ERROR: ld.so: object 'libdlfaker.so' from LD_PRELOAD cannot be preloaded: ignored.</p>
-<h1>安装steam<a id="orgheadline3"></a></h1>
-<p>$ sudo pacman -Syu steam</p>
-<h1>打开steam<a id="orgheadline4"></a></h1>
-<p>直接启动报错</p>
-<p>$ steam
-/home/jianglin/.local/share/Steam/steam.sh:行161: VERSION_ID: 未绑定的变量
-/home/jianglin/.local/share/Steam/steam.sh:行161: VERSION_ID: 未绑定的变量
-Running Steam on arch  64-bit
-/home/jianglin/.local/share/Steam/steam.sh:行161: VERSION_ID: 未绑定的变量
-    STEAM_RUNTIME is enabled automatically
-    Installing breakpad exception handler for appid(steam)/version(1459463254)
-    libGL error: unable to load driver: i965_dri.so
-    libGL error: driver pointer missing
-    libGL error: failed to load driver: i965
-    libGL error: unable to load driver: swrast_dri.so
-    libGL error: failed to load driver: swrast
-    ....</p>
-<p>换个方式启动</p>
-<div class="highlight"><pre><span></span>$ optirun steam
+<p><a href="http://my.oschina.net/dmdgeeker/blog/229044">参考文档</a></p>
+<h1>虚拟机设置<a id="orgheadline1"></a></h1>
+<ul>
+<li>
+<p>从机设置</p>
+<p>$ sudo pacman -S openssh
+$ sudo systemctl start sshd # 可能还需要一些其他的安全设置，这里不再多说</p>
+</li>
+<li>
+<p>虚拟机设置
+    设置里，选择网络,端口转发，主机端口9022,从机端口22</p>
+</li>
+</ul>
+<h1>连接虚拟机<a id="orgheadline2"></a></h1>
+<p>主机</p>
+<div class="highlight"><pre><span></span><span class="err">$</span> <span class="n">ssh</span> <span class="o">-</span><span class="n">p</span> <span class="mi">9022</span> <span class="n">username</span><span class="mf">@127.0.0.1</span>
 </pre></div>
-
-
-<p>虽然也有报错，但是总算能启动了</p>
-<div class="highlight"><pre><span></span>/home/jianglin/.local/share/Steam/steam.sh:行161: VERSION_ID: 未绑定的变量
-/home/jianglin/.local/share/Steam/steam.sh:行161: VERSION_ID: 未绑定的变量
-Running Steam on arch  64-bit
-/home/jianglin/.local/share/Steam/steam.sh:行161: VERSION_ID: 未绑定的变量
-STEAM_RUNTIME is enabled automatically
-Installing breakpad exception handler for appid(steam)/version(1459463254)
-Installing breakpad exception handler for appid(steam)/version(1459463254)
-Installing breakpad exception handler for appid(steam)/version(1459463254)
-Fontconfig error: &quot;/etc/fonts/conf.d/10-scale-bitmap-fonts.conf&quot;, line 72: non-double matrix element
-Fontconfig error: &quot;/etc/fonts/conf.d/10-scale-bitmap-fonts.conf&quot;, line 72: non-double matrix element
-Fontconfig warning: &quot;/etc/fonts/conf.d/10-scale-bitmap-fonts.conf&quot;, line 80: saw unknown, expected number
-[0425/180353:ERROR:main_delegate.cc(777)] Could not load cef_extensions.pak
-[0425/180353:ERROR:browser_main_loop.cc(203)] Running without the SUID sandbox! See https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment for more information on developing with the sandbox on.
-....
-</pre></div>
-
-
-<p>ok，就这样</p>
     </div><!-- /.entry-content -->
     <div class="comments">
       <h2>Comments !</h2>
       <div id="disqus_thread"></div>
       <script type="text/javascript">
-        var disqus_identifier = "articles/2015/04/archlinuxan-zhuang-steam.html";
+        var disqus_identifier = "articles/2016/05/ssh连接virtualbox中的虚拟机.html";
         (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
         dsq.src = 'https://honmaple.disqus.com/embed.js';

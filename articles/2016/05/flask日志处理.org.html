@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>flask日志处理.org</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../../../theme/css/main.css" type="text/css" />
+        <link rel="stylesheet" href="../../../theme/css/pygments/monokai.css" type="text/css" />
+   
+
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../../../css/ie.css"/>
+                <script src="../../../js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../../../css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+<a href="http://github.com/honmaple/honmaple.github.io">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+</a>
+        <header id="banner" class="body">
+                <h1><a href="../../..">HonMaple's Blog </a></h1>
+                <nav><ul>
+                <li> <a href="../../..">主页</a></li>
+                    <li ><a href="../../../category/linux.html">Linux</a></li>
+                    <li class="active"><a href="../../../category/python.html">Python</a></li>
+                    <li ><a href="../../../category/sheng-huo-sui-bi.html">生活随笔</a></li>
+                <li> <a href="../../../archives/">Archives</a></li>
+                    <li><a href="../../../pages/about">About</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="articles/2016/05/flask日志处理.org.html" rel="bookmark"
+           title="Permalink to flask日志处理.org">flask日志处理.org</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-05-24T00:00:00+02:00">
+                二 24 五月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../../category/python.html">Python</a>. </p>
+<p>tags: <a href="../../../tag/python/">python</a><a href="../../../tag/flask/">flask</a><a href="../../../tag/log/">log</a></p></footer><!-- /.post-info -->      <p>使用文档上的一句话:</p>
+<blockquote>
+<p>Applications fail, servers fail. Sooner or later you will see an exception in production. Even if your code is 100% correct, you will still see exceptions from time to time. Why? Because everything else involved will fail.</p>
+</blockquote>
+<h3>应用发生错误时发送邮件<a id="orgheadline3"></a></h3>
+<p>这里文档上个人认为说的不清不楚,毕竟想要使用还要看<a href="https://docs.python.org/2/library/logging.html">logging的文档</a></p>
+<h4>原文档<a id="orgheadline1"></a></h4>
+<div class="highlight"><pre><span></span><span class="n">ADMINS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;yourname@example.com&#39;</span><span class="p">]</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">app</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">logging</span>
+    <span class="kn">from</span> <span class="nn">logging.handlers</span> <span class="kn">import</span> <span class="n">SMTPHandler</span>
+    <span class="n">mail_handler</span> <span class="o">=</span> <span class="n">SMTPHandler</span><span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span>
+                               <span class="s1">&#39;server-error@example.com&#39;</span><span class="p">,</span>
+                               <span class="n">ADMINS</span><span class="p">,</span> <span class="s1">&#39;YourApplication Failed&#39;</span><span class="p">)</span>
+    <span class="n">mail_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">mail_handler</span><span class="p">)</span>
+</pre></div>
+
+
+<p>实际上这里的好多参数没有交代清楚,具体可以看<a href="https://docs.python.org/2/library/logging.handlers.html#smtp-handler">https://docs.python.org/2/library/logging.handlers.html#smtp-handler</a></p>
+<h4>具体代码<a id="orgheadline2"></a></h4>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">logging.handlers</span> <span class="kn">import</span> <span class="n">SMTPHandler</span>
+<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">Formatter</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span>
+<span class="n">credentials</span> <span class="o">=</span> <span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;MAIL_USERNAME&#39;</span><span class="p">],</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;MAIL_PASSWORD&#39;</span><span class="p">])</span>
+<span class="n">mail_handler</span> <span class="o">=</span> <span class="n">SMTPHandler</span><span class="p">(</span>
+    <span class="n">secure</span><span class="o">=</span><span class="p">(),</span>
+    <span class="n">mailhost</span><span class="o">=</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;MAIL_SERVER&#39;</span><span class="p">],</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;MAIL_PORT&#39;</span><span class="p">]),</span>
+    <span class="n">fromaddr</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">toaddrs</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">subject</span><span class="o">=</span><span class="s1">&#39;YourApplication Failed&#39;</span><span class="p">,</span>
+    <span class="n">credentials</span><span class="o">=</span><span class="n">credentials</span><span class="p">)</span>
+
+<span class="n">mail_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">Formatter</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">Message type:       </span><span class="si">%(levelname)s</span><span class="s1"></span>
+<span class="s1">Location:           </span><span class="si">%(pathname)s</span><span class="s1">:</span><span class="si">%(lineno)d</span><span class="s1"></span>
+<span class="s1">Module:             </span><span class="si">%(module)s</span><span class="s1"></span>
+<span class="s1">Function:           </span><span class="si">%(funcName)s</span><span class="s1"></span>
+<span class="s1">Time:               </span><span class="si">%(asctime)s</span><span class="s1"></span>
+
+<span class="s1">Message:</span>
+
+<span class="si">%(message)s</span><span class="s1"></span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">))</span>
+<span class="n">mail_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+<span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">mail_handler</span><span class="p">)</span>
+</pre></div>
+
+
+<p>其他方面不多说，这个多了一个 <em>secure = ()</em> ，这是因为我的smtp服务需要使用TLS，
+如果不加这行，会出现连接被拒绝的报错</p>
+<div class="highlight"><pre><span></span>smtplib.SMTPServerDisconnected: Connection unexpectedly closed
+</pre></div>
+
+
+<h3>记录应用错误到文件<a id="orgheadline4"></a></h3>
+<p>这个是google到的,<a href="http://stackoverflow.com/questions/14037975/how-do-i-write-flasks-excellent-debug-log-message-to-a-file-in-production">参考资料</a><br />
+具体代码</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">logging.handlers</span> <span class="kn">import</span> <span class="n">RotatingFileHandler</span>
+<span class="n">file_handler</span> <span class="o">=</span> <span class="n">RotatingFileHandler</span><span class="p">(</span><span class="s1">&#39;python.log&#39;</span><span class="p">,</span> <span class="n">maxBytes</span><span class="o">=</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="n">backupCount</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">file_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+<span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> - </span><span class="si">%(name)s</span><span class="s2"> - </span><span class="si">%(levelname)s</span><span class="s2"> - </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">file_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+<span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+</pre></div>
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "articles/2016/05/flask日志处理.org.html";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'https://honmaple.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                            <li><a href="https://honmaple.com">个人博客</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            
+                            <li><a href="https://github.com/honmaple">GitHub</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>
