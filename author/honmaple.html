@@ -29,9 +29,9 @@
                 <li> <a href="..">主页</a></li>
                     <li ><a href="../category/linux.html">Linux</a></li>
                     <li ><a href="../category/python.html">Python</a></li>
+                    <li ><a href="../category/security.html">Security</a></li>
                     <li ><a href="../category/sheng-huo-sui-bi.html">生活随笔</a></li>
                 <li> <a href="../archives/">Archives</a></li>
-                    <li><a href="../pages/about">About</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
         
@@ -39,59 +39,38 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../articles/2016/11/postgresqlxue-xi-1-an-zhuang.html">postgresql学习1——安装</a></h1> 
+                    <h1 class="entry-title"><a href="../articles/2016/07/python复习--装饰器.html">python复习--装饰器</a></h1> 
 <footer class="post-info">
-        <abbr class="published" title="2016-11-24T00:00:00+01:00">
-                四 24 十一月 2016
+        <abbr class="published" title="2016-07-28T00:00:00+02:00">
+                四 28 七月 2016
         </abbr>
 
         <address class="vcard author">
                 By <a class="url fn" href="../author/honmaple.html">honmaple</a>
         </address>
-<p>In <a href="../category/linux.html">Linux</a>. </p>
-<p>tags: <a href="../tag/linux/">[linux</a><a href="../tag/postgresql/">postgresql</a><a href="../tag/sql/">sql]</a></p></footer><!-- /.post-info --><p>最近从sqlite转到postgresql,虽然postgresql比sqlite更加复杂</p>
-<h3>archlinux</h3>
-<p><a href="https://wiki.archlinux.org/index.php/PostgreSQL">参考资料</a></p>
-<div class="highlight"><pre><span></span>$ sudo pacman -S postgresql
-$ sudo mkdir /var/lib/postgres/data <span class="c1">#如果已存在则可以不建立</span>
-$ sudo chmod -R postgres:postgres /var/lib/postgres/data
-由于我安装系统时没有生成en_US_UTF-8本地化文件<span class="o">(</span>如果已经生成了的就
-不必再生成<span class="o">)</span>
-$ sudo vim /etc/locale.gen <span class="c1">#找到en_US_UTF-8，注释掉</span>
-$ locale-gen
+<p>In <a href="../category/python.html">Python</a>. </p>
+<p>tags: <a href="../tag/python/">python</a><a href="../tag/zhuang-shi-qi/">装饰器</a></p></footer><!-- /.post-info --><p>一个装饰器</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wrapper</span>
 
-然后运行
-$ sudo -i -u postgres <span class="c1">#或者使用root账户su - postgres</span>
-$ initdb --locale en_US.UTF-8 -E UTF8 -D <span class="s1">&#39;/var/lib/postgres/data&#39;</span>
-$ createuser -i <span class="c1">#输入你的账户名称,并给管理员权限</span>
-
-最好给postgres用户设置密码
-<span class="o">(</span>注意不是linux系统帐号<span class="o">)</span>
-<span class="c1"># su - postgres</span>
-$ psql
-&gt;ALTER USER postgres WITH PASSWORD <span class="s1">&#39;yourpasswd&#39;</span><span class="p">;</span>
+<span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;call </span><span class="si">%s</span><span class="s1">():&#39;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wrapper</span>
 </pre></div>
 
 
-<h3>centos</h3>
-<p><a href="https://wiki.postgresql.org/wiki/YUM_Installation"> 参考资料</a></p>
-<p>到<a href="http://yum.postgresql.org/">这里</a>
-下载所需要的rpm安装包<br />
-或者直接  </p>
-<div class="highlight"><pre><span></span># yum localinstall http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-centos94-9.4-1.noarch.rpm
-# yum list postgres*
-# yum install postgresql94-server
-# yum install postgresql94-contrib
-
-# service postgresql initdb  #初始化数据库
-# service postgresql start #启动数据库
-# chkconfig postgresql on  #将数据库服务加入启动列表
-修改PostgreSQL 数据库用户postgres的密码
-(注意不是linux系统帐号)
-# su - postgres
-$ psql
-&gt;ALTER USER postgres WITH PASSWORD &#39;yourpasswd&#39;;
-</pre></div><p>There are <a href="../articles/2016/11/postgresqlxue-xi-1-an-zhuang.html#disqus_thread">comments</a>.</p>                </article>
+<p>或者针对带参数的decorator：</p>
+<div class="highlight"><pre><span></span>def log(text):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kw):
+            print(&#39;%s %s():&#39; % (text, func.__name__))
+            return func(*args, **kw)
+        return wrapper
+    return decorator
+</pre></div><p>There are <a href="../articles/2016/07/python复习--装饰器.html#disqus_thread">comments</a>.</p>                </article>
             </aside><!-- /#featured -->
                 <section id="content" class="body">
                     <h1>Other articles</h1>
@@ -102,167 +81,13 @@ $ psql
  
             <li><article class="hentry">    
                 <header>
-                        <h1><a href="../articles/2016/11/flaskxue-xi-bi-ji-3.html" rel="bookmark" title="Permalink to flask学习笔记——3">flask学习笔记——3</a></h1>
+                        <h1><a href="../articles/2016/07/python的os模块学习.html" rel="bookmark" title="Permalink to python的os模块学习">python的os模块学习</a></h1>
                 </header>
                 
                 <div class="entry-content">
 <footer class="post-info">
-        <abbr class="published" title="2016-11-14T00:00:00+01:00">
-                一 14 十一月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../category/python.html">Python</a>. </p>
-<p>tags: <a href="../tag/python/">[python</a><a href="../tag/flask/">flask]</a></p></footer><!-- /.post-info -->                <p>好久没有写东西的，主要是最近在用flask写一个网站，由于写前端界面时为了让UI好看一点，搞得自己晕头转向，方向都错了,在此期间也遇到很多问题，虽然绝大部分已经解决了，但是还有很多没有解决。其实，做一个项目是最能检验能力的。</p>
-                <a class="readmore" href="../articles/2016/11/flaskxue-xi-bi-ji-3.html">read more</a>
-<p>There are <a href="../articles/2016/11/flaskxue-xi-bi-ji-3.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../articles/2016/11/flaskxue-xi-bi-ji-2.html" rel="bookmark" title="Permalink to flask学习笔记--2">flask学习笔记--2</a></h1>
-                </header>
-                
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-11-12T00:00:00+01:00">
-                六 12 十一月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../category/python.html">Python</a>. </p>
-<p>tags: <a href="../tag/python/">[python</a><a href="../tag/flask/">flask]</a></p></footer><!-- /.post-info -->                <p>今天被flask的项目结构或者说是蓝图搞得晕头转脑，各种文档也没说清，从github搜索并clone了几个用flask做成的网站，无奈水平太低，看不懂</p>
-                <a class="readmore" href="../articles/2016/11/flaskxue-xi-bi-ji-2.html">read more</a>
-<p>There are <a href="../articles/2016/11/flaskxue-xi-bi-ji-2.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../articles/2016/05/flask日志处理.html" rel="bookmark" title="Permalink to flask日志处理">flask日志处理</a></h1>
-                </header>
-                
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-05-24T00:00:00+02:00">
-                二 24 五月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../category/python.html">Python</a>. </p>
-<p>tags: <a href="../tag/python/">python</a><a href="../tag/flask/">flask</a><a href="../tag/log/">log</a></p></footer><!-- /.post-info -->                
-                <a class="readmore" href="../articles/2016/05/flask日志处理.html">read more</a>
-<p>There are <a href="../articles/2016/05/flask日志处理.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../articles/2016/05/解决evil-escape下visual-state不能使用'jj'的问题.html" rel="bookmark" title="Permalink to 解决evil-escape下visual-state不能使用'jj'的问题">解决evil-escape下visual-state不能使用'jj'的问题</a></h1>
-                </header>
-                
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-05-21T00:00:00+02:00">
-                六 21 五月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../category/linux.html">Linux</a>. </p>
-<p>tags: <a href="../tag/linux/">linux</a><a href="../tag/emacs/">emacs</a></p></footer><!-- /.post-info -->                
-                <a class="readmore" href="../articles/2016/05/解决evil-escape下visual-state不能使用'jj'的问题.html">read more</a>
-<p>There are <a href="../articles/2016/05/解决evil-escape下visual-state不能使用'jj'的问题.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../articles/2016/05/flask生成atom.html" rel="bookmark" title="Permalink to flask生成atom">flask生成atom</a></h1>
-                </header>
-                
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-05-17T00:00:00+02:00">
-                二 17 五月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../category/python.html">Python</a>. </p>
-<p>tags: <a href="../tag/python/">python</a><a href="../tag/flask/">flask</a><a href="../tag/feed/">feed</a></p></footer><!-- /.post-info -->                
-                <a class="readmore" href="../articles/2016/05/flask生成atom.html">read more</a>
-<p>There are <a href="../articles/2016/05/flask生成atom.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../articles/2016/05/ssh连接virtualbox中的虚拟机.html" rel="bookmark" title="Permalink to ssh连接virtualbox中的虚拟机">ssh连接virtualbox中的虚拟机</a></h1>
-                </header>
-                
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-05-08T00:00:00+02:00">
-                日 08 五月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../category/linux.html">Linux</a>. </p>
-<p>tags: <a href="../tag/linux/">linux</a><a href="../tag/archlinux/">archlinux</a><a href="../tag/ssh/">ssh</a><a href="../tag/virtualbox/">virtualbox</a></p></footer><!-- /.post-info -->                
-                <a class="readmore" href="../articles/2016/05/ssh连接virtualbox中的虚拟机.html">read more</a>
-<p>There are <a href="../articles/2016/05/ssh连接virtualbox中的虚拟机.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../articles/2016/04/emacs解决evil-visual下剪贴板问题.html" rel="bookmark" title="Permalink to emacs解决evil-visual下剪贴板问题">emacs解决evil-visual下剪贴板问题</a></h1>
-                </header>
-                
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-04-29T00:00:00+02:00">
-                五 29 四月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../category/linux.html">Linux</a>. </p>
-<p>tags: <a href="../tag/linux/">linux</a><a href="../tag/emacs/">emacs</a></p></footer><!-- /.post-info -->                <p>习惯了vim下visual状态下直接复制系统剪贴板覆盖字符，emacs下的evil总是要先yy到某处然后才能覆盖,google了一下,找到了解决办法</p>
-                <a class="readmore" href="../articles/2016/04/emacs解决evil-visual下剪贴板问题.html">read more</a>
-<p>There are <a href="../articles/2016/04/emacs解决evil-visual下剪贴板问题.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../articles/2016/04/python的os模块学习.html" rel="bookmark" title="Permalink to python的os模块学习">python的os模块学习</a></h1>
-                </header>
-                
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-04-29T00:00:00+02:00">
-                五 29 四月 2016
+        <abbr class="published" title="2016-07-28T00:00:00+02:00">
+                四 28 七月 2016
         </abbr>
 
         <address class="vcard author">
@@ -270,11 +95,165 @@ $ psql
         </address>
 <p>In <a href="../category/python.html">Python</a>. </p>
 <p>tags: <a href="../tag/python/">python</a><a href="../tag/os/">os</a></p></footer><!-- /.post-info -->                
-                <a class="readmore" href="../articles/2016/04/python的os模块学习.html">read more</a>
-<p>There are <a href="../articles/2016/04/python的os模块学习.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+                <a class="readmore" href="../articles/2016/07/python的os模块学习.html">read more</a>
+<p>There are <a href="../articles/2016/07/python的os模块学习.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../articles/2016/07/使用python脚本恢复原md文件.html" rel="bookmark" title="Permalink to 使用python脚本恢复原md文件">使用python脚本恢复原md文件</a></h1>
+                </header>
+                
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-07-28T00:00:00+02:00">
+                四 28 七月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../category/python.html">Python</a>. </p>
+<p>tags: <a href="../tag/python/">python</a><a href="../tag/pelican/">pelican</a></p></footer><!-- /.post-info -->                
+                <a class="readmore" href="../articles/2016/07/使用python脚本恢复原md文件.html">read more</a>
+<p>There are <a href="../articles/2016/07/使用python脚本恢复原md文件.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../articles/2016/07/tar打包排除目录.html" rel="bookmark" title="Permalink to tar打包排除目录">tar打包排除目录</a></h1>
+                </header>
+                
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-07-25T00:00:00+02:00">
+                一 25 七月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../category/linux.html">Linux</a>. </p>
+<p>tags: <a href="../tag/tar/">tar</a><a href="../tag/linux/">linux</a></p></footer><!-- /.post-info -->                
+                <a class="readmore" href="../articles/2016/07/tar打包排除目录.html">read more</a>
+<p>There are <a href="../articles/2016/07/tar打包排除目录.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../articles/2016/07/virtualbox中使用U盘等usb设备.html" rel="bookmark" title="Permalink to virtualbox中使用U盘等usb设备">virtualbox中使用U盘等usb设备</a></h1>
+                </header>
+                
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-07-15T00:00:00+02:00">
+                五 15 七月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../category/linux.html">Linux</a>. </p>
+<p>tags: <a href="../tag/linux/">linux</a><a href="../tag/virtualbox/">virtualbox</a></p></footer><!-- /.post-info -->                
+                <a class="readmore" href="../articles/2016/07/virtualbox中使用U盘等usb设备.html">read more</a>
+<p>There are <a href="../articles/2016/07/virtualbox中使用U盘等usb设备.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../articles/2016/07/centos7安装python3及pip3.html" rel="bookmark" title="Permalink to centos7安装python3及pip3">centos7安装python3及pip3</a></h1>
+                </header>
+                
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-07-07T00:00:00+02:00">
+                四 07 七月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../category/python.html">Python</a>. </p>
+<p>tags: <a href="../tag/python/">python</a><a href="../tag/python3/">python3</a><a href="../tag/pip/">pip</a><a href="../tag/pip3/">pip3</a></p></footer><!-- /.post-info -->                
+                <a class="readmore" href="../articles/2016/07/centos7安装python3及pip3.html">read more</a>
+<p>There are <a href="../articles/2016/07/centos7安装python3及pip3.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../articles/2016/07/记录pip安装报的错.org.html" rel="bookmark" title="Permalink to 记录pip安装报的错.org">记录pip安装报的错.org</a></h1>
+                </header>
+                
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-07-07T00:00:00+02:00">
+                四 07 七月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../category/python.html">Python</a>. </p>
+<p>tags: <a href="../tag/python/">python</a><a href="../tag/pip/">pip</a></p></footer><!-- /.post-info -->                
+                <a class="readmore" href="../articles/2016/07/记录pip安装报的错.org.html">read more</a>
+<p>There are <a href="../articles/2016/07/记录pip安装报的错.org.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../articles/2016/06/emacs解决windowns文件乱码.html" rel="bookmark" title="Permalink to emacs解决windowns文件乱码">emacs解决windowns文件乱码</a></h1>
+                </header>
+                
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-06-22T00:00:00+02:00">
+                三 22 六月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../category/linux.html">Linux</a>. </p>
+<p>tags: <a href="../tag/linux/">linux</a><a href="../tag/emacs/">emacs</a></p></footer><!-- /.post-info -->                
+                <a class="readmore" href="../articles/2016/06/emacs解决windowns文件乱码.html">read more</a>
+<p>There are <a href="../articles/2016/06/emacs解决windowns文件乱码.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../articles/2016/06/黑客丛林之旅.html" rel="bookmark" title="Permalink to 黑客丛林之旅">黑客丛林之旅</a></h1>
+                </header>
+                
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-06-21T00:00:00+02:00">
+                二 21 六月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../category/security.html">Security</a>. </p>
+<p>tags: <a href="../tag/linux/">Linux</a><a href="../tag/web/">web</a><a href="../tag/security/">security</a></p></footer><!-- /.post-info -->                
+                <a class="readmore" href="../articles/2016/06/黑客丛林之旅.html">read more</a>
+<p>There are <a href="../articles/2016/06/黑客丛林之旅.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
 <p class="paginator">
-    Page 1 / 6
+    Page 1 / 2
         <a href="../author/honmaple2.html">&raquo;</a>
 </p>
             </ol><!-- /#posts-list -->

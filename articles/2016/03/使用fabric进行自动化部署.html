@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>使用fabric进行自动化部署</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../../../theme/css/main.css" type="text/css" />
+        <link rel="stylesheet" href="../../../theme/css/pygments/monokai.css" type="text/css" />
+   
+
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../../../css/ie.css"/>
+                <script src="../../../js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../../../css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+<a href="http://github.com/honmaple/honmaple.github.io">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+</a>
+        <header id="banner" class="body">
+                <h1><a href="../../..">HonMaple's Blog </a></h1>
+                <nav><ul>
+                <li> <a href="../../..">主页</a></li>
+                    <li class="active"><a href="../../../category/linux.html">Linux</a></li>
+                    <li ><a href="../../../category/python.html">Python</a></li>
+                    <li ><a href="../../../category/security.html">Security</a></li>
+                    <li ><a href="../../../category/sheng-huo-sui-bi.html">生活随笔</a></li>
+                <li> <a href="../../../archives/">Archives</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="articles/2016/03/使用fabric进行自动化部署.html" rel="bookmark"
+           title="Permalink to 使用fabric进行自动化部署">使用fabric进行自动化部署</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-03-05T00:00:00+01:00">
+                六 05 三月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../../author/2016-03-05-001444784992.html">2016-03-05 00:14:44.784992</a>
+        </address>
+<p>In <a href="../../../category/linux.html">linux</a>. </p>
+<p>tags: <a href="../../../tag/fabric/">fabric</a><a href="../../../tag/linux/">linux</a></p></footer><!-- /.post-info -->      <p>[参考文档](ht</p>
+<p>fabric也使用好久了，这次静下心来好好整理一遍，当然这只是很简单的用法<br />
+<a href="http://docs.fabfile.org/en/1.10/">参考文档</a></p>
+<h3>安装</h3>
+<p>凡事先从安装说起,fabric不支持python3,所以只能安装python2版本的fabric<br />
+由于我使用了virtualenv，所以先退出虚拟环境  </p>
+<div class="highlight"><pre><span></span>$ deactivate
+</pre></div>
+
+
+<p>安装全局fabric  </p>
+<div class="highlight"><pre><span></span>$ sudo pip2 install fabric
+</pre></div>
+
+
+<h3>使用</h3>
+<p>使用之前先想想以前是怎么部署的，是不是这样:<br />
+先ssh到服务器,进行数据备份,然后退出(或者重新开一个终端),然后上传文件到服务器,
+再ssh到服务器,安装所需要的模块,然后退出，ssh到root账户，重启，再退出···<br />
+<strong>是不是想想都烦</strong><br />
+没关系，有了fabric后就不必这么麻烦了,需求:</p>
+<h4>备份数据</h4>
+<div class="highlight"><pre><span></span><span class="c1"># fabfile.py</span>
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">run</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">cd</span><span class="p">,</span> <span class="n">local</span><span class="p">,</span> <span class="n">put</span><span class="p">,</span> <span class="n">get</span>
+
+<span class="k">def</span> <span class="nf">backup</span><span class="p">():</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="s1">&#39;root&#39;</span>
+    <span class="n">dirname</span> <span class="o">=</span> <span class="s1">&#39;backup_&#39;</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="s1">&#39;/root/backup/&#39;</span><span class="p">):</span>
+        <span class="n">run</span><span class="p">(</span><span class="s1">&#39;./backup-db.sh&#39;</span><span class="p">)</span>
+        <span class="n">run</span><span class="p">(</span><span class="s1">&#39;tar zcvf </span><span class="si">%s</span><span class="s1">.tar.gz </span><span class="si">%s</span><span class="s1">/&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">dirname</span><span class="p">))</span>
+    <span class="k">print</span> <span class="s1">&#39;正在下载备份······&#39;</span>
+    <span class="n">get</span><span class="p">(</span><span class="s1">&#39;/root/backup/</span><span class="si">%s</span><span class="s1">.tar.gz&#39;</span> <span class="o">%</span> <span class="n">dirname</span><span class="p">,</span> <span class="s1">&#39;backup/&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>使用<code>fab backup</code>就可以一步备份</p>
+<h4>代码打包上传</h4>
+<div class="highlight"><pre><span></span><span class="nx">def</span> <span class="nx">pack</span><span class="p">():</span>
+    <span class="s1">&#39;&#39;&#39;这是我需要打包的文件&#39;&#39;&#39;</span>
+    <span class="kd">local</span><span class="p">(</span><span class="s1">&#39;pip freeze &gt; requirements.txt&#39;</span><span class="p">)</span>
+    <span class="kd">local</span><span class="p">(</span><span class="s1">&#39;tar zcvf hohai.tar.gz manager.py requirements.txt app/ migrations/</span><span class="se">\</span><span class="s1"></span>
+<span class="s1">          --exclude=&quot;*.pyc&quot; </span><span class="se">\</span><span class="s1"></span>
+<span class="s1">          --exclude=&quot;*.swp&quot; </span><span class="se">\</span><span class="s1"></span>
+<span class="s1">          --exclude=&quot;**/__pycache__&quot; </span><span class="se">\</span><span class="s1"></span>
+<span class="s1">          --exclude=&quot;**/.webassets-cache&quot;&#39;</span><span class="p">)</span>
+
+<span class="nx">def</span> <span class="nx">putcode</span><span class="p">():</span>
+    <span class="n">env.user</span><span class="o"> =</span> <span class="s1">&#39;账户名称&#39;</span>
+    <span class="nx">print</span> <span class="s1">&#39;正在上传代码······&#39;</span>
+    <span class="nx">put</span><span class="p">(</span><span class="s1">&#39;hohai.tar.gz&#39;</span><span class="p">,</span> <span class="s1">&#39;~/hhuc/&#39;</span><span class="p">)</span>
+    <span class="kd">local</span><span class="p">(</span><span class="s1">&#39;rm hohai.tar.gz&#39;</span><span class="p">)</span>
+    <span class="nx">print</span> <span class="s1">&#39;正在备份数据······&#39;</span>
+    <span class="nx">run</span><span class="p">(</span><span class="s1">&#39;cp -r ~/hhuc/app/ ~/backup/hhuc/&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nx">cd</span><span class="p">(</span><span class="s1">&#39;~/hhuc/&#39;</span><span class="p">):</span>
+        <span class="nx">run</span><span class="p">(</span><span class="s1">&#39;rm -rf app/&#39;</span><span class="p">)</span>
+        <span class="nx">run</span><span class="p">(</span><span class="s1">&#39;tar zxvf hohai.tar.gz&#39;</span><span class="p">)</span>
+        <span class="nx">run</span><span class="p">(</span><span class="s1">&#39;rm hohai.tar.gz&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>使用<code>fab pack putcode</code>一步打包上传</p>
+<h4>重启服务器</h4>
+<div class="highlight"><pre><span></span>def restart():
+    &quot;&quot;&quot;重启服务器&quot;&quot;&quot;
+    env.user = &#39;root&#39;
+    run(&#39;supervisorctl restart hhuc&#39;)
+</pre></div>
+
+
+<h4>一键部署</h4>
+<div class="highlight"><pre><span></span><span class="nx">def</span> <span class="nx">deploy</span><span class="p">():</span>
+    <span class="n">env.user</span><span class="o"> =</span> <span class="s1">&#39;honmaple&#39;</span>
+    <span class="nx">print</span> <span class="s1">&#39;正在上传代码······&#39;</span>
+    <span class="nx">put</span><span class="p">(</span><span class="s1">&#39;hohai.tar.gz&#39;</span><span class="p">,</span> <span class="s1">&#39;~/hhuc/&#39;</span><span class="p">)</span>
+    <span class="kd">local</span><span class="p">(</span><span class="s1">&#39;rm hohai.tar.gz&#39;</span><span class="p">)</span>
+    <span class="nx">print</span> <span class="s1">&#39;正在备份数据······&#39;</span>
+    <span class="nx">run</span><span class="p">(</span><span class="s1">&#39;cp -r ~/hhuc/app/ ~/backup/hhuc/&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nx">cd</span><span class="p">(</span><span class="s1">&#39;~/hhuc/&#39;</span><span class="p">):</span>
+        <span class="nx">run</span><span class="p">(</span><span class="s1">&#39;rm -rf app/&#39;</span><span class="p">)</span>
+        <span class="nx">run</span><span class="p">(</span><span class="s1">&#39;tar zxvf hohai.tar.gz&#39;</span><span class="p">)</span>
+        <span class="nx">run</span><span class="p">(</span><span class="s1">&#39;rm hohai.tar.gz&#39;</span><span class="p">)</span>
+    <span class="nx">restart</span><span class="p">()</span>
+    <span class="nx">print</span> <span class="s1">&#39;部署成功······&#39;</span>
+</pre></div>
+
+
+<p>使用<code>fab pack deploy</code>就可部署<br />
+ok,就这样</p>
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "articles/2016/03/使用fabric进行自动化部署.html";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'https://honmaple.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                            <li><a href="https://honmaple.com">个人博客</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            
+                            <li><a href="https://github.com/honmaple">GitHub</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

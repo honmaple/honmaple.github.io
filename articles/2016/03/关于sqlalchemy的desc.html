@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>关于sqlalchemy的desc</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../../../theme/css/main.css" type="text/css" />
+        <link rel="stylesheet" href="../../../theme/css/pygments/monokai.css" type="text/css" />
+   
+
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../../../css/ie.css"/>
+                <script src="../../../js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../../../css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+<a href="http://github.com/honmaple/honmaple.github.io">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+</a>
+        <header id="banner" class="body">
+                <h1><a href="../../..">HonMaple's Blog </a></h1>
+                <nav><ul>
+                <li> <a href="../../..">主页</a></li>
+                    <li ><a href="../../../category/linux.html">Linux</a></li>
+                    <li class="active"><a href="../../../category/python.html">Python</a></li>
+                    <li ><a href="../../../category/security.html">Security</a></li>
+                    <li ><a href="../../../category/sheng-huo-sui-bi.html">生活随笔</a></li>
+                <li> <a href="../../../archives/">Archives</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="articles/2016/03/关于sqlalchemy的desc.html" rel="bookmark"
+           title="Permalink to 关于sqlalchemy的desc">关于sqlalchemy的desc</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-03-05T00:00:00+01:00">
+                六 05 三月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../../author/2016-03-05-170236545788.html">2016-03-05 17:02:36.545788</a>
+        </address>
+<p>In <a href="../../../category/python.html">python</a>. </p>
+<p>tags: <a href="../../../tag/flask/">flask</a><a href="../../../tag/sqlalchemy/">sqlalchemy</a></p></footer><!-- /.post-info -->      <h3>简单使用</h3>
+<p>questions = Questions.query.o</p>
+<p>也就是降序排序</p>
+<h3>简单使用</h3>
+<p>questions = Questions.query.order_by(Questions.time.desc()).all()</p>
+<h3>设置默认排序</h3>
+<p>如果几乎所有的questions都是按照时间降序排序,总不能每一条语句都加上<code>order_by(Questions.time.desc())</code><br />
+所以设置默认排序是有效的</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="n">Questions</span>(<span class="n">db</span>.<span class="n">Model</span>):
+    <span class="n">__tablename__</span> = <span class="s">&#39;questions&#39;</span>
+    <span class="n">id</span> = <span class="n">db</span>.<span class="n">Column</span>(<span class="n">db</span>.<span class="n">Integer</span>, <span class="n">primary_key</span>=<span class="nb">True</span>)
+    <span class="n">title</span> = <span class="n">db</span>.<span class="n">Column</span>(<span class="n">db</span>.<span class="n">String</span>(<span class="mi">50</span>), <span class="n">nullable</span>=<span class="nb">False</span>)
+    <span class="n">content</span> = <span class="n">db</span>.<span class="n">Column</span>(<span class="n">db</span>.<span class="n">Text</span>, <span class="n">nullable</span>=<span class="nb">False</span>)
+    <span class="nb">time</span> = <span class="n">db</span>.<span class="n">Column</span>(<span class="n">db</span>.<span class="n">DateTime</span>, <span class="n">nullable</span>=<span class="nb">False</span>)
+
+    <span class="n">__mapper_args__</span> = {
+        <span class="s">&quot;order_by&quot;</span>: <span class="nb">time</span>.<span class="n">desc</span>()
+    }
+</pre></div>
+
+
+<p>如代码所示,使用<code>__mapper_args__</code>就可，<code>__mapper_args__</code>可以做很多事,具体看<a href="http://docs.sqlalchemy.org/en/latest/orm/mapping_api.html">这里</a><br />
+设置默认排序下面的做法是<strong>错误</strong>的  </p>
+<div class="highlight"><pre><span></span>    __mapper_args__ = {
+        &quot;order_by&quot;: &#39;Questions.time.desc()&#39;
+    }
+    # 或者
+    __mapper_args__ = {
+        &quot;order_by&quot;: &#39;Questions.time desc&#39;
+    }
+    # 或者
+    __mapper_args__ = {
+        &quot;order_by&quot;: &#39;desc(Questions.time)&#39;
+    }
+</pre></div>
+
+
+<h3>多对多默认排序</h3>
+<p>比如这样  </p>
+<div class="highlight"><pre><span></span>question = Questions.query.filter_by(id=1).first()
+for reply in question.replies:
+    print(reply.content)
+</pre></div>
+
+
+<p>又如何设置回复是按照回复时间排序的<br />
+总不能这样  </p>
+<div class="highlight"><pre><span></span>for reply in sorted(question.replies):
+# 这会报错的
+TypeError: unorderable types: Replies() &lt; Replies()
+</pre></div>
+
+
+<p>怎么设置  </p>
+<div class="highlight"><pre><span></span>replies = db.relationship(&#39;Questions&#39;,
+                          backref=db.backref(&#39;replies&#39;,
+                                             lazy=&#39;dynamic&#39;,
+                                             order_by=&#39;Replies.time&#39;)
+</pre></div>
+
+
+<p>ok，暂时这样</p>
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "articles/2016/03/关于sqlalchemy的desc.html";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'https://honmaple.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                            <li><a href="https://honmaple.com">个人博客</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            
+                            <li><a href="https://github.com/honmaple">GitHub</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>HonMaple's Blog - 2016-07-25 12:38:00</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../theme/css/main.css" type="text/css" />
+        <link rel="stylesheet" href="../theme/css/pygments/monokai.css" type="text/css" />
+   
+
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../css/ie.css"/>
+                <script src="../js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+<a href="http://github.com/honmaple/honmaple.github.io">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+</a>
+        <header id="banner" class="body">
+                <h1><a href="..">HonMaple's Blog </a></h1>
+                <nav><ul>
+                <li> <a href="..">主页</a></li>
+                    <li ><a href="../category/linux.html">Linux</a></li>
+                    <li ><a href="../category/python.html">Python</a></li>
+                    <li ><a href="../category/security.html">Security</a></li>
+                    <li ><a href="../category/sheng-huo-sui-bi.html">生活随笔</a></li>
+                <li> <a href="../archives/">Archives</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+        
+        
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="../articles/2016/07/如何安装及使用Honmaple社区程序.html">如何安装及使用Honmaple社区程序</a></h1> 
+<footer class="post-info">
+        <abbr class="published" title="2016-07-25T00:00:00+02:00">
+                一 25 七月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../author/2016-07-25-123800.html">2016-07-25 12:38:00</a>
+        </address>
+<p>In <a href="../category/sheng-huo-sui-bi.html">生活随笔</a>. </p>
+<p>tags: <a href="../tag/python/">python</a><a href="../tag/flask/">flask</a></p></footer><!-- /.post-info --><div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline6">1. 如何安装及使用</a>
+<ul>
+<li><a href="#orgheadline1">1.1. 安装需要的package</a></li>
+<li><a href="#orgheadline2">1.2. 配置config</a></li>
+<li><a href="#orgheadline3">1.3. 注释下面代码</a></li>
+<li><a href="#orgheadline4">1.4. 初始化数据库</a></li>
+<li><a href="#orgheadline5">1.5. 创建管理员账户</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline8">2. 本地搭建</a>
+<ul>
+<li><a href="#orgheadline7">2.1. 登陆并进入后台</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline13">3. 服务端搭建</a>
+<ul>
+<li><a href="#orgheadline9">3.1. 配置nginx</a></li>
+<li><a href="#orgheadline10">3.2. 配置supervior</a></li>
+<li><a href="#orgheadline11">3.3. 配置gunicorn</a></li>
+<li><a href="#orgheadline12">3.4. 启动</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<h1>如何安装及使用<a id="orgheadline6"></a></h1>
+<h2>安装需要的package<a id="orgheadline1"></a></h2>
+<div class="highlight"><pre><span></span>pip install -r requirements.txt
+</pre></div>
+
+
+<h2>配置config<a id="orgheadline2"></a></h2>
+<p>查看配置详细介绍</p>
+<h2>注释下面代码<a id="orgheadline3"></a></h2>
+<p>因为如果不注释的话 <strong>初始化数据库</strong> 会报错</p>
+<p>文件位置: <strong>maple/topic/forms.py</strong></p>
+<div class="highlight"><pre><span></span>category = SelectField(
+    _(&#39;Category:&#39;),
+    choices=[(b.id, b.board + &#39;   --&#39; + b.parent_board)
+             for b in Board.query.all()],
+    coerce=int)
+</pre></div>
+
+
+<h2>初始化数据库<a id="orgheadline4"></a></h2>
+<div class="highlight"><pre><span></span>python manage.py db init
+python manage.py db migrate -m &quot;first migrate&quot;
+python manage.py db upgrade
+</pre></div>
+
+
+<p>ok,将第三步中注释的内容恢复</p>
+<h2>创建管理员账户<a id="orgheadline5"></a></h2>
+<div class="highlight"><pre><span></span>python manager.py create_user
+</pre></div>
+
+
+<h1>本地搭建<a id="orgheadline8"></a></h1>
+<hr />
+<h2>登陆并进入后台<a id="orgheadline7"></a></h2>
+<div class="highlight"><pre><span></span>python manager.py runserver
+</pre></div>
+
+
+<p>Visit <a href="http://forums.localhost:5000/admin">http://forums.localhost:5000/admin</a></p>
+<h1>服务端搭建<a id="orgheadline13"></a></h1>
+<hr />
+<p>参考 <a href="http://flask.pocoo.org/docs/0.11/deploying/wsgi-standalone/">http://flask.pocoo.org/docs/0.11/deploying/</a></p>
+<p>以我的配置为例:</p>
+<h2>配置nginx<a id="orgheadline9"></a></h2>
+<div class="highlight"><pre><span></span><span class="nt">server</span> <span class="p">{</span>
+    <span class="n">listen</span> <span class="m">80</span><span class="p">;</span>
+
+    <span class="n">server_name</span> <span class="n">_</span><span class="p">;</span>
+
+    <span class="n">access_log</span>  <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">nginx</span><span class="o">/</span><span class="n">access</span><span class="o">.</span><span class="n">log</span><span class="p">;</span>
+    <span class="n">error_log</span>  <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">nginx</span><span class="o">/</span><span class="n">error</span><span class="o">.</span><span class="n">log</span><span class="p">;</span>
+
+    <span class="n">location</span> <span class="o">/</span> <span class="err">{</span>
+        <span class="n">proxy_pass</span>         <span class="n">http</span><span class="o">://</span><span class="m">127</span><span class="o">.</span><span class="m">0</span><span class="o">.</span><span class="m">0</span><span class="o">.</span><span class="m">1</span><span class="o">:</span><span class="m">8000</span><span class="o">/</span><span class="p">;</span>
+        <span class="n">proxy_redirect</span>     <span class="n">off</span><span class="p">;</span>
+
+        <span class="n">proxy_set_header</span>   <span class="n">Host</span>                 <span class="err">$</span><span class="n">host</span><span class="p">;</span>
+        <span class="n">proxy_set_header</span>   <span class="n">X</span><span class="o">-</span><span class="n">Real</span><span class="o">-</span><span class="n">IP</span>            <span class="err">$</span><span class="n">remote_addr</span><span class="p">;</span>
+        <span class="n">proxy_set_header</span>   <span class="n">X</span><span class="o">-</span><span class="n">Forwarded</span><span class="o">-</span><span class="n">For</span>      <span class="err">$</span><span class="n">proxy_add_x_forwarded_for</span><span class="p">;</span>
+        <span class="n">proxy_set_header</span>   <span class="n">X</span><span class="o">-</span><span class="n">Forwarded</span><span class="o">-</span><span class="n">Proto</span>    <span class="err">$</span><span class="n">scheme</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="err">}</span>
+</pre></div>
+
+
+<h2>配置supervior<a id="orgheadline10"></a></h2>
+<div class="highlight"><pre><span></span><span class="k">[program:forums]</span>
+<span class="na">user</span><span class="o">=</span><span class="s">www</span>
+<span class="na">command</span><span class="o">=</span><span class="s">/home/www/forums/venv/bin/gunicorn run:app -c /home/www/forums/gunicorn.conf</span>
+<span class="na">directory</span><span class="o">=</span><span class="s">/home/www/forums</span>
+<span class="na">autostart</span><span class="o">=</span><span class="s">true</span>
+<span class="na">autorestart</span><span class="o">=</span><span class="s">true</span>
+<span class="na">stdout_logfile</span><span class="o">=</span><span class="s">/home/www/forums/logs/gunicorn_supervisor.log</span>
+</pre></div>
+
+
+<h2>配置gunicorn<a id="orgheadline11"></a></h2>
+<div class="highlight"><pre><span></span>workers = 2
+bind = &#39;127.0.0.1:8000&#39;
+</pre></div>
+
+
+<h2>启动<a id="orgheadline12"></a></h2>
+<p>确定配置无误后</p>
+<div class="highlight"><pre><span></span>supervisord -c /etc/supervisord.conf
+supervisorctl -c /etc/supervisord.conf reload
+</pre></div><p>There are <a href="../articles/2016/07/如何安装及使用Honmaple社区程序.html#disqus_thread">comments</a>.</p>                </article>
+<p class="paginator">
+    Page 1 / 1
+</p>
+            </aside><!-- /#featured -->
+            </ol><!-- /#posts-list -->
+            </section><!-- /#content -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                            <li><a href="https://honmaple.com">个人博客</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            
+                            <li><a href="https://github.com/honmaple">GitHub</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <title>HonMaple's Blog - [jquery</title>
+        <title>HonMaple's Blog - jquery</title>
         <meta charset="utf-8" />
         <link rel="stylesheet" href="../../theme/css/main.css" type="text/css" />
         <link rel="stylesheet" href="../../theme/css/pygments/monokai.css" type="text/css" />
@@ -29,9 +29,9 @@
                 <li> <a href="../..">主页</a></li>
                     <li ><a href="../../category/linux.html">Linux</a></li>
                     <li ><a href="../../category/python.html">Python</a></li>
+                    <li ><a href="../../category/security.html">Security</a></li>
                     <li ><a href="../../category/sheng-huo-sui-bi.html">生活随笔</a></li>
                 <li> <a href="../../archives/">Archives</a></li>
-                    <li><a href="../../pages/about">About</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
         
@@ -39,66 +39,67 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../../articles/2016/02/shi-yong-jqueryshi-xian-markdownyu-lan.html">使用jquery实现markdown预览</a></h1> 
+                    <h1 class="entry-title"><a href="../../articles/2016/02/flask使用ajax.html">flask使用ajax</a></h1> 
 <footer class="post-info">
-        <abbr class="published" title="2016-02-10T00:00:00+01:00">
-                三 10 二月 2016
+        <abbr class="published" title="2016-02-02T00:00:00+01:00">
+                二 02 二月 2016
         </abbr>
 
         <address class="vcard author">
-                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+                By <a class="url fn" href="../../author/2016-02-02-165701607024.html">2016-02-02 16:57:01.607024</a>
         </address>
-<p>In <a href="../../category/linux.html">Linux</a>. </p>
-<p>tags: <a href="../../tag/jquery/">[jquery</a><a href="../../tag/markdown/">markdown]</a></p></footer><!-- /.post-info --><blockquote>
-<p>虽然算不上是实时预览<br />
-实时预览功能等有时间在把它加上</p>
-</blockquote>
-<p>还是把实时预览加上，不过实时预览可能会对网站有所影响，读者看着加上</p>
-<h4>前端</h4>
-<div class="highlight"><pre><span></span><span class="nt">&lt;script</span> <span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
-function previewTopicContent(){
-    $.getJSON(&quot;<span class="cp">{{</span> <span class="nv">url_for</span><span class="o">(</span><span class="s1">&#39;blog.preview&#39;</span><span class="o">)</span> <span class="cp">}}</span>&quot;, {
-        content: $(&quot;#content&quot;).val(),
-    }, function(data) {
-        $(&quot;#showPreview&quot;).html(data.result);
+<p>In <a href="../../category/python.html">python</a>. </p>
+<p>tags: <a href="../../tag/flask/">flask</a><a href="../../tag/ajax/">ajax</a><a href="../../tag/jquery/">jquery</a></p></footer><!-- /.post-info --><p>[参考文档](http://www.w3school.com.cn/jq</p>
+<h3>简单使用ajax</h3>
+<p><a href="http://www.w3school.com.cn/jquery/jquery_ref_ajax.asp">参考文档</a>  </p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;script</span> <span class="na">type=</span><span class="s">text/javascript</span><span class="nt">&gt;</span>
+$(document).ready(function(){
+    $(&#39;button#ajax&#39;).click(function() {
+        $.ajax ({
+            type : &quot;POST&quot;,
+            url : &quot;<span class="cp">{{</span> <span class="nv">url_for</span><span class="o">(</span><span class="s1">&#39;index.login&#39;</span><span class="o">)</span> <span class="cp">}}</span>&quot;,
+            data:JSON.stringify({
+                name: $(&#39;input[name=&quot;name&quot;]&#39;).val(),
+                passwd: $(&#39;input[name=&quot;passwd&quot;]&#39;).val()
+            }),
+            contentType: &#39;application/json;charset=UTF-8&#39;,
+            success: function(result) {
+                if (result.judge == true)
+                {
+                    window.location = &#39;/&#39;;
+                }
+                else 
+                {
+                    $(&quot;#showerror&quot;).show();
+                    $(&quot;#error&quot;).text(result.error);
+                }
+            }
+        });
     });
-   /*setTimeout(&#39;previewTopicContent()&#39;,300);*/
-};
+});
 <span class="nt">&lt;/script&gt;</span>
 </pre></div>
 
 
-<p>或者  </p>
-<div class="highlight"><pre><span></span><span class="x">function previewTopicContent(){</span>
-<span class="x">    $.get(&quot;</span><span class="cp">{{</span> <span class="nv">url_for</span><span class="o">(</span><span class="s1">&#39;blog.preview&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="x">&quot;, {</span>
-<span class="x">        content: $(&quot;#content&quot;).val(),</span>
-<span class="x">    }, function(data) {</span>
-<span class="x">        $(&quot;#showPreview&quot;).html(data);</span>
+<h3>ajax使用CSRF</h3>
+<p><a href="http://flask-wtf.readthedocs.org/en/latest/csrf.html">参考文档</a>  </p>
+<h4>首先注册CSRF</h4>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask_wtf.csrf</span> <span class="kn">import</span> <span class="n">CsrfProtect</span>
+<span class="n">csrf</span> <span class="o">=</span> <span class="n">CsrfProtect</span><span class="p">()</span>
+<span class="n">csrf</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+</pre></div>
+
+
+<h4>在模板中使用</h4>
+<div class="highlight"><pre><span></span><span class="x">var csrftoken = &quot;</span><span class="cp">{{</span> <span class="nv">csrf_token</span><span class="o">()</span> <span class="cp">}}</span><span class="x">&quot;</span>
+<span class="x">    $.ajaxSetup({</span>
+<span class="x">        beforeSend: function(xhr, settings) {</span>
+<span class="x">            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) &amp;&amp; !this.crossDomain) {</span>
+<span class="x">                xhr.setRequestHeader(&quot;X-CSRFToken&quot;, csrftoken)</span>
+<span class="x">            }</span>
+<span class="x">        }</span>
 <span class="x">    });</span>
-<span class="x">};</span>
-</pre></div>
-
-
-<h4>服务端</h4>
-<div class="highlight"><pre><span></span><span class="nd">@site.route</span><span class="p">(</span><span class="s1">&#39;/pages/preview&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">preview</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">misaka</span> <span class="kn">import</span> <span class="n">Markdown</span><span class="p">,</span> <span class="n">HtmlRenderer</span>
-    <span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">jsonify</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;content&#39;</span><span class="p">)</span>
-    <span class="n">html</span> <span class="o">=</span> <span class="n">HtmlRenderer</span><span class="p">()</span>
-    <span class="n">markdown</span> <span class="o">=</span> <span class="n">Markdown</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="n">Markup</span><span class="p">(</span><span class="n">markdown</span><span class="p">(</span><span class="n">content</span><span class="p">)))</span>
-</pre></div>
-
-
-<p>或者  </p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">preview</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">misaka</span> <span class="kn">import</span> <span class="n">Markdown</span><span class="p">,</span> <span class="n">HtmlRenderer</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;content&#39;</span><span class="p">)</span>
-    <span class="n">html</span> <span class="o">=</span> <span class="n">HtmlRenderer</span><span class="p">()</span>
-    <span class="n">markdown</span> <span class="o">=</span> <span class="n">Markdown</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">Markup</span><span class="p">(</span><span class="n">markdown</span><span class="p">(</span><span class="n">content</span><span class="p">))</span>
-</pre></div><p>There are <a href="../../articles/2016/02/shi-yong-jqueryshi-xian-markdownyu-lan.html#disqus_thread">comments</a>.</p>                </article>
+</pre></div><p>There are <a href="../../articles/2016/02/flask使用ajax.html#disqus_thread">comments</a>.</p>                </article>
             </aside><!-- /#featured -->
                 <section id="content" class="body">
                     <h1>Other articles</h1>
@@ -109,22 +110,24 @@ function previewTopicContent(){
  
             <li><article class="hentry">    
                 <header>
-                        <h1><a href="../../articles/2016/02/flaskshi-yong-ajax.html" rel="bookmark" title="Permalink to flask使用ajax">flask使用ajax</a></h1>
+                        <h1><a href="../../articles/2016/02/使用jquery实现markdown预览.html" rel="bookmark" title="Permalink to 使用jquery实现markdown预览">使用jquery实现markdown预览</a></h1>
                 </header>
                 
                 <div class="entry-content">
 <footer class="post-info">
-        <abbr class="published" title="2016-02-01T00:00:00+01:00">
-                一 01 二月 2016
+        <abbr class="published" title="2016-02-02T00:00:00+01:00">
+                二 02 二月 2016
         </abbr>
 
         <address class="vcard author">
-                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+                By <a class="url fn" href="../../author/2016-02-02-193237093929.html">2016-02-02 19:32:37.093929</a>
         </address>
-<p>In <a href="../../category/python.html">Python</a>. </p>
-<p>tags: <a href="../../tag/flask/">[flask</a><a href="../../tag/ajax/">ajax</a><a href="../../tag/jquery/">jquery]</a></p></footer><!-- /.post-info -->                <p><a href="http://www.w3school.com.cn/jquery/jquery_ref_ajax.asp">参考文档</a></p>
-                <a class="readmore" href="../../articles/2016/02/flaskshi-yong-ajax.html">read more</a>
-<p>There are <a href="../../articles/2016/02/flaskshi-yong-ajax.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+<p>In <a href="../../category/linux.html">linux</a>. </p>
+<p>tags: <a href="../../tag/jquery/">jquery</a><a href="../../tag/markdown/">markdown</a></p></footer><!-- /.post-info -->                <blockquote>
+<p>虽然算不上是实时预览</p>
+</blockquote>
+                <a class="readmore" href="../../articles/2016/02/使用jquery实现markdown预览.html">read more</a>
+<p>There are <a href="../../articles/2016/02/使用jquery实现markdown预览.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
 <p class="paginator">
     Page 1 / 1
