@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>HonMaple's Blog</title><link>http://honmaple.org/</link><description></description><lastBuildDate>Mon, 25 Apr 2016 00:00:00 +0800</lastBuildDate><item><title>sqlalchemy学习(一)</title><link>http://honmaple.org/articles/2016/04/sqlalchemy%E5%AD%A6%E4%B9%A0(%E4%B8%80).html</link><description>&lt;h1&gt;sqlalchemy&lt;a id="orgheadline19"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;系统的学一下&lt;/p&gt;
+&lt;h1&gt;sqlalchemy&lt;a id="orgheadline19"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;系统的学一下sqlalchemyA,不过没有中文文档,只能用我的渣英文能力慢慢看原文档了&lt;/p&gt;
+&lt;h2&gt;数据库连接&lt;a id="orgheadline6"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sqlalchemy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;create_engine&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;engine&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;create_engine&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;sqlite:///:memory:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;echo&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;echo为True输出日志&lt;/p&gt;
+&lt;h3&gt;各种数据库连接方式&lt;a id="orgheadline5"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dialect+driver://username:password@host:port/database
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Postgresql&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# default
+engine = create_engine(&amp;#39;postgresql://scott:tiger@localhost/mydatabase&amp;#39;)
+# psycopg2
+engine = create_engine(&amp;#39;postgresql+psycopg2://scott:tiger@localhost/mydatabase&amp;#39;)
+# pg8000
+engine = create_engine(&amp;#39;postgresql+pg8000://scott:tiger@localhost/mydatabase&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;MySQL&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# default
+engine = create_engine(&amp;#39;mysql://scott:tiger@localhost/foo&amp;#39;)
+# mysql-python
+engine = create_engine(&amp;#39;mysql+mysqldb://scott:tiger@localhost/foo&amp;#39;)
+# MySQL-connector-python
+engine = create_engine(&amp;#39;mysql+mysqlconnector://scott:tiger@localhost/foo&amp;#39;)
+# OurSQL
+engine = create_engine(&amp;#39;mysql+oursql://scott:tiger@localhost/foo&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Oracle&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;engine&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;create_engine&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="nl"&gt;oracle&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="c1"&gt;//scott:tiger@127.0.0.1:1521/sidname&amp;#39;)&lt;/span&gt;
+&lt;span class="n"&gt;engine&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;create_engine&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="n"&gt;oracle&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="nl"&gt;cx_oracle&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="c1"&gt;//scott:tiger@tnsname&amp;#39;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SQLite&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# sqlite://&amp;lt;nohostname&amp;gt;/&amp;lt;path&amp;gt;
+# where &amp;lt;path&amp;gt; is relative:
+engine = create_engine(&amp;#39;sqlite:///foo.db&amp;#39;)
+#Unix/Mac - 4 initial slashes in total
+engine = create_engine(&amp;#39;sqlite:////absolute/path/to/foo.db&amp;#39;)
+#Windows
+engine = create_engine(&amp;#39;sqlite:///C:\\path\\to\\foo.db&amp;#39;)
+#Windows alternative using raw string
+engine = create_engine(r&amp;#39;sqlite:///C:\path\to\foo.db&amp;#39;)
+# To use a SQLite :memory: database, specify an empty URL:
+engine = create_engine(&amp;#39;sqlite://&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;声明样式&lt;a id="orgheadline11"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sqlalchemy.ext.declarative&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;declarative_base&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sqlalchemy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Column&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Integer&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt;
+
+&lt;span class="n"&gt;Base&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;declarative_base&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;User&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Base&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+     &lt;span class="n"&gt;__tablename__&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;users&amp;#39;&lt;/span&gt;
+
+     &lt;span class="nb"&gt;id&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Column&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Integer&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;primary_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+     &lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Column&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+     &lt;span class="n"&gt;fullname&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Column&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+     &lt;span class="n"&gt;password&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Column&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__repr__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;&amp;lt;User(name=&amp;#39;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s2"&gt;&amp;#39;, fullname=&amp;#39;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s2"&gt;&amp;#39;, password=&amp;#39;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s2"&gt;&amp;#39;)&amp;gt;&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
+                             &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fullname&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;password&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;样式参数说明&lt;a id="orgheadline7"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+&lt;colgroup&gt;
+&lt;col  class="org-left" /&gt;
+
+&lt;col  class="org-left" /&gt;
+&lt;/colgroup&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;td class="org-left"&gt;说明&lt;/td&gt;
+&lt;/tr&gt;
+
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;**\_&lt;sub&gt;tablename&lt;/sub&gt;\_\_**&lt;/td&gt;
+&lt;td class="org-left"&gt;表名&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3&gt;字段类型及说明&lt;a id="orgheadline10"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;&lt;a href="http://docs.sqlalchemy.org/en/rel_1_0/core/type_basics.html#sqlalchemy.types.Integer"&gt;字段类型及文档&lt;/a&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Generic Types&lt;/p&gt;
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+&lt;p&gt;&lt;colgroup&gt;
+&lt;col  class="org-left" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;col  class="org-left" /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th scope="col" class="org-left"&gt;字段类型&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-left"&gt;BigInteger&lt;/td&gt;
+&lt;td class="org-left"&gt;大数&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Boolean(create&lt;sub&gt;constraint&lt;/sub&gt;=True, name=None, _create&lt;sub&gt;events&lt;/sub&gt;=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;布尔&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Data&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;DateTime(timezone=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;时间&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Enum(*enums, **kw)&lt;/td&gt;
+&lt;td class="org-left"&gt;枚举&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Float(precision=None, asdecimal=False, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;浮点型&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Integer&lt;/td&gt;
+&lt;td class="org-left"&gt;整型&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Interval(native=True, second&lt;sub&gt;precision&lt;/sub&gt;=None, day&lt;sub&gt;precision&lt;/sub&gt;=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;时间间隔&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;LargeBinary(length=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;二进制大对象&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;MatchType(create&lt;sub&gt;constraint&lt;/sub&gt;=True, name=None, _create&lt;sub&gt;events&lt;/sub&gt;=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Numeric(precision=None, scale=None, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, asdecimal=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;PickleType(protocol=2, pickler=None, comparator=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;SchemaType(name=None, schema=None, metadata=None, inherit&lt;sub&gt;schema&lt;/sub&gt;=False, quote=None, _create&lt;sub&gt;events&lt;/sub&gt;=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;SmallInteger&lt;/td&gt;
+&lt;td class="org-left"&gt;小整型&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;String(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;字符串&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Text(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;文本对象&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Time(timezone=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;时间&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;Unicode(length=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;UnicodeText(length=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SQL Standard Types&lt;/p&gt;
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+&lt;p&gt;&lt;colgroup&gt;
+&lt;col  class="org-left" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;col  class="org-left" /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th scope="col" class="org-left"&gt;字段类型&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-left"&gt;BIGINT&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;BINARY(length=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;BLOB(length=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;BOOLEAN(create&lt;sub&gt;constraint&lt;/sub&gt;=True, name=None, _create&lt;sub&gt;events&lt;/sub&gt;=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;CHAR(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;CLOB(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;DATE&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;DATETIME(timezone=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;DECIMAL(precision=None, scale=None, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, asdecimal=True)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;FLOAT(precision=None, asdecimal=False, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;INT&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;INTEGER&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;NCHAR(length=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;NVARCHAR(length=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;NUMERIC(precision=None, scale=None, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, asdecimal=True)¶&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;REAL(precision=None, asdecimal=False, decimal&lt;sub&gt;return&lt;/sub&gt;&lt;sub&gt;scale&lt;/sub&gt;=None, **kwargs)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;SMALLINT&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;TEXT(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;TIME(timezone=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;TIMESTAMP(timezone=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;VARBINARY(length=None)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;&lt;/p&gt;
+&lt;p&gt;&lt;tr&gt;
+&lt;td class="org-left"&gt;VARCHAR(length=None, collation=None, convert&lt;sub&gt;unicode&lt;/sub&gt;=False, unicode&lt;sub&gt;error&lt;/sub&gt;=None, _warn&lt;sub&gt;on&lt;/sub&gt;&lt;sub&gt;bytestring&lt;/sub&gt;=False)&lt;/td&gt;
+&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;创建表&lt;a id="orgheadline12"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Base.metadata.create_all(engine)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;为表创建实例&lt;a id="orgheadline13"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; ed_user = User(name=&amp;#39;ed&amp;#39;, fullname=&amp;#39;Ed Jones&amp;#39;, password=&amp;#39;edspassword&amp;#39;)
+&amp;gt;&amp;gt;&amp;gt; ed_user.name
+&amp;#39;ed&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; ed_user.password
+&amp;#39;edspassword&amp;#39;
+&amp;gt;&amp;gt;&amp;gt; str(ed_user.id)
+&amp;#39;None&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;创建session&lt;a id="orgheadline14"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sqlalchemy.orm&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;sessionmaker&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;Session&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sessionmaker&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;bind&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;engine&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;你也可以先创建Session,在创建应用前&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; Session = sessionmaker()
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;当你创建了应用,可以这样配置&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; Session.configure(bind=engine)  # once engine is available
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;插入和更新数据&lt;a id="orgheadline18"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;h3&gt;插入&lt;a id="orgheadline15"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;插入一条数据&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; ed_user = User(name=&amp;#39;ed&amp;#39;, fullname=&amp;#39;Ed Jones&amp;#39;, password=&amp;#39;edspassword&amp;#39;)
+&amp;gt;&amp;gt;&amp;gt; session.add(ed_user)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;插入多条数据&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; session.add_all([
+...     User(name=&amp;#39;wendy&amp;#39;, fullname=&amp;#39;Wendy Williams&amp;#39;, password=&amp;#39;foobar&amp;#39;),
+...     User(name=&amp;#39;mary&amp;#39;, fullname=&amp;#39;Mary Contrary&amp;#39;, password=&amp;#39;xxg527&amp;#39;),
+...     User(name=&amp;#39;fred&amp;#39;, fullname=&amp;#39;Fred Flinstone&amp;#39;, password=&amp;#39;blah&amp;#39;)])
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;更新&lt;a id="orgheadline16"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; ed_user.password = &amp;#39;f8s7ccs&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;查看&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; session.dirty
+IdentitySet([&amp;lt;User(name=&amp;#39;ed&amp;#39;, fullname=&amp;#39;Ed Jones&amp;#39;, password=&amp;#39;f8s7ccs&amp;#39;)&amp;gt;])
+&amp;gt;&amp;gt;&amp;gt; session.new  # doctest: +SKIP
+IdentitySet([&amp;lt;User(name=&amp;#39;wendy&amp;#39;, fullname=&amp;#39;Wendy Williams&amp;#39;, password=&amp;#39;foobar&amp;#39;)&amp;gt;,
+&amp;lt;User(name=&amp;#39;mary&amp;#39;, fullname=&amp;#39;Mary Contrary&amp;#39;, password=&amp;#39;xxg527&amp;#39;)&amp;gt;,
+&amp;lt;User(name=&amp;#39;fred&amp;#39;, fullname=&amp;#39;Fred Flinstone&amp;#39;, password=&amp;#39;blah&amp;#39;)&amp;gt;])
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;必须提交才能生效&lt;a id="orgheadline17"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; session.commit()
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">2016-04-25 21:55:00</dc:creator><pubDate>Mon, 25 Apr 2016 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2016-04-25:articles/2016/04/sqlalchemy学习(一).html</guid><category>python</category><category>sql</category><category>sqlalchemy</category></item></channel></rss>

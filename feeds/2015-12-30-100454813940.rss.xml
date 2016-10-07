@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>HonMaple's Blog</title><link>http://honmaple.org/</link><description></description><lastBuildDate>Wed, 30 Dec 2015 00:00:00 +0800</lastBuildDate><item><title>使用python的Pillow模块生成验证码</title><link>http://honmaple.org/articles/2015/12/%E4%BD%BF%E7%94%A8python%E7%9A%84Pillow%E6%A8%A1%E5%9D%97%E7%94%9F%E6%88%90%E9%AA%8C%E8%AF%81%E7%A0%81.html</link><description>&lt;p&gt;准&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://codingnow.cn/language/627.html"&gt;参考资料&lt;/a&gt;&lt;br /&gt;
+准备 &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;PIL&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ImageDraw&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ImageFont&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ImageFilter&lt;/span&gt;
+
+&lt;span class="n"&gt;_letter_cases&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;abcdefghjkmnpqrstuvwxy&amp;quot;&lt;/span&gt; &lt;span class="c1"&gt;# 去除可能干扰的i，l，o，z&lt;/span&gt;
+&lt;span class="n"&gt;_upper_cases&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;_letter_cases&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;upper&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="c1"&gt;# 大写字母&lt;/span&gt;
+&lt;span class="n"&gt;_numbers&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;map&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt; &lt;span class="c1"&gt;# 数字&lt;/span&gt;
+&lt;span class="n"&gt;init_chars&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;_letter_cases&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;_upper_cases&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;_numbers&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;fontType&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;/usr/share/fonts/TTF/DejaVuSans.ttf&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;1.创建图像  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def create_validate_code(self,size=(120, 30),
+                        chars=init_chars,
+                        img_type=&amp;quot;PNG&amp;quot;,
+                        mode=&amp;quot;RGB&amp;quot;,
+                        bg_color=(255, 255, 255),
+                        fg_color=(0, 0, 255),
+                        font_size=18,
+                        font_type=fontType,
+                        length=4,
+                        draw_lines=True,
+                        n_line=(1, 2),
+                        draw_points=True,
+                        point_chance = 2):
+
+    width, height = size # 图像的宽，高
+    img = Image.new(mode, size, bg_color) # 创建新图像
+    img.save(&amp;quot;validate.png&amp;quot;, &amp;quot;PNG&amp;quot;) # 存储图片
+if __name__ == &amp;#39;__main__&amp;#39;:
+    create_validate_code()
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;2.绘制干扰线&lt;br /&gt;
+在创建新图像后添加  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;if draw_lines:
+    self.create_lines(draw,n_line,width,height) # 绘制干扰线
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;干扰线函数  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def create_lines(self,draw,n_line,width,height):
+    line_num = random.randint(n_line[0],n_line[1]) # 干扰线条数
+    for i in range(line_num):
+        # 起始点
+        begin = (random.randint(0, width), random.randint(0, height))
+        #结束点
+        end = (random.randint(0, width), random.randint(0, height))
+        draw.line([begin, end], fill=(0, 0, 0))
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;3.绘制干扰点&lt;br /&gt;
+在绘制干扰线后添加  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;if draw_points:
+    self.create_points(draw,point_chance,width,height) #绘制干扰点
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;干扰点函数  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def create_points(self,draw,point_chance,width,height):
+    chance = min(100, max(0, int(point_chance))) # 大小限制在[0, 100]
+
+    for w in range(width):
+        for h in range(height):
+            tmp = random.randint(0, 100)
+            if tmp &amp;gt; 100 - chance:
+                draw.point((w, h), fill=(0, 0, 0))
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;4.生成验证码&lt;br /&gt;
+在绘制干扰点之后添加  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;strs = self.create_strs(draw,chars,length,font_type,
+                         font_size,width,height,fg_color)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;验证码函数  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def create_strs(self,draw,chars,length,font_type, 
+                font_size,width,height,fg_color):
+    c_chars = random.sample(chars, length)
+    strs = &amp;#39; %s &amp;#39; % &amp;#39; &amp;#39;.join(c_chars) # 每个字符前后以空格隔开
+
+    font = ImageFont.truetype(font_type, font_size)
+    font_width, font_height = font.getsize(strs)
+
+    draw.text(((width - font_width) / 3, (height - font_height) / 3),strs,\
+              font=font, fill=fg_color)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ok，简单的验证码就生成好了&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">2015-12-30 10:04:54.813940</dc:creator><pubDate>Wed, 30 Dec 2015 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2015-12-30:articles/2015/12/使用python的Pillow模块生成验证码.html</guid><category>python</category><category>pillow</category><category>验证码</category></item></channel></rss>

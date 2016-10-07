@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>HonMaple's Blog</title><link>http://honmaple.org/</link><description></description><lastBuildDate>Wed, 06 Jan 2016 00:00:00 +0800</lastBuildDate><item><title>supervisor使用</title><link>http://honmaple.org/articles/2016/01/supervisor%E4%BD%BF%E7%94%A8.html</link><description>&lt;blockquote&gt;
+&lt;p&gt;supervisor安装请参考&lt;a href="https://honmaple.com/blog/pages/31"&gt;flask应用部署——安装环境&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4&gt;生成配置文件&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# cd /etc
+# mkdir -p supervisord/conf.d
+# echo_supervisord_conf &amp;gt; /etc/supervisord/supervisord.conf
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;修改supervisord.conf&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim supervisord.conf # G直接跳到最后一行
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;取消下面注释并修改&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[include]&lt;/span&gt;
+&lt;span class="na"&gt;files&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;/etc/supervisord/conf.d/*.ini&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ok，现在可以在/etc/supervisord/conf.d/目录下创建配置文件了  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim honmaple.com.ini
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;输入以下内容  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 进程的名字
+[program:website]
+# 命令
+command=/home/www/honmaple.com/venv/bin/gunicorn run:app -c /home/www/honmaple.com/gunicorn.conf
+# 网站目录
+directory=/home/www/honmaple.com
+# 进程所属用户
+user=www
+# 自动重启设置。
+autostart=true
+autorestart=true
+# 日志存放位置。
+stdout_logfile=/home/www/honmaple.com/logs/gunicorn_supervisor.log
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;上面有几处需要注意的地方  &lt;/p&gt;
+&lt;h5&gt;创建新用户www&lt;/h5&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# useradd www
+# passwd www #设置密码
+# su - www
+$ cd
+$ mkdir -p honmaple.com/logs
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h5&gt;建立虚拟环境(honmaple.com/目录下)&lt;/h5&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ virtualenv-3.4 venv
+$ . venv/bin/activate
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h5&gt;gunicorn配置&lt;/h5&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# gunicorn.conf
+workers = 4
+bind = &amp;#39;127.0.0.1:8000&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;简单的web应用&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;#run.py&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;
+&lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Flask&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;__name__&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="nd"&gt;@app.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;hello_world&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Hello World!&amp;#39;&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;加载supervisor配置&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# supervisord -c /etc/supervisord/supervisord.conf
+# supervisorctl -c /etc/supervisord/supervisord.conf reload
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;supervisor遇到的问题&lt;/h4&gt;
+&lt;p&gt;提示  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Error&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Another&lt;/span&gt; &lt;span class="n"&gt;program&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;already&lt;/span&gt; &lt;span class="n"&gt;listening&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;port&lt;/span&gt; &lt;span class="n"&gt;that&lt;/span&gt; &lt;span class="n"&gt;one&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;our&lt;/span&gt; &lt;span class="n"&gt;HTTP&lt;/span&gt; &lt;span class="n"&gt;servers&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;configured&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;  &lt;span class="n"&gt;Shut&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt; &lt;span class="n"&gt;program&lt;/span&gt; &lt;span class="n"&gt;down&lt;/span&gt; &lt;span class="n"&gt;first&lt;/span&gt; &lt;span class="n"&gt;before&lt;/span&gt; &lt;span class="n"&gt;starting&lt;/span&gt; &lt;span class="n"&gt;supervisord&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
+&lt;span class="n"&gt;For&lt;/span&gt; &lt;span class="n"&gt;help&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="sr"&gt;/usr/bin/s&lt;/span&gt;&lt;span class="n"&gt;upervisord&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;h&lt;/span&gt;
+&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="n"&gt;fail&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;解决办法&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# unlink /tmp/supervisor.sock
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;提示  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;error: &amp;lt;class &amp;#39;socket.error&amp;#39;&amp;gt;, [Errno 111] Connection refused: file: /usr/lib64/python2.6/socket.py line: 567
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;解决办法&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# supervisord -c /etc/supervisord/supervisord.conf
+# supervisorctl -c /etc/supervisord/supervisord.conf reload
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;提示&lt;br /&gt;
+ERROR (no such process),请仔细查看配置文件是否有误&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">2016-01-06 01:44:45.393987</dc:creator><pubDate>Wed, 06 Jan 2016 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2016-01-06:articles/2016/01/supervisor使用.html</guid><category>supervisor</category><category>web</category><category>linux</category></item></channel></rss>

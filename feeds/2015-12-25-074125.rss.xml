@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>HonMaple's Blog</title><link>http://honmaple.org/</link><description></description><lastBuildDate>Fri, 25 Dec 2015 00:00:00 +0800</lastBuildDate><item><title>为网站启用https并增加ssl证书</title><link>http://honmaple.org/articles/2015/12/%E4%B8%BA%E7%BD%91%E7%AB%99%E5%90%AF%E7%94%A8https%E5%B9%B6%E5%A2%9E%E5%8A%A0ssl%E8%AF%81%E4%B9%A6.html</link><description>&lt;p&gt;超文本传输协议HTTP协议被用于在Web浏览器和网站服务器之间&lt;/p&gt;
+&lt;h3&gt;HTTPS和HTTP的区别&lt;/h3&gt;
+&lt;p&gt;超文本传输协议HTTP协议被用于在Web浏览器和网站服务器之间传递信息。HTTP协议以明文方式发送内容，不提供任何方式的数据加密，如果攻击者截取了Web浏览器和网站服务器之间的传输报文，就可以直接读懂其中的信息，因此HTTP协议不适合传输一些敏感信息，比如信用卡号、密码等。
+为了解决HTTP协议的这一缺陷，需要使用另一种协议：安全套接字层超文本传输协议HTTPS。为了数据传输的安全，HTTPS在HTTP的基础上加入了SSL协议，SSL依靠证书来验证服务器的身份，并为浏览器和服务器之间的通信加密。
+HTTPS和HTTP的区别主要为以下四点:  &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;https协议需要到ca申请证书，一般免费证书很少，需要交费。&lt;/li&gt;
+&lt;li&gt;http是超文本传输协议，信息是明文传输，https 则是具有安全性的ssl加密传输协议。&lt;/li&gt;
+&lt;li&gt;http和https使用的是完全不同的连接方式，用的端口也不一样，前者是80，后者是443。&lt;/li&gt;
+&lt;li&gt;http的连接很简单，是无状态的；HTTPS协议是由SSL+HTTP协议构建的可进行加密传输、身份认证的网络协议，比http协议安全。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;申请ssl证书&lt;/h3&gt;
+&lt;p&gt;对于像我这样的穷学生或者不希望花钱的同学可以使用&lt;a href="https://www.startssl.com/"&gt;startssl免费ssl证书&lt;/a&gt;&lt;br /&gt;
+当然如果可以，最好购买ssl证书,安全性上更有保障&lt;/p&gt;
+&lt;p&gt;对于怎么申请startssl免费证书这里不多说，网上很多教程，其中有几点是我在申请中遇到的问题，希望对大家有所帮助&lt;br /&gt;
+* 在进行域名验证时不论如何startssl&lt;strong&gt;搜索不到我的域名注册邮箱&lt;/strong&gt;,我已将whois保护关闭后还是一样&lt;br /&gt;
+&lt;strong&gt;解决办法&lt;/strong&gt;：一个不是办法的办法，因为我在qq邮箱使用了域名邮箱,所以我将域名邮箱管理员admin@honmaple.com
+更改为postmaster@honmaple.com,然后发送验证邮件到该邮箱对域名进行验证&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;如何导出公钥&lt;/strong&gt;&lt;br /&gt;
+如果申请成功，在Tool Box点击Certificate List,Action中选择Retrieve导出zip包到本地,
+在本地解压就会发现里面有对应服务器类型的crt证书&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;如何导出私钥&lt;/strong&gt;&lt;br /&gt;
+在申请过程中保存了一个.key文件，这个文件就可以作为私钥(请妥善保管)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果在申请中对私钥设置了密码,每次重启ngnix都要输入密码,如果不想每次输入密码,
+在startssl的Tool Box的Decrypt Private Key中填入保存的私钥以及私钥密码,对私钥进行解密,
+将解密后的字符串保存为.key文件&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;关于nginx配置&lt;/h3&gt;
+&lt;p&gt;在/etc/nginx/conf.d/ssl.conf中添加&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+     &lt;span class="n"&gt;listen&lt;/span&gt;       &lt;span class="m"&gt;443&lt;/span&gt; &lt;span class="n"&gt;ssl&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+     &lt;span class="n"&gt;server_name&lt;/span&gt;  &lt;span class="n"&gt;honmaple&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+     &lt;span class="err"&gt;#请更改成你的文件地址&lt;/span&gt;
+     &lt;span class="n"&gt;ssl_certificate&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ssl&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="n"&gt;_honmaple&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pem&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+     &lt;span class="n"&gt;ssl_certificate_key&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ssl&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="n"&gt;_honmaple&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+     &lt;span class="n"&gt;ssl_session_cache&lt;/span&gt; &lt;span class="n"&gt;shared&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;SSL&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+     &lt;span class="n"&gt;ssl_session_timeout&lt;/span&gt; &lt;span class="m"&gt;5&lt;/span&gt;&lt;span class="n"&gt;m&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+     &lt;span class="err"&gt;#下面这些请根据实际更改&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="err"&gt;我的是&lt;/span&gt;&lt;span class="n"&gt;flask&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;nginx&lt;/span&gt;
+     &lt;span class="n"&gt;location&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+                        &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;Pass&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;Gunicorn&lt;/span&gt;
+                &lt;span class="n"&gt;proxy_pass&lt;/span&gt; &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="o"&gt;://&lt;/span&gt;&lt;span class="m"&gt;127&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="m"&gt;0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="m"&gt;0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="m"&gt;8000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="n"&gt;proxy_redirect&lt;/span&gt;     &lt;span class="n"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+                &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;Set&lt;/span&gt; &lt;span class="n"&gt;some&lt;/span&gt; &lt;span class="n"&gt;HTTP&lt;/span&gt; &lt;span class="n"&gt;headers&lt;/span&gt; &lt;span class="n"&gt;so&lt;/span&gt; &lt;span class="n"&gt;that&lt;/span&gt; &lt;span class="n"&gt;our&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="n"&gt;knows&lt;/span&gt; &lt;span class="n"&gt;where&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt;
+                &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="n"&gt;really&lt;/span&gt; &lt;span class="n"&gt;came&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt;
+                &lt;span class="n"&gt;proxy_set_header&lt;/span&gt; &lt;span class="n"&gt;Host&lt;/span&gt; &lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="n"&gt;host&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="n"&gt;proxy_set_header&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Real&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;IP&lt;/span&gt; &lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="n"&gt;remote_addr&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="n"&gt;proxy_set_header&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Forwarded&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;For&lt;/span&gt; &lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="n"&gt;proxy_add_x_forwarded_for&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="err"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;注意:&lt;/strong&gt;
+我不知道是我的原因还是其他,启动ngnix时总报错&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;SSL_CTX_use_PrivateKey_file(&amp;quot;/root/ssl/1_honmaple.com.key&amp;quot;) 
+failed (SSL: error:0D07207B:asn1 encoding routines:ASN1_get_object:
+header too long error:0D068066:asn1 encoding routines:ASN1_CHECK_TLEN:bad object 
+header error:0D07803A:asn1 encoding routines:ASN1_ITEM_EX_D2I:nested asn1 error:
+Type=PKCS8_PRIV_KEY_INFO error:2306A065:PKCS12 routines:PKCS12_item_decrypt_d2i:
+decode error error:0907B00D:PEM routines:PEM_READ_BIO_PRIVATEKEY:ASN1 lib error:
+140B0009:SSL routines:SSL_CTX_use_PrivateKey_file:PEM lib)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;所以我将.crt文件改成.pem,后面我发现还是报错，我将公钥里的  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;之间的空行去除&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果还是报错，请将.key文件解密&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;其他配置&lt;/h3&gt;
+&lt;p&gt;如果要全站启用https,并将http定向到https,可以这样&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;listen&lt;/span&gt; &lt;span class="m"&gt;80&lt;/span&gt; &lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;server_name&lt;/span&gt; &lt;span class="n"&gt;honmaple&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;rewrite&lt;/span&gt; &lt;span class="o"&gt;^/&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;.*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="o"&gt;://&lt;/span&gt;&lt;span class="n"&gt;honmaple&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt; &lt;span class="n"&gt;permanent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;记得更改成自己的域名&lt;/p&gt;
+&lt;p&gt;ok,就这样&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">2015-12-25 07:41:25</dc:creator><pubDate>Fri, 25 Dec 2015 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2015-12-25:articles/2015/12/为网站启用https并增加ssl证书.html</guid><category>ssl</category><category>nginx</category></item></channel></rss>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>HonMaple's Blog</title><link>http://honmaple.org/</link><description></description><lastBuildDate>Fri, 10 Jun 2016 00:00:00 +0800</lastBuildDate><item><title>基于restful的flask权限管理</title><link>http://honmaple.org/articles/2016/06/%E5%9F%BA%E4%BA%8Erestful%E7%9A%84flask%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html</link><description>&lt;h3&gt;为什么需要restful形式的权限管理&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;最近在写flask应用时使用了 &lt;strong&gt;restful&lt;/strong&gt; 形式的&lt;code&gt;flask.views.MethodView&lt;/code&gt;，但是在对其进行权限管理时遇到了一些问题&lt;/p&gt;
+&lt;p&gt;flask文档上介绍说用&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;decorators = []
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;添加装饰器,但实际使用上,比如&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;get&lt;/strong&gt; 和 &lt;strong&gt;post&lt;/strong&gt; 采用不同的权限&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;get 不使用 login_required  &lt;br /&gt;
+ post 需要 login_required&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这样就不能使用 &lt;strong&gt;decorators&lt;/strong&gt; 对视图进行装饰&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;post&lt;/strong&gt; ,&lt;strong&gt;delete&lt;/strong&gt;, &lt;strong&gt;put&lt;/strong&gt; 都需要 login_required,但是&lt;strong&gt;get&lt;/strong&gt;不需要
+    而 &lt;strong&gt;delete&lt;/strong&gt; 又需要更高级别的权限,我们可以这样&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="n"&gt;AAA&lt;/span&gt;(&lt;span class="n"&gt;MethodView&lt;/span&gt;):
+
+    &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;get&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;,&lt;span class="n"&gt;uid&lt;/span&gt;):
+        ...
+
+    &lt;span class="nv"&gt;@login_required&lt;/span&gt;
+    &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;post&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;):
+        ...
+
+    &lt;span class="nv"&gt;@login_required&lt;/span&gt;
+    &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;put&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;,&lt;span class="n"&gt;uid&lt;/span&gt;):
+        ...
+
+    &lt;span class="nv"&gt;@login_required&lt;/span&gt;
+    &lt;span class="nv"&gt;@more_required&lt;/span&gt;
+    &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="nb"&gt;delete&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;,&lt;span class="n"&gt;uid&lt;/span&gt;):
+        ...
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;是不是看起来还不错, &lt;strong&gt;但是&lt;/strong&gt;,如果再加上&lt;a href="http://www.pythonhosted.org/Flask-Principal/"&gt;类似EditBlogPostPermission&lt;/a&gt; 这样的权限管理呢?
+是不是还需要这样&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;@login_required
+def put(self,uid):
+    permission = EditBlogPostPermission(uid)
+    if permission.can():
+        # Save the edits ...
+        return render_template(&amp;#39;edit_post.html&amp;#39;)
+    ...
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;先不论样式丑不丑，最重要的代码的 &lt;strong&gt;可维护性&lt;/strong&gt; 极差,所以我增加了如下代码&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;怎么实现restful形式的权限管理&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;同样采用装饰器实现,调用 &lt;em&gt;BasePermission&lt;/em&gt; 时会自动调用 &lt;em&gt;&lt;strong&gt;call&lt;/strong&gt;&lt;/em&gt; 函数&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="n"&gt;BasePermission&lt;/span&gt;(&lt;span class="n"&gt;object&lt;/span&gt;):
+
+    &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;__call__&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;, &lt;span class="n"&gt;func&lt;/span&gt;):
+        &lt;span class="nv"&gt;@wraps&lt;/span&gt;(&lt;span class="n"&gt;func&lt;/span&gt;)
+        &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;decorator&lt;/span&gt;(*&lt;span class="n"&gt;args&lt;/span&gt;, **&lt;span class="n"&gt;kwargs&lt;/span&gt;):
+            &lt;span class="n"&gt;meth&lt;/span&gt; = &lt;span class="n"&gt;getattr&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;, &lt;span class="n"&gt;request&lt;/span&gt;.&lt;span class="k"&gt;method&lt;/span&gt;.&lt;span class="n"&gt;lower&lt;/span&gt;(), &lt;span class="n"&gt;None&lt;/span&gt;)
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;meth&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;None&lt;/span&gt; &lt;span class="o"&gt;and&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;.&lt;span class="k"&gt;method&lt;/span&gt; == &lt;span class="s"&gt;&amp;#39;HEAD&amp;#39;&lt;/span&gt;:
+                &lt;span class="n"&gt;meth&lt;/span&gt; = &lt;span class="n"&gt;getattr&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;, &lt;span class="s"&gt;&amp;#39;get&amp;#39;&lt;/span&gt;, &lt;span class="n"&gt;None&lt;/span&gt;)
+            &lt;span class="n"&gt;assert&lt;/span&gt; &lt;span class="n"&gt;meth&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="nb"&gt;not&lt;/span&gt; &lt;span class="n"&gt;None&lt;/span&gt;, &lt;span class="s"&gt;&amp;#39;Unimplemented method %r&amp;#39;&lt;/span&gt; % &lt;span class="n"&gt;request&lt;/span&gt;.&lt;span class="k"&gt;method&lt;/span&gt;
+            &lt;span class="n"&gt;check&lt;/span&gt; = &lt;span class="n"&gt;meth&lt;/span&gt;(*&lt;span class="n"&gt;args&lt;/span&gt;, **&lt;span class="n"&gt;kwargs&lt;/span&gt;)
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;check:&lt;/span&gt;
+                &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;check&lt;/span&gt;
+            &lt;span class="n"&gt;else:&lt;/span&gt;
+                &lt;span class="nb"&gt;pass&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;func&lt;/span&gt;(*&lt;span class="n"&gt;args&lt;/span&gt;, **&lt;span class="n"&gt;kwargs&lt;/span&gt;)
+
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;decorator&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;举个例子,get方式不需要用户登陆,而其它方式需要,并且put方式需要创建主题的作者才能更改&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="n"&gt;TopicPermission&lt;/span&gt;(&lt;span class="n"&gt;BasePermission&lt;/span&gt;):
+    &lt;span class="nv"&gt;@login_required&lt;/span&gt;
+    &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;post&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;):
+        &lt;span class="nb"&gt;pass&lt;/span&gt;
+
+    &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;get&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;, &lt;span class="n"&gt;uid&lt;/span&gt;):
+        &lt;span class="nb"&gt;pass&lt;/span&gt;
+
+    &lt;span class="nv"&gt;@login_required&lt;/span&gt;
+    &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;put&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;, &lt;span class="n"&gt;uid&lt;/span&gt;):
+        &lt;span class="n"&gt;permission&lt;/span&gt; = &lt;span class="n"&gt;EditTopicPermission&lt;/span&gt;(&lt;span class="n"&gt;uid&lt;/span&gt;)
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;not&lt;/span&gt; &lt;span class="n"&gt;permission&lt;/span&gt;.&lt;span class="nb"&gt;can&lt;/span&gt;():
+            &lt;span class="n"&gt;flash&lt;/span&gt;(&lt;span class="s"&gt;&amp;#39;你没有权限&amp;#39;&lt;/span&gt;)
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;redirect&lt;/span&gt;(&lt;span class="n"&gt;url_for&lt;/span&gt;(&lt;span class="s"&gt;&amp;#39;topic.topic&amp;#39;&lt;/span&gt;, &lt;span class="n"&gt;uid&lt;/span&gt;=&lt;span class="n"&gt;uid&lt;/span&gt;))
+
+    &lt;span class="nv"&gt;@login_required&lt;/span&gt;
+    &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="nb"&gt;delete&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;,&lt;span class="n"&gt;uid&lt;/span&gt;):
+        &lt;span class="nb"&gt;pass&lt;/span&gt;
+
+&lt;span class="n"&gt;topic_permission&lt;/span&gt; = &lt;span class="n"&gt;TopicPermission&lt;/span&gt;()
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;假设四种方式都需要同一种权限,都需要用户登陆,总不能每个函数前都加上装饰器吧
+所以稍加修改&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;decorators = ()
+def __call__(self, func):
+    if self.decorators:
+        for dec in self.decorators:
+            return dec(func)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;OK,这样就可以添加&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;decorators = [login_required]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;来实现四种请求方式采用同一种权限&lt;/p&gt;
+&lt;p&gt;最后,你就可以在 &lt;em&gt;AAA&lt;/em&gt; 这个类里添加&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;decorators = [topic_permission]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;实现restful形式的权限管理&lt;/p&gt;
+&lt;p&gt;ok，就这样,可能还不完善或有一些问题，如有问题请联系我&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">2016-06-10 01:34:00</dc:creator><pubDate>Fri, 10 Jun 2016 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2016-06-10:articles/2016/06/基于restful的flask权限管理.html</guid><category>python</category><category>flask</category><category>restful</category></item></channel></rss>

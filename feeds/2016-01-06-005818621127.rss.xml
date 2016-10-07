@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>HonMaple's Blog</title><link>http://honmaple.org/</link><description></description><lastBuildDate>Wed, 06 Jan 2016 00:00:00 +0800</lastBuildDate><item><title>flask应用部署——安装环境</title><link>http://honmaple.org/articles/2016/01/flask%E5%BA%94%E7%94%A8%E9%83%A8%E7%BD%B2%E2%80%94%E2%80%94%E5%AE%89%E8%A3%85%E7%8E%AF%E5%A2%83.html</link><description>&lt;blockquote&gt;
+&lt;p&gt;环境: centos&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;虽然以前安装过但是没有记录，这次重新安装，趁机记录下来，省得满世界地找  &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;环境: centos7  &lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;安装nginx&lt;/h3&gt;
+&lt;p&gt;&lt;a href="https://www.nginx.com/resources/wiki/start/topics/tutorials/install/"&gt;参考资料&lt;/a&gt;&lt;br /&gt;
+使用&lt;code&gt;yum list nginx&lt;/code&gt;会发现nginx是1.6的版本,但现在nginx已经到了1.9，虽然不必那么新，
+但是过旧的版本说不定会出现安全问题  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim /etc/yum.repos.d/nginx.repo
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;输入  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[nginx]&lt;/span&gt;
+&lt;span class="na"&gt;name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;nginx repo&lt;/span&gt;
+&lt;span class="na"&gt;baseurl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;http://nginx.org/packages/centos/$releasever/$basearch/&lt;/span&gt;
+&lt;span class="na"&gt;gpgcheck&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;0&lt;/span&gt;
+&lt;span class="na"&gt;enabled&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# yum list nginx  #你会发现nginx已经是1.8的版本
+# yum install nginx
+# systemctl start nginx #启动nginx
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;安装python3&lt;/h3&gt;
+&lt;p&gt;centos7默认安装了python2.7的版本，但我习惯用python3,但是centos无法通过yum install python3安装,
+只好自己编译了  &lt;/p&gt;
+&lt;h4&gt;安装必要的文件&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# yum groupinstall &amp;quot;Development tools&amp;quot;
+# yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel 
+readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;下载python3源码&lt;/h4&gt;
+&lt;p&gt;&lt;em&gt;python3已到的python3.5，请按自己的需求下载&lt;/em&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ wget https://www.python.org/ftp/python/3.4.4/Python-3.4.4.tgz
+$ tar xz Python-3.4.4.tgz
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; Python-3.4.4
+$ ./configure
+$ make
+&lt;span class="c1"&gt;# make install&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;blockquote&gt;
+&lt;p&gt;如果提示c 编译器未找到 &lt;br /&gt;
+yum install gcc gcc-c++&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;安装supervisor&lt;/h3&gt;
+&lt;p&gt;编译安装python3的时候python3-pip就已经安装好了  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# pip3 install supervisor
+Collecting supervisor
+  Downloading supervisor-3.2.0.tar.gz (409kB)
+    100% |################################| 413kB 972kB/s 
+    Complete output from command python setup.py egg_info:
+    Supervisor requires Python 2.4 or later but does not work on any version of Python 3.  You are using version 3.4.4 (default, Jan  6 2016, 11:01:55)
+    [GCC 4.8.3 20140911 (Red Hat 4.8.3-9)].  Please install using a supported version.
+
+    ----------------------------------------
+Command &amp;quot;python setup.py egg_info&amp;quot; failed with error code 1 in /tmp/pip-build-qp0f7ft9/supervisor
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;报错，错误提示很明显,&lt;strong&gt;supervisor&lt;/strong&gt;不支持python3  &lt;/p&gt;
+&lt;h4&gt;安装python2的pip&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# yum install python-pip
+# yum install python-devel #最好把这个也装上，以后会用到的
+# pip install supervisor # 这里又有一个提示
+You are using pip version 7.1.0, however version 7.1.2 is available.
+You should consider upgrading via the &amp;#39;pip install --upgrade pip&amp;#39; command.
+# pip install --upgrade pip
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;安装python的虚拟环境virtualenv&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# pip3 install virtualenv
+$ mkdir www
+$ cd www
+$ virtualenv-3.4 venv
+Using base prefix &amp;#39;/usr/local&amp;#39;
+New python executable in venv/bin/python3.4
+Also creating executable in venv/bin/python
+Installing setuptools, pip, wheel...done.
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;建议在~/.bashrc中添加  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;alias ve=&amp;#39;. venv/bin/activate&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;以后只要使用&lt;strong&gt;ve&lt;/strong&gt;就能进入虚拟环境&lt;/p&gt;
+&lt;p&gt;关于数据库的安装请参考我的另一篇文章&lt;a href="https://honmaple.com/blog/pages/13"&gt;postgresql学习1——安装&lt;/a&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">2016-01-06 00:58:18.621127</dc:creator><pubDate>Wed, 06 Jan 2016 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2016-01-06:articles/2016/01/flask应用部署——安装环境.html</guid><category>flask</category><category>nginx</category><category>python3</category><category>linux</category></item></channel></rss>

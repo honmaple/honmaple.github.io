@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>HonMaple's Blog</title><link>http://honmaple.org/</link><description></description><lastBuildDate>Sun, 10 Jan 2016 00:00:00 +0800</lastBuildDate><item><title>redis记录用户操作</title><link>http://honmaple.org/articles/2016/01/redis%E8%AE%B0%E5%BD%95%E7%94%A8%E6%88%B7%E6%93%8D%E4%BD%9C.html</link><description>&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &amp;#39;&amp;#39;&amp;#39;记录访
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;必须得记下来，否则等那天看到又要浪费时间了,主要记录访问时间这里&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &amp;#39;&amp;#39;&amp;#39;记录访问的时间&amp;#39;&amp;#39;&amp;#39;
+    now_time = int(time()) #首先得到当前时间戳 
+    &amp;#39;&amp;#39;&amp;#39;查询上次访问的时间和最近访问的时间&amp;#39;&amp;#39;&amp;#39;
+    query_last_time = redis_data.zscore(visited_users,&amp;#39;last_time&amp;#39;)
+    query_now_time = redis_data.zscore(visited_users,&amp;#39;time&amp;#39;)
+    &amp;#39;&amp;#39;&amp;#39;判断查询是否为空,一般是第一次访问还未记录的IP&amp;#39;&amp;#39;&amp;#39;
+    if query_last_time is None:
+        query_last_time = now_time
+        pipe.zadd(visited_users,query_last_time,&amp;#39;last_time&amp;#39;)
+    if query_now_time is None:
+        query_now_time = now_time
+    &amp;#39;&amp;#39;&amp;#39;将当前时间与last_time进行对比,十分钟之内不记录&amp;#39;&amp;#39;&amp;#39;
+    if now_time - query_last_time &amp;gt;= 600:
+        &amp;#39;&amp;#39;&amp;#39;这里类似交换更新数据,把query_now_time变成last_time,把now_time更新&amp;#39;&amp;#39;&amp;#39;
+        pipe.zadd(visited_users,query_now_time,&amp;#39;last_time&amp;#39;)
+        pipe.zadd(visited_users,now_time,&amp;#39;time&amp;#39;)
+    else:
+        pipe.zadd(visited_users,now_time,&amp;#39;time&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">2016-01-10 16:36:20.421356</dc:creator><pubDate>Sun, 10 Jan 2016 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2016-01-10:articles/2016/01/redis记录用户操作.html</guid><category>redis</category><category>linux</category></item></channel></rss>

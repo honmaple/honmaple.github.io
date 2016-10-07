@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>HonMaple's Blog</title><link>http://honmaple.org/</link><description></description><lastBuildDate>Mon, 25 Jul 2016 00:00:00 +0800</lastBuildDate><item><title>如何安装及使用Honmaple社区程序</title><link>http://honmaple.org/articles/2016/07/%E5%A6%82%E4%BD%95%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8Honmaple%E7%A4%BE%E5%8C%BA%E7%A8%8B%E5%BA%8F.html</link><description>&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline6"&gt;1. 如何安装及使用&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline1"&gt;1.1. 安装需要的package&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline2"&gt;1.2. 配置config&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline3"&gt;1.3. 注释下面代码&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline4"&gt;1.4. 初始化数据库&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline5"&gt;1.5. 创建管理员账户&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline8"&gt;2. 本地搭建&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline7"&gt;2.1. 登陆并进入后台&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline13"&gt;3. 服务端搭建&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline9"&gt;3.1. 配置nginx&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline10"&gt;3.2. 配置supervior&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline11"&gt;3.3. 配置gunicorn&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline12"&gt;3.4. 启动&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h1&gt;如何安装及使用&lt;a id="orgheadline6"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;h2&gt;安装需要的package&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pip install -r requirements.txt
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;配置config&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;查看配置详细介绍&lt;/p&gt;
+&lt;h2&gt;注释下面代码&lt;a id="orgheadline3"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;因为如果不注释的话 &lt;strong&gt;初始化数据库&lt;/strong&gt; 会报错&lt;/p&gt;
+&lt;p&gt;文件位置: &lt;strong&gt;maple/topic/forms.py&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;category = SelectField(
+    _(&amp;#39;Category:&amp;#39;),
+    choices=[(b.id, b.board + &amp;#39;   --&amp;#39; + b.parent_board)
+             for b in Board.query.all()],
+    coerce=int)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;初始化数据库&lt;a id="orgheadline4"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;python manage.py db init
+python manage.py db migrate -m &amp;quot;first migrate&amp;quot;
+python manage.py db upgrade
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ok,将第三步中注释的内容恢复&lt;/p&gt;
+&lt;h2&gt;创建管理员账户&lt;a id="orgheadline5"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;python manager.py create_user
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h1&gt;本地搭建&lt;a id="orgheadline8"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;hr /&gt;
+&lt;h2&gt;登陆并进入后台&lt;a id="orgheadline7"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;python manager.py runserver
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Visit &lt;a href="http://forums.localhost:5000/admin"&gt;http://forums.localhost:5000/admin&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;服务端搭建&lt;a id="orgheadline13"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;hr /&gt;
+&lt;p&gt;参考 &lt;a href="http://flask.pocoo.org/docs/0.11/deploying/wsgi-standalone/"&gt;http://flask.pocoo.org/docs/0.11/deploying/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;以我的配置为例:&lt;/p&gt;
+&lt;h2&gt;配置nginx&lt;a id="orgheadline9"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;listen&lt;/span&gt; &lt;span class="m"&gt;80&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="n"&gt;server_name&lt;/span&gt; &lt;span class="n"&gt;_&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="n"&gt;access_log&lt;/span&gt;  &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;nginx&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;access&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;error_log&lt;/span&gt;  &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;nginx&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;error&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="n"&gt;location&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;proxy_pass&lt;/span&gt;         &lt;span class="n"&gt;http&lt;/span&gt;&lt;span class="o"&gt;://&lt;/span&gt;&lt;span class="m"&gt;127&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="m"&gt;0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="m"&gt;0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="m"&gt;8000&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;proxy_redirect&lt;/span&gt;     &lt;span class="n"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+        &lt;span class="n"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="n"&gt;Host&lt;/span&gt;                 &lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="n"&gt;host&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Real&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;IP&lt;/span&gt;            &lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="n"&gt;remote_addr&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Forwarded&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;For&lt;/span&gt;      &lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="n"&gt;proxy_add_x_forwarded_for&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;proxy_set_header&lt;/span&gt;   &lt;span class="n"&gt;X&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Forwarded&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Proto&lt;/span&gt;    &lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="n"&gt;scheme&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="err"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;配置supervior&lt;a id="orgheadline10"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[program:forums]&lt;/span&gt;
+&lt;span class="na"&gt;user&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;www&lt;/span&gt;
+&lt;span class="na"&gt;command&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;/home/www/forums/venv/bin/gunicorn run:app -c /home/www/forums/gunicorn.conf&lt;/span&gt;
+&lt;span class="na"&gt;directory&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;/home/www/forums&lt;/span&gt;
+&lt;span class="na"&gt;autostart&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;true&lt;/span&gt;
+&lt;span class="na"&gt;autorestart&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;true&lt;/span&gt;
+&lt;span class="na"&gt;stdout_logfile&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;/home/www/forums/logs/gunicorn_supervisor.log&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;配置gunicorn&lt;a id="orgheadline11"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;workers = 2
+bind = &amp;#39;127.0.0.1:8000&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;启动&lt;a id="orgheadline12"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;确定配置无误后&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;supervisord -c /etc/supervisord.conf
+supervisorctl -c /etc/supervisord.conf reload
+&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">2016-07-25 12:38:00</dc:creator><pubDate>Mon, 25 Jul 2016 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2016-07-25:articles/2016/07/如何安装及使用Honmaple社区程序.html</guid><category>python</category><category>flask</category></item></channel></rss>

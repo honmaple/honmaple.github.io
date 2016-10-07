@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>HonMaple's Blog</title><link>http://honmaple.org/</link><description></description><lastBuildDate>Sat, 05 Mar 2016 00:00:00 +0800</lastBuildDate><item><title>使用fabric进行自动化部署</title><link>http://honmaple.org/articles/2016/03/%E4%BD%BF%E7%94%A8fabric%E8%BF%9B%E8%A1%8C%E8%87%AA%E5%8A%A8%E5%8C%96%E9%83%A8%E7%BD%B2.html</link><description>&lt;p&gt;[参考文档](ht&lt;/p&gt;
+&lt;p&gt;fabric也使用好久了，这次静下心来好好整理一遍，当然这只是很简单的用法&lt;br /&gt;
+&lt;a href="http://docs.fabfile.org/en/1.10/"&gt;参考文档&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;安装&lt;/h3&gt;
+&lt;p&gt;凡事先从安装说起,fabric不支持python3,所以只能安装python2版本的fabric&lt;br /&gt;
+由于我使用了virtualenv，所以先退出虚拟环境  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ deactivate
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;安装全局fabric  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo pip2 install fabric
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;使用&lt;/h3&gt;
+&lt;p&gt;使用之前先想想以前是怎么部署的，是不是这样:&lt;br /&gt;
+先ssh到服务器,进行数据备份,然后退出(或者重新开一个终端),然后上传文件到服务器,
+再ssh到服务器,安装所需要的模块,然后退出，ssh到root账户，重启，再退出···&lt;br /&gt;
+&lt;strong&gt;是不是想想都烦&lt;/strong&gt;&lt;br /&gt;
+没关系，有了fabric后就不必这么麻烦了,需求:&lt;/p&gt;
+&lt;h4&gt;备份数据&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# fabfile.py&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;fabric.api&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;cd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;put&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;get&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;backup&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;root&amp;#39;&lt;/span&gt;
+    &lt;span class="n"&gt;dirname&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;backup_&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;now&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strftime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;%Y%m&lt;/span&gt;&lt;span class="si"&gt;%d&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;cd&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/root/backup/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;./backup-db.sh&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;tar zcvf &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s1"&gt;.tar.gz &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s1"&gt;/&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dirname&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;dirname&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;正在下载备份······&amp;#39;&lt;/span&gt;
+    &lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/root/backup/&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s1"&gt;.tar.gz&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;dirname&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;backup/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;使用&lt;code&gt;fab backup&lt;/code&gt;就可以一步备份&lt;/p&gt;
+&lt;h4&gt;代码打包上传&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;pack&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="s1"&gt;&amp;#39;&amp;#39;&amp;#39;这是我需要打包的文件&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
+    &lt;span class="kd"&gt;local&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;pip freeze &amp;gt; requirements.txt&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="kd"&gt;local&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;tar zcvf hohai.tar.gz manager.py requirements.txt app/ migrations/&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;&lt;span class="s1"&gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          --exclude=&amp;quot;*.pyc&amp;quot; &lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;&lt;span class="s1"&gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          --exclude=&amp;quot;*.swp&amp;quot; &lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;&lt;span class="s1"&gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          --exclude=&amp;quot;**/__pycache__&amp;quot; &lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;&lt;span class="s1"&gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          --exclude=&amp;quot;**/.webassets-cache&amp;quot;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;putcode&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;env.user&lt;/span&gt;&lt;span class="o"&gt; =&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;账户名称&amp;#39;&lt;/span&gt;
+    &lt;span class="nx"&gt;print&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;正在上传代码······&amp;#39;&lt;/span&gt;
+    &lt;span class="nx"&gt;put&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;hohai.tar.gz&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;~/hhuc/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="kd"&gt;local&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;rm hohai.tar.gz&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nx"&gt;print&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;正在备份数据······&amp;#39;&lt;/span&gt;
+    &lt;span class="nx"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;cp -r ~/hhuc/app/ ~/backup/hhuc/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="nx"&gt;cd&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;~/hhuc/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="nx"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;rm -rf app/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="nx"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;tar zxvf hohai.tar.gz&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="nx"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;rm hohai.tar.gz&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;使用&lt;code&gt;fab pack putcode&lt;/code&gt;一步打包上传&lt;/p&gt;
+&lt;h4&gt;重启服务器&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def restart():
+    &amp;quot;&amp;quot;&amp;quot;重启服务器&amp;quot;&amp;quot;&amp;quot;
+    env.user = &amp;#39;root&amp;#39;
+    run(&amp;#39;supervisorctl restart hhuc&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;一键部署&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;deploy&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;env.user&lt;/span&gt;&lt;span class="o"&gt; =&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;honmaple&amp;#39;&lt;/span&gt;
+    &lt;span class="nx"&gt;print&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;正在上传代码······&amp;#39;&lt;/span&gt;
+    &lt;span class="nx"&gt;put&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;hohai.tar.gz&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;~/hhuc/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="kd"&gt;local&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;rm hohai.tar.gz&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nx"&gt;print&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;正在备份数据······&amp;#39;&lt;/span&gt;
+    &lt;span class="nx"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;cp -r ~/hhuc/app/ ~/backup/hhuc/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="nx"&gt;cd&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;~/hhuc/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="nx"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;rm -rf app/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="nx"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;tar zxvf hohai.tar.gz&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="nx"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;rm hohai.tar.gz&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nx"&gt;restart&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="nx"&gt;print&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;部署成功······&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;使用&lt;code&gt;fab pack deploy&lt;/code&gt;就可部署&lt;br /&gt;
+ok,就这样&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">2016-03-05 00:14:44.784992</dc:creator><pubDate>Sat, 05 Mar 2016 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2016-03-05:articles/2016/03/使用fabric进行自动化部署.html</guid><category>fabric</category><category>linux</category></item></channel></rss>
