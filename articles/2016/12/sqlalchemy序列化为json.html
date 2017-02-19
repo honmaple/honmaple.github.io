@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>sqlalchemy序列化为json</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../../../theme/css/main.css" type="text/css" />
+    </head>
+    <body id="index" class="home">
+<a href="http://github.com/honmaple/honmaple.github.io">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="../../../theme/css/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+</a>
+        <header id="banner" class="body">
+            <h1><a href="../../..">HonMaple's Blog </a></h1>
+            <nav><ul>
+                <li><a href="http://honmaple.org">主页</a></li>
+                <li ><a href="../../../categories/linux/index.html">Linux</a></li>
+                <li class="active"><a href="../../../categories/python/index.html">Python</a></li>
+                <li ><a href="../../../categories/security/index.html">Security</a></li>
+                <li ><a href="../../../categories/sheng-huo-sui-bi/index.html">生活随笔</a></li>
+                <li><a href="../../../archives/">Archives</a></li>
+            </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="articles/2016/12/sqlalchemy序列化为json.html" rel="bookmark"
+           title="Permalink to sqlalchemy序列化为json">sqlalchemy序列化为json</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-12-13T00:00:00+08:00">
+                二 13 十二月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../../categories/python/index.html">Python</a>. </p>
+<p>tags: <a href="../../../tag/python/">python</a><a href="../../../tag/sqlalchemy/">sqlalchemy</a><a href="../../../tag/json/">json</a></p></footer><!-- /.post-info -->      <div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">1. 为什么需要这个需求?</a></li>
+<li><a href="#orgheadline2">2. 如何实现?</a></li>
+<li><a href="#orgheadline8">3. 具体使用</a>
+<ul>
+<li><a href="#orgheadline3">3.1. 多个实例</a></li>
+<li><a href="#orgheadline4">3.2. 单个实例</a></li>
+<li><a href="#orgheadline5">3.3. 排除字段</a></li>
+<li><a href="#orgheadline6">3.4. only字段</a></li>
+<li><a href="#orgheadline7">3.5. 关系查询深度</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<h1>为什么需要这个需求?<a id="orgheadline1"></a></h1>
+<p><strong>sqlalchemy</strong> 是个好东西,虽然其文档犹如<em>老太婆的裹脚布--又臭又长</em>,饱受诟病</p>
+<p>使用 <strong>restful</strong> 时sqlalchemy返回的是一个 <strong>object</strong> 类，假设前后端分离,前端无法处理</p>
+<h1>如何实现?<a id="orgheadline2"></a></h1>
+<p>直接给出代码</p>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Serializer</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+
+    <span class="nx">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">many</span><span class="o">=</span><span class="nx">False</span><span class="p">,</span> <span class="nx">include</span><span class="o">=</span><span class="p">[],</span> <span class="nx">exclude</span><span class="o">=</span><span class="p">[],</span> <span class="nx">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span> <span class="o">=</span> <span class="nx">instance</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">many</span> <span class="o">=</span> <span class="nx">many</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">include</span> <span class="o">=</span> <span class="nx">include</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">exclude</span> <span class="o">=</span> <span class="nx">exclude</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">depth</span> <span class="o">=</span> <span class="nx">depth</span>
+
+    <span class="kd">@property</span>
+    <span class="nx">def</span> <span class="nx">data</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">include</span> <span class="nx">and</span> <span class="nx">self.exclude</span>:
+            <span class="kt">raise</span> <span class="nx">ValueError</span><span class="p">(</span><span class="s1">&#39;include and exclude can\&#39;t work together&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">self.many</span>:
+            <span class="kt">if</span> <span class="nx">isinstance</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">list</span><span class="p">)</span><span class="o">:</span>
+                <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializerlist</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">self</span><span class="p">.</span><span class="nx">depth</span><span class="p">)</span>
+            <span class="nx">pageinfo</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;items&#39;</span><span class="o">:</span> <span class="nx">True</span><span class="p">,</span>
+                <span class="s1">&#39;pages&#39;</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">pages</span><span class="p">,</span>
+                <span class="s1">&#39;has_prev&#39;</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">has_prev</span><span class="p">,</span>
+                <span class="s1">&#39;page&#39;</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">page</span><span class="p">,</span>
+                <span class="s1">&#39;has_next&#39;</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">has_next</span><span class="p">,</span>
+                <span class="s1">&#39;iter_pages&#39;</span><span class="o">:</span> <span class="nx">list</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">iter_pages</span><span class="p">(</span><span class="nx">left_edge</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                            <span class="nx">left_current</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                                                            <span class="nx">right_current</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                                                            <span class="nx">right_edge</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializerlist</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">items</span><span class="p">,</span>
+                                                 <span class="nx">self</span><span class="p">.</span><span class="nx">depth</span><span class="p">),</span>
+                    <span class="s1">&#39;pageinfo&#39;</span><span class="o">:</span> <span class="nx">pageinfo</span><span class="p">}</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializer</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">self</span><span class="p">.</span><span class="nx">depth</span><span class="p">)</span>
+
+    <span class="nx">def</span> <span class="nx">_serializerlist</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">instances</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="nx">instance</span> <span class="k">in</span> <span class="nx">instances</span>:
+            <span class="kt">result</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializer</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nx">result</span>:
+                <span class="kt">results.append</span><span class="p">(</span><span class="nx">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">results</span>
+
+    <span class="nx">def</span> <span class="nx">_serializer</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nx">depth</span> <span class="o">==</span> <span class="nx">0</span>:
+            <span class="kt">return</span> <span class="nx">result</span>
+        <span class="nx">depth</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="nx">model_class</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">get_model_class</span><span class="p">(</span><span class="nx">instance</span><span class="p">)</span>
+        <span class="nx">inp</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">get_inspect</span><span class="p">(</span><span class="nx">model_class</span><span class="p">)</span>
+        <span class="nx">model_data</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializer_model</span><span class="p">(</span><span class="nx">inp</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span>
+        <span class="nx">relation_data</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializer_relation</span><span class="p">(</span><span class="nx">inp</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span>
+        <span class="nx">result</span><span class="p">.</span><span class="nx">update</span><span class="p">(</span><span class="nx">model_data</span><span class="p">)</span>
+        <span class="nx">result</span><span class="p">.</span><span class="nx">update</span><span class="p">(</span><span class="nx">relation_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">result</span>
+
+    <span class="nx">def</span> <span class="nx">_serializer_model</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">inp</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="nx">model_columns</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">get_model_columns</span><span class="p">(</span><span class="nx">inp</span><span class="p">)</span>
+        <span class="k">for</span> <span class="nx">column</span> <span class="k">in</span> <span class="nx">model_columns</span>:
+            <span class="kt">result</span><span class="p">[</span><span class="nx">column</span><span class="p">]</span> <span class="o">=</span> <span class="nx">getattr</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">column</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">result</span>
+
+    <span class="nx">def</span> <span class="nx">_serializer_relation</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">inp</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="nx">relation_columns</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">get_relation_columns</span><span class="p">(</span><span class="nx">inp</span><span class="p">)</span>
+        <span class="k">for</span> <span class="nx">relation</span> <span class="k">in</span> <span class="nx">relation_columns</span>:
+            <span class="kt">column</span> <span class="o">=</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">key</span>
+            <span class="k">if</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">direction</span> <span class="k">in</span> <span class="p">[</span><span class="nx">ONETOMANY</span><span class="p">,</span> <span class="nx">MANYTOMANY</span><span class="p">]</span><span class="o">:</span>
+                <span class="nx">children</span> <span class="o">=</span> <span class="nx">getattr</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">column</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">lazy</span> <span class="o">==</span> <span class="s1">&#39;dynamic&#39;</span><span class="o">:</span>
+                    <span class="nx">children</span> <span class="o">=</span> <span class="nx">children</span><span class="p">.</span><span class="nx">all</span><span class="p">()</span>
+                <span class="nx">result</span><span class="p">[</span><span class="nx">column</span><span class="p">]</span> <span class="o">=</span> <span class="nx">Serializer</span><span class="p">(</span>
+                    <span class="nx">children</span><span class="p">,</span>
+                    <span class="nx">many</span><span class="o">=</span><span class="nx">True</span><span class="p">,</span>
+                    <span class="nx">exclude</span><span class="o">=</span><span class="p">[</span><span class="nx">relation</span><span class="p">.</span><span class="nx">back_populates</span><span class="p">],</span>
+                    <span class="nx">depth</span><span class="o">=</span><span class="nx">depth</span><span class="p">).</span><span class="nx">data</span>
+            <span class="k">else</span><span class="o">:</span>
+                <span class="nx">child</span> <span class="o">=</span> <span class="nx">getattr</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">column</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">lazy</span> <span class="o">==</span> <span class="s1">&#39;dynamic&#39;</span><span class="o">:</span>
+                    <span class="nx">child</span> <span class="o">=</span> <span class="nx">child</span><span class="p">.</span><span class="nx">first</span><span class="p">()</span>
+                <span class="nx">result</span><span class="p">[</span><span class="nx">column</span><span class="p">]</span> <span class="o">=</span> <span class="nx">Serializer</span><span class="p">(</span>
+                    <span class="nx">child</span><span class="p">,</span>
+                    <span class="nx">many</span><span class="o">=</span><span class="nx">False</span><span class="p">,</span>
+                    <span class="nx">exclude</span><span class="o">=</span><span class="p">[</span><span class="nx">relation</span><span class="p">.</span><span class="nx">back_populates</span><span class="p">],</span>
+                    <span class="nx">depth</span><span class="o">=</span><span class="nx">depth</span><span class="p">).</span><span class="nx">data</span>
+        <span class="k">return</span> <span class="nx">result</span>
+
+    <span class="nx">def</span> <span class="nx">get_model_class</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">instance</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">getattr</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="s1">&#39;__class__&#39;</span><span class="p">)</span>
+
+    <span class="nx">def</span> <span class="nx">get_inspect</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">model_class</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">inspect</span><span class="p">(</span><span class="nx">model_class</span><span class="p">)</span>
+
+    <span class="nx">def</span> <span class="nx">get_model_columns</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">inp</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">if</span> <span class="nx">self.include</span>:
+            <span class="kt">model_columns</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nx">column</span><span class="p">.</span><span class="nx">name</span> <span class="k">for</span> <span class="nx">column</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">columns</span>
+                <span class="k">if</span> <span class="nx">column</span><span class="p">.</span><span class="nx">name</span> <span class="k">in</span> <span class="nx">self</span><span class="p">.</span><span class="nx">include</span>
+            <span class="p">]</span>
+        <span class="nx">elif</span> <span class="nx">self.exclude</span>:
+            <span class="kt">model_columns</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nx">column</span><span class="p">.</span><span class="nx">name</span> <span class="k">for</span> <span class="nx">column</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">columns</span>
+                <span class="k">if</span> <span class="nx">column</span><span class="p">.</span><span class="nx">name</span> <span class="nx">not</span> <span class="k">in</span> <span class="nx">self</span><span class="p">.</span><span class="nx">exclude</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="o">:</span>
+            <span class="nx">model_columns</span> <span class="o">=</span> <span class="p">[</span><span class="nx">column</span><span class="p">.</span><span class="nx">name</span> <span class="k">for</span> <span class="nx">column</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">columns</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="nx">model_columns</span>
+
+    <span class="nx">def</span> <span class="nx">get_relation_columns</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">inp</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">if</span> <span class="nx">self.include</span>:
+            <span class="kt">relation_columns</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nx">relation</span> <span class="k">for</span> <span class="nx">relation</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">relationships</span>
+                <span class="k">if</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">key</span> <span class="k">in</span> <span class="nx">self</span><span class="p">.</span><span class="nx">include</span>
+            <span class="p">]</span>
+        <span class="nx">elif</span> <span class="nx">self.exclude</span>:
+            <span class="kt">relation_columns</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nx">relation</span> <span class="k">for</span> <span class="nx">relation</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">relationships</span>
+                <span class="k">if</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">key</span> <span class="nx">not</span> <span class="k">in</span> <span class="nx">self</span><span class="p">.</span><span class="nx">exclude</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="o">:</span>
+            <span class="nx">relation_columns</span> <span class="o">=</span> <span class="p">[</span><span class="nx">relation</span> <span class="k">for</span> <span class="nx">relation</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">relationships</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nx">relation_columns</span>
+</pre></div>
+
+
+<h1>具体使用<a id="orgheadline8"></a></h1>
+<p>使用上很简单(以flask-sqlalchemy为例),原生<strong>sqlalchemy</strong>类似</p>
+<h2>多个实例<a id="orgheadline3"></a></h2>
+<div class="highlight"><pre><span></span>posts = Post.query.all()
+serializer = Seralizer(posts,many=True)
+data = serializer.data
+</pre></div>
+
+
+<h2>单个实例<a id="orgheadline4"></a></h2>
+<div class="highlight"><pre><span></span>post = Post.query.first()
+serializer = Seralizer(post,many=False)
+data = serializer.data
+</pre></div>
+
+
+<h2>排除字段<a id="orgheadline5"></a></h2>
+<div class="highlight"><pre><span></span>serializer = Seralizer(post,exclude=[&#39;title&#39;])
+</pre></div>
+
+
+<h2>only字段<a id="orgheadline6"></a></h2>
+<div class="highlight"><pre><span></span>serializer = Seralizer(post,include=[&#39;title&#39;])
+</pre></div>
+
+
+<h2>关系查询深度<a id="orgheadline7"></a></h2>
+<div class="highlight"><pre><span></span>serializer = Seralizer(post,depth=3)
+</pre></div>
+
+
+<ul>
+<li>depth
+    默认为2</li>
+</ul>
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "articles/2016/12/sqlalchemy序列化为json.html";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'https://honmaple.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+            <div class="blogroll">
+                <h2>blogroll</h2>
+                <ul>
+                    <li><a href="http://getpelican.com/">Pelican</a></li>
+                    <li><a href="http://python.org/">Python.org</a></li>
+                    <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                    <li><a href="https://honmaple.com">个人博客</a></li>
+                </ul>
+            </div><!-- /.blogroll -->
+            <div class="social">
+                <h2>social</h2>
+                <ul>
+                    <li><a href="http://honmaple.org/feeds/all.rss.xml">Atom Feed</a></li>
+                    <li><a href="https://github.com/honmaple">GitHub</a></li>
+                    <li><a href="https://twitter.com/xiyang87">Twitter</a></li>
+                </ul>
+            </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+    </body>
+</html>

@@ -13,10 +13,10 @@
             <h1><a href="../..">HonMaple's Blog </a></h1>
             <nav><ul>
                 <li><a href="http://honmaple.org">主页</a></li>
-                <li ><a href="../../category/linux.html">Linux</a></li>
-                <li ><a href="../../category/python.html">Python</a></li>
-                <li ><a href="../../category/security.html">Security</a></li>
-                <li ><a href="../../category/sheng-huo-sui-bi.html">生活随笔</a></li>
+                <li ><a href="../../categories/linux/index.html">Linux</a></li>
+                <li ><a href="../../categories/python/index.html">Python</a></li>
+                <li ><a href="../../categories/security/index.html">Security</a></li>
+                <li ><a href="../../categories/sheng-huo-sui-bi/index.html">生活随笔</a></li>
                 <li><a href="../../archives/">Archives</a></li>
             </ul></nav>
         </header><!-- /#banner -->
@@ -25,47 +25,53 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../../articles/2016/06/emacs解决windowns文件乱码.html">emacs解决windowns文件乱码</a></h1> 
+                    <h1 class="entry-title"><a href="../../articles/2016/12/emacs预览图片时禁止smooth-scrolling.html">emacs预览图片时禁止smooth-scrolling</a></h1> 
 <footer class="post-info">
-        <abbr class="published" title="2016-06-22T00:00:00+08:00">
-                三 22 六月 2016
+        <abbr class="published" title="2016-12-24T00:00:00+08:00">
+                六 24 十二月 2016
         </abbr>
 
         <address class="vcard author">
                 By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
         </address>
-<p>In <a href="../../category/linux.html">Linux</a>. </p>
-<p>tags: <a href="../../tag/linux/">linux</a><a href="../../tag/emacs/">emacs</a></p></footer><!-- /.post-info --><div id="table-of-contents">
+<p>In <a href="../../categories/linux/index.html">Linux</a>. </p>
+<p>tags: <a href="../../tag/linux/">linux</a><a href="../../tag/emacs/">emacs</a><a href="../../tag/org-mode/">org-mode</a></p></footer><!-- /.post-info --><div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgheadline1">1. 换系统</a></li>
-<li><a href="#orgheadline2">2. 修改language环境</a></li>
-<li><a href="#orgheadline3">3. 重新以gb2312的编码载入文件(推荐)</a></li>
+<li><a href="#orgheadline1">1. 需求</a></li>
+<li><a href="#orgheadline2">2. 解决</a></li>
 </ul>
 </div>
 </div>
 
-<p>最近在看windows文件时总是乱码，查了资料后才知道windowns下的编码为 <strong>gb2312</strong> ,
-而linux下的编码为 <strong>utf-8</strong> ,所以打开文件会乱码</p>
-<p>如何解决?</p>
-<h3>换系统<a id="orgheadline1"></a></h3>
-<p>这不是废话吗!</p>
-<h3>修改language环境<a id="orgheadline2"></a></h3>
-<p>在配置文件中加入这么一行</p>
-<div class="highlight"><pre><span></span>(set-language-environment &#39;Chinese-GB)
+<h1>需求<a id="orgheadline1"></a></h1>
+<p>在使用 <strong>org-mode</strong> 写文档时，插入图片后默认不显示，想要直接在 <strong>org</strong>文件中预览图片，可以使用</p>
+<div class="highlight"><pre><span></span>org-toggle-inline-images
 </pre></div>
 
 
-<p>重启就行,结果····打开 linux下的文件乱码</p>
-<h3>重新以gb2312的编码载入文件(推荐)<a id="orgheadline3"></a></h3>
-<p><a href="http://blog.csdn.net/pfanaya/article/details/6205640">参考这里</a></p>
-<div class="highlight"><pre><span></span>M-x revert-buffer-with-coding-system
+<p>但是问题来了，开启预览模式后，移动光标跳过文件内容，找了一下</p>
+<p><a href="https://github.com/syl20bnr/spacemacs/issues/3824">参考链接</a> <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>
+那么问题来了，如何只在开启 <strong>org-toggle-inline-images</strong> 后关闭 <strong>smooth-scrooling</strong>,
+关闭 <strong>org-toggle-inline-images</strong> 后开启 <strong>smooth-scrooling</strong></p>
+<h1>解决<a id="orgheadline2"></a></h1>
+<p>给出代码,使用 <strong>defadvice</strong></p>
+<div class="highlight"><pre><span></span>(defadvice org-toggle-inline-images (after org-open-at-point activate)
+  (if smooth-scrolling-mode (smooth-scrolling-mode -1)
+        (smooth-scrolling-mode 1)))
 </pre></div>
 
 
-<p>选择chinese-gb2312,确认载入(不需要重启)</p>
-<p>ok,是不是很简单</p><p>There are <a href="../../articles/2016/06/emacs解决windowns文件乱码.html#disqus_thread">comments</a>.</p>                </article>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara">[https://github.com/syl20bnr/spacemacs/issues/3824](https://github.com/syl20bnr/spacemacs/issues/3824)</div></div>
+
+
+</div>
+</div><p>There are <a href="../../articles/2016/12/emacs预览图片时禁止smooth-scrolling.html#disqus_thread">comments</a>.</p>                </article>
             </aside><!-- /#featured -->
                 <section id="content" class="body">
                     <h1>Other articles</h1>
@@ -76,10 +82,36 @@
  
             <li><article class="hentry">    
                 <header>
+                        <h1><a href="../../articles/2016/06/emacs解决windowns文件乱码.html" rel="bookmark" title="Permalink to emacs解决windowns文件乱码">emacs解决windowns文件乱码</a></h1>
+                </header>
+                
+                <div class="entry-content" style="color:#666;">
+<footer class="post-info">
+        <abbr class="published" title="2016-06-22T00:00:00+08:00">
+                三 22 六月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../categories/linux/index.html">Linux</a>. </p>
+<p>tags: <a href="../../tag/linux/">linux</a><a href="../../tag/emacs/">emacs</a></p></footer><!-- /.post-info -->                <div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">1.
+                <a class="readmore" href="../../articles/2016/06/emacs解决windowns文件乱码.html">read more</a>
+<p>There are <a href="../../articles/2016/06/emacs解决windowns文件乱码.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
                         <h1><a href="../../articles/2016/05/解决evil-escape下visual-state不能使用'jj'的问题.html" rel="bookmark" title="Permalink to 解决evil-escape下visual-state不能使用'jj'的问题">解决evil-escape下visual-state不能使用'jj'的问题</a></h1>
                 </header>
                 
-                <div class="entry-content">
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2016-05-21T00:00:00+08:00">
                 六 21 五月 2016
@@ -88,7 +120,7 @@
         <address class="vcard author">
                 By <a class="url fn" href="../../author/2016-05-21-162800.html">2016-05-21 16:28:00</a>
         </address>
-<p>In <a href="../../category/linux.html">Linux</a>. </p>
+<p>In <a href="../../categories/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../../tag/linux/">linux</a><a href="../../tag/emacs/">emacs</a></p></footer><!-- /.post-info -->                <p>在一个多月前我给 <em>evil-escape</em> 开发者提了一个issue,但是不幸的是，没人理我，人理</p>
                 <a class="readmore" href="../../articles/2016/05/解决evil-escape下visual-state不能使用'jj'的问题.html">read more</a>
 <p>There are <a href="../../articles/2016/05/解决evil-escape下visual-state不能使用'jj'的问题.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->

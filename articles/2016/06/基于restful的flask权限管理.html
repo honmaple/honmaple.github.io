@@ -13,10 +13,10 @@
             <h1><a href="../../..">HonMaple's Blog </a></h1>
             <nav><ul>
                 <li><a href="http://honmaple.org">主页</a></li>
-                <li ><a href="../../../category/linux.html">Linux</a></li>
-                <li class="active"><a href="../../../category/python.html">Python</a></li>
-                <li ><a href="../../../category/security.html">Security</a></li>
-                <li ><a href="../../../category/sheng-huo-sui-bi.html">生活随笔</a></li>
+                <li ><a href="../../../categories/linux/index.html">Linux</a></li>
+                <li class="active"><a href="../../../categories/python/index.html">Python</a></li>
+                <li ><a href="../../../categories/security/index.html">Security</a></li>
+                <li ><a href="../../../categories/sheng-huo-sui-bi/index.html">生活随笔</a></li>
                 <li><a href="../../../archives/">Archives</a></li>
             </ul></nav>
         </header><!-- /#banner -->
@@ -37,7 +37,7 @@
         <address class="vcard author">
                 By <a class="url fn" href="../../../author/2016-06-10-013400.html">2016-06-10 01:34:00</a>
         </address>
-<p>In <a href="../../../category/python.html">Python</a>. </p>
+<p>In <a href="../../../categories/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../../tag/python/">python</a><a href="../../../tag/flask/">flask</a><a href="../../../tag/restful/">restful</a></p></footer><!-- /.post-info -->      <h3>为什么需要restful形式的权限管理<a id="orgheadline1"></a></h3>
 <p>最近在写flask应用时使用了 <strong>restful</strong> 形式的<code>flask.views.MethodView</code>，但是在对其进行权限管理时遇到了一些问题</p>
 <p>flask文档上介绍说用</p>
@@ -50,7 +50,7 @@
 <li><strong>get</strong> 和 <strong>post</strong> 采用不同的权限</li>
 </ul>
 <blockquote>
-<p>get 不使用 login_required  <br />
+<p>get 不使用 login_required  <br>
  post 需要 login_required</p>
 </blockquote>
 <p>这样就不能使用 <strong>decorators</strong> 对视图进行装饰</p>
@@ -58,23 +58,23 @@
 <li>
 <p><strong>post</strong> ,<strong>delete</strong>, <strong>put</strong> 都需要 login_required,但是<strong>get</strong>不需要
     而 <strong>delete</strong> 又需要更高级别的权限,我们可以这样</p>
-<div class="highlight"><pre><span></span><span class="k">class</span> <span class="n">AAA</span>(<span class="n">MethodView</span>):
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">AAA</span><span class="p">(</span><span class="nx">MethodView</span><span class="p">)</span><span class="o">:</span>
 
-    <span class="n">def</span> <span class="n">get</span>(<span class="k">self</span>,<span class="n">uid</span>):
-        ...
+    <span class="nx">def</span> <span class="nx">get</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span><span class="nx">uid</span><span class="p">)</span><span class="o">:</span>
+        <span class="p">...</span>
 
-    <span class="nv">@login_required</span>
-    <span class="n">def</span> <span class="n">post</span>(<span class="k">self</span>):
-        ...
+    <span class="kd">@login_required</span>
+    <span class="nx">def</span> <span class="nx">post</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="p">...</span>
 
-    <span class="nv">@login_required</span>
-    <span class="n">def</span> <span class="n">put</span>(<span class="k">self</span>,<span class="n">uid</span>):
-        ...
+    <span class="kd">@login_required</span>
+    <span class="nx">def</span> <span class="nx">put</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span><span class="nx">uid</span><span class="p">)</span><span class="o">:</span>
+        <span class="p">...</span>
 
-    <span class="nv">@login_required</span>
-    <span class="nv">@more_required</span>
-    <span class="n">def</span> <span class="nb">delete</span>(<span class="k">self</span>,<span class="n">uid</span>):
-        ...
+    <span class="kd">@login_required</span>
+    <span class="kd">@more_required</span>
+    <span class="nx">def</span> <span class="k">delete</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span><span class="nx">uid</span><span class="p">)</span><span class="o">:</span>
+        <span class="p">...</span>
 </pre></div>
 
 
@@ -95,47 +95,47 @@ def put(self,uid):
 </ul>
 <h3>怎么实现restful形式的权限管理<a id="orgheadline2"></a></h3>
 <p>同样采用装饰器实现,调用 <em>BasePermission</em> 时会自动调用 <em><strong>call</strong></em> 函数</p>
-<div class="highlight"><pre><span></span><span class="k">class</span> <span class="n">BasePermission</span>(<span class="n">object</span>):
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">BasePermission</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
 
-    <span class="n">def</span> <span class="n">__call__</span>(<span class="k">self</span>, <span class="n">func</span>):
-        <span class="nv">@wraps</span>(<span class="n">func</span>)
-        <span class="n">def</span> <span class="n">decorator</span>(*<span class="n">args</span>, **<span class="n">kwargs</span>):
-            <span class="n">meth</span> = <span class="n">getattr</span>(<span class="k">self</span>, <span class="n">request</span>.<span class="k">method</span>.<span class="n">lower</span>(), <span class="n">None</span>)
-            <span class="k">if</span> <span class="n">meth</span> <span class="k">is</span> <span class="n">None</span> <span class="o">and</span> <span class="n">request</span>.<span class="k">method</span> == <span class="s">&#39;HEAD&#39;</span>:
-                <span class="n">meth</span> = <span class="n">getattr</span>(<span class="k">self</span>, <span class="s">&#39;get&#39;</span>, <span class="n">None</span>)
-            <span class="n">assert</span> <span class="n">meth</span> <span class="k">is</span> <span class="nb">not</span> <span class="n">None</span>, <span class="s">&#39;Unimplemented method %r&#39;</span> % <span class="n">request</span>.<span class="k">method</span>
-            <span class="n">check</span> = <span class="n">meth</span>(*<span class="n">args</span>, **<span class="n">kwargs</span>)
-            <span class="k">if</span> <span class="n">check:</span>
-                <span class="k">return</span> <span class="n">check</span>
-            <span class="n">else:</span>
-                <span class="nb">pass</span>
-            <span class="k">return</span> <span class="n">func</span>(*<span class="n">args</span>, **<span class="n">kwargs</span>)
+    <span class="nx">def</span> <span class="nx">__call__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">func</span><span class="p">)</span><span class="o">:</span>
+        <span class="kd">@wraps</span><span class="p">(</span><span class="nx">func</span><span class="p">)</span>
+        <span class="nx">def</span> <span class="nx">decorator</span><span class="p">(</span><span class="o">*</span><span class="nx">args</span><span class="p">,</span> <span class="o">**</span><span class="nx">kwargs</span><span class="p">)</span><span class="o">:</span>
+            <span class="nx">meth</span> <span class="o">=</span> <span class="nx">getattr</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">request</span><span class="p">.</span><span class="nx">method</span><span class="p">.</span><span class="nx">lower</span><span class="p">(),</span> <span class="nx">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nx">meth</span> <span class="nx">is</span> <span class="nx">None</span> <span class="nx">and</span> <span class="nx">request</span><span class="p">.</span><span class="nx">method</span> <span class="o">==</span> <span class="s1">&#39;HEAD&#39;</span><span class="o">:</span>
+                <span class="nx">meth</span> <span class="o">=</span> <span class="nx">getattr</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="nx">None</span><span class="p">)</span>
+            <span class="nx">assert</span> <span class="nx">meth</span> <span class="nx">is</span> <span class="nx">not</span> <span class="nx">None</span><span class="p">,</span> <span class="s1">&#39;Unimplemented method %r&#39;</span> <span class="o">%</span> <span class="nx">request</span><span class="p">.</span><span class="nx">method</span>
+            <span class="nx">check</span> <span class="o">=</span> <span class="nx">meth</span><span class="p">(</span><span class="o">*</span><span class="nx">args</span><span class="p">,</span> <span class="o">**</span><span class="nx">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nx">check</span>:
+                <span class="kt">return</span> <span class="nx">check</span>
+            <span class="k">else</span><span class="o">:</span>
+                <span class="nx">pass</span>
+            <span class="k">return</span> <span class="nx">func</span><span class="p">(</span><span class="o">*</span><span class="nx">args</span><span class="p">,</span> <span class="o">**</span><span class="nx">kwargs</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">decorator</span>
+        <span class="k">return</span> <span class="nx">decorator</span>
 </pre></div>
 
 
 <p>举个例子,get方式不需要用户登陆,而其它方式需要,并且put方式需要创建主题的作者才能更改</p>
-<div class="highlight"><pre><span></span><span class="k">class</span> <span class="n">TopicPermission</span>(<span class="n">BasePermission</span>):
-    <span class="nv">@login_required</span>
-    <span class="n">def</span> <span class="n">post</span>(<span class="k">self</span>):
-        <span class="nb">pass</span>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">TopicPermission</span><span class="p">(</span><span class="nx">BasePermission</span><span class="p">)</span><span class="o">:</span>
+    <span class="kd">@login_required</span>
+    <span class="nx">def</span> <span class="nx">post</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">pass</span>
 
-    <span class="n">def</span> <span class="n">get</span>(<span class="k">self</span>, <span class="n">uid</span>):
-        <span class="nb">pass</span>
+    <span class="nx">def</span> <span class="nx">get</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">uid</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">pass</span>
 
-    <span class="nv">@login_required</span>
-    <span class="n">def</span> <span class="n">put</span>(<span class="k">self</span>, <span class="n">uid</span>):
-        <span class="n">permission</span> = <span class="n">EditTopicPermission</span>(<span class="n">uid</span>)
-        <span class="k">if</span> <span class="nb">not</span> <span class="n">permission</span>.<span class="nb">can</span>():
-            <span class="n">flash</span>(<span class="s">&#39;你没有权限&#39;</span>)
-            <span class="k">return</span> <span class="n">redirect</span>(<span class="n">url_for</span>(<span class="s">&#39;topic.topic&#39;</span>, <span class="n">uid</span>=<span class="n">uid</span>))
+    <span class="kd">@login_required</span>
+    <span class="nx">def</span> <span class="nx">put</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">uid</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">permission</span> <span class="o">=</span> <span class="nx">EditTopicPermission</span><span class="p">(</span><span class="nx">uid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">not</span> <span class="nx">permission</span><span class="p">.</span><span class="nx">can</span><span class="p">()</span><span class="o">:</span>
+            <span class="nx">flash</span><span class="p">(</span><span class="s1">&#39;你没有权限&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nx">redirect</span><span class="p">(</span><span class="nx">url_for</span><span class="p">(</span><span class="s1">&#39;topic.topic&#39;</span><span class="p">,</span> <span class="nx">uid</span><span class="o">=</span><span class="nx">uid</span><span class="p">))</span>
 
-    <span class="nv">@login_required</span>
-    <span class="n">def</span> <span class="nb">delete</span>(<span class="k">self</span>,<span class="n">uid</span>):
-        <span class="nb">pass</span>
+    <span class="kd">@login_required</span>
+    <span class="nx">def</span> <span class="k">delete</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span><span class="nx">uid</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">pass</span>
 
-<span class="n">topic_permission</span> = <span class="n">TopicPermission</span>()
+<span class="nx">topic_permission</span> <span class="o">=</span> <span class="nx">TopicPermission</span><span class="p">()</span>
 </pre></div>
 
 

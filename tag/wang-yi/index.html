@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>HonMaple's Blog - 网易</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../../theme/css/main.css" type="text/css" />
+    </head>
+    <body id="index" class="home">
+<a href="http://github.com/honmaple/honmaple.github.io">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="../../theme/css/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+</a>
+        <header id="banner" class="body">
+            <h1><a href="../..">HonMaple's Blog </a></h1>
+            <nav><ul>
+                <li><a href="http://honmaple.org">主页</a></li>
+                <li ><a href="../../categories/linux/index.html">Linux</a></li>
+                <li ><a href="../../categories/python/index.html">Python</a></li>
+                <li ><a href="../../categories/security/index.html">Security</a></li>
+                <li ><a href="../../categories/sheng-huo-sui-bi/index.html">生活随笔</a></li>
+                <li><a href="../../archives/">Archives</a></li>
+            </ul></nav>
+        </header><!-- /#banner -->
+        
+        
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="../../articles/2016/12/利用网易云api获取歌曲信息.html">利用网易云api获取歌曲信息</a></h1> 
+<footer class="post-info">
+        <abbr class="published" title="2016-12-11T00:00:00+08:00">
+                日 11 十二月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../categories/python/index.html">Python</a>. </p>
+<p>tags: <a href="../../tag/python/">python</a><a href="../../tag/wang-yi/">网易</a></p></footer><!-- /.post-info --><p>最近是增加了一个<strong>aplayer</strong>在网站上,但原本想要使用qiniu存储，最后觉得太麻烦了,直接利用网易云api获取歌曲</p>
+<p>使用<strong>python标准库urllib</strong></p>
+<p>直接给出代码</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">request</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="nb">id</span> <span class="o">=</span> <span class="s1">&#39;28819878&#39;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://music.163.com/api/song/detail/?id=&quot;</span> <span class="o">+</span> <span class="nb">id</span> <span class="o">+</span> <span class="s2">&quot;&amp;ids=%5B&quot;</span> <span class="o">+</span> <span class="nb">id</span> <span class="o">+</span> <span class="s2">&quot;%5D&amp;csrf_token&quot;</span>
+<span class="n">rep</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
+<span class="n">rep</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">rep</span><span class="p">)[</span><span class="s1">&#39;songs&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">rep</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+<span class="n">artist</span> <span class="o">=</span> <span class="n">rep</span><span class="p">[</span><span class="s1">&#39;artists&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+<span class="n">mp3url</span> <span class="o">=</span> <span class="n">rep</span><span class="p">[</span><span class="s1">&#39;mp3Url&#39;</span><span class="p">]</span>
+<span class="n">picurl</span> <span class="o">=</span> <span class="n">rep</span><span class="p">[</span><span class="s1">&#39;album&#39;</span><span class="p">][</span><span class="s1">&#39;blurPicUrl&#39;</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;name:&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;artists:&#39;</span><span class="p">,</span> <span class="n">artist</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;mp3:&#39;</span><span class="p">,</span> <span class="n">mp3url</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;pic:&#39;</span><span class="p">,</span> <span class="n">picurl</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;http://music.163.com/api/song/media?id=&#39;</span> <span class="o">+</span> <span class="nb">id</span>
+<span class="n">rep</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
+<span class="n">lyric</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">rep</span><span class="p">)[</span><span class="s1">&#39;lyric&#39;</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;lyric:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">lyric</span><span class="p">))</span>
+</pre></div>
+
+
+<p>结果</p>
+<div class="highlight"><pre><span></span>#+RESULTS:
+: name: 轨迹
+: artists: 徐小薇
+: mp3: http://m2.music.126.net/1vGFlmmY1NeHEZy_1QuYhA==/5898879883333738.mp3
+: pic: http://p4.music.126.net/EMS4GE-ojql3azwxXYPT3w==/3264450024433079.jpg
+: lyric:
+:  &quot;[00:12.98]\u600e\u4e48\u9690\u85cf\u6211\u7684\u60b2\u4f24\n[00:19.10]\u5931\u53bb\u4f60\u7684\u5730\u65b9\n[00:25.61]\u4f60\u7684\u53d1\u9999\u6563\u7684\u5306\u5fd9\n[00:32.06]\u6211\u5df2\u7ecf\u8ddf\u4e0d\u4e0a\n[00:38.49]\u95ed\u4e0a\u773c\u775b\u8fd8\u80fd\u770b\u89c1\n[00:44.90]\u4f60\u79bb\u53bb\u7684\u75d5\u8ff9\n[00:51.21]\u5728\u6708\u5149\u4e0b\u4e00\u76f4\u627e\u5bfb\u90a3\u60f3\u5ff5\u7684\u8eab\u5f71\n[01:04.48]\u5982\u679c\u8bf4\u5206\u624b\u662f\u82e6\u75db\u7684\u8d77\u70b9\n[01:09.98]\u90a3\u5728\u7ec8\u70b9\u4e4b\u524d\n[01:13.25]\u6211\u613f\u610f\u518d\u7231\u4e00\u904d\n[01:17.25]\u60f3\u8981\u5bf9\u4f60\u8bf4\u7684\n[01:19.89]\u4e0d\u6562\u8bf4\u7684\u7231\n[01:23.52]\u4f1a\u4e0d\u4f1a\u6709\u4eba\u53ef\u4ee5\u660e\u767d\n[01:29.54]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fd8\u8bb0\u4f60\n[01:35.83]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[01:42.27]\u60f3\u7740\u90a3\u4e00\u5929\u4f1a\u6709\u4eba\u4ee3\u66ff\n[01:49.10]\u8ba9\u6211\u4e0d\u518d\u60f3\u5ff5\u4f60\n[01:55.10]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fae\u5fae\u7b11\n[02:01.51]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[02:07.81]\u53c8\u60f3\u4e86\u4e00\u904d\u4f60\u6e29\u67d4\u7684\u8138\n[02:14.54]\u5728\u6211\u5fd8\u8bb0\u4e4b\u524d\n[02:30.42]\u600e\u4e48\u9690\u85cf\u6211\u7684\u60b2\u4f24\n[02:36.77]\u5931\u53bb\u4f60\u7684\u5730\u65b9\n[02:43.17]\u4f60\u7684\u53d1\u9999\u6563\u7684\u5306\u5fd9\n[02:49.56]\u6211\u5df2\u7ecf\u8ddf\u4e0d\u4e0a\n[02:56.09]\u95ed\u4e0a\u773c\u775b\u8fd8\u80fd\u770b\u89c1\n[03:02.20]\u4f60\u79bb\u53bb\u7684\u75d5\u8ff9\n[03:08.81]\u5728\u6708\u5149\u4e0b\u4e00\u76f4\u627e\u5bfb\u90a3\u60f3\u5ff5\u7684\u8eab\u5f71\n[03:21.81]\u5982\u679c\u8bf4\u5206\u624b\u662f\u82e6\u75db\u7684\u8d77\u70b9\n[03:27.53]\u90a3\u5728\u7ec8\u70b9\u4e4b\u524d\n[03:34.82]\u6211\u613f\u610f\u518d\u7231\u4e00\u904d\n[03:34.68]\u60f3\u8981\u5bf9\u4f60\u8bf4\u7684\n[03:37.69]\u4e0d\u6562\u8bf4\u7684\u7231\n[03:41.11]\u4f1a\u4e0d\u4f1a\u6709\u4eba\u53ef\u4ee5\u660e\u767d\n[03:47.07]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fd8\u8bb0\u4f60\n[03:53.54]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[03:59.73]\u60f3\u7740\u90a3\u4e00\u5929\u4f1a\u6709\u4eba\u4ee3\u66ff\n[04:06.86]\u8ba9\u6211\u4e0d\u518d\u60f3\u5ff5\u4f60\n[04:12.96]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fae\u5fae\u7b11\n[04:19.08]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[04:25.53]\u53c8\u60f3\u4e86\u4e00\u904d\u4f60\u6e29\u67d4\u7684\u8138\n[04:32.24]\u5728\u6211\u5fd8\u8bb0\u4e4b\u524d\n\n[04:38.34]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fd8\u8bb0\u4f60\n[04:45.05]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[04:51.10]\u60f3\u7740\u90a3\u4e00\u5929\u4f1a\u6709\u4eba\u4ee3\u66ff\n[04:58.01]\u8ba9\u6211\u4e0d\u518d\u60f3\u5ff5\u4f60\n[05:03.89]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fae\u5fae\u7b11\n[05:10.25]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[05:16.70]\u53c8\u60f3\u4e86\u4e00\u904d\u4f60\u6e29\u67d4\u7684\u8138\n[05:23.50]\u5728\u6211\u5fd8\u8bb0\u4e4b\u524d\n\n[05:29.62]\u5fc3\u91cc\u7684\u773c\u6cea\n[05:32.81]\u6a21\u7cca\u4e86\u89c6\u7ebf\n[05:36.57]\u4f60\u5df2\u5feb\u770b\u4e0d\u89c1&quot;
+</pre></div>
+
+
+<p>结果格式化什么的看着格式吧，这些信息对我来说足够了</p><p>There are <a href="../../articles/2016/12/利用网易云api获取歌曲信息.html#disqus_thread">comments</a>.</p>                </article>
+<p class="paginator">
+    Page 1 / 1
+</p>
+            </aside><!-- /#featured -->
+            </ol><!-- /#posts-list -->
+            </section><!-- /#content -->
+        <section id="extras" class="body">
+            <div class="blogroll">
+                <h2>blogroll</h2>
+                <ul>
+                    <li><a href="http://getpelican.com/">Pelican</a></li>
+                    <li><a href="http://python.org/">Python.org</a></li>
+                    <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                    <li><a href="https://honmaple.com">个人博客</a></li>
+                </ul>
+            </div><!-- /.blogroll -->
+            <div class="social">
+                <h2>social</h2>
+                <ul>
+                    <li><a href="http://honmaple.org/feeds/all.rss.xml">Atom Feed</a></li>
+                    <li><a href="https://github.com/honmaple">GitHub</a></li>
+                    <li><a href="https://twitter.com/xiyang87">Twitter</a></li>
+                </ul>
+            </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+    </body>
+</html>

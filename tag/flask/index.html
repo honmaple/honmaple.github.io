@@ -13,10 +13,10 @@
             <h1><a href="../..">HonMaple's Blog </a></h1>
             <nav><ul>
                 <li><a href="http://honmaple.org">主页</a></li>
-                <li ><a href="../../category/linux.html">Linux</a></li>
-                <li ><a href="../../category/python.html">Python</a></li>
-                <li ><a href="../../category/security.html">Security</a></li>
-                <li ><a href="../../category/sheng-huo-sui-bi.html">生活随笔</a></li>
+                <li ><a href="../../categories/linux/index.html">Linux</a></li>
+                <li ><a href="../../categories/python/index.html">Python</a></li>
+                <li ><a href="../../categories/security/index.html">Security</a></li>
+                <li ><a href="../../categories/sheng-huo-sui-bi/index.html">生活随笔</a></li>
                 <li><a href="../../archives/">Archives</a></li>
             </ul></nav>
         </header><!-- /#banner -->
@@ -25,134 +25,186 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../../articles/2016/07/如何安装及使用Honmaple社区程序.html">如何安装及使用Honmaple社区程序</a></h1> 
+                    <h1 class="entry-title"><a href="../../articles/2016/12/flask使用token进行登陆.html">flask使用token进行验证</a></h1> 
 <footer class="post-info">
-        <abbr class="published" title="2016-07-25T00:00:00+08:00">
-                一 25 七月 2016
+        <abbr class="published" title="2016-12-13T00:00:00+08:00">
+                二 13 十二月 2016
         </abbr>
 
         <address class="vcard author">
-                By <a class="url fn" href="../../author/2016-07-25-123800.html">2016-07-25 12:38:00</a>
+                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
         </address>
-<p>In <a href="../../category/sheng-huo-sui-bi.html">生活随笔</a>. </p>
-<p>tags: <a href="../../tag/python/">python</a><a href="../../tag/flask/">flask</a></p></footer><!-- /.post-info --><div id="table-of-contents">
+<p>In <a href="../../categories/python/index.html">Python</a>. </p>
+<p>tags: <a href="../../tag/flask/">flask</a><a href="../../tag/python/">python</a><a href="../../tag/token/">token</a></p></footer><!-- /.post-info --><div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgheadline6">1. 如何安装及使用</a>
+<li><a href="#orgheadline1">1. 为什么需要用token验证</a></li>
+<li><a href="#orgheadline6">2. 如何使用token?</a>
 <ul>
-<li><a href="#orgheadline1">1.1. 安装需要的package</a></li>
-<li><a href="#orgheadline2">1.2. 配置config</a></li>
-<li><a href="#orgheadline3">1.3. 注释下面代码</a></li>
-<li><a href="#orgheadline4">1.4. 初始化数据库</a></li>
-<li><a href="#orgheadline5">1.5. 创建管理员账户</a></li>
+<li><a href="#orgheadline2">2.1. 生成token</a></li>
+<li><a href="#orgheadline3">2.2. 验证token</a></li>
+<li><a href="#orgheadline4">2.3. 使用flask-login</a></li>
+<li><a href="#orgheadline5">2.4. 设置csrf白名单</a></li>
 </ul>
 </li>
-<li><a href="#orgheadline8">2. 本地搭建</a>
-<ul>
-<li><a href="#orgheadline7">2.1. 登陆并进入后台</a></li>
-</ul>
-</li>
-<li><a href="#orgheadline13">3. 服务端搭建</a>
-<ul>
-<li><a href="#orgheadline9">3.1. 配置nginx</a></li>
-<li><a href="#orgheadline10">3.2. 配置supervior</a></li>
-<li><a href="#orgheadline11">3.3. 配置gunicorn</a></li>
-<li><a href="#orgheadline12">3.4. 启动</a></li>
-</ul>
-</li>
+<li><a href="#orgheadline7">3. 使用脚本发表</a></li>
 </ul>
 </div>
 </div>
 
-<h1>如何安装及使用<a id="orgheadline6"></a></h1>
-<h2>安装需要的package<a id="orgheadline1"></a></h2>
-<div class="highlight"><pre><span></span>pip install -r requirements.txt
+<h1>为什么需要用token验证<a id="orgheadline1"></a></h1>
+<p>原因呢是因为写博客时已经在本地写好了，但是要发表到网站上还需要这么几步:</p>
+<ul>
+<li>[X] 打开浏览器</li>
+<li>[X] 打开我的网站</li>
+<li>[X] 进入登陆页</li>
+<li>[X] 登陆</li>
+<li>[X] 进入后台页</li>
+<li>[X] 进入文章发表页</li>
+<li>[X] 复制粘贴</li>
+<li>[X] 发表</li>
+</ul>
+<p>所以使用<strong>token</strong>验证成为必然</p>
+<h1>如何使用token?<a id="orgheadline6"></a></h1>
+<h2>生成token<a id="orgheadline2"></a></h2>
+<p>使用<strong>itsdangerous</strong>对token进行加密</p>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">User</span><span class="p">(</span><span class="nx">model</span><span class="p">)</span><span class="o">:</span>
+    <span class="p">......</span>
+
+    <span class="kd">@property</span>
+    <span class="nx">def</span> <span class="nx">token</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">config</span> <span class="o">=</span> <span class="nx">current_app</span><span class="p">.</span><span class="nx">config</span>
+        <span class="nx">secret_key</span> <span class="o">=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+        <span class="nx">salt</span> <span class="o">=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+        <span class="nx">serializer</span> <span class="o">=</span> <span class="nx">URLSafeTimedSerializer</span><span class="p">(</span><span class="nx">secret_key</span><span class="p">)</span>
+        <span class="err">#</span> <span class="nx">column</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.(</span><span class="err">需要加密的字段</span><span class="p">)</span>
+        <span class="nx">token</span> <span class="o">=</span> <span class="nx">serializer</span><span class="p">.</span><span class="nx">dumps</span><span class="p">(</span><span class="nx">column</span><span class="p">,</span> <span class="nx">salt</span><span class="o">=</span><span class="nx">salt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">token</span>
 </pre></div>
 
 
-<h2>配置config<a id="orgheadline2"></a></h2>
-<p>查看配置详细介绍</p>
-<h2>注释下面代码<a id="orgheadline3"></a></h2>
-<p>因为如果不注释的话 <strong>初始化数据库</strong> 会报错</p>
-<p>文件位置: <strong>maple/topic/forms.py</strong></p>
-<div class="highlight"><pre><span></span>category = SelectField(
-    _(&#39;Category:&#39;),
-    choices=[(b.id, b.board + &#39;   --&#39; + b.parent_board)
-             for b in Board.query.all()],
-    coerce=int)
+<p>请保管好<strong>SECRET_KEY</strong> 和 <strong>SECURITY_PASSWORD_SALT</strong>,不要泄露</p>
+<h2>验证token<a id="orgheadline3"></a></h2>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">User</span><span class="p">(</span><span class="nx">Model</span><span class="p">)</span><span class="o">:</span>
+    <span class="p">......</span>
+
+    <span class="kd">@staticmethod</span>
+    <span class="nx">def</span> <span class="nx">check_token</span><span class="p">(</span><span class="nx">token</span><span class="p">,</span> <span class="nx">max_age</span><span class="o">=</span><span class="mi">86400</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">config</span> <span class="o">=</span> <span class="nx">current_app</span><span class="p">.</span><span class="nx">config</span>
+        <span class="nx">secret_key</span> <span class="o">=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+        <span class="nx">salt</span> <span class="o">=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+        <span class="nx">serializer</span> <span class="o">=</span> <span class="nx">URLSafeTimedSerializer</span><span class="p">(</span><span class="nx">secret_key</span><span class="p">)</span>
+        <span class="k">try</span><span class="o">:</span>
+            <span class="nx">column</span> <span class="o">=</span> <span class="nx">serializer</span><span class="p">.</span><span class="nx">loads</span><span class="p">(</span><span class="nx">token</span><span class="p">,</span> <span class="nx">salt</span><span class="o">=</span><span class="nx">salt</span><span class="p">,</span> <span class="nx">max_age</span><span class="o">=</span><span class="nx">max_age</span><span class="p">)</span>
+        <span class="nx">except</span> <span class="nx">BadSignature</span>:
+            <span class="kt">return</span> <span class="nx">False</span>
+        <span class="nx">except</span> <span class="nx">SignatureExpired</span>:
+            <span class="kt">return</span> <span class="nx">False</span>
 </pre></div>
 
 
-<h2>初始化数据库<a id="orgheadline4"></a></h2>
-<div class="highlight"><pre><span></span>python manage.py db init
-python manage.py db migrate -m &quot;first migrate&quot;
-python manage.py db upgrade
+<ul>
+<li>max-age
+    最大过期时间</li>
+</ul>
+<p>如果验证成功查找<strong>该用户</strong>是否存在</p>
+<div class="highlight"><pre><span></span>user = User.query.filter_by(column=column).first()
+if user is None:
+    return False
+return user
 </pre></div>
 
 
-<p>ok,将第三步中注释的内容恢复</p>
-<h2>创建管理员账户<a id="orgheadline5"></a></h2>
-<div class="highlight"><pre><span></span>python manager.py create_user
+<p>示例:</p>
+<div class="highlight"><pre><span></span>@staticmethod
+def check_token(token, max_age=86400):
+    config = current_app.config
+    secret_key = config.setdefault(&#39;SECRET_KEY&#39;)
+    salt = config.setdefault(&#39;SECURITY_PASSWORD_SALT&#39;)
+    serializer = URLSafeTimedSerializer(secret_key)
+    try:
+        username = serializer.loads(token, salt=salt, max_age=max_age)
+    except BadSignature:
+        return False
+    except SignatureExpired:
+        return False
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        return False
+    return user
 </pre></div>
 
 
-<h1>本地搭建<a id="orgheadline8"></a></h1>
-<hr />
-<h2>登陆并进入后台<a id="orgheadline7"></a></h2>
-<div class="highlight"><pre><span></span>python manager.py runserver
+<h2>使用flask-login<a id="orgheadline4"></a></h2>
+<p>flask-login是flask的一个登陆扩展,自带token验证, <strong>但是请一定要设</strong></p>
+<div class="highlight"><pre><span></span>login_manager.session_protection = &quot;basic&quot;
 </pre></div>
 
 
-<p>Visit <a href="http://forums.localhost:5000/admin">http://forums.localhost:5000/admin</a></p>
-<h1>服务端搭建<a id="orgheadline13"></a></h1>
-<hr />
-<p>参考 <a href="http://flask.pocoo.org/docs/0.11/deploying/wsgi-standalone/">http://flask.pocoo.org/docs/0.11/deploying/</a></p>
-<p>以我的配置为例:</p>
-<h2>配置nginx<a id="orgheadline9"></a></h2>
-<div class="highlight"><pre><span></span><span class="nt">server</span> <span class="p">{</span>
-    <span class="n">listen</span> <span class="m">80</span><span class="p">;</span>
+<p>这是我在试验了n次后,读了flask-login的源码后才发现的（其实后面发现文档有写☹）</p>
+<p>然后设置 <strong>request_loader</strong></p>
+<div class="highlight"><pre><span></span>@login_manager.request_loader
+def user_loader_from_request(request):
+    token = request.args.get(&#39;your_token&#39;)
+    if token is not None:
+        user = User.check_token(token)
+        if user:
+            return user
 
-    <span class="n">server_name</span> <span class="n">_</span><span class="p">;</span>
-
-    <span class="n">access_log</span>  <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">nginx</span><span class="o">/</span><span class="n">access</span><span class="o">.</span><span class="n">log</span><span class="p">;</span>
-    <span class="n">error_log</span>  <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">nginx</span><span class="o">/</span><span class="n">error</span><span class="o">.</span><span class="n">log</span><span class="p">;</span>
-
-    <span class="n">location</span> <span class="o">/</span> <span class="err">{</span>
-        <span class="n">proxy_pass</span>         <span class="n">http</span><span class="o">://</span><span class="m">127</span><span class="o">.</span><span class="m">0</span><span class="o">.</span><span class="m">0</span><span class="o">.</span><span class="m">1</span><span class="o">:</span><span class="m">8000</span><span class="o">/</span><span class="p">;</span>
-        <span class="n">proxy_redirect</span>     <span class="n">off</span><span class="p">;</span>
-
-        <span class="n">proxy_set_header</span>   <span class="n">Host</span>                 <span class="err">$</span><span class="n">host</span><span class="p">;</span>
-        <span class="n">proxy_set_header</span>   <span class="n">X</span><span class="o">-</span><span class="n">Real</span><span class="o">-</span><span class="n">IP</span>            <span class="err">$</span><span class="n">remote_addr</span><span class="p">;</span>
-        <span class="n">proxy_set_header</span>   <span class="n">X</span><span class="o">-</span><span class="n">Forwarded</span><span class="o">-</span><span class="n">For</span>      <span class="err">$</span><span class="n">proxy_add_x_forwarded_for</span><span class="p">;</span>
-        <span class="n">proxy_set_header</span>   <span class="n">X</span><span class="o">-</span><span class="n">Forwarded</span><span class="o">-</span><span class="n">Proto</span>    <span class="err">$</span><span class="n">scheme</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="err">}</span>
+return login_manager
 </pre></div>
 
 
-<h2>配置supervior<a id="orgheadline10"></a></h2>
-<div class="highlight"><pre><span></span><span class="k">[program:forums]</span>
-<span class="na">user</span><span class="o">=</span><span class="s">www</span>
-<span class="na">command</span><span class="o">=</span><span class="s">/home/www/forums/venv/bin/gunicorn run:app -c /home/www/forums/gunicorn.conf</span>
-<span class="na">directory</span><span class="o">=</span><span class="s">/home/www/forums</span>
-<span class="na">autostart</span><span class="o">=</span><span class="s">true</span>
-<span class="na">autorestart</span><span class="o">=</span><span class="s">true</span>
-<span class="na">stdout_logfile</span><span class="o">=</span><span class="s">/home/www/forums/logs/gunicorn_supervisor.log</span>
+<p>这是简单的从<strong>url</strong>中获取<strong>token</strong>进行验证,也可以从 <strong>header</strong>中获取(更安全)</p>
+<div class="highlight"><pre><span></span>token = request.headers.get(&#39;your_token&#39;)
 </pre></div>
 
 
-<h2>配置gunicorn<a id="orgheadline11"></a></h2>
-<div class="highlight"><pre><span></span>workers = 2
-bind = &#39;127.0.0.1:8000&#39;
+<h2>设置csrf白名单<a id="orgheadline5"></a></h2>
+<p>非常不幸的是，假设你开启了<strong>csrf</strong>保护,本地使用脚本验证时会报<strong>400</strong>错误,设置<strong>csrf</strong>白名单</p>
+<div class="highlight"><pre><span></span>csrf.exempt
 </pre></div>
 
 
-<h2>启动<a id="orgheadline12"></a></h2>
-<p>确定配置无误后</p>
-<div class="highlight"><pre><span></span>supervisord -c /etc/supervisord.conf
-supervisorctl -c /etc/supervisord.conf reload
-</pre></div><p>There are <a href="../../articles/2016/07/如何安装及使用Honmaple社区程序.html#disqus_thread">comments</a>.</p>                </article>
+<h1>使用脚本发表<a id="orgheadline7"></a></h1>
+<p>直接给出代码</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">request</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">content</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">    * adssad</span>
+<span class="s1">    ** adasd</span>
+<span class="s1">    *** adsad</span>
+<span class="s1">    &#39;&#39;&#39;</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;hello world&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;content&#39;</span><span class="p">:</span><span class="n">content</span>
+<span class="p">}</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;xxxxx&#39;</span> <span class="o">+</span> <span class="s1">&#39;?your_token=&#39;</span>
+<span class="n">req</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+<span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+<span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span>
+    <span class="s1">&#39;User-Agent&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.107 Safari/537.36&#39;</span>
+<span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+
+
+<p>现在的步骤是:</p>
+<ul>
+<li>[X] 复制粘贴</li>
+<li>
+<p>[X] 发表</p>
+<p>ok,后续可能还需要将<del>复制粘贴</del>这一步也去了</p>
+</li>
+</ul>
+<p>本篇文章就是采用这种方式发表</p><p>There are <a href="../../articles/2016/12/flask使用token进行登陆.html#disqus_thread">comments</a>.</p>                </article>
             </aside><!-- /#featured -->
                 <section id="content" class="body">
                     <h1>Other articles</h1>
@@ -163,10 +215,36 @@ supervisorctl -c /etc/supervisord.conf reload
  
             <li><article class="hentry">    
                 <header>
+                        <h1><a href="../../articles/2016/07/如何安装及使用Honmaple社区程序.html" rel="bookmark" title="Permalink to 如何安装及使用Honmaple社区程序">如何安装及使用Honmaple社区程序</a></h1>
+                </header>
+                
+                <div class="entry-content" style="color:#666;">
+<footer class="post-info">
+        <abbr class="published" title="2016-07-25T00:00:00+08:00">
+                一 25 七月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../author/2016-07-25-123800.html">2016-07-25 12:38:00</a>
+        </address>
+<p>In <a href="../../categories/sheng-huo-sui-bi/index.html">生活随笔</a>. </p>
+<p>tags: <a href="../../tag/python/">python</a><a href="../../tag/flask/">flask</a></p></footer><!-- /.post-info -->                <div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#or
+                <a class="readmore" href="../../articles/2016/07/如何安装及使用Honmaple社区程序.html">read more</a>
+<p>There are <a href="../../articles/2016/07/如何安装及使用Honmaple社区程序.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
                         <h1><a href="../../articles/2016/06/flask时间格式化.html" rel="bookmark" title="Permalink to flask时间格式化">flask时间格式化</a></h1>
                 </header>
                 
-                <div class="entry-content">
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2016-06-15T00:00:00+08:00">
                 三 15 六月 2016
@@ -175,7 +253,7 @@ supervisorctl -c /etc/supervisord.conf reload
         <address class="vcard author">
                 By <a class="url fn" href="../../author/2016-06-15-234600.html">2016-06-15 23:46:00</a>
         </address>
-<p>In <a href="../../category/linux.html">Linux</a>. </p>
+<p>In <a href="../../categories/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../../tag/python/">python</a><a href="../../tag/flask/">flask</a><a href="../../tag/datetime/">datetime</a></p></footer><!-- /.post-info -->                <p>在前端显示为该问题 "几分钟前发表或几天前发表"</p>
                 <a class="readmore" href="../../articles/2016/06/flask时间格式化.html">read more</a>
 <p>There are <a href="../../articles/2016/06/flask时间格式化.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
@@ -188,7 +266,7 @@ supervisorctl -c /etc/supervisord.conf reload
                         <h1><a href="../../articles/2016/06/基于restful的flask权限管理.html" rel="bookmark" title="Permalink to 基于restful的flask权限管理">基于restful的flask权限管理</a></h1>
                 </header>
                 
-                <div class="entry-content">
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2016-06-10T00:00:00+08:00">
                 五 10 六月 2016
@@ -197,7 +275,7 @@ supervisorctl -c /etc/supervisord.conf reload
         <address class="vcard author">
                 By <a class="url fn" href="../../author/2016-06-10-013400.html">2016-06-10 01:34:00</a>
         </address>
-<p>In <a href="../../category/python.html">Python</a>. </p>
+<p>In <a href="../../categories/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../tag/python/">python</a><a href="../../tag/flask/">flask</a><a href="../../tag/restful/">restful</a></p></footer><!-- /.post-info -->                <h3>为什么需要restful形式的权限管理<a id="orgheadline1"></a></h3>
                 <a class="readmore" href="../../articles/2016/06/基于restful的flask权限管理.html">read more</a>
 <p>There are <a href="../../articles/2016/06/基于restful的flask权限管理.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
@@ -210,7 +288,7 @@ supervisorctl -c /etc/supervisord.conf reload
                         <h1><a href="../../articles/2016/05/flask日志处理.html" rel="bookmark" title="Permalink to flask日志处理">flask日志处理</a></h1>
                 </header>
                 
-                <div class="entry-content">
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2016-05-24T00:00:00+08:00">
                 二 24 五月 2016
@@ -219,7 +297,7 @@ supervisorctl -c /etc/supervisord.conf reload
         <address class="vcard author">
                 By <a class="url fn" href="../../author/2016-05-24-223600.html">2016-05-24 22:36:00</a>
         </address>
-<p>In <a href="../../category/linux.html">Linux</a>. </p>
+<p>In <a href="../../categories/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../../tag/python/">python</a><a href="../../tag/flask/">flask</a><a href="../../tag/logging/">logging</a></p></footer><!-- /.post-info -->                <p>使用文档上的一句话:</p>
                 <a class="readmore" href="../../articles/2016/05/flask日志处理.html">read more</a>
 <p>There are <a href="../../articles/2016/05/flask日志处理.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
@@ -232,7 +310,7 @@ supervisorctl -c /etc/supervisord.conf reload
                         <h1><a href="../../articles/2016/05/flask中生成atom.html" rel="bookmark" title="Permalink to flask中生成atom">flask中生成atom</a></h1>
                 </header>
                 
-                <div class="entry-content">
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2016-05-17T00:00:00+08:00">
                 二 17 五月 2016
@@ -241,7 +319,7 @@ supervisorctl -c /etc/supervisord.conf reload
         <address class="vcard author">
                 By <a class="url fn" href="../../author/2016-05-17-164200.html">2016-05-17 16:42:00</a>
         </address>
-<p>In <a href="../../category/linux.html">Linux</a>. </p>
+<p>In <a href="../../categories/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../../tag/python/">python</a><a href="../../tag/flask/">flask</a></p></footer><!-- /.post-info -->                <p><a href="http://flask.pocoo.org/snippets/10/">参考资料1</a></p>
                 <a class="readmore" href="../../articles/2016/05/flask中生成atom.html">read more</a>
 <p>There are <a href="../../articles/2016/05/flask中生成atom.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
@@ -254,7 +332,7 @@ supervisorctl -c /etc/supervisord.conf reload
                         <h1><a href="../../articles/2016/04/flask实现分页.html" rel="bookmark" title="Permalink to flask实现分页">flask实现分页</a></h1>
                 </header>
                 
-                <div class="entry-content">
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2016-04-25T00:00:00+08:00">
                 一 25 四月 2016
@@ -263,7 +341,7 @@ supervisorctl -c /etc/supervisord.conf reload
         <address class="vcard author">
                 By <a class="url fn" href="../../author/2016-04-25-010756.html">2016-04-25 01:07:56</a>
         </address>
-<p>In <a href="../../category/linux.html">Linux</a>. </p>
+<p>In <a href="../../categories/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../../tag/flask/">flask</a><a href="../../tag/jinja2/">jinja2</a><a href="../../tag/python/">python</a></p></footer><!-- /.post-info -->                <h2>数据库实现分页<a id="orgheadline3"></a></h2>
                 <a class="readmore" href="../../articles/2016/04/flask实现分页.html">read more</a>
 <p>There are <a href="../../articles/2016/04/flask实现分页.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
@@ -276,7 +354,7 @@ supervisorctl -c /etc/supervisord.conf reload
                         <h1><a href="../../articles/2016/04/flask解决f5刷新问题.html" rel="bookmark" title="Permalink to flask解决f5刷新问题">flask解决f5刷新问题</a></h1>
                 </header>
                 
-                <div class="entry-content">
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2016-04-07T00:00:00+08:00">
                 四 07 四月 2016
@@ -285,7 +363,7 @@ supervisorctl -c /etc/supervisord.conf reload
         <address class="vcard author">
                 By <a class="url fn" href="../../author/2016-04-07-235212180317.html">2016-04-07 23:52:12.180317</a>
         </address>
-<p>In <a href="../../category/python.html">python</a>. </p>
+<p>In <a href="../../categories/python/index.html">python</a>. </p>
 <p>tags: <a href="../../tag/python/">python</a><a href="../../tag/flask/">flask</a></p></footer><!-- /.post-info -->                <p>[问题来源](https://segmentfault.com/q/1010000002486706</p>
                 <a class="readmore" href="../../articles/2016/04/flask解决f5刷新问题.html">read more</a>
 <p>There are <a href="../../articles/2016/04/flask解决f5刷新问题.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
@@ -298,7 +376,7 @@ supervisorctl -c /etc/supervisord.conf reload
                         <h1><a href="../../articles/2016/03/flask-sqlalchemy使用.html" rel="bookmark" title="Permalink to flask-sqlalchemy使用">flask-sqlalchemy使用</a></h1>
                 </header>
                 
-                <div class="entry-content">
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2016-03-05T00:00:00+08:00">
                 六 05 三月 2016
@@ -307,32 +385,10 @@ supervisorctl -c /etc/supervisord.conf reload
         <address class="vcard author">
                 By <a class="url fn" href="../../author/2016-03-05-004008696626.html">2016-03-05 00:40:08.696626</a>
         </address>
-<p>In <a href="../../category/python.html">python</a>. </p>
+<p>In <a href="../../categories/python/index.html">python</a>. </p>
 <p>tags: <a href="../../tag/flask/">flask</a><a href="../../tag/sqlalchemy/">sqlalchemy</a></p></footer><!-- /.post-info -->                <p>简单的例子[这里](http://flask-sqlalchemy.pocoo.org/2.1/qu</p>
                 <a class="readmore" href="../../articles/2016/03/flask-sqlalchemy使用.html">read more</a>
 <p>There are <a href="../../articles/2016/03/flask-sqlalchemy使用.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../../articles/2016/03/关于sqlalchemy的desc.html" rel="bookmark" title="Permalink to 关于sqlalchemy的desc">关于sqlalchemy的desc</a></h1>
-                </header>
-                
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-03-05T00:00:00+08:00">
-                六 05 三月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../../author/2016-03-05-170236545788.html">2016-03-05 17:02:36.545788</a>
-        </address>
-<p>In <a href="../../category/python.html">python</a>. </p>
-<p>tags: <a href="../../tag/flask/">flask</a><a href="../../tag/sqlalchemy/">sqlalchemy</a></p></footer><!-- /.post-info -->                <p>也就是降序排序</p>
-                <a class="readmore" href="../../articles/2016/03/关于sqlalchemy的desc.html">read more</a>
-<p>There are <a href="../../articles/2016/03/关于sqlalchemy的desc.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
 <p class="paginator">
     Page 1 / 3

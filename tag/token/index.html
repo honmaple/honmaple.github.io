@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>HonMaple's Blog - token</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../../theme/css/main.css" type="text/css" />
+    </head>
+    <body id="index" class="home">
+<a href="http://github.com/honmaple/honmaple.github.io">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="../../theme/css/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+</a>
+        <header id="banner" class="body">
+            <h1><a href="../..">HonMaple's Blog </a></h1>
+            <nav><ul>
+                <li><a href="http://honmaple.org">主页</a></li>
+                <li ><a href="../../categories/linux/index.html">Linux</a></li>
+                <li ><a href="../../categories/python/index.html">Python</a></li>
+                <li ><a href="../../categories/security/index.html">Security</a></li>
+                <li ><a href="../../categories/sheng-huo-sui-bi/index.html">生活随笔</a></li>
+                <li><a href="../../archives/">Archives</a></li>
+            </ul></nav>
+        </header><!-- /#banner -->
+        
+        
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="../../articles/2016/12/flask使用token进行登陆.html">flask使用token进行验证</a></h1> 
+<footer class="post-info">
+        <abbr class="published" title="2016-12-13T00:00:00+08:00">
+                二 13 十二月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../categories/python/index.html">Python</a>. </p>
+<p>tags: <a href="../../tag/flask/">flask</a><a href="../../tag/python/">python</a><a href="../../tag/token/">token</a></p></footer><!-- /.post-info --><div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">1. 为什么需要用token验证</a></li>
+<li><a href="#orgheadline6">2. 如何使用token?</a>
+<ul>
+<li><a href="#orgheadline2">2.1. 生成token</a></li>
+<li><a href="#orgheadline3">2.2. 验证token</a></li>
+<li><a href="#orgheadline4">2.3. 使用flask-login</a></li>
+<li><a href="#orgheadline5">2.4. 设置csrf白名单</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline7">3. 使用脚本发表</a></li>
+</ul>
+</div>
+</div>
+
+<h1>为什么需要用token验证<a id="orgheadline1"></a></h1>
+<p>原因呢是因为写博客时已经在本地写好了，但是要发表到网站上还需要这么几步:</p>
+<ul>
+<li>[X] 打开浏览器</li>
+<li>[X] 打开我的网站</li>
+<li>[X] 进入登陆页</li>
+<li>[X] 登陆</li>
+<li>[X] 进入后台页</li>
+<li>[X] 进入文章发表页</li>
+<li>[X] 复制粘贴</li>
+<li>[X] 发表</li>
+</ul>
+<p>所以使用<strong>token</strong>验证成为必然</p>
+<h1>如何使用token?<a id="orgheadline6"></a></h1>
+<h2>生成token<a id="orgheadline2"></a></h2>
+<p>使用<strong>itsdangerous</strong>对token进行加密</p>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">User</span><span class="p">(</span><span class="nx">model</span><span class="p">)</span><span class="o">:</span>
+    <span class="p">......</span>
+
+    <span class="kd">@property</span>
+    <span class="nx">def</span> <span class="nx">token</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">config</span> <span class="o">=</span> <span class="nx">current_app</span><span class="p">.</span><span class="nx">config</span>
+        <span class="nx">secret_key</span> <span class="o">=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+        <span class="nx">salt</span> <span class="o">=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+        <span class="nx">serializer</span> <span class="o">=</span> <span class="nx">URLSafeTimedSerializer</span><span class="p">(</span><span class="nx">secret_key</span><span class="p">)</span>
+        <span class="err">#</span> <span class="nx">column</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.(</span><span class="err">需要加密的字段</span><span class="p">)</span>
+        <span class="nx">token</span> <span class="o">=</span> <span class="nx">serializer</span><span class="p">.</span><span class="nx">dumps</span><span class="p">(</span><span class="nx">column</span><span class="p">,</span> <span class="nx">salt</span><span class="o">=</span><span class="nx">salt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">token</span>
+</pre></div>
+
+
+<p>请保管好<strong>SECRET_KEY</strong> 和 <strong>SECURITY_PASSWORD_SALT</strong>,不要泄露</p>
+<h2>验证token<a id="orgheadline3"></a></h2>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">User</span><span class="p">(</span><span class="nx">Model</span><span class="p">)</span><span class="o">:</span>
+    <span class="p">......</span>
+
+    <span class="kd">@staticmethod</span>
+    <span class="nx">def</span> <span class="nx">check_token</span><span class="p">(</span><span class="nx">token</span><span class="p">,</span> <span class="nx">max_age</span><span class="o">=</span><span class="mi">86400</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">config</span> <span class="o">=</span> <span class="nx">current_app</span><span class="p">.</span><span class="nx">config</span>
+        <span class="nx">secret_key</span> <span class="o">=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+        <span class="nx">salt</span> <span class="o">=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+        <span class="nx">serializer</span> <span class="o">=</span> <span class="nx">URLSafeTimedSerializer</span><span class="p">(</span><span class="nx">secret_key</span><span class="p">)</span>
+        <span class="k">try</span><span class="o">:</span>
+            <span class="nx">column</span> <span class="o">=</span> <span class="nx">serializer</span><span class="p">.</span><span class="nx">loads</span><span class="p">(</span><span class="nx">token</span><span class="p">,</span> <span class="nx">salt</span><span class="o">=</span><span class="nx">salt</span><span class="p">,</span> <span class="nx">max_age</span><span class="o">=</span><span class="nx">max_age</span><span class="p">)</span>
+        <span class="nx">except</span> <span class="nx">BadSignature</span>:
+            <span class="kt">return</span> <span class="nx">False</span>
+        <span class="nx">except</span> <span class="nx">SignatureExpired</span>:
+            <span class="kt">return</span> <span class="nx">False</span>
+</pre></div>
+
+
+<ul>
+<li>max-age
+    最大过期时间</li>
+</ul>
+<p>如果验证成功查找<strong>该用户</strong>是否存在</p>
+<div class="highlight"><pre><span></span>user = User.query.filter_by(column=column).first()
+if user is None:
+    return False
+return user
+</pre></div>
+
+
+<p>示例:</p>
+<div class="highlight"><pre><span></span>@staticmethod
+def check_token(token, max_age=86400):
+    config = current_app.config
+    secret_key = config.setdefault(&#39;SECRET_KEY&#39;)
+    salt = config.setdefault(&#39;SECURITY_PASSWORD_SALT&#39;)
+    serializer = URLSafeTimedSerializer(secret_key)
+    try:
+        username = serializer.loads(token, salt=salt, max_age=max_age)
+    except BadSignature:
+        return False
+    except SignatureExpired:
+        return False
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        return False
+    return user
+</pre></div>
+
+
+<h2>使用flask-login<a id="orgheadline4"></a></h2>
+<p>flask-login是flask的一个登陆扩展,自带token验证, <strong>但是请一定要设</strong></p>
+<div class="highlight"><pre><span></span>login_manager.session_protection = &quot;basic&quot;
+</pre></div>
+
+
+<p>这是我在试验了n次后,读了flask-login的源码后才发现的（其实后面发现文档有写☹）</p>
+<p>然后设置 <strong>request_loader</strong></p>
+<div class="highlight"><pre><span></span>@login_manager.request_loader
+def user_loader_from_request(request):
+    token = request.args.get(&#39;your_token&#39;)
+    if token is not None:
+        user = User.check_token(token)
+        if user:
+            return user
+
+return login_manager
+</pre></div>
+
+
+<p>这是简单的从<strong>url</strong>中获取<strong>token</strong>进行验证,也可以从 <strong>header</strong>中获取(更安全)</p>
+<div class="highlight"><pre><span></span>token = request.headers.get(&#39;your_token&#39;)
+</pre></div>
+
+
+<h2>设置csrf白名单<a id="orgheadline5"></a></h2>
+<p>非常不幸的是，假设你开启了<strong>csrf</strong>保护,本地使用脚本验证时会报<strong>400</strong>错误,设置<strong>csrf</strong>白名单</p>
+<div class="highlight"><pre><span></span>csrf.exempt
+</pre></div>
+
+
+<h1>使用脚本发表<a id="orgheadline7"></a></h1>
+<p>直接给出代码</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">request</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">content</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">    * adssad</span>
+<span class="s1">    ** adasd</span>
+<span class="s1">    *** adsad</span>
+<span class="s1">    &#39;&#39;&#39;</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;hello world&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;content&#39;</span><span class="p">:</span><span class="n">content</span>
+<span class="p">}</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;xxxxx&#39;</span> <span class="o">+</span> <span class="s1">&#39;?your_token=&#39;</span>
+<span class="n">req</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+<span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+<span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span>
+    <span class="s1">&#39;User-Agent&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.107 Safari/537.36&#39;</span>
+<span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+
+
+<p>现在的步骤是:</p>
+<ul>
+<li>[X] 复制粘贴</li>
+<li>
+<p>[X] 发表</p>
+<p>ok,后续可能还需要将<del>复制粘贴</del>这一步也去了</p>
+</li>
+</ul>
+<p>本篇文章就是采用这种方式发表</p><p>There are <a href="../../articles/2016/12/flask使用token进行登陆.html#disqus_thread">comments</a>.</p>                </article>
+<p class="paginator">
+    Page 1 / 1
+</p>
+            </aside><!-- /#featured -->
+            </ol><!-- /#posts-list -->
+            </section><!-- /#content -->
+        <section id="extras" class="body">
+            <div class="blogroll">
+                <h2>blogroll</h2>
+                <ul>
+                    <li><a href="http://getpelican.com/">Pelican</a></li>
+                    <li><a href="http://python.org/">Python.org</a></li>
+                    <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                    <li><a href="https://honmaple.com">个人博客</a></li>
+                </ul>
+            </div><!-- /.blogroll -->
+            <div class="social">
+                <h2>social</h2>
+                <ul>
+                    <li><a href="http://honmaple.org/feeds/all.rss.xml">Atom Feed</a></li>
+                    <li><a href="https://github.com/honmaple">GitHub</a></li>
+                    <li><a href="https://twitter.com/xiyang87">Twitter</a></li>
+                </ul>
+            </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+    </body>
+</html>
