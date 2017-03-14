@@ -1,5 +1,177 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>HonMaple's Blog</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/all-en.atom.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-02-26T00:00:00+08:00</updated><entry><title>修改agetty启动参数自动登陆linux</title><link href="http://honmaple.org/articles/2017/02/xiu-gai-agettyqi-dong-can-shu-zi-dong-deng-lu-linux.html" rel="alternate"></link><published>2017-02-26T00:00:00+08:00</published><updated>2017-02-26T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-02-26:/articles/2017/02/xiu-gai-agettyqi-dong-can-shu-zi-dong-deng-lu-linux.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>HonMaple's Blog</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/all-en.atom.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-03-14T00:00:00+08:00</updated><entry><title>使用flask实现一个简单的图片上传存储服务</title><link href="http://honmaple.org/articles/2017/03/%E4%BD%BF%E7%94%A8flask%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1.html" rel="alternate"></link><published>2017-03-14T00:00:00+08:00</published><updated>2017-03-14T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-14:/articles/2017/03/使用flask实现一个简单的图片上传存储服务.html</id><summary type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
+&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents …&lt;/h2&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
+&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org269e3c4"&gt;1. maple-file&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org7c6cb1e"&gt;1.1. 设计初衷&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org97baa2a"&gt;1.2. 使用&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgc428f36"&gt;1.2.1. API&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org921606b"&gt;1.2.2. 配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org1f88b3a"&gt;1.2.3. 创建账户&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org87063f2"&gt;1.2.4. 上传&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org06d4c86"&gt;1.2.5. example&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;a id="org269e3c4"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;maple-file&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;使用flask实现的一个简单的图片上传服务&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;a id="org7c6cb1e"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;设计初衷&lt;/h2&gt;
+&lt;p&gt;对于图片的存储,有很多选择,一般采用云服务如(七牛,又拍等),但是国内的服务像七牛
+自定义域名竟然需要域名备案(&lt;strong&gt;Excuse me&lt;/strong&gt;,当初就是因为备案麻烦才选择国外的),而且浪费了我十块钱,&lt;/p&gt;
+&lt;p&gt;而我又想像七牛一样可以直接在本地就可以上传图片,找来找去，没有找到一个比较合适的，所以花两天时间自己写了一个&lt;/p&gt;
+&lt;p&gt;&lt;a id="org97baa2a"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;使用&lt;/h2&gt;
+&lt;p&gt;由于初衷是本地脚本就可以发布,所以没有前端界面,等以后有时间了再加上&lt;/p&gt;
+&lt;p&gt;&lt;a id="orgc428f36"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;API&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;/api/login&lt;/strong&gt;&lt;ul&gt;
+&lt;li&gt;POST
+    登录&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;/api/logout&lt;/strong&gt;&lt;ul&gt;
+&lt;li&gt;GET
+    注销&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;/api/albums&lt;/strong&gt;&lt;ul&gt;
+&lt;li&gt;GET
+    获取相册列表&lt;/li&gt;
+&lt;li&gt;POST
+    新建相册&lt;ul&gt;
+&lt;li&gt;name 相册名称&lt;/li&gt;
+&lt;li&gt;description 相册描述&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;/api/albums/&lt;int:pk&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;pk 相册ID&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;GET
+    获取相册信息&lt;/li&gt;
+&lt;li&gt;PUT
+    修改相册信息&lt;ul&gt;
+&lt;li&gt;name 相册名称&lt;/li&gt;
+&lt;li&gt;description 相册描述&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;DELETE
+    删除相册&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;/api/images&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;GET
+    获取图片列表&lt;/li&gt;
+&lt;li&gt;POST
+    上传图片&lt;ul&gt;
+&lt;li&gt;images 上传图片列表&lt;/li&gt;
+&lt;li&gt;album 相册ID(默认会新建一个&lt;strong&gt;default&lt;/strong&gt;相册)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;/api/images/&lt;int:pk&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;GET
+    获取图片信息&lt;/li&gt;
+&lt;li&gt;PUT
+    修改图片信息&lt;ul&gt;
+&lt;li&gt;name 图片名称&lt;/li&gt;
+&lt;li&gt;description 图片描述&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;DELETE
+    删除图片&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a id="org921606b"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;配置&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Config&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;DEBUG&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt; &lt;span class="c1"&gt;# 生产环境设置为False&lt;/span&gt;
+    &lt;span class="n"&gt;SECRET_KEY&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ccc&amp;#39;&lt;/span&gt; &lt;span class="c1"&gt;# import os;os.urandom(24)&lt;/span&gt;
+    &lt;span class="n"&gt;SECRET_KEY_SALT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ssss&amp;#39;&lt;/span&gt;
+    &lt;span class="n"&gt;JSON_AS_ASCII&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;
+
+    &lt;span class="n"&gt;PERMANENT_SESSION_LIFETIME&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;timedelta&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;days&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;PER_PAGE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt; &lt;span class="c1"&gt;# 分页&lt;/span&gt;
+    &lt;span class="n"&gt;ADMIN_URL&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;/admin/aaaaa&amp;#39;&lt;/span&gt; &lt;span class="c1"&gt;# 后台地址&lt;/span&gt;
+
+    &lt;span class="n"&gt;LOGIN_TOKEN_HEADER&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Api-Key&amp;#39;&lt;/span&gt; &lt;span class="c1"&gt;# 将会影响到后面headers设置&lt;/span&gt;
+    &lt;span class="n"&gt;LOGIN_TOKEN&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;api_key&amp;#39;&lt;/span&gt; &lt;span class="c1"&gt;#url?api_key=21312313&lt;/span&gt;
+
+    &lt;span class="n"&gt;MIDDLEWARE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;storage.common.middleware.CommonMiddleware&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+    &lt;span class="n"&gt;SQLALCHEMY_TRACK_MODIFICATIONS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;
+    &lt;span class="n"&gt;SQLALCHEMY_DATABASE_URI&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;sqlite:///test.db&amp;#39;&lt;/span&gt;
+    &lt;span class="c1"&gt;# SQLALCHEMY_ECHO = DEBUG&lt;/span&gt;
+    &lt;span class="n"&gt;UPLOAD_ALLOWED_EXTENSIONS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;set&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;jpg&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;jpeg&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt; &lt;span class="c1"&gt;# 允许上传的扩展名&lt;/span&gt;
+    &lt;span class="n"&gt;UPLOAD_FOLDER_ROOT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dirname&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;abspath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="vm"&gt;__file__&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;UPLOAD_FOLDER_PATH&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;images&amp;#39;&lt;/span&gt; &lt;span class="c1"&gt;# 相对于当前文件路径的地址&lt;/span&gt;
+    &lt;span class="n"&gt;UPLOAD_FOLDER&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;UPLOAD_FOLDER_ROOT&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;UPLOAD_FOLDER_PATH&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org1f88b3a"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;创建账户&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;python manager.py create_user
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;将同时创建一个&lt;strong&gt;default&lt;/strong&gt;的相册&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;python manager.py key
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;显示用户key&lt;/p&gt;
+&lt;p&gt;&lt;a id="org87063f2"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;上传&lt;/h3&gt;
+&lt;p&gt;上传后图片保存路径&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;原图路径:&lt;/p&gt;
+&lt;p&gt;UPLOAD_FOLDER + 'username' + 'photo' + %Y + %m + (时间戳+随机数).png&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;缩略图路径:&lt;/p&gt;
+&lt;p&gt;UPLOAD_FOLDER + 'username' + 'thumb' + %Y + %m + (时间戳+随机数).png&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a id="org06d4c86"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;example&lt;/h3&gt;
+&lt;p&gt;使用&lt;strong&gt;requests&lt;/strong&gt;本地上传&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;requests&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;images&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;http://127.0.0.1:8000/api/images&amp;#39;&lt;/span&gt;
+    &lt;span class="n"&gt;files&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;images&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;desktop.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;rb&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)}&lt;/span&gt;
+    &lt;span class="n"&gt;multiple_files&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;images&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;11.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;11.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;rb&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;image/png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt;
+        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;images&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;desktop.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;desktop.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;rb&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;image/png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;headers&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="s1"&gt;&amp;#39;Api-Key&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="s1"&gt;&amp;#39;InhpeWFuZzA4MDdJBtx4AWlPpI_Oxx1Ki8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s1"&gt;&amp;#39;User-Agent&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36&amp;#39;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="c1"&gt;# r = requests.post(url, files=multiple_files, headers=headers)&lt;/span&gt;
+    &lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;files&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;files&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;headers&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;headers&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;text&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</content><category term="python"></category><category term="flask"></category><category term="linux"></category></entry><entry><title>修改agetty启动参数自动登陆linux</title><link href="http://honmaple.org/articles/2017/02/xiu-gai-agettyqi-dong-can-shu-zi-dong-deng-lu-linux.html" rel="alternate"></link><published>2017-02-26T00:00:00+08:00</published><updated>2017-02-26T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-02-26:/articles/2017/02/xiu-gai-agettyqi-dong-can-shu-zi-dong-deng-lu-linux.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents&lt;/h2&gt;
 &lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
@@ -1419,414 +1591,4 @@ data = serializer.data
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;结果格式化什么的看着格式吧，这些信息对我来说足够了&lt;/p&gt;</content><category term="python"></category><category term="网易"></category></entry><entry><title>常用正则表达式</title><link href="http://honmaple.org/articles/2016/11/%E5%B8%B8%E7%94%A8%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F.html" rel="alternate"></link><published>2016-11-26T00:00:00+08:00</published><updated>2016-11-26T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-11-26:/articles/2016/11/常用正则表达式.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline20"&gt;1. 校验数字的表达式&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline1"&gt;1.1. 数字:&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline2"&gt;1 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline20"&gt;1. 校验数字的表达式&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline1"&gt;1.1. 数字:&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline2"&gt;1.2. n位的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline3"&gt;1.3. 至少n位的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline4"&gt;1.4. m-n位的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline5"&gt;1.5. 零和非零开头的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline6"&gt;1.6. 非零开头的最多带两位小数的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline7"&gt;1.7. 带1-2位小数的正数或负数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline8"&gt;1.8. 正数、负数、和小数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline9"&gt;1.9. 有两位小数的正实数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline10"&gt;1.10. 有1~3位小数的正实数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline11"&gt;1.11. 非零的正整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline12"&gt;1.12. 非零的负整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline13"&gt;1.13. 非负整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline14"&gt;1.14. 非正整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline15"&gt;1.15. 非负浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline16"&gt;1.16. 非正浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline17"&gt;1.17. 正浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline18"&gt;1.18. 负浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline19"&gt;1.19. 浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline33"&gt;2. 校验字符的表达式&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline21"&gt;2.1. 汉字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline22"&gt;2.2. 英文和数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline23"&gt;2.3. 长度为3-20的所有字符：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline24"&gt;2.4. 由26个英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline25"&gt;2.5. 由26个大写英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline26"&gt;2.6. 由26个小写英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline27"&gt;2.7. 由数字和26个英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline28"&gt;2.8. 由数字、26个英文字母或者下划线组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline29"&gt;2.9. 中文、英文、数字包括下划线：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline30"&gt;2.10. 中文、英文、数字但不包括下划线等符号：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline31"&gt;2.11. 可以输入含有^%&amp;amp;',;=?$\"等字符：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline32"&gt;2.12. 禁止输入含有~的字符：&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline67"&gt;3. 特殊需求表达式&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline34"&gt;3.1. Email地址：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline35"&gt;3.2. 域名：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline36"&gt;3.3. InternetURL：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline37"&gt;3.4. 手机号码：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline38"&gt;3.5. 电话号码("XXX-XXXXXXX"、"XXXX-XXXXXXXX"、"XXX-XXXXXXX"、"XXX-XXXXXXXX"、"XXXXXXX"和"XXXXXXXX)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline39"&gt;3.6. 国内电话号码(0511-4405222、021-87888822)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline40"&gt;3.7. 身份证号(15位、18位数字)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline41"&gt;3.8. 短身份证号码(数字、字母x结尾)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline42"&gt;3.9. 帐号是否合法(字母开头，允许5-16字节，允许字母数字下划线)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline43"&gt;3.10. 密码(以字母开头，长度在6~18之间，只能包含字母、数字和下划线)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline44"&gt;3.11. 强密码(必须包含大小写字母和数字的组合，不能使用特殊字符，长度在8-10之间)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline45"&gt;3.12. 日期格式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline46"&gt;3.13. 一年的12个月(01～09和1～12)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline47"&gt;3.14. 一个月的31天(01～09和1～31)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline56"&gt;3.15. 钱的输入格式：&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline48"&gt;3.15.1. 有四种钱的表示形式我们可以接受:"10000.00" 和 "10,000.00", 和没有 "分" 的 "10000" 和 "10,000"：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline49"&gt;3.15.2. 这表示任意一个不以0开头的数字,但是,这也意味着一个字符"0"不通过,所以我们采用下面的形式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline50"&gt;3.15.3. 一个0或者一个不以0开头的数字.我们还可以允许开头有一个负号：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline51"&gt;3.15.4. 这表示一个0或者一个可能为负的开头不为0的数字.让用户以0开头好了.把负号的也去掉,因为钱总不能是负的吧.下面我们要加的是说明可能的小数部分：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline52"&gt;3.15.5. 必须说明的是,小数点后面至少应该有1位数,所以"10."是不通过的,但是 "10" 和 "10.2" 是通过的：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline53"&gt;3.15.6. 这样我们规定小数点后面必须有两位,如果你认为太苛刻了,可以这样：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline54"&gt;3.15.7. 这样就允许用户只写一位小数.下面我们该考虑数字中的逗号了,我们可以这样：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline55"&gt;3.15.8. 1到3个数字,后面跟着任意个 逗号+3个数字,逗号成为可选,而不是必须：&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline57"&gt;3.16. xml文件：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline58"&gt;3.17. 中文字符的正则表达式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline59"&gt;3.18. 双字节字符：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline60"&gt;3.19. 空白行的正则表达式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline61"&gt;3.20. HTML标记的正则表达式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline62"&gt;3.21. 首尾空白字符的正则表达式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline63"&gt;3.22. 腾讯QQ号：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline64"&gt;3.23. 中国邮政编码：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline65"&gt;3.24. IP地址：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline66"&gt;3.25. IP地址：&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;h1&gt;校验数字的表达式&lt;a id="orgheadline20"&gt;&lt;/a&gt;&lt;/h1&gt;
-&lt;h2&gt;数字:&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[0-9]*$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;n位的数字：&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^\d{n}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;至少n位的数字：&lt;a id="orgheadline3"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^\d{n,}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;m-n位的数字：&lt;a id="orgheadline4"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^\d{m,n}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;零和非零开头的数字：&lt;a id="orgheadline5"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^(0|[1-9][0-9]*)$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;非零开头的最多带两位小数的数字：&lt;a id="orgheadline6"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^([1-9][0-9]*)+(.[0-9]{1,2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;带1-2位小数的正数或负数：&lt;a id="orgheadline7"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^(\-)?\d+(\.\d{1,2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;正数、负数、和小数：&lt;a id="orgheadline8"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^(\-|\+)?\d+(\.\d+)?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;有两位小数的正实数：&lt;a id="orgheadline9"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[0-9]+(.[0-9]{2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;有1~3位小数的正实数：&lt;a id="orgheadline10"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[0-9]+(.[0-9]{1,3})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;非零的正整数：&lt;a id="orgheadline11"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[1-9]\d*$ 或 ^([1-9][0-9]*){1,3}$ 或 ^\+?[1-9][0-9]*$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;非零的负整数：&lt;a id="orgheadline12"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^\-[1-9][]0-9&amp;quot;*$ 或 ^-[1-9]\d*$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;非负整数：&lt;a id="orgheadline13"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^\d+$ 或 ^[1-9]\d*|0$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;非正整数：&lt;a id="orgheadline14"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^-[1-9]\d*|0$ 或 ^((-\d+)|(0+))$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;非负浮点数：&lt;a id="orgheadline15"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^\d+(\.\d+)?$ 或 ^[1-9]\d*\.\d*|0\.\d*[1-9]\d*|0?\.0+|0$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;非正浮点数：&lt;a id="orgheadline16"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^((-\d+(\.\d+)?)|(0+(\.0+)?))$ 或 ^(-([1-9]\d*\.\d*|0\.\d*[1-9]\d*))|0?\.0+|0$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;正浮点数：&lt;a id="orgheadline17"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[1-9]\d*\.\d*|0\.\d*[1-9]\d*$ 或 ^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;负浮点数：&lt;a id="orgheadline18"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^-([1-9]\d*\.\d*|0\.\d*[1-9]\d*)$ 或 ^(-(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*)))$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;浮点数：&lt;a id="orgheadline19"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^(-?\d+)(\.\d+)?$ 或 ^-?([1-9]\d*\.\d*|0\.\d*[1-9]\d*|0?\.0+|0)$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h1&gt;校验字符的表达式&lt;a id="orgheadline33"&gt;&lt;/a&gt;&lt;/h1&gt;
-&lt;h2&gt;汉字：&lt;a id="orgheadline21"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[\u4e00-\u9fa5]{0,}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;英文和数字：&lt;a id="orgheadline22"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[A-Za-z0-9]+$ 或 ^[A-Za-z0-9]{4,40}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;长度为3-20的所有字符：&lt;a id="orgheadline23"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^.{3,20}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;由26个英文字母组成的字符串：&lt;a id="orgheadline24"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[A-Za-z]+$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;由26个大写英文字母组成的字符串：&lt;a id="orgheadline25"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[A-Z]+$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;由26个小写英文字母组成的字符串：&lt;a id="orgheadline26"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[a-z]+$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;由数字和26个英文字母组成的字符串：&lt;a id="orgheadline27"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[A-Za-z0-9]+$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;由数字、26个英文字母或者下划线组成的字符串：&lt;a id="orgheadline28"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^\w+$ 或 ^\w{3,20}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;中文、英文、数字包括下划线：&lt;a id="orgheadline29"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[\u4E00-\u9FA5A-Za-z0-9_]+$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;中文、英文、数字但不包括下划线等符号：&lt;a id="orgheadline30"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[\u4E00-\u9FA5A-Za-z0-9]+$ 或 ^[\u4E00-\u9FA5A-Za-z0-9]{2,20}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;可以输入含有^%&amp;amp;',;=?$\"等字符：&lt;a id="orgheadline31"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[^%&amp;amp;&amp;#39;,;=?$\x22]+
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;禁止输入含有~的字符：&lt;a id="orgheadline32"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[^~\x22]+
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h1&gt;特殊需求表达式&lt;a id="orgheadline67"&gt;&lt;/a&gt;&lt;/h1&gt;
-&lt;h2&gt;Email地址：&lt;a id="orgheadline34"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;域名：&lt;a id="orgheadline35"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(/.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+/.?
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;InternetURL：&lt;a id="orgheadline36"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[a-zA-z]+://[^\s]* 或 ^http://([\w-]+\.)+[\w-]+(/[\w-./?%&amp;amp;=]*)?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;手机号码：&lt;a id="orgheadline37"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;电话号码("XXX-XXXXXXX"、"XXXX-XXXXXXXX"、"XXX-XXXXXXX"、"XXX-XXXXXXXX"、"XXXXXXX"和"XXXXXXXX)：&lt;a id="orgheadline38"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^(\(\d{3,4}-)|\d{3.4}-)?\d{7,8}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;国内电话号码(0511-4405222、021-87888822)：&lt;a id="orgheadline39"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;\d{3}-\d{8}|\d{4}-\d{7}
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;身份证号(15位、18位数字)：&lt;a id="orgheadline40"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^\d{15}|\d{18}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;短身份证号码(数字、字母x结尾)：&lt;a id="orgheadline41"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^([0-9]){7,18}(x|X)?$ 或 ^\d{8,18}|[0-9x]{8,18}|[0-9X]{8,18}?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;帐号是否合法(字母开头，允许5-16字节，允许字母数字下划线)：&lt;a id="orgheadline42"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[a-zA-Z][a-zA-Z0-9_]{4,15}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;密码(以字母开头，长度在6~18之间，只能包含字母、数字和下划线)：&lt;a id="orgheadline43"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[a-zA-Z]\w{5,17}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;强密码(必须包含大小写字母和数字的组合，不能使用特殊字符，长度在8-10之间)：&lt;a id="orgheadline44"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,10}$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;日期格式：&lt;a id="orgheadline45"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^\d{4}-\d{1,2}-\d{1,2}
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;一年的12个月(01～09和1～12)：&lt;a id="orgheadline46"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^(0?[1-9]|1[0-2])$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;一个月的31天(01～09和1～31)：&lt;a id="orgheadline47"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^((0?[1-9])|((1|2)[0-9])|30|31)$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;钱的输入格式：&lt;a id="orgheadline56"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h3&gt;有四种钱的表示形式我们可以接受:"10000.00" 和 "10,000.00", 和没有 "分" 的 "10000" 和 "10,000"：&lt;a id="orgheadline48"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[1-9][0-9]*$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h3&gt;这表示任意一个不以0开头的数字,但是,这也意味着一个字符"0"不通过,所以我们采用下面的形式：&lt;a id="orgheadline49"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^(0|[1-9][0-9]*)$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h3&gt;一个0或者一个不以0开头的数字.我们还可以允许开头有一个负号：&lt;a id="orgheadline50"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^(0|-?[1-9][0-9]*)$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h3&gt;这表示一个0或者一个可能为负的开头不为0的数字.让用户以0开头好了.把负号的也去掉,因为钱总不能是负的吧.下面我们要加的是说明可能的小数部分：&lt;a id="orgheadline51"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[0-9]+(.[0-9]+)?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h3&gt;必须说明的是,小数点后面至少应该有1位数,所以"10."是不通过的,但是 "10" 和 "10.2" 是通过的：&lt;a id="orgheadline52"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[0-9]+(.[0-9]{2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h3&gt;这样我们规定小数点后面必须有两位,如果你认为太苛刻了,可以这样：&lt;a id="orgheadline53"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[0-9]+(.[0-9]{1,2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h3&gt;这样就允许用户只写一位小数.下面我们该考虑数字中的逗号了,我们可以这样：&lt;a id="orgheadline54"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^[0-9]{1,3}(,[0-9]{3})*(.[0-9]{1,2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h3&gt;1到3个数字,后面跟着任意个 逗号+3个数字,逗号成为可选,而不是必须：&lt;a id="orgheadline55"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^([0-9]+|[0-9]{1,3}(,[0-9]{3})*)(.[0-9]{1,2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;xml文件：&lt;a id="orgheadline57"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^([a-zA-Z]+-?)+[a-zA-Z0-9]+\\.[x|X][m|M][l|L]$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;中文字符的正则表达式：&lt;a id="orgheadline58"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[\u4e00-\u9fa5]
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;双字节字符：&lt;a id="orgheadline59"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[^\x00-\xff] (包括汉字在内，可以用来计算字符串的长度(一个双字节字符长度计2，ASCII字符计1))
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;空白行的正则表达式：&lt;a id="orgheadline60"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;\n\s*\r (可以用来删除空白行)
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;HTML标记的正则表达式：&lt;a id="orgheadline61"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;&amp;lt;&lt;/span&gt;(\S*?)[^&amp;gt;]*&amp;gt;.*?&lt;span class="err"&gt;&amp;lt;&lt;/span&gt;/\1&amp;gt;|&lt;span class="nt"&gt;&amp;lt;.&lt;/span&gt;&lt;span class="err"&gt;*?&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;首尾空白字符的正则表达式：&lt;a id="orgheadline62"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;^\s*|\s*$或(^\s*)|(\s*$) (可以用来删除行首行尾的空白字符(包括空格、制表符、换页符等等)，非常有用的表达式)
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;腾讯QQ号：&lt;a id="orgheadline63"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[1-9][0-9]{4,} (腾讯QQ号从10000开始)
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;中国邮政编码：&lt;a id="orgheadline64"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[1-9]\d{5}(?!\d) (中国邮政编码为6位数字)
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;IP地址：&lt;a id="orgheadline65"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;\d+\.\d+\.\d+\.\d+ (提取IP地址时有用)
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;IP地址：&lt;a id="orgheadline66"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;((?:(?:25[0-5]|2[0-4]\\d|[01]?\\d?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d?\\d))
-&lt;/pre&gt;&lt;/div&gt;</content><category term="python"></category><category term="regex"></category></entry></feed>
+&lt;p&gt;结果格式化什么的看着格式吧，这些信息对我来说足够了&lt;/p&gt;</content><category term="python"></category><category term="网易"></category></entry></feed>
