@@ -1,5 +1,191 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>HonMaple's Blog - Python</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/python.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-03-14T00:00:00+08:00</updated><entry><title>使用flask实现一个简单的图片上传存储服务</title><link href="http://honmaple.org/articles/2017/03/%E4%BD%BF%E7%94%A8flask%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1.html" rel="alternate"></link><published>2017-03-14T00:00:00+08:00</published><updated>2017-03-14T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-14:/articles/2017/03/使用flask实现一个简单的图片上传存储服务.html</id><summary type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>HonMaple's Blog - Python</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/python.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-03-15T00:00:00+08:00</updated><entry><title>sqlalchemy使用上的小tip</title><link href="http://honmaple.org/articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html" rel="alternate"></link><published>2017-03-15T00:00:00+08:00</published><updated>2017-03-15T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-15:/articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org9c10e0a"&gt;1. sqlalchemy object序列化为json&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgc0bfd4d"&gt;1.1. 多个实例 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org9c10e0a"&gt;1. sqlalchemy object序列化为json&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgc0bfd4d"&gt;1.1. 多个实例&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org32910ef"&gt;1.2. 单个实例&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org45d6d27"&gt;1.3. 排除字段&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org05e0fee"&gt;1.4. 仅包括字段&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org21bafe1"&gt;1.5. 关系查询深度&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org1d34f9c"&gt;1.6. 增加一些自定义的函数&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org9d7f676"&gt;1.7. 可传递参数的函数&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgb5f861c"&gt;2. 像django orm一样使用sqlalchemy&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgd2dc2ac"&gt;2.1. 基本查询(已实现)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgd8c971d"&gt;2.2. 关系查询&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org6169882"&gt;2.3. 其它&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org2b6acdb"&gt;3. 去掉一些sqlalchemy的重复工作&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org7fa06d7"&gt;3.1. ModelMixin&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org4b5ba4e"&gt;3.2. ModelTimeMixin&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org971ec1a"&gt;3.3. ModelUserMixin&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;a id="org9c10e0a"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;sqlalchemy object序列化为json&lt;/h1&gt;
+&lt;p&gt;灵感来源于 &lt;strong&gt;Django REST framework&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a id="orgc0bfd4d"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;多个实例&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;posts = Post.query.all()
+serializer = Seralizer(posts,many=True)
+data = serializer.data
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org32910ef"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;单个实例&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;post = Post.query.first()
+serializer = Seralizer(post,many=False)
+data = serializer.data
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org45d6d27"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;排除字段&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;serializer = Seralizer(post,exclude=[&amp;#39;title&amp;#39;])
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org05e0fee"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;仅包括字段&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;serializer = Seralizer(post,include=[&amp;#39;title&amp;#39;])
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org21bafe1"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;关系查询深度&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;serializer = Seralizer(post,depth=3)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;depth
+    默认为2&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a id="org1d34f9c"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;增加一些自定义的函数&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;serializer = Serializer(post,extra=[&amp;#39;get_post_count&amp;#39;])
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Post&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="p"&gt;......&lt;/span&gt;
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_post_count&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;11&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org9d7f676"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;可传递参数的函数&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;PostSerializer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;Serializer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="nx"&gt;count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;Field&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;source&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;get_post_count&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nx"&gt;args&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;hello&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;&lt;span class="k"&gt;default&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Meta&lt;/span&gt;:
+        &lt;span class="kt"&gt;include&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+        &lt;span class="nx"&gt;depth&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+        &lt;span class="nx"&gt;include&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+        &lt;span class="nx"&gt;exclude&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+        &lt;span class="nx"&gt;extra&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;count&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="orgb5f861c"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;像django orm一样使用sqlalchemy&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;djang orm&lt;/strong&gt;与sqlalchemy相比,为什么很多人都认为django orm更好用,大概就是因为django orm更方便&lt;/p&gt;
+&lt;p&gt;&lt;a id="orgd2dc2ac"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;基本查询(已实现)&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;gt&lt;/li&gt;
+&lt;li&gt;lt&lt;/li&gt;
+&lt;li&gt;lte&lt;/li&gt;
+&lt;li&gt;gte&lt;/li&gt;
+&lt;li&gt;contains&lt;/li&gt;
+&lt;li&gt;in&lt;/li&gt;
+&lt;li&gt;exact&lt;/li&gt;
+&lt;li&gt;iexact&lt;/li&gt;
+&lt;li&gt;startswith&lt;/li&gt;
+&lt;li&gt;istartswith&lt;/li&gt;
+&lt;li&gt;iendswith&lt;/li&gt;
+&lt;li&gt;endswith&lt;/li&gt;
+&lt;li&gt;isnull&lt;/li&gt;
+&lt;li&gt;range&lt;/li&gt;
+&lt;li&gt;year&lt;/li&gt;
+&lt;li&gt;month&lt;/li&gt;
+&lt;li&gt;day&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;示例:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Post.query.filter_by(title__contains = &amp;#39;sql&amp;#39;).all()
+Post.query.exclude_by(title__contains = &amp;#39;sql&amp;#39;).all()
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="orgd8c971d"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;关系查询&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Post.query.filter_by(tags__name__contains = &amp;#39;sql&amp;#39;).all()
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org6169882"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;其它&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Post.query.filter_by(tags__name__contains = &amp;#39;sql&amp;#39;).or(Post.id == 1,Post.id == 2).all()
+Post.query.filter_by(tags__name__contains = &amp;#39;sql&amp;#39;).and(Post.id == 1,Post.id == 2).all()
+Post.query.filter_by(tags__name__contains = &amp;#39;sql&amp;#39;).exists()
+Post.query.load_only(&amp;#39;title&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org2b6acdb"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;去掉一些sqlalchemy的重复工作&lt;/h1&gt;
+&lt;p&gt;以&lt;strong&gt;flask-sqlalchemy&lt;/strong&gt;为例,通过继承 &lt;strong&gt;models.py&lt;/strong&gt; 中的&lt;strong&gt;Mixin&lt;/strong&gt;,就可以去除部分重复工作&lt;/p&gt;
+&lt;p&gt;&lt;a id="org7fa06d7"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;ModelMixin&lt;/h2&gt;
+&lt;p&gt;自增ID &amp;#x2013; id&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;post = Post(·····)
+post.save() # 保存
+post.delete() # 保存
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;批量操作&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;bulk_insert&lt;/li&gt;
+&lt;li&gt;bulk_update&lt;/li&gt;
+&lt;li&gt;bulk_save&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a id="org4b5ba4e"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;ModelTimeMixin&lt;/h2&gt;
+&lt;p&gt;增加两字段&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;created_at
+    数据创建时间&lt;/li&gt;
+&lt;li&gt;updated_at
+    数据更新时间&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a id="org971ec1a"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;ModelUserMixin&lt;/h2&gt;
+&lt;p&gt;关联用户表,与&lt;strong&gt;User&lt;/strong&gt;表现为&lt;strong&gt;多对一&lt;/strong&gt;关系(即一个用户有多个post)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;ModelUserMixin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+
+    &lt;span class="nx"&gt;user_related_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;posts&amp;#39;&lt;/span&gt;
+    &lt;span class="nx"&gt;titile&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;...&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</content><category term="python"></category><category term="sql"></category><category term="sqlalchemy"></category></entry><entry><title>使用flask实现一个简单的图片上传存储服务</title><link href="http://honmaple.org/articles/2017/03/%E4%BD%BF%E7%94%A8flask%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1.html" rel="alternate"></link><published>2017-03-14T00:00:00+08:00</published><updated>2017-03-14T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-14:/articles/2017/03/使用flask实现一个简单的图片上传存储服务.html</id><summary type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
 &lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents …&lt;/h2&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
 &lt;div id="table-of-contents"&gt;
@@ -1551,50 +1737,4 @@ True
 &lt;h2&gt;os.path.walk(path, visit, arg) #遍历path，进入每个目录都调用visit函数，visit函数必须有&lt;a id="orgheadline34"&gt;&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;3个参数(arg, dirname, names)，dirname表示当前目录的目录名，names代表当前目录下的所有&lt;/p&gt;
 &lt;p&gt;文件名，args则为walk的第三个参数&lt;/p&gt;
-&lt;h2&gt;os.path.supportsunicodefilenames #设置是否支持unicode路径名&lt;a id="orgheadline35"&gt;&lt;/a&gt;&lt;/h2&gt;</content><category term="python"></category><category term="os"></category></entry><entry><title>centos7安装python3及pip3</title><link href="http://honmaple.org/articles/2016/07/centos7%E5%AE%89%E8%A3%85python3%E5%8F%8Apip3.html" rel="alternate"></link><published>2016-07-07T00:00:00+08:00</published><updated>2016-07-07T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-07-07:/articles/2016/07/centos7安装python3及pip3.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline1"&gt;1. 安装python3&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline2"&gt;2. 安装pip3&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;h1&gt;安装python3&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h1&gt;
-&lt;p&gt;安装python3很简单 …&lt;/p&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline1"&gt;1. 安装python3&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline2"&gt;2. 安装pip3&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;h1&gt;安装python3&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h1&gt;
-&lt;p&gt;安装python3很简单&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;下载源码并且编译&lt;/li&gt;
-&lt;li&gt;安装epel&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这里采用第二种方法:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;yum install epel-release
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;安装完成之后,yum list python3*,你就可以看见 &lt;strong&gt;python34&lt;/strong&gt;&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;yum install python34
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h1&gt;安装pip3&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h1&gt;
-&lt;p&gt;&lt;a href="http://stackoverflow.com/questions/6587507/how-to-install-pip-with-python-3"&gt;参考问题&lt;/a&gt;
-如果在上述安装 *python3*时采用了第二种方法,pip默认未安装,而且无法通过`yum install python34-pip`来安装&lt;/p&gt;
-&lt;p&gt;正确的方法应该是:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;yum install python34-setuptools
-easy_install-3.4 pip # 这里可能有一些出入,总之是使用python3的easy_install
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;ok,就这样&lt;/p&gt;</content><category term="python"></category><category term="python3"></category><category term="pip"></category><category term="pip3"></category></entry></feed>
+&lt;h2&gt;os.path.supportsunicodefilenames #设置是否支持unicode路径名&lt;a id="orgheadline35"&gt;&lt;/a&gt;&lt;/h2&gt;</content><category term="python"></category><category term="os"></category></entry></feed>

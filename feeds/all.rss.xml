@@ -1,5 +1,191 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>HonMaple's Blog</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/all.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-03-14T00:00:00+08:00</updated><entry><title>使用flask实现一个简单的图片上传存储服务</title><link href="http://honmaple.org/articles/2017/03/%E4%BD%BF%E7%94%A8flask%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1.html" rel="alternate"></link><published>2017-03-14T00:00:00+08:00</published><updated>2017-03-14T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-14:/articles/2017/03/使用flask实现一个简单的图片上传存储服务.html</id><summary type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>HonMaple's Blog</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/all.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-03-15T00:00:00+08:00</updated><entry><title>sqlalchemy使用上的小tip</title><link href="http://honmaple.org/articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html" rel="alternate"></link><published>2017-03-15T00:00:00+08:00</published><updated>2017-03-15T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-15:/articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org9c10e0a"&gt;1. sqlalchemy object序列化为json&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgc0bfd4d"&gt;1.1. 多个实例 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org9c10e0a"&gt;1. sqlalchemy object序列化为json&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgc0bfd4d"&gt;1.1. 多个实例&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org32910ef"&gt;1.2. 单个实例&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org45d6d27"&gt;1.3. 排除字段&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org05e0fee"&gt;1.4. 仅包括字段&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org21bafe1"&gt;1.5. 关系查询深度&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org1d34f9c"&gt;1.6. 增加一些自定义的函数&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org9d7f676"&gt;1.7. 可传递参数的函数&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgb5f861c"&gt;2. 像django orm一样使用sqlalchemy&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgd2dc2ac"&gt;2.1. 基本查询(已实现)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgd8c971d"&gt;2.2. 关系查询&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org6169882"&gt;2.3. 其它&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org2b6acdb"&gt;3. 去掉一些sqlalchemy的重复工作&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org7fa06d7"&gt;3.1. ModelMixin&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org4b5ba4e"&gt;3.2. ModelTimeMixin&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org971ec1a"&gt;3.3. ModelUserMixin&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;a id="org9c10e0a"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;sqlalchemy object序列化为json&lt;/h1&gt;
+&lt;p&gt;灵感来源于 &lt;strong&gt;Django REST framework&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a id="orgc0bfd4d"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;多个实例&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;posts = Post.query.all()
+serializer = Seralizer(posts,many=True)
+data = serializer.data
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org32910ef"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;单个实例&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;post = Post.query.first()
+serializer = Seralizer(post,many=False)
+data = serializer.data
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org45d6d27"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;排除字段&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;serializer = Seralizer(post,exclude=[&amp;#39;title&amp;#39;])
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org05e0fee"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;仅包括字段&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;serializer = Seralizer(post,include=[&amp;#39;title&amp;#39;])
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org21bafe1"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;关系查询深度&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;serializer = Seralizer(post,depth=3)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;depth
+    默认为2&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a id="org1d34f9c"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;增加一些自定义的函数&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;serializer = Serializer(post,extra=[&amp;#39;get_post_count&amp;#39;])
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Post&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="p"&gt;......&lt;/span&gt;
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_post_count&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;11&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org9d7f676"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;可传递参数的函数&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;PostSerializer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;Serializer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="nx"&gt;count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;Field&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;source&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;get_post_count&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nx"&gt;args&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;hello&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;&lt;span class="k"&gt;default&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Meta&lt;/span&gt;:
+        &lt;span class="kt"&gt;include&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+        &lt;span class="nx"&gt;depth&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+        &lt;span class="nx"&gt;include&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+        &lt;span class="nx"&gt;exclude&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+        &lt;span class="nx"&gt;extra&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;count&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="orgb5f861c"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;像django orm一样使用sqlalchemy&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;djang orm&lt;/strong&gt;与sqlalchemy相比,为什么很多人都认为django orm更好用,大概就是因为django orm更方便&lt;/p&gt;
+&lt;p&gt;&lt;a id="orgd2dc2ac"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;基本查询(已实现)&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;gt&lt;/li&gt;
+&lt;li&gt;lt&lt;/li&gt;
+&lt;li&gt;lte&lt;/li&gt;
+&lt;li&gt;gte&lt;/li&gt;
+&lt;li&gt;contains&lt;/li&gt;
+&lt;li&gt;in&lt;/li&gt;
+&lt;li&gt;exact&lt;/li&gt;
+&lt;li&gt;iexact&lt;/li&gt;
+&lt;li&gt;startswith&lt;/li&gt;
+&lt;li&gt;istartswith&lt;/li&gt;
+&lt;li&gt;iendswith&lt;/li&gt;
+&lt;li&gt;endswith&lt;/li&gt;
+&lt;li&gt;isnull&lt;/li&gt;
+&lt;li&gt;range&lt;/li&gt;
+&lt;li&gt;year&lt;/li&gt;
+&lt;li&gt;month&lt;/li&gt;
+&lt;li&gt;day&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;示例:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Post.query.filter_by(title__contains = &amp;#39;sql&amp;#39;).all()
+Post.query.exclude_by(title__contains = &amp;#39;sql&amp;#39;).all()
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="orgd8c971d"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;关系查询&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Post.query.filter_by(tags__name__contains = &amp;#39;sql&amp;#39;).all()
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org6169882"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;其它&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Post.query.filter_by(tags__name__contains = &amp;#39;sql&amp;#39;).or(Post.id == 1,Post.id == 2).all()
+Post.query.filter_by(tags__name__contains = &amp;#39;sql&amp;#39;).and(Post.id == 1,Post.id == 2).all()
+Post.query.filter_by(tags__name__contains = &amp;#39;sql&amp;#39;).exists()
+Post.query.load_only(&amp;#39;title&amp;#39;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org2b6acdb"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;去掉一些sqlalchemy的重复工作&lt;/h1&gt;
+&lt;p&gt;以&lt;strong&gt;flask-sqlalchemy&lt;/strong&gt;为例,通过继承 &lt;strong&gt;models.py&lt;/strong&gt; 中的&lt;strong&gt;Mixin&lt;/strong&gt;,就可以去除部分重复工作&lt;/p&gt;
+&lt;p&gt;&lt;a id="org7fa06d7"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;ModelMixin&lt;/h2&gt;
+&lt;p&gt;自增ID &amp;#x2013; id&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;post = Post(·····)
+post.save() # 保存
+post.delete() # 保存
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;批量操作&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;bulk_insert&lt;/li&gt;
+&lt;li&gt;bulk_update&lt;/li&gt;
+&lt;li&gt;bulk_save&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a id="org4b5ba4e"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;ModelTimeMixin&lt;/h2&gt;
+&lt;p&gt;增加两字段&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;created_at
+    数据创建时间&lt;/li&gt;
+&lt;li&gt;updated_at
+    数据更新时间&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a id="org971ec1a"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;ModelUserMixin&lt;/h2&gt;
+&lt;p&gt;关联用户表,与&lt;strong&gt;User&lt;/strong&gt;表现为&lt;strong&gt;多对一&lt;/strong&gt;关系(即一个用户有多个post)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;ModelUserMixin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+
+    &lt;span class="nx"&gt;user_related_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;posts&amp;#39;&lt;/span&gt;
+    &lt;span class="nx"&gt;titile&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;...&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</content><category term="python"></category><category term="sql"></category><category term="sqlalchemy"></category></entry><entry><title>使用flask实现一个简单的图片上传存储服务</title><link href="http://honmaple.org/articles/2017/03/%E4%BD%BF%E7%94%A8flask%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1.html" rel="alternate"></link><published>2017-03-14T00:00:00+08:00</published><updated>2017-03-14T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-14:/articles/2017/03/使用flask实现一个简单的图片上传存储服务.html</id><summary type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
 &lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents …&lt;/h2&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
 &lt;div id="table-of-contents"&gt;
@@ -1553,42 +1739,4 @@ data = serializer.data
 &lt;ul&gt;
 &lt;li&gt;depth
     默认为2&lt;/li&gt;
-&lt;/ul&gt;</content><category term="python"></category><category term="sqlalchemy"></category><category term="json"></category></entry><entry><title>利用网易云api获取歌曲信息</title><link href="http://honmaple.org/articles/2016/12/%E5%88%A9%E7%94%A8%E7%BD%91%E6%98%93%E4%BA%91api%E8%8E%B7%E5%8F%96%E6%AD%8C%E6%9B%B2%E4%BF%A1%E6%81%AF.html" rel="alternate"></link><published>2016-12-11T00:00:00+08:00</published><updated>2016-12-11T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-12-11:/articles/2016/12/利用网易云api获取歌曲信息.html</id><summary type="html">&lt;p&gt;最近是增加了一个&lt;strong&gt;aplayer&lt;/strong&gt;在网站上,但原本想要使用qiniu存储，最后觉得太麻烦了,直接利用网易云api获取歌曲&lt;/p&gt;
-&lt;p&gt;使用&lt;strong&gt;python标准库urllib&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;直接给出代码 …&lt;/p&gt;</summary><content type="html">&lt;p&gt;最近是增加了一个&lt;strong&gt;aplayer&lt;/strong&gt;在网站上,但原本想要使用qiniu存储，最后觉得太麻烦了,直接利用网易云api获取歌曲&lt;/p&gt;
-&lt;p&gt;使用&lt;strong&gt;python标准库urllib&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;直接给出代码&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;urllib&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;json&lt;/span&gt;
-
-&lt;span class="nb"&gt;id&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;28819878&amp;#39;&lt;/span&gt;
-&lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://music.163.com/api/song/detail/?id=&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;&amp;amp;ids=%5B&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;%5D&amp;amp;csrf_token&amp;quot;&lt;/span&gt;
-&lt;span class="n"&gt;rep&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urlopen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;decode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;UTF-8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="n"&gt;rep&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;json&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;loads&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;songs&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-&lt;span class="n"&gt;artist&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;artists&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-&lt;span class="n"&gt;mp3url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;mp3Url&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-&lt;span class="n"&gt;picurl&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;album&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;blurPicUrl&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;name:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;artists:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;artist&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;mp3:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mp3url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;pic:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;picurl&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;http://music.163.com/api/song/media?id=&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt;
-&lt;span class="n"&gt;rep&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urlopen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;decode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;UTF-8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="n"&gt;lyric&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;json&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;loads&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;lyric&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;lyric:&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;json&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dumps&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;lyric&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;结果&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;#+RESULTS:
-: name: 轨迹
-: artists: 徐小薇
-: mp3: http://m2.music.126.net/1vGFlmmY1NeHEZy_1QuYhA==/5898879883333738.mp3
-: pic: http://p4.music.126.net/EMS4GE-ojql3azwxXYPT3w==/3264450024433079.jpg
-: lyric:
-:  &amp;quot;[00:12.98]\u600e\u4e48\u9690\u85cf\u6211\u7684\u60b2\u4f24\n[00:19.10]\u5931\u53bb\u4f60\u7684\u5730\u65b9\n[00:25.61]\u4f60\u7684\u53d1\u9999\u6563\u7684\u5306\u5fd9\n[00:32.06]\u6211\u5df2\u7ecf\u8ddf\u4e0d\u4e0a\n[00:38.49]\u95ed\u4e0a\u773c\u775b\u8fd8\u80fd\u770b\u89c1\n[00:44.90]\u4f60\u79bb\u53bb\u7684\u75d5\u8ff9\n[00:51.21]\u5728\u6708\u5149\u4e0b\u4e00\u76f4\u627e\u5bfb\u90a3\u60f3\u5ff5\u7684\u8eab\u5f71\n[01:04.48]\u5982\u679c\u8bf4\u5206\u624b\u662f\u82e6\u75db\u7684\u8d77\u70b9\n[01:09.98]\u90a3\u5728\u7ec8\u70b9\u4e4b\u524d\n[01:13.25]\u6211\u613f\u610f\u518d\u7231\u4e00\u904d\n[01:17.25]\u60f3\u8981\u5bf9\u4f60\u8bf4\u7684\n[01:19.89]\u4e0d\u6562\u8bf4\u7684\u7231\n[01:23.52]\u4f1a\u4e0d\u4f1a\u6709\u4eba\u53ef\u4ee5\u660e\u767d\n[01:29.54]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fd8\u8bb0\u4f60\n[01:35.83]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[01:42.27]\u60f3\u7740\u90a3\u4e00\u5929\u4f1a\u6709\u4eba\u4ee3\u66ff\n[01:49.10]\u8ba9\u6211\u4e0d\u518d\u60f3\u5ff5\u4f60\n[01:55.10]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fae\u5fae\u7b11\n[02:01.51]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[02:07.81]\u53c8\u60f3\u4e86\u4e00\u904d\u4f60\u6e29\u67d4\u7684\u8138\n[02:14.54]\u5728\u6211\u5fd8\u8bb0\u4e4b\u524d\n[02:30.42]\u600e\u4e48\u9690\u85cf\u6211\u7684\u60b2\u4f24\n[02:36.77]\u5931\u53bb\u4f60\u7684\u5730\u65b9\n[02:43.17]\u4f60\u7684\u53d1\u9999\u6563\u7684\u5306\u5fd9\n[02:49.56]\u6211\u5df2\u7ecf\u8ddf\u4e0d\u4e0a\n[02:56.09]\u95ed\u4e0a\u773c\u775b\u8fd8\u80fd\u770b\u89c1\n[03:02.20]\u4f60\u79bb\u53bb\u7684\u75d5\u8ff9\n[03:08.81]\u5728\u6708\u5149\u4e0b\u4e00\u76f4\u627e\u5bfb\u90a3\u60f3\u5ff5\u7684\u8eab\u5f71\n[03:21.81]\u5982\u679c\u8bf4\u5206\u624b\u662f\u82e6\u75db\u7684\u8d77\u70b9\n[03:27.53]\u90a3\u5728\u7ec8\u70b9\u4e4b\u524d\n[03:34.82]\u6211\u613f\u610f\u518d\u7231\u4e00\u904d\n[03:34.68]\u60f3\u8981\u5bf9\u4f60\u8bf4\u7684\n[03:37.69]\u4e0d\u6562\u8bf4\u7684\u7231\n[03:41.11]\u4f1a\u4e0d\u4f1a\u6709\u4eba\u53ef\u4ee5\u660e\u767d\n[03:47.07]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fd8\u8bb0\u4f60\n[03:53.54]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[03:59.73]\u60f3\u7740\u90a3\u4e00\u5929\u4f1a\u6709\u4eba\u4ee3\u66ff\n[04:06.86]\u8ba9\u6211\u4e0d\u518d\u60f3\u5ff5\u4f60\n[04:12.96]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fae\u5fae\u7b11\n[04:19.08]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[04:25.53]\u53c8\u60f3\u4e86\u4e00\u904d\u4f60\u6e29\u67d4\u7684\u8138\n[04:32.24]\u5728\u6211\u5fd8\u8bb0\u4e4b\u524d\n\n[04:38.34]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fd8\u8bb0\u4f60\n[04:45.05]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[04:51.10]\u60f3\u7740\u90a3\u4e00\u5929\u4f1a\u6709\u4eba\u4ee3\u66ff\n[04:58.01]\u8ba9\u6211\u4e0d\u518d\u60f3\u5ff5\u4f60\n[05:03.89]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fae\u5fae\u7b11\n[05:10.25]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[05:16.70]\u53c8\u60f3\u4e86\u4e00\u904d\u4f60\u6e29\u67d4\u7684\u8138\n[05:23.50]\u5728\u6211\u5fd8\u8bb0\u4e4b\u524d\n\n[05:29.62]\u5fc3\u91cc\u7684\u773c\u6cea\n[05:32.81]\u6a21\u7cca\u4e86\u89c6\u7ebf\n[05:36.57]\u4f60\u5df2\u5feb\u770b\u4e0d\u89c1&amp;quot;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;结果格式化什么的看着格式吧，这些信息对我来说足够了&lt;/p&gt;</content><category term="python"></category><category term="网易"></category></entry></feed>
+&lt;/ul&gt;</content><category term="python"></category><category term="sqlalchemy"></category><category term="json"></category></entry></feed>

@@ -25,7 +25,211 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../../articles/2016/04/sqlalchemy学习(一).html">sqlalchemy学习(一)</a></h1> 
+                    <h1 class="entry-title"><a href="../../articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html">sqlalchemy使用上的小tip</a></h1> 
+<footer class="post-info">
+        <abbr class="published" title="2017-03-15T00:00:00+08:00">
+                三 15 三月 2017
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../category/python/index.html">Python</a>. </p>
+<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/sql/index.html">sql</a><a href="../../tag/sqlalchemy/index.html">sqlalchemy</a></p></footer><!-- /.post-info --><div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org9c10e0a">1. sqlalchemy object序列化为json</a>
+<ul>
+<li><a href="#orgc0bfd4d">1.1. 多个实例</a></li>
+<li><a href="#org32910ef">1.2. 单个实例</a></li>
+<li><a href="#org45d6d27">1.3. 排除字段</a></li>
+<li><a href="#org05e0fee">1.4. 仅包括字段</a></li>
+<li><a href="#org21bafe1">1.5. 关系查询深度</a></li>
+<li><a href="#org1d34f9c">1.6. 增加一些自定义的函数</a></li>
+<li><a href="#org9d7f676">1.7. 可传递参数的函数</a></li>
+</ul>
+</li>
+<li><a href="#orgb5f861c">2. 像django orm一样使用sqlalchemy</a>
+<ul>
+<li><a href="#orgd2dc2ac">2.1. 基本查询(已实现)</a></li>
+<li><a href="#orgd8c971d">2.2. 关系查询</a></li>
+<li><a href="#org6169882">2.3. 其它</a></li>
+</ul>
+</li>
+<li><a href="#org2b6acdb">3. 去掉一些sqlalchemy的重复工作</a>
+<ul>
+<li><a href="#org7fa06d7">3.1. ModelMixin</a></li>
+<li><a href="#org4b5ba4e">3.2. ModelTimeMixin</a></li>
+<li><a href="#org971ec1a">3.3. ModelUserMixin</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<p><a id="org9c10e0a"></a></p>
+<h1>sqlalchemy object序列化为json</h1>
+<p>灵感来源于 <strong>Django REST framework</strong></p>
+<p><a id="orgc0bfd4d"></a></p>
+<h2>多个实例</h2>
+<div class="highlight"><pre><span></span>posts = Post.query.all()
+serializer = Seralizer(posts,many=True)
+data = serializer.data
+</pre></div>
+
+
+<p><a id="org32910ef"></a></p>
+<h2>单个实例</h2>
+<div class="highlight"><pre><span></span>post = Post.query.first()
+serializer = Seralizer(post,many=False)
+data = serializer.data
+</pre></div>
+
+
+<p><a id="org45d6d27"></a></p>
+<h2>排除字段</h2>
+<div class="highlight"><pre><span></span>serializer = Seralizer(post,exclude=[&#39;title&#39;])
+</pre></div>
+
+
+<p><a id="org05e0fee"></a></p>
+<h2>仅包括字段</h2>
+<div class="highlight"><pre><span></span>serializer = Seralizer(post,include=[&#39;title&#39;])
+</pre></div>
+
+
+<p><a id="org21bafe1"></a></p>
+<h2>关系查询深度</h2>
+<div class="highlight"><pre><span></span>serializer = Seralizer(post,depth=3)
+</pre></div>
+
+
+<ul>
+<li>depth
+    默认为2</li>
+</ul>
+<p><a id="org1d34f9c"></a></p>
+<h2>增加一些自定义的函数</h2>
+<div class="highlight"><pre><span></span>serializer = Serializer(post,extra=[&#39;get_post_count&#39;])
+</pre></div>
+
+
+<p>Post</p>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Post</span><span class="p">(</span><span class="nx">Model</span><span class="p">)</span><span class="o">:</span>
+    <span class="p">......</span>
+    <span class="nx">def</span> <span class="nx">get_post_count</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="mi">11</span>
+</pre></div>
+
+
+<p><a id="org9d7f676"></a></p>
+<h2>可传递参数的函数</h2>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">PostSerializer</span><span class="p">(</span><span class="nx">Serializer</span><span class="p">)</span><span class="o">:</span>
+    <span class="nx">count</span> <span class="o">=</span> <span class="nx">Field</span><span class="p">(</span><span class="nx">source</span> <span class="o">=</span> <span class="s1">&#39;get_post_count&#39;</span><span class="p">,</span><span class="nx">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="o">:</span><span class="s1">&#39;hello&#39;</span><span class="p">},</span><span class="k">default</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="kr">class</span> <span class="nx">Meta</span>:
+        <span class="kt">include</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nx">depth</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="nx">include</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nx">exclude</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nx">extra</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
+</pre></div>
+
+
+<p><a id="orgb5f861c"></a></p>
+<h1>像django orm一样使用sqlalchemy</h1>
+<p><strong>djang orm</strong>与sqlalchemy相比,为什么很多人都认为django orm更好用,大概就是因为django orm更方便</p>
+<p><a id="orgd2dc2ac"></a></p>
+<h2>基本查询(已实现)</h2>
+<ul>
+<li>gt</li>
+<li>lt</li>
+<li>lte</li>
+<li>gte</li>
+<li>contains</li>
+<li>in</li>
+<li>exact</li>
+<li>iexact</li>
+<li>startswith</li>
+<li>istartswith</li>
+<li>iendswith</li>
+<li>endswith</li>
+<li>isnull</li>
+<li>range</li>
+<li>year</li>
+<li>month</li>
+<li>day</li>
+</ul>
+<p>示例:</p>
+<div class="highlight"><pre><span></span>Post.query.filter_by(title__contains = &#39;sql&#39;).all()
+Post.query.exclude_by(title__contains = &#39;sql&#39;).all()
+</pre></div>
+
+
+<p><a id="orgd8c971d"></a></p>
+<h2>关系查询</h2>
+<div class="highlight"><pre><span></span>Post.query.filter_by(tags__name__contains = &#39;sql&#39;).all()
+</pre></div>
+
+
+<p><a id="org6169882"></a></p>
+<h2>其它</h2>
+<div class="highlight"><pre><span></span>Post.query.filter_by(tags__name__contains = &#39;sql&#39;).or(Post.id == 1,Post.id == 2).all()
+Post.query.filter_by(tags__name__contains = &#39;sql&#39;).and(Post.id == 1,Post.id == 2).all()
+Post.query.filter_by(tags__name__contains = &#39;sql&#39;).exists()
+Post.query.load_only(&#39;title&#39;)
+</pre></div>
+
+
+<p><a id="org2b6acdb"></a></p>
+<h1>去掉一些sqlalchemy的重复工作</h1>
+<p>以<strong>flask-sqlalchemy</strong>为例,通过继承 <strong>models.py</strong> 中的<strong>Mixin</strong>,就可以去除部分重复工作</p>
+<p><a id="org7fa06d7"></a></p>
+<h2>ModelMixin</h2>
+<p>自增ID &#x2013; id</p>
+<div class="highlight"><pre><span></span>post = Post(·····)
+post.save() # 保存
+post.delete() # 保存
+</pre></div>
+
+
+<p>批量操作</p>
+<ul>
+<li>bulk_insert</li>
+<li>bulk_update</li>
+<li>bulk_save</li>
+</ul>
+<p><a id="org4b5ba4e"></a></p>
+<h2>ModelTimeMixin</h2>
+<p>增加两字段</p>
+<ul>
+<li>created_at
+    数据创建时间</li>
+<li>updated_at
+    数据更新时间</li>
+</ul>
+<p><a id="org971ec1a"></a></p>
+<h2>ModelUserMixin</h2>
+<p>关联用户表,与<strong>User</strong>表现为<strong>多对一</strong>关系(即一个用户有多个post)</p>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Post</span><span class="p">(</span><span class="nx">ModelUserMixin</span><span class="p">,</span> <span class="nx">Model</span><span class="p">)</span><span class="o">:</span>
+
+    <span class="nx">user_related_name</span> <span class="o">=</span> <span class="s1">&#39;posts&#39;</span>
+    <span class="nx">titile</span> <span class="o">=</span> <span class="p">...</span>
+</pre></div><p>There are <a href="../../articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html#disqus_thread">comments</a>.</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../../articles/2016/04/sqlalchemy学习(一).html" rel="bookmark" title="Permalink to sqlalchemy学习(一)">sqlalchemy学习(一)</a></h1>
+                </header>
+                
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2016-04-25T00:00:00+08:00">
                 一 25 四月 2016
@@ -35,389 +239,13 @@
                 By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
         </address>
 <p>In <a href="../../category/python/index.html">Python</a>. </p>
-<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/sql/index.html">sql</a><a href="../../tag/sqlalchemy/index.html">sqlalchemy</a></p></footer><!-- /.post-info --><h1>sqlalchemy<a id="orgheadline19"></a></h1>
+<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/sql/index.html">sql</a><a href="../../tag/sqlalchemy/index.html">sqlalchemy</a></p></footer><!-- /.post-info -->                <h1>sqlalchemy<a id="orgheadline19"></a></h1>
 <p>系统的学一下sqlalchemyA,不过没有中文文档,只能用我的渣英文能力慢慢看原文档了</p>
 <h2>数据库连接<a id="orgheadline6"></a></h2>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">create_engine</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s1">&#39;sqlite:///:memory:&#39;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</pre></div>
-
-
-<p>echo为True输出日志</p>
-<h3>各种数据库连接方式<a id="orgheadline5"></a></h3>
-<div class="highlight"><pre><span></span>dialect+driver://username:password@host:port/database
-</pre></div>
-
-
-<ol>
-<li>
-<p>Postgresql</p>
-<div class="highlight"><pre><span></span># default
-engine = create_engine(&#39;postgresql://scott:tiger@localhost/mydatabase&#39;)
-# psycopg2
-engine = create_engine(&#39;postgresql+psycopg2://scott:tiger@localhost/mydatabase&#39;)
-# pg8000
-engine = create_engine(&#39;postgresql+pg8000://scott:tiger@localhost/mydatabase&#39;)
-</pre></div>
-
-
-</li>
-<li>
-<p>MySQL</p>
-<div class="highlight"><pre><span></span># default
-engine = create_engine(&#39;mysql://scott:tiger@localhost/foo&#39;)
-# mysql-python
-engine = create_engine(&#39;mysql+mysqldb://scott:tiger@localhost/foo&#39;)
-# MySQL-connector-python
-engine = create_engine(&#39;mysql+mysqlconnector://scott:tiger@localhost/foo&#39;)
-# OurSQL
-engine = create_engine(&#39;mysql+oursql://scott:tiger@localhost/foo&#39;)
-</pre></div>
-
-
-</li>
-<li>
-<p>Oracle</p>
-<div class="highlight"><pre><span></span><span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="err">&#39;</span><span class="nl">oracle</span><span class="p">:</span><span class="c1">//scott:tiger@127.0.0.1:1521/sidname&#39;)</span>
-<span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="err">&#39;</span><span class="n">oracle</span><span class="o">+</span><span class="nl">cx_oracle</span><span class="p">:</span><span class="c1">//scott:tiger@tnsname&#39;)</span>
-</pre></div>
-
-
-</li>
-<li>
-<p>SQLite</p>
-<div class="highlight"><pre><span></span># sqlite://&lt;nohostname&gt;/&lt;path&gt;
-# where &lt;path&gt; is relative:
-engine = create_engine(&#39;sqlite:///foo.db&#39;)
-#Unix/Mac - 4 initial slashes in total
-engine = create_engine(&#39;sqlite:////absolute/path/to/foo.db&#39;)
-#Windows
-engine = create_engine(&#39;sqlite:///C:\\path\\to\\foo.db&#39;)
-#Windows alternative using raw string
-engine = create_engine(r&#39;sqlite:///C:\path\to\foo.db&#39;)
-# To use a SQLite :memory: database, specify an empty URL:
-engine = create_engine(&#39;sqlite://&#39;)
-</pre></div>
-
-
-</li>
-</ol>
-<h2>声明样式<a id="orgheadline11"></a></h2>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
-<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">String</span>
-
-<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
-<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
-     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;users&#39;</span>
-
-     <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-     <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
-     <span class="n">fullname</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
-     <span class="n">password</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
-
-     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;&lt;User(name=&#39;</span><span class="si">%s</span><span class="s2">&#39;, fullname=&#39;</span><span class="si">%s</span><span class="s2">&#39;, password=&#39;</span><span class="si">%s</span><span class="s2">&#39;)&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                             <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">)</span>
-</pre></div>
-
-
-<h3>样式参数说明<a id="orgheadline7"></a></h3>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">说明</td>
-</tr>
-
-
-<tr>
-<td class="org-left">**\_<sub>tablename</sub>\_\_**</td>
-<td class="org-left">表名</td>
-</tr>
-</tbody>
-</table>
-
-<h3>字段类型及说明<a id="orgheadline10"></a></h3>
-<p><a href="http://docs.sqlalchemy.org/en/rel_1_0/core/type_basics.html#sqlalchemy.types.Integer">字段类型及文档</a></p>
-<ol>
-<li>
-<p>Generic Types</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-<p><colgroup>
-<col  class="org-left" /></p>
-<p><col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">字段类型</th>
-<th scope="col" class="org-left">说明</th>
-</tr>
-</thead></p>
-<p><tbody>
-<tr>
-<td class="org-left">BigInteger</td>
-<td class="org-left">大数</td>
-</tr></p>
-<p><tr>
-<td class="org-left">Boolean(create<sub>constraint</sub>=True, name=None, _create<sub>events</sub>=True)</td>
-<td class="org-left">布尔</td>
-</tr></p>
-<p><tr>
-<td class="org-left">Data</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">DateTime(timezone=False)</td>
-<td class="org-left">时间</td>
-</tr></p>
-<p><tr>
-<td class="org-left">Enum(*enums, **kw)</td>
-<td class="org-left">枚举</td>
-</tr></p>
-<p><tr>
-<td class="org-left">Float(precision=None, asdecimal=False, decimal<sub>return</sub><sub>scale</sub>=None, **kwargs)</td>
-<td class="org-left">浮点型</td>
-</tr></p>
-<p><tr>
-<td class="org-left">Integer</td>
-<td class="org-left">整型</td>
-</tr></p>
-<p><tr>
-<td class="org-left">Interval(native=True, second<sub>precision</sub>=None, day<sub>precision</sub>=None)</td>
-<td class="org-left">时间间隔</td>
-</tr></p>
-<p><tr>
-<td class="org-left">LargeBinary(length=None)</td>
-<td class="org-left">二进制大对象</td>
-</tr></p>
-<p><tr>
-<td class="org-left">MatchType(create<sub>constraint</sub>=True, name=None, _create<sub>events</sub>=True)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">Numeric(precision=None, scale=None, decimal<sub>return</sub><sub>scale</sub>=None, asdecimal=True)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">PickleType(protocol=2, pickler=None, comparator=None)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">SchemaType(name=None, schema=None, metadata=None, inherit<sub>schema</sub>=False, quote=None, _create<sub>events</sub>=True)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">SmallInteger</td>
-<td class="org-left">小整型</td>
-</tr></p>
-<p><tr>
-<td class="org-left">String(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, _warn<sub>on</sub><sub>bytestring</sub>=False)</td>
-<td class="org-left">字符串</td>
-</tr></p>
-<p><tr>
-<td class="org-left">Text(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, _warn<sub>on</sub><sub>bytestring</sub>=False)</td>
-<td class="org-left">文本对象</td>
-</tr></p>
-<p><tr>
-<td class="org-left">Time(timezone=False)</td>
-<td class="org-left">时间</td>
-</tr></p>
-<p><tr>
-<td class="org-left">Unicode(length=None, **kwargs)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">UnicodeText(length=None, **kwargs)</td>
-<td class="org-left">&#xa0;</td>
-</tr>
-</tbody>
-</table></p>
-</li>
-<li>
-<p>SQL Standard Types</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-<p><colgroup>
-<col  class="org-left" /></p>
-<p><col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">字段类型</th>
-<th scope="col" class="org-left">说明</th>
-</tr>
-</thead></p>
-<p><tbody>
-<tr>
-<td class="org-left">BIGINT</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">BINARY(length=None)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">BLOB(length=None)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">BOOLEAN(create<sub>constraint</sub>=True, name=None, _create<sub>events</sub>=True)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">CHAR(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, _warn<sub>on</sub><sub>bytestring</sub>=False)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">CLOB(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, _warn<sub>on</sub><sub>bytestring</sub>=False)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">DATE</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">DATETIME(timezone=False)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">DECIMAL(precision=None, scale=None, decimal<sub>return</sub><sub>scale</sub>=None, asdecimal=True)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">FLOAT(precision=None, asdecimal=False, decimal<sub>return</sub><sub>scale</sub>=None, **kwargs)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">INT</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">INTEGER</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">NCHAR(length=None, **kwargs)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">NVARCHAR(length=None, **kwargs)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">NUMERIC(precision=None, scale=None, decimal<sub>return</sub><sub>scale</sub>=None, asdecimal=True)¶</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">REAL(precision=None, asdecimal=False, decimal<sub>return</sub><sub>scale</sub>=None, **kwargs)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">SMALLINT</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">TEXT(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, _warn<sub>on</sub><sub>bytestring</sub>=False</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">TIME(timezone=False)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">TIMESTAMP(timezone=False)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">VARBINARY(length=None)</td>
-<td class="org-left">&#xa0;</td>
-</tr></p>
-<p><tr>
-<td class="org-left">VARCHAR(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, _warn<sub>on</sub><sub>bytestring</sub>=False)</td>
-<td class="org-left">&#xa0;</td>
-</tr>
-</tbody>
-</table></p>
-</li>
-</ol>
-<h2>创建表<a id="orgheadline12"></a></h2>
-<div class="highlight"><pre><span></span>Base.metadata.create_all(engine)
-</pre></div>
-
-
-<h2>为表创建实例<a id="orgheadline13"></a></h2>
-<div class="highlight"><pre><span></span>&gt;&gt;&gt; ed_user = User(name=&#39;ed&#39;, fullname=&#39;Ed Jones&#39;, password=&#39;edspassword&#39;)
-&gt;&gt;&gt; ed_user.name
-&#39;ed&#39;
-&gt;&gt;&gt; ed_user.password
-&#39;edspassword&#39;
-&gt;&gt;&gt; str(ed_user.id)
-&#39;None&#39;
-</pre></div>
-
-
-<h2>创建session<a id="orgheadline14"></a></h2>
-<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">sessionmaker</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
-</pre></div>
-
-
-<p>你也可以先创建Session,在创建应用前</p>
-<div class="highlight"><pre><span></span>&gt;&gt;&gt; Session = sessionmaker()
-</pre></div>
-
-
-<p>当你创建了应用,可以这样配置</p>
-<div class="highlight"><pre><span></span>&gt;&gt;&gt; Session.configure(bind=engine)  # once engine is available
-</pre></div>
-
-
-<h2>插入和更新数据<a id="orgheadline18"></a></h2>
-<h3>插入<a id="orgheadline15"></a></h3>
-<p><strong>插入一条数据</strong></p>
-<div class="highlight"><pre><span></span>&gt;&gt;&gt; ed_user = User(name=&#39;ed&#39;, fullname=&#39;Ed Jones&#39;, password=&#39;edspassword&#39;)
-&gt;&gt;&gt; session.add(ed_user)
-</pre></div>
-
-
-<p><strong>插入多条数据</strong></p>
-<div class="highlight"><pre><span></span>&gt;&gt;&gt; session.add_all([
-...     User(name=&#39;wendy&#39;, fullname=&#39;Wendy Williams&#39;, password=&#39;foobar&#39;),
-...     User(name=&#39;mary&#39;, fullname=&#39;Mary Contrary&#39;, password=&#39;xxg527&#39;),
-...     User(name=&#39;fred&#39;, fullname=&#39;Fred Flinstone&#39;, password=&#39;blah&#39;)])
-</pre></div>
-
-
-<h3>更新<a id="orgheadline16"></a></h3>
-<div class="highlight"><pre><span></span>&gt;&gt;&gt; ed_user.password = &#39;f8s7ccs&#39;
-</pre></div>
-
-
-<p>查看</p>
-<div class="highlight"><pre><span></span>&gt;&gt;&gt; session.dirty
-IdentitySet([&lt;User(name=&#39;ed&#39;, fullname=&#39;Ed Jones&#39;, password=&#39;f8s7ccs&#39;)&gt;])
-&gt;&gt;&gt; session.new  # doctest: +SKIP
-IdentitySet([&lt;User(name=&#39;wendy&#39;, fullname=&#39;Wendy Williams&#39;, password=&#39;foobar&#39;)&gt;,
-&lt;User(name=&#39;mary&#39;, fullname=&#39;Mary Contrary&#39;, password=&#39;xxg527&#39;)&gt;,
-&lt;User(name=&#39;fred&#39;, fullname=&#39;Fred Flinstone&#39;, password=&#39;blah&#39;)&gt;])
-</pre></div>
-
-
-<h3>必须提交才能生效<a id="orgheadline17"></a></h3>
-<div class="highlight"><pre><span></span>&gt;&gt;&gt; session.commit()
-</pre></div><p>There are <a href="../../articles/2016/04/sqlalchemy学习(一).html#disqus_thread">comments</a>.</p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">create_engine …</span></pre></div>
+                <a class="readmore" href="../../articles/2016/04/sqlalchemy学习(一).html">read more</a>
+<p>There are <a href="../../articles/2016/04/sqlalchemy学习(一).html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
         
 
  
