@@ -1,5 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>HonMaple's Blog - Python</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/python.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-03-15T00:00:00+08:00</updated><entry><title>sqlalchemy使用上的小tip</title><link href="http://honmaple.org/articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html" rel="alternate"></link><published>2017-03-15T00:00:00+08:00</published><updated>2017-03-15T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-15:/articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>HonMaple's Blog - Python</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/python.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-03-23T00:00:00+08:00</updated><entry><title>himawari8图片下载改进版</title><link href="http://honmaple.org/articles/2017/03/himawari8%E5%9B%BE%E7%89%87%E4%B8%8B%E8%BD%BD%E6%94%B9%E8%BF%9B%E7%89%88.html" rel="alternate"></link><published>2017-03-23T00:00:00+08:00</published><updated>2017-03-23T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-23:/articles/2017/03/himawari8图片下载改进版.html</id><summary type="html">&lt;p&gt;第一版下载图片后设为壁纸,四周都是黑黑的不好看,
+所以结合本地壁纸将两张图片进行合成&lt;/p&gt;
+&lt;p&gt;只要计算一下要缩减的大小与要放置的位置&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;我的方法是:打开 &lt;strong&gt;gimp&lt;/strong&gt;,合成两张图片,记下缩减的大小 …&lt;/p&gt;&lt;/blockquote&gt;</summary><content type="html">&lt;p&gt;第一版下载图片后设为壁纸,四周都是黑黑的不好看,
+所以结合本地壁纸将两张图片进行合成&lt;/p&gt;
+&lt;p&gt;只要计算一下要缩减的大小与要放置的位置&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;我的方法是:打开 &lt;strong&gt;gimp&lt;/strong&gt;,合成两张图片,记下缩减的大小(214,214)与位置(160,160)&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;每次只要运行一下&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;python himawari8.py
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;源码&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;PIL&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ImageOps&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ImageDraw&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;io&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;BytesIO&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;urllib.request&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;urlopen&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;datetime&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timedelta&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;json&lt;/span&gt;
+
+&lt;span class="n"&gt;SCALE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="n"&gt;WIDTH&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1368&lt;/span&gt;
+&lt;span class="n"&gt;HEIGHT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;768&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_info&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Request&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;urlopen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timeout&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;json&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;loads&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;download&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;png&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;RGB&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;SCALE&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;SCALE&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="c1"&gt;# desktop = Image.new(&amp;#39;RGB&amp;#39;, (WIDTH, HEIGHT))&lt;/span&gt;
+    &lt;span class="n"&gt;desktop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/home/jianglin/Pictures/308556.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;url_format&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/{}d/{}/{}_{}_{}.png&amp;#39;&lt;/span&gt;
+    &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;get_info&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="c1"&gt;# date = datetime.strptime(info[&amp;#39;date&amp;#39;], &amp;#39;%Y-%m-%d %H:%M:%S&amp;#39;) + timedelta(&lt;/span&gt;
+    &lt;span class="c1"&gt;#     hours=-8)&lt;/span&gt;
+    &lt;span class="n"&gt;date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strptime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;date&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;%Y-%m-&lt;/span&gt;&lt;span class="si"&gt;%d&lt;/span&gt;&lt;span class="s1"&gt; %H:%M:%S&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SCALE&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SCALE&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;url_format&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SCALE&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                                    &lt;span class="n"&gt;date&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strftime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;%Y/%m/&lt;/span&gt;&lt;span class="si"&gt;%d&lt;/span&gt;&lt;span class="s2"&gt;/%H%M%S&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Request&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;urlopen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timeout&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;img&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;BytesIO&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;()))&lt;/span&gt;
+            &lt;span class="n"&gt;png&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;paste&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;img&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+    &lt;span class="n"&gt;png&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;circle&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;png&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;desktop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;paste&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;png&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;160&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;160&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;png&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;desktop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;save&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/tmp/earth.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;PNG&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;set_background&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;circle&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;img&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;width&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;SCALE&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt;
+    &lt;span class="n"&gt;height&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;SCALE&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt;
+    &lt;span class="n"&gt;size&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;width&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;mask&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;L&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;draw&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ImageDraw&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Draw&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mask&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;draw&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ellipse&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;width&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;fill&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;255&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;output&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ImageOps&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;img&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mask&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;centering&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mf"&gt;0.5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;0.5&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;putalpha&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mask&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;thumbnail&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="mi"&gt;214&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;214&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ANTIALIAS&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;output&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;convert&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="c1"&gt;# size = (768, 768)&lt;/span&gt;
+    &lt;span class="c1"&gt;# mask = Image.new(&amp;#39;L&amp;#39;, size, 0)&lt;/span&gt;
+    &lt;span class="c1"&gt;# draw = ImageDraw.Draw(mask)&lt;/span&gt;
+    &lt;span class="c1"&gt;# draw.ellipse((3, 3, 765, 765), fill=255)&lt;/span&gt;
+    &lt;span class="c1"&gt;# im = Image.open(&amp;#39;/tmp/earth.png&amp;#39;)&lt;/span&gt;
+    &lt;span class="c1"&gt;# output = ImageOps.fit(im, mask.size, centering=(0.5, 0.5))&lt;/span&gt;
+    &lt;span class="c1"&gt;# output.putalpha(mask)&lt;/span&gt;
+    &lt;span class="c1"&gt;# output.thumbnail((256, 256), Image.ANTIALIAS)&lt;/span&gt;
+    &lt;span class="c1"&gt;# output.save(&amp;#39;output.png&amp;#39;)&lt;/span&gt;
+    &lt;span class="c1"&gt;# output.convert(&amp;quot;RGBA&amp;quot;)&lt;/span&gt;
+    &lt;span class="n"&gt;output&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;output.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;thumbnail&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="mi"&gt;214&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;214&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ANTIALIAS&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;desktop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/home/jianglin/Pictures/308556.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;desktop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;paste&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;160&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;160&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;output&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;desktop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;save&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/tmp/earch.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;PNG&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;set_background&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;os&lt;/span&gt;
+    &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;system&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;feh --bg-scale /tmp/earth.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vm"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;download&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;img alt="img" src="//images.honmaple.com/images/admin/show/2017/03/149023917874284.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="img" src="//images.honmaple.com/images/admin/show/2017/03/149023928036061.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="img" src="//images.honmaple.com/images/admin/show/2017/03/149023934880774.png"&gt;&lt;/p&gt;</content><category term="python"></category><category term="earth"></category><category term="himawari8"></category></entry><entry><title>下载Himawari8拍摄的实时地球图片</title><link href="http://honmaple.org/articles/2017/03/%E4%B8%8B%E8%BD%BDHimawari8%E6%8B%8D%E6%91%84%E7%9A%84%E5%AE%9E%E6%97%B6%E5%9C%B0%E7%90%83%E5%9B%BE%E7%89%87.html" rel="alternate"></link><published>2017-03-22T00:00:00+08:00</published><updated>2017-03-22T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-22:/articles/2017/03/下载Himawari8拍摄的实时地球图片.html</id><summary type="html">&lt;p&gt;直接给出源码&lt;/p&gt;
+&lt;p&gt;设置壁纸&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;feh --bg-scale /tmp/earch.png
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;设置桌面大小,及图片放大倍数 …&lt;/p&gt;</summary><content type="html">&lt;p&gt;直接给出源码&lt;/p&gt;
+&lt;p&gt;设置壁纸&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;feh --bg-scale /tmp/earch.png
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;设置桌面大小,及图片放大倍数&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;SCALE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;
+&lt;span class="n"&gt;WIDTH&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1368&lt;/span&gt;
+&lt;span class="n"&gt;HEIGHT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;768&lt;/span&gt;
+
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;PIL&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;io&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;BytesIO&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;urllib.request&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;urlopen&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;datetime&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;json&lt;/span&gt;
+
+&lt;span class="n"&gt;SCALE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;
+&lt;span class="n"&gt;WIDTH&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1368&lt;/span&gt;
+&lt;span class="n"&gt;HEIGHT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;768&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_info&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Request&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;urlopen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timeout&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;json&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;loads&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;download&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;png&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;RGB&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;SCALE&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;SCALE&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;desktop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;RGB&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;WIDTH&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;HEIGHT&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;url_format&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/{}d/{}/{}_{}_{}.png&amp;#39;&lt;/span&gt;
+    &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;get_info&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strptime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;date&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;%Y-%m-&lt;/span&gt;&lt;span class="si"&gt;%d&lt;/span&gt;&lt;span class="s1"&gt; %H:%M:%S&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SCALE&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SCALE&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;url_format&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SCALE&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                                    &lt;span class="n"&gt;date&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strftime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;%Y/%m/&lt;/span&gt;&lt;span class="si"&gt;%d&lt;/span&gt;&lt;span class="s2"&gt;/%H%M%S&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Request&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;urlopen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timeout&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;img&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;BytesIO&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;()))&lt;/span&gt;
+            &lt;span class="n"&gt;png&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;paste&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;img&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="mi"&gt;550&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+    &lt;span class="n"&gt;png&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;thumbnail&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;HEIGHT&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;HEIGHT&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ANTIALIAS&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;desktop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;paste&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;png&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;WIDTH&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;HEIGHT&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;//&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;desktop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;save&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/tmp/earch.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;PNG&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vm"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;download&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;或许应该找一张有星星的照片
+&lt;img alt="img" src="//images.honmaple.com/images/admin/thumb/2017/03/149019162934663.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="img" src="//images.honmaple.com/images/admin/thumb/2017/03/149019186230320.png"&gt;&lt;/p&gt;</content><category term="python"></category><category term="earth"></category></entry><entry><title>sqlalchemy使用上的小tip</title><link href="http://honmaple.org/articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html" rel="alternate"></link><published>2017-03-15T00:00:00+08:00</published><updated>2017-03-15T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-15:/articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents&lt;/h2&gt;
 &lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
@@ -1483,259 +1645,4 @@ supervisorctl update
 &lt;p&gt;SET GLOBAL validate_password_length=6;
 ALTER USER 'exingcai'@'localhost' IDENTIFIED BY 'uscjQAZ';&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;</content><category term="coding"></category></entry><entry><title>python复习--装饰器</title><link href="http://honmaple.org/articles/2016/07/python%E5%A4%8D%E4%B9%A0--%E8%A3%85%E9%A5%B0%E5%99%A8.html" rel="alternate"></link><published>2016-07-28T00:00:00+08:00</published><updated>2016-07-28T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-07-28:/articles/2016/07/python复习--装饰器.html</id><summary type="html">&lt;p&gt;一个装饰器&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;functools&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;wrapper&lt;/span&gt;
-
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;log&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="nd"&gt;@wraps …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;一个装饰器&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;functools&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;wrapper&lt;/span&gt;
-
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;log&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="nd"&gt;@wraps&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;wrapper&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kw&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;call &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s1"&gt;():&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="vm"&gt;__name__&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kw&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;wrapper&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;或者针对带参数的decorator：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def log(text):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kw):
-            print(&amp;#39;%s %s():&amp;#39; % (text, func.__name__))
-            return func(*args, **kw)
-        return wrapper
-    return decorator
-&lt;/pre&gt;&lt;/div&gt;</content><category term="python"></category><category term="装饰器"></category></entry><entry><title>python的os模块学习</title><link href="http://honmaple.org/articles/2016/07/python%E7%9A%84os%E6%A8%A1%E5%9D%97%E5%AD%A6%E4%B9%A0.html" rel="alternate"></link><published>2016-07-28T00:00:00+08:00</published><updated>2016-07-28T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-07-28:/articles/2016/07/python的os模块学习.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline3"&gt;1. Process Parameters&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline1"&gt;1.1. os …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline3"&gt;1. Process Parameters&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline1"&gt;1.1. os.environ(环境变量)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline2"&gt;1.2. os.getenv(key, default=None)&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline36"&gt;2. os.path&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline4"&gt;2.1. os.path.abspath(path) #返回绝对路径&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline5"&gt;2.2. os.path.basename(path) #返回文件名&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline6"&gt;2.3. os.path.commonprefix(list) #返回list(多个路径)中，所有path共有的最长的路径。&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline7"&gt;2.4. os.path.dirname(path) #返回文件路径&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline8"&gt;2.5. os.path.exists(path) #路径存在则返回True,路径不存在返回False&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline9"&gt;2.6. os.path.exists('aa.py')&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline10"&gt;2.7. os.path.lexists #路径存在则返回True,路径不存在也返回False&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline11"&gt;2.8. os.path.expanduser(path) #把path中包含的"~"和"~user"转换成用户目录&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline12"&gt;2.9. os.path.expandvars(path) #根据环境变量的值替换path中包含的”(name”和”){name}”&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline13"&gt;2.10. os.path.getatime(path) #返回最后一次进入此path的时间。&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline14"&gt;2.11. os.path.getmtime(path) #返回在此path下最后一次修改的时间。&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline15"&gt;2.12. os.path.getctime(path)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline16"&gt;2.13. os.path.getsize(path) #返回文件大小，如果文件不存在就返回错误&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline17"&gt;2.14. os.path.isabs(path) #判断是否为绝对路径&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline18"&gt;2.15. os.path.isfile(path) #判断路径是否为文件&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline19"&gt;2.16. os.path.isdir(path) #判断路径是否为目录&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline20"&gt;2.17. os.path.islink(path) #判断路径是否为链接&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline21"&gt;2.18. os.path.ismount(path) #判断路径是否为挂载点（）&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline22"&gt;2.19. os.path.join(path1[, path2[, …]]) #把目录和文件名合成一个路径&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline23"&gt;2.20. os.path.normcase(path) #转换path的大小写和斜杠&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline24"&gt;2.21. os.path.normpath(path) #规范path字符串形式&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline25"&gt;2.22. os.path.realpath(path) #返回path的真实路径&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline26"&gt;2.23. os.path.relpath(path[, start]) #从start开始计算相对路径&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline27"&gt;2.24. os.path.samefile(path1, path2) #判断目录或文件是否相同&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline28"&gt;2.25. os.path.sameopenfile(fp1, fp2) #判断fp1和fp2是否指向同一文件&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline29"&gt;2.26. os.path.samestat(stat1, stat2) #判断stat tuple stat1和stat2是否指向同一个文件&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline30"&gt;2.27. os.path.split(path) #把路径分割成dirname和basename，返回一个元组&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline31"&gt;2.28. os.path.splitdrive(path) #一般用在windows下，返回驱动器名和路径组成的元组&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline32"&gt;2.29. os.path.splitext(path) #分割路径，返回路径名和文件扩展名的元组&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline33"&gt;2.30. os.path.splitunc(path) #把路径分割为加载点与文件&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline34"&gt;2.31. os.path.walk(path, visit, arg) #遍历path，进入每个目录都调用visit函数，visit函数必须有&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline35"&gt;2.32. os.path.supportsunicodefilenames #设置是否支持unicode路径名&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;h1&gt;Process Parameters&lt;a id="orgheadline3"&gt;&lt;/a&gt;&lt;/h1&gt;
-&lt;h2&gt;os.environ(环境变量)&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.environ[&amp;#39;HOME&amp;#39;]
-&amp;#39;/home/xxx&amp;#39;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.getenv(key, default=None)&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.getenv(&amp;quot;HOME&amp;quot;)
-&amp;#39;/home/xxx&amp;#39;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h1&gt;os.path&lt;a id="orgheadline36"&gt;&lt;/a&gt;&lt;/h1&gt;
-&lt;h2&gt;os.path.abspath(path) #返回绝对路径&lt;a id="orgheadline4"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.abspath(&amp;#39;aa.py&amp;#39;)
-&amp;#39;/home/jianglin/test/aa.py&amp;#39;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.basename(path) #返回文件名&lt;a id="orgheadline5"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.basename(&amp;#39;aa.py&amp;#39;)
-&amp;#39;aa.py&amp;#39;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.commonprefix(list) #返回list(多个路径)中，所有path共有的最长的路径。&lt;a id="orgheadline6"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.commonprefix([&amp;#39;aa.py&amp;#39;,&amp;#39;a.py&amp;#39;])
-&amp;#39;a&amp;#39;
-&amp;gt;&amp;gt;&amp;gt; os.path.commonprefix([&amp;#39;aa.py&amp;#39;,&amp;#39;c.py&amp;#39;])
-&amp;#39;&amp;#39;
-&amp;gt;&amp;gt;&amp;gt; os.path.commonprefix([&amp;#39;~/test/aa.py&amp;#39;,&amp;#39;~/test/c.py&amp;#39;])
-&amp;#39;~/test/&amp;#39;
-&amp;gt;&amp;gt;&amp;gt; os.path.commonprefix([&amp;#39;~/test/aa.py&amp;#39;,&amp;#39;~/test/c.py&amp;#39;,&amp;#39;~/test/git/.git/config&amp;#39;])
-&amp;#39;~/test/&amp;#39;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.dirname(path) #返回文件路径&lt;a id="orgheadline7"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.dirname(&amp;#39;~/test/aa.py&amp;#39;)
-&amp;#39;~/test&amp;#39;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.exists(path) #路径存在则返回True,路径不存在返回False&lt;a id="orgheadline8"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.exists('aa.py')&lt;a id="orgheadline9"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;True
-&amp;gt;&amp;gt;&amp;gt; os.path.exists(&amp;#39;aa.pp&amp;#39;)
-False
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.lexists #路径存在则返回True,路径不存在也返回False&lt;a id="orgheadline10"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.lexists(&amp;#39;aa.py&amp;#39;)
-True
-&amp;gt;&amp;gt;&amp;gt; os.path.lexists(&amp;#39;aa.pp&amp;#39;)
-False
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.expanduser(path) #把path中包含的"~"和"~user"转换成用户目录&lt;a id="orgheadline11"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.expanduser(&amp;#39;aa.py&amp;#39;)
-&amp;#39;aa.py&amp;#39;
-&amp;gt;&amp;gt;&amp;gt; os.path.expanduser(&amp;#39;~/test/aa.py&amp;#39;)
-&amp;#39;/home/jianglin/test/aa.py&amp;#39;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.expandvars(path) #根据环境变量的值替换path中包含的”(name”和”){name}”&lt;a id="orgheadline12"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.getatime(path) #返回最后一次进入此path的时间。&lt;a id="orgheadline13"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;aa.py&amp;#39;)
-1461933601.0809627
-&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;~/git/&amp;#39;)
-Traceback (most recent call last):
-File &amp;quot;&amp;lt;stdin&amp;gt;&amp;quot;, line 1, in &amp;lt;module&amp;gt;
-File &amp;quot;/usr/lib/python3.5/genericpath.py&amp;quot;, line 60, in getatime
-return os.stat(filename).st_atime
-FileNotFoundError: [Errno 2] No such file or directory: &amp;#39;~/git/&amp;#39;
-&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;~/git/maple-bbs/.gitignore&amp;#39;)
-Traceback (most recent call last):
-File &amp;quot;&amp;lt;stdin&amp;gt;&amp;quot;, line 1, in &amp;lt;module&amp;gt;
-File &amp;quot;/usr/lib/python3.5/genericpath.py&amp;quot;, line 60, in getatime
-return os.stat(filename).st_atime
-FileNotFoundError: [Errno 2] No such file or directory: &amp;#39;~/git/maple-bbs/.gitignore&amp;#39;
-&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;a.py&amp;#39;)
-1461418983.486829
-&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;~/git&amp;#39;)
-Traceback (most recent call last):
-File &amp;quot;&amp;lt;stdin&amp;gt;&amp;quot;, line 1, in &amp;lt;module&amp;gt;
-File &amp;quot;/usr/lib/python3.5/genericpath.py&amp;quot;, line 60, in getatime
-return os.stat(filename).st_atime
-FileNotFoundError: [Errno 2] No such file or directory: &amp;#39;~/git&amp;#39;
-&amp;gt;&amp;gt;&amp;gt; os.path.getatime(&amp;#39;./git/.git/config&amp;#39;)
-1461856107.9136002
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.getmtime(path) #返回在此path下最后一次修改的时间。&lt;a id="orgheadline14"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.getmtime(&amp;#39;aa.py&amp;#39;)
-1461933858.6676357
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.getctime(path)&lt;a id="orgheadline15"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.getctime(&amp;#39;aa.py&amp;#39;)
-1461933858.6676357
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.getsize(path) #返回文件大小，如果文件不存在就返回错误&lt;a id="orgheadline16"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.getsize(&amp;#39;aa.py&amp;#39;)
-448
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.isabs(path) #判断是否为绝对路径&lt;a id="orgheadline17"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.isabs(&amp;#39;aa.py&amp;#39;)
-False
-&amp;gt;&amp;gt;&amp;gt; os.path.isabs(&amp;#39;~/test/aa.py&amp;#39;)
-False
-&amp;gt;&amp;gt;&amp;gt; os.path.isabs(&amp;#39;/home/jianglin/test/aa.py&amp;#39;)
-True
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.isfile(path) #判断路径是否为文件&lt;a id="orgheadline18"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.isfile(&amp;#39;aa.py&amp;#39;)
-True
-&amp;gt;&amp;gt;&amp;gt; os.path.isfile(&amp;#39;~/test&amp;#39;)
-False
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.isdir(path) #判断路径是否为目录&lt;a id="orgheadline19"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.isdir(&amp;#39;~/test&amp;#39;)
-False
-&amp;gt;&amp;gt;&amp;gt; os.path.isdir(&amp;#39;/home/jianglin/test/aa.py&amp;#39;)
-False
-&amp;gt;&amp;gt;&amp;gt; os.path.isdir(&amp;#39;/home/jianglin/test&amp;#39;)
-True
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.islink(path) #判断路径是否为链接&lt;a id="orgheadline20"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.ismount(path) #判断路径是否为挂载点（）&lt;a id="orgheadline21"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.join(path1[, path2[, …]]) #把目录和文件名合成一个路径&lt;a id="orgheadline22"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.join(&amp;#39;/home/jianglin/test&amp;#39;,&amp;#39;aa.py&amp;#39;)
-&amp;#39;/home/jianglin/test/aa.py&amp;#39;
-&amp;gt;&amp;gt;&amp;gt; os.path.join(&amp;#39;/home/jianglin&amp;#39;,&amp;#39;test/aa.py&amp;#39;)
-&amp;#39;/home/jianglin/test/aa.py&amp;#39;
-&amp;gt;&amp;gt;&amp;gt; os.path.join(&amp;#39;~&amp;#39;,&amp;#39;test/aa.py&amp;#39;)
-&amp;#39;~/test/aa.py&amp;#39;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.normcase(path) #转换path的大小写和斜杠&lt;a id="orgheadline23"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.normpath(path) #规范path字符串形式&lt;a id="orgheadline24"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.realpath(path) #返回path的真实路径&lt;a id="orgheadline25"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.relpath(path[, start]) #从start开始计算相对路径&lt;a id="orgheadline26"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.samefile(path1, path2) #判断目录或文件是否相同&lt;a id="orgheadline27"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.sameopenfile(fp1, fp2) #判断fp1和fp2是否指向同一文件&lt;a id="orgheadline28"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.samestat(stat1, stat2) #判断stat tuple stat1和stat2是否指向同一个文件&lt;a id="orgheadline29"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.split(path) #把路径分割成dirname和basename，返回一个元组&lt;a id="orgheadline30"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt;&amp;gt;&amp;gt; os.path.split(&amp;#39;~/test/aa.py&amp;#39;)
-(&amp;#39;~/test&amp;#39;, &amp;#39;aa.py&amp;#39;)
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2&gt;os.path.splitdrive(path) #一般用在windows下，返回驱动器名和路径组成的元组&lt;a id="orgheadline31"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.splitext(path) #分割路径，返回路径名和文件扩展名的元组&lt;a id="orgheadline32"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.splitunc(path) #把路径分割为加载点与文件&lt;a id="orgheadline33"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h2&gt;os.path.walk(path, visit, arg) #遍历path，进入每个目录都调用visit函数，visit函数必须有&lt;a id="orgheadline34"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;3个参数(arg, dirname, names)，dirname表示当前目录的目录名，names代表当前目录下的所有&lt;/p&gt;
-&lt;p&gt;文件名，args则为walk的第三个参数&lt;/p&gt;
-&lt;h2&gt;os.path.supportsunicodefilenames #设置是否支持unicode路径名&lt;a id="orgheadline35"&gt;&lt;/a&gt;&lt;/h2&gt;</content><category term="python"></category><category term="os"></category></entry></feed>
+&lt;/ul&gt;</content><category term="coding"></category></entry></feed>

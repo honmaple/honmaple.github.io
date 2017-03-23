@@ -25,7 +25,189 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html">sqlalchemy使用上的小tip</a></h1> 
+                    <h1 class="entry-title"><a href="../articles/2017/03/himawari8图片下载改进版.html">himawari8图片下载改进版</a></h1> 
+<footer class="post-info">
+        <abbr class="published" title="2017-03-23T00:00:00+08:00">
+                四 23 三月 2017
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../category/python/index.html">Python</a>. </p>
+<p>tags: <a href="../tag/python/index.html">python</a><a href="../tag/earth/index.html">earth</a><a href="../tag/himawari8/index.html">himawari8</a></p></footer><!-- /.post-info --><p>第一版下载图片后设为壁纸,四周都是黑黑的不好看,
+所以结合本地壁纸将两张图片进行合成</p>
+<p>只要计算一下要缩减的大小与要放置的位置</p>
+<blockquote>
+<p>我的方法是:打开 <strong>gimp</strong>,合成两张图片,记下缩减的大小(214,214)与位置(160,160)</p>
+</blockquote>
+<p>每次只要运行一下</p>
+<div class="highlight"><pre><span></span>python himawari8.py
+</pre></div>
+
+
+<p>源码</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageOps</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">urlopen</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">SCALE</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
+<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
+
+
+<span class="k">def</span> <span class="nf">get_info</span><span class="p">():</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&quot;</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+
+<span class="k">def</span> <span class="nf">download</span><span class="p">():</span>
+    <span class="n">png</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">550</span> <span class="o">*</span> <span class="n">SCALE</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="n">SCALE</span><span class="p">))</span>
+    <span class="c1"># desktop = Image.new(&#39;RGB&#39;, (WIDTH, HEIGHT))</span>
+    <span class="n">desktop</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;/home/jianglin/Pictures/308556.png&#39;</span><span class="p">)</span>
+    <span class="n">url_format</span> <span class="o">=</span> <span class="s1">&#39;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/{}d/{}/{}_{}_{}.png&#39;</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">get_info</span><span class="p">()</span>
+    <span class="c1"># date = datetime.strptime(info[&#39;date&#39;], &#39;%Y-%m-%d %H:%M:%S&#39;) + timedelta(</span>
+    <span class="c1">#     hours=-8)</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SCALE</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SCALE</span><span class="p">):</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">url_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">SCALE</span><span class="p">,</span> <span class="mi">550</span><span class="p">,</span>
+                                    <span class="n">date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y/%m/</span><span class="si">%d</span><span class="s2">/%H%M%S&quot;</span><span class="p">),</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
+            <span class="n">png</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="mi">550</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">550</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
+    <span class="n">png</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">png</span><span class="p">)</span>
+    <span class="n">desktop</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">png</span><span class="p">,</span> <span class="p">(</span><span class="mi">160</span><span class="p">,</span> <span class="mi">160</span><span class="p">),</span> <span class="n">png</span><span class="p">)</span>
+    <span class="n">desktop</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;/tmp/earth.png&#39;</span><span class="p">,</span> <span class="s2">&quot;PNG&quot;</span><span class="p">)</span>
+    <span class="n">set_background</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">circle</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">SCALE</span> <span class="o">*</span> <span class="mi">550</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">SCALE</span> <span class="o">*</span> <span class="mi">550</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">draw</span><span class="o">.</span><span class="n">ellipse</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">width</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="n">height</span> <span class="o">-</span> <span class="mi">3</span><span class="p">),</span> <span class="n">fill</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">ImageOps</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mask</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">centering</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">putalpha</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="mi">214</span><span class="p">,</span> <span class="mi">214</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">ANTIALIAS</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">def</span> <span class="nf">convert</span><span class="p">():</span>
+    <span class="c1"># size = (768, 768)</span>
+    <span class="c1"># mask = Image.new(&#39;L&#39;, size, 0)</span>
+    <span class="c1"># draw = ImageDraw.Draw(mask)</span>
+    <span class="c1"># draw.ellipse((3, 3, 765, 765), fill=255)</span>
+    <span class="c1"># im = Image.open(&#39;/tmp/earth.png&#39;)</span>
+    <span class="c1"># output = ImageOps.fit(im, mask.size, centering=(0.5, 0.5))</span>
+    <span class="c1"># output.putalpha(mask)</span>
+    <span class="c1"># output.thumbnail((256, 256), Image.ANTIALIAS)</span>
+    <span class="c1"># output.save(&#39;output.png&#39;)</span>
+    <span class="c1"># output.convert(&quot;RGBA&quot;)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;output.png&#39;</span><span class="p">)</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="mi">214</span><span class="p">,</span> <span class="mi">214</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">ANTIALIAS</span><span class="p">)</span>
+    <span class="n">desktop</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;/home/jianglin/Pictures/308556.png&#39;</span><span class="p">)</span>
+    <span class="n">desktop</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="p">(</span><span class="mi">160</span><span class="p">,</span> <span class="mi">160</span><span class="p">),</span> <span class="n">output</span><span class="p">)</span>
+    <span class="n">desktop</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;/tmp/earch.png&#39;</span><span class="p">,</span> <span class="s2">&quot;PNG&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">set_background</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;feh --bg-scale /tmp/earth.png&#39;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">download</span><span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="img" src="//images.honmaple.com/images/admin/show/2017/03/149023917874284.png"></p>
+<p><img alt="img" src="//images.honmaple.com/images/admin/show/2017/03/149023928036061.png"></p>
+<p><img alt="img" src="//images.honmaple.com/images/admin/show/2017/03/149023934880774.png"></p><p>There are <a href="../articles/2017/03/himawari8图片下载改进版.html#disqus_thread">comments</a>.</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../articles/2017/03/下载Himawari8拍摄的实时地球图片.html" rel="bookmark" title="Permalink to 下载Himawari8拍摄的实时地球图片">下载Himawari8拍摄的实时地球图片</a></h1>
+                </header>
+                
+                <div class="entry-content" style="color:#666;">
+<footer class="post-info">
+        <abbr class="published" title="2017-03-22T00:00:00+08:00">
+                三 22 三月 2017
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../category/python/index.html">Python</a>. </p>
+<p>tags: <a href="../tag/python/index.html">python</a><a href="../tag/earth/index.html">earth</a></p></footer><!-- /.post-info -->                <p>直接给出源码</p>
+<p>设置壁纸</p>
+<div class="highlight"><pre><span></span>feh --bg-scale /tmp/earch.png
+</pre></div>
+
+
+<p>设置桌面大小,及图片放大倍数 …</p>
+                <a class="readmore" href="../articles/2017/03/下载Himawari8拍摄的实时地球图片.html">read more</a>
+<p>There are <a href="../articles/2017/03/下载Himawari8拍摄的实时地球图片.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../articles/2017/03/拟挽歌辞·荒草何茫茫.html" rel="bookmark" title="Permalink to 拟挽歌辞·荒草何茫茫">拟挽歌辞·荒草何茫茫</a></h1>
+                </header>
+                
+                <div class="entry-content" style="color:#666;">
+<footer class="post-info">
+        <abbr class="published" title="2017-03-22T00:00:00+08:00">
+                三 22 三月 2017
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../category/sheng-huo-sui-bi/index.html">生活随笔</a>. </p>
+<p>tags: <a href="../tag/sheng-huo-sui-bi/index.html">生活随笔</a><a href="../tag/zhuan-zai/index.html">转载</a></p></footer><!-- /.post-info -->                <div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgc9a0c3d">1. 拟挽歌辞·荒草何茫茫</a></li>
+</ul>
+</div>
+</div>
+
+<h1>拟挽歌辞·荒草何茫茫</h1>
+<blockquote>
+<p>-- 陶渊明 …</p></blockquote>
+                <a class="readmore" href="../articles/2017/03/拟挽歌辞·荒草何茫茫.html">read more</a>
+<p>There are <a href="../articles/2017/03/拟挽歌辞·荒草何茫茫.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html" rel="bookmark" title="Permalink to sqlalchemy使用上的小tip">sqlalchemy使用上的小tip</a></h1>
+                </header>
+                
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2017-03-15T00:00:00+08:00">
                 三 15 三月 2017
@@ -35,193 +217,16 @@
                 By <a class="url fn" href="../author/honmaple.html">honmaple</a>
         </address>
 <p>In <a href="../category/python/index.html">Python</a>. </p>
-<p>tags: <a href="../tag/python/index.html">python</a><a href="../tag/sql/index.html">sql</a><a href="../tag/sqlalchemy/index.html">sqlalchemy</a></p></footer><!-- /.post-info --><div id="table-of-contents">
+<p>tags: <a href="../tag/python/index.html">python</a><a href="../tag/sql/index.html">sql</a><a href="../tag/sqlalchemy/index.html">sqlalchemy</a></p></footer><!-- /.post-info -->                <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
 <li><a href="#org9c10e0a">1. sqlalchemy object序列化为json</a>
 <ul>
-<li><a href="#orgc0bfd4d">1.1. 多个实例</a></li>
-<li><a href="#org32910ef">1.2. 单个实例</a></li>
-<li><a href="#org45d6d27">1.3. 排除字段</a></li>
-<li><a href="#org05e0fee">1.4. 仅包括字段</a></li>
-<li><a href="#org21bafe1">1.5. 关系查询深度</a></li>
-<li><a href="#org1d34f9c">1.6. 增加一些自定义的函数</a></li>
-<li><a href="#org9d7f676">1.7. 可传递参数的函数</a></li>
-</ul>
-</li>
-<li><a href="#orgb5f861c">2. 像django orm一样使用sqlalchemy</a>
-<ul>
-<li><a href="#orgd2dc2ac">2.1. 基本查询(已实现)</a></li>
-<li><a href="#orgd8c971d">2.2. 关系查询</a></li>
-<li><a href="#org6169882">2.3. 其它</a></li>
-</ul>
-</li>
-<li><a href="#org2b6acdb">3. 去掉一些sqlalchemy的重复工作</a>
-<ul>
-<li><a href="#org7fa06d7">3.1. ModelMixin</a></li>
-<li><a href="#org4b5ba4e">3.2. ModelTimeMixin</a></li>
-<li><a href="#org971ec1a">3.3. ModelUserMixin</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
-
-<p>GitHub地址: <a href="https://github.com/honmaple/maple-json">https://github.com/honmaple/maple-json</a></p>
-<p><a id="org9c10e0a"></a></p>
-<h1>sqlalchemy object序列化为json</h1>
-<p>灵感来源于 <strong>Django REST framework</strong></p>
-<p><a id="orgc0bfd4d"></a></p>
-<h2>多个实例</h2>
-<div class="highlight"><pre><span></span>posts = Post.query.all()
-serializer = Seralizer(posts,many=True)
-data = serializer.data
-</pre></div>
-
-
-<p><a id="org32910ef"></a></p>
-<h2>单个实例</h2>
-<div class="highlight"><pre><span></span>post = Post.query.first()
-serializer = Seralizer(post,many=False)
-data = serializer.data
-</pre></div>
-
-
-<p><a id="org45d6d27"></a></p>
-<h2>排除字段</h2>
-<div class="highlight"><pre><span></span>serializer = Seralizer(post,exclude=[&#39;title&#39;])
-</pre></div>
-
-
-<p><a id="org05e0fee"></a></p>
-<h2>仅包括字段</h2>
-<div class="highlight"><pre><span></span>serializer = Seralizer(post,include=[&#39;title&#39;])
-</pre></div>
-
-
-<p><a id="org21bafe1"></a></p>
-<h2>关系查询深度</h2>
-<div class="highlight"><pre><span></span>serializer = Seralizer(post,depth=3)
-</pre></div>
-
-
-<ul>
-<li>depth
-    默认为2</li>
-</ul>
-<p><a id="org1d34f9c"></a></p>
-<h2>增加一些自定义的函数</h2>
-<div class="highlight"><pre><span></span>serializer = Serializer(post,extra=[&#39;get_post_count&#39;])
-</pre></div>
-
-
-<p>Post</p>
-<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Post</span><span class="p">(</span><span class="nx">Model</span><span class="p">)</span><span class="o">:</span>
-    <span class="p">......</span>
-    <span class="nx">def</span> <span class="nx">get_post_count</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
-        <span class="k">return</span> <span class="mi">11</span>
-</pre></div>
-
-
-<p><a id="org9d7f676"></a></p>
-<h2>可传递参数的函数</h2>
-<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">PostSerializer</span><span class="p">(</span><span class="nx">Serializer</span><span class="p">)</span><span class="o">:</span>
-    <span class="nx">count</span> <span class="o">=</span> <span class="nx">Field</span><span class="p">(</span><span class="nx">source</span> <span class="o">=</span> <span class="s1">&#39;get_post_count&#39;</span><span class="p">,</span><span class="nx">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="o">:</span><span class="s1">&#39;hello&#39;</span><span class="p">},</span><span class="k">default</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-    <span class="kr">class</span> <span class="nx">Meta</span>:
-        <span class="kt">include</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="nx">depth</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="nx">include</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="nx">exclude</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="nx">extra</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
-</pre></div>
-
-
-<p><a id="orgb5f861c"></a></p>
-<h1>像django orm一样使用sqlalchemy</h1>
-<p><strong>djang orm</strong>与sqlalchemy相比,为什么很多人都认为django orm更好用,大概就是因为django orm更方便</p>
-<p><a id="orgd2dc2ac"></a></p>
-<h2>基本查询(已实现)</h2>
-<ul>
-<li>gt</li>
-<li>lt</li>
-<li>lte</li>
-<li>gte</li>
-<li>contains</li>
-<li>in</li>
-<li>exact</li>
-<li>iexact</li>
-<li>startswith</li>
-<li>istartswith</li>
-<li>iendswith</li>
-<li>endswith</li>
-<li>isnull</li>
-<li>range</li>
-<li>year</li>
-<li>month</li>
-<li>day</li>
-</ul>
-<p>示例:</p>
-<div class="highlight"><pre><span></span>Post.query.filter_by(title__contains = &#39;sql&#39;).all()
-Post.query.exclude_by(title__contains = &#39;sql&#39;).all()
-</pre></div>
-
-
-<p><a id="orgd8c971d"></a></p>
-<h2>关系查询</h2>
-<div class="highlight"><pre><span></span>Post.query.filter_by(tags__name__contains = &#39;sql&#39;).all()
-</pre></div>
-
-
-<p><a id="org6169882"></a></p>
-<h2>其它</h2>
-<div class="highlight"><pre><span></span>Post.query.filter_by(tags__name__contains = &#39;sql&#39;).or(Post.id == 1,Post.id == 2).all()
-Post.query.filter_by(tags__name__contains = &#39;sql&#39;).and(Post.id == 1,Post.id == 2).all()
-Post.query.filter_by(tags__name__contains = &#39;sql&#39;).exists()
-Post.query.load_only(&#39;title&#39;)
-</pre></div>
-
-
-<p><a id="org2b6acdb"></a></p>
-<h1>去掉一些sqlalchemy的重复工作</h1>
-<p>以<strong>flask-sqlalchemy</strong>为例,通过继承 <strong>models.py</strong> 中的<strong>Mixin</strong>,就可以去除部分重复工作</p>
-<p><a id="org7fa06d7"></a></p>
-<h2>ModelMixin</h2>
-<p>自增ID &#x2013; id</p>
-<div class="highlight"><pre><span></span>post = Post(·····)
-post.save() # 保存
-post.delete() # 保存
-</pre></div>
-
-
-<p>批量操作</p>
-<ul>
-<li>bulk_insert</li>
-<li>bulk_update</li>
-<li>bulk_save</li>
-</ul>
-<p><a id="org4b5ba4e"></a></p>
-<h2>ModelTimeMixin</h2>
-<p>增加两字段</p>
-<ul>
-<li>created_at
-    数据创建时间</li>
-<li>updated_at
-    数据更新时间</li>
-</ul>
-<p><a id="org971ec1a"></a></p>
-<h2>ModelUserMixin</h2>
-<p>关联用户表,与<strong>User</strong>表现为<strong>多对一</strong>关系(即一个用户有多个post)</p>
-<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Post</span><span class="p">(</span><span class="nx">ModelUserMixin</span><span class="p">,</span> <span class="nx">Model</span><span class="p">)</span><span class="o">:</span>
-
-    <span class="nx">user_related_name</span> <span class="o">=</span> <span class="s1">&#39;posts&#39;</span>
-    <span class="nx">titile</span> <span class="o">=</span> <span class="p">...</span>
-</pre></div><p>There are <a href="../articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html#disqus_thread">comments</a>.</p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+<li><a href="#orgc0bfd4d">1.1. 多个实例 …</a></li></ul></li></ul></div></div>
+                <a class="readmore" href="../articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html">read more</a>
+<p>There are <a href="../articles/2017/03/sqlalchemyshi-yong-shang-de-xiao-tip.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
         
 
  
@@ -360,101 +365,6 @@ post.delete() # 保存
 <li><a href="#orgheadline2">1 …</a></li></ul></li></ul></div></div>
                 <a class="readmore" href="../articles/2016/12/我的毕业设计&#x2013;数据库设计之登陆注册.html">read more</a>
 <p>There are <a href="../articles/2016/12/我的毕业设计&#x2013;数据库设计之登陆注册.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../articles/2016/12/emacs预览图片时禁止smooth-scrolling.html" rel="bookmark" title="Permalink to emacs预览图片时禁止smooth-scrolling">emacs预览图片时禁止smooth-scrolling</a></h1>
-                </header>
-                
-                <div class="entry-content" style="color:#666;">
-<footer class="post-info">
-        <abbr class="published" title="2016-12-24T00:00:00+08:00">
-                六 24 十二月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../tag/linux/index.html">linux</a><a href="../tag/emacs/index.html">emacs</a><a href="../tag/org-mode/index.html">org-mode</a></p></footer><!-- /.post-info -->                <div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
-<ul>
-<li><a href="#orgheadline1">1. 需求</a></li>
-<li><a href="#orgheadline2">2. 解决</a></li>
-</ul>
-</div>
-</div>
-
-<h1>需求<a id="orgheadline1"></a></h1>
-<p>在使用 …</p>
-                <a class="readmore" href="../articles/2016/12/emacs预览图片时禁止smooth-scrolling.html">read more</a>
-<p>There are <a href="../articles/2016/12/emacs预览图片时禁止smooth-scrolling.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../articles/2016/12/Python中的main函数.html" rel="bookmark" title="Permalink to Python中的main函数">Python中的main函数</a></h1>
-                </header>
-                
-                <div class="entry-content" style="color:#666;">
-<footer class="post-info">
-        <abbr class="published" title="2016-12-14T00:00:00+08:00">
-                三 14 十二月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../category/python/index.html">Python</a>. </p>
-<p>tags: <a href="../tag/python/index.html">python</a></p></footer><!-- /.post-info -->                <div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
-<ul>
-<li><a href="#orgheadline1">1. <span class="underline"><span class="underline">main</span></span></a></li>
-<li><a href="#orgheadline2">2. 总结一下：</a></li>
-</ul>
-</div>
-</div>
-
-<h1>__main__</h1>
-<p>转自 …</p>
-                <a class="readmore" href="../articles/2016/12/Python中的main函数.html">read more</a>
-<p>There are <a href="../articles/2016/12/Python中的main函数.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../articles/2016/12/flask使用token进行登陆.html" rel="bookmark" title="Permalink to flask使用token进行验证">flask使用token进行验证</a></h1>
-                </header>
-                
-                <div class="entry-content" style="color:#666;">
-<footer class="post-info">
-        <abbr class="published" title="2016-12-13T00:00:00+08:00">
-                二 13 十二月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../category/python/index.html">Python</a>. </p>
-<p>tags: <a href="../tag/flask/index.html">flask</a><a href="../tag/python/index.html">python</a><a href="../tag/token/index.html">token</a></p></footer><!-- /.post-info -->                <div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
-<ul>
-<li><a href="#orgheadline1">1. 为什么需要用token验证</a></li>
-<li><a href="#orgheadline6">2. 如何使用token?</a>
-<ul>
-<li><a href="#orgheadline2">2.1 …</a></li></ul></li></ul></div></div>
-                <a class="readmore" href="../articles/2016/12/flask使用token进行登陆.html">read more</a>
-<p>There are <a href="../articles/2016/12/flask使用token进行登陆.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
 <p class="paginator">
     Page 1 / 11
