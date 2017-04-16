@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>基于whoosh实现的flask全文搜索插件</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../theme/css/main.css" type="text/css" />
+  </head>
+  <body id="index" class="home">
+    <div class="wrap">
+      <div class="main">
+        <header id="banner" class="body">
+          <h1><a href="../../..">honmaple's blog </a></h1>
+          <nav><ul>
+              <li><a href="http://honmaple.org">主页</a></li>
+                <li ><a href="../../../category/linux/index.html">Linux</a></li>
+                <li class="active"><a href="../../../category/python/index.html">Python</a></li>
+                <li ><a href="../../../category/security/index.html">Security</a></li>
+                <li class="dropdown">
+                  <a href="../../../category/sheng-huo-sui-bi/index.html" >生活随笔</a>
+                  <dl>
+                      <dd><a href="../../../category/hui-yi/index.html">回忆</a></dd>
+                  </dl>
+                </li>
+            <li class="dropdown">
+              <a href="../../../archives.html">Archives</a>
+              <dl>
+                <dd><a href="../../../tags.html">Tags</a></dd>
+                <dd><a href="../../../categories.html">Categories</a></dd>
+                <dd><a href="../../../authors.html">Authors</a></dd>
+              </dl>
+            </li>
+          </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+    <article>
+        <header>
+            <h1 class="entry-title">
+                <a href="articles/2017/04/基于whoosh实现的flask全文搜索插件.html" rel="bookmark"
+                   title="Permalink to 基于whoosh实现的flask全文搜索插件">基于whoosh实现的flask全文搜索插件</a></h1>
+        </header>
+
+        <div class="entry-content article-content">
+<footer class="post-info">
+        <abbr class="published" title="2017-04-16T00:00:00+08:00">
+                日 16 四月 2017
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../../category/python/index.html">Python</a>. </p>
+<p>tags: <a href="../../../tag/python/index.html">python</a><a href="../../../tag/flask/index.html">flask</a><a href="../../../tag/whoosh/index.html">whoosh</a></p></footer><!-- /.post-info -->            <div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org209fc54">1. Quickstart</a></li>
+<li><a href="#org10e086c">2. Usage</a>
+<ul>
+<li><a href="#org37a8ad9">2.1. 创建更新删除索引</a></li>
+<li><a href="#orgfd01c57">2.2. 自定义analyzer</a></li>
+</ul>
+</li>
+<li><a href="#orgccf04c8">3. Configure</a></li>
+</ul>
+</div>
+</div>
+
+<p>flask 貌似很少全文搜索的插件,有一个 <a href="https://github.com/gyllstromk/Flask-WhooshAlchemy">Flask-WhooshAlchemy</a> , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个</p>
+<p><a id="org209fc54"></a></p>
+<h1>Quickstart</h1>
+<p>插件基于 whoosh,纯 python 编写,使用上很简单</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask_msearch</span> <span class="kn">import</span> <span class="n">Search</span>
+<span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
+<span class="n">search</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+<span class="c1"># models.py</span>
+<span class="k">class</span> <span class="nc">Post</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;post&#39;</span>
+    <span class="n">__searchable__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">]</span>
+
+<span class="c1"># views.py</span>
+<span class="nd">@app.route</span><span class="p">(</span><span class="s2">&quot;/search&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">w_search</span><span class="p">():</span>
+    <span class="n">keyword</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;keyword&#39;</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">whoosh_search</span><span class="p">(</span><span class="n">Post</span><span class="p">,</span><span class="n">query</span><span class="o">=</span><span class="n">keyword</span><span class="p">,</span><span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">],</span><span class="n">limit</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+</pre></div>
+
+
+<p><a id="org10e086c"></a></p>
+<h1>Usage</h1>
+<p><a id="org37a8ad9"></a></p>
+<h2>创建更新删除索引</h2>
+<p>如果要对已存在的数据创建索引(全部)</p>
+<div class="highlight"><pre><span></span># 创建
+search.create_index()
+# 更新
+search.create_index(update=True)
+# 删除
+search.create_index(update=True)
+</pre></div>
+
+
+<p>如果只想要为指定的表创建索引</p>
+<div class="highlight"><pre><span></span>search.create_index(Model)
+</pre></div>
+
+
+<p><a id="orgfd01c57"></a></p>
+<h2>自定义analyzer</h2>
+<p>比如使用jieba的中文分词</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">jieba.analyse</span> <span class="kn">import</span> <span class="n">ChineseAnalyzer</span>
+<span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">(</span><span class="n">analyzer</span><span class="o">=</span><span class="n">ChineseAnalyzer</span><span class="p">())</span>
+</pre></div>
+
+
+<p><a id="orgccf04c8"></a></p>
+<h1>Configure</h1>
+<div class="highlight"><pre><span></span>WHOOSH_BASE = &#39;whoosh_index&#39;
+WHOOSH_ENABLE = True
+</pre></div>
+
+
+<p>项目地址:<a href="https://github.com/honmaple/flask-msearch">https://github.com/honmaple/flask-msearch</a></p>
+        </div><!-- /.entry-content -->
+        <div class="comments">
+            <h2>Comments !</h2>
+            <div id="disqus_thread"></div>
+            <script type="text/javascript">
+             var disqus_identifier = "articles/2017/04/基于whoosh实现的flask全文搜索插件.html";
+             (function() {
+                 var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                 dsq.src = 'https://honmaple.disqus.com/embed.js';
+                 (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             })();
+            </script>
+        </div>
+
+    </article>
+</section>
+      </div>
+    </div>
+    <div class="footer">
+      <section id="extras">
+          <div class="blogroll">
+            <h2>blogroll</h2>
+            <ul>
+                <li><a href="http://getpelican.com/">Pelican</a></li>
+                <li><a href="http://python.org/">Python.org</a></li>
+                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                <li><a href="https://honmaple.com">个人博客</a></li>
+            </ul>
+          </div><!-- /.blogroll -->
+          <div class="social">
+            <h2>social</h2>
+            <ul>
+                <li><a href="http://honmaple.org/feeds/all.rss.xml">Atom Feed</a></li>
+                <li><a href="https://github.com/honmaple">GitHub</a></li>
+                <li><a href="https://twitter.com/xiyang87">Twitter</a></li>
+            </ul>
+          </div><!-- /.social -->
+      </section><!-- /#extras -->
+    </div>
+
+<script>
+ (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+ })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ ga('create', 'UA-88401692-2', 'auto');
+ ga('send', 'pageview');
+
+</script>
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+  </body>
+</html>

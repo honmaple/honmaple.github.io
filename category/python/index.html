@@ -36,7 +36,104 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../../articles/2017/03/himawari8图片下载改进版.html">himawari8图片下载改进版</a></h1> 
+                    <h1 class="entry-title"><a href="../../articles/2017/04/基于whoosh实现的flask全文搜索插件.html">基于whoosh实现的flask全文搜索插件</a></h1> 
+<footer class="post-info">
+        <abbr class="published" title="2017-04-16T00:00:00+08:00">
+                日 16 四月 2017
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../category/python/index.html">Python</a>. </p>
+<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/flask/index.html">flask</a><a href="../../tag/whoosh/index.html">whoosh</a></p></footer><!-- /.post-info --><div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org209fc54">1. Quickstart</a></li>
+<li><a href="#org10e086c">2. Usage</a>
+<ul>
+<li><a href="#org37a8ad9">2.1. 创建更新删除索引</a></li>
+<li><a href="#orgfd01c57">2.2. 自定义analyzer</a></li>
+</ul>
+</li>
+<li><a href="#orgccf04c8">3. Configure</a></li>
+</ul>
+</div>
+</div>
+
+<p>flask 貌似很少全文搜索的插件,有一个 <a href="https://github.com/gyllstromk/Flask-WhooshAlchemy">Flask-WhooshAlchemy</a> , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个</p>
+<p><a id="org209fc54"></a></p>
+<h1>Quickstart</h1>
+<p>插件基于 whoosh,纯 python 编写,使用上很简单</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask_msearch</span> <span class="kn">import</span> <span class="n">Search</span>
+<span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
+<span class="n">search</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+<span class="c1"># models.py</span>
+<span class="k">class</span> <span class="nc">Post</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;post&#39;</span>
+    <span class="n">__searchable__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">]</span>
+
+<span class="c1"># views.py</span>
+<span class="nd">@app.route</span><span class="p">(</span><span class="s2">&quot;/search&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">w_search</span><span class="p">():</span>
+    <span class="n">keyword</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;keyword&#39;</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">whoosh_search</span><span class="p">(</span><span class="n">Post</span><span class="p">,</span><span class="n">query</span><span class="o">=</span><span class="n">keyword</span><span class="p">,</span><span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">],</span><span class="n">limit</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+</pre></div>
+
+
+<p><a id="org10e086c"></a></p>
+<h1>Usage</h1>
+<p><a id="org37a8ad9"></a></p>
+<h2>创建更新删除索引</h2>
+<p>如果要对已存在的数据创建索引(全部)</p>
+<div class="highlight"><pre><span></span># 创建
+search.create_index()
+# 更新
+search.create_index(update=True)
+# 删除
+search.create_index(update=True)
+</pre></div>
+
+
+<p>如果只想要为指定的表创建索引</p>
+<div class="highlight"><pre><span></span>search.create_index(Model)
+</pre></div>
+
+
+<p><a id="orgfd01c57"></a></p>
+<h2>自定义analyzer</h2>
+<p>比如使用jieba的中文分词</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">jieba.analyse</span> <span class="kn">import</span> <span class="n">ChineseAnalyzer</span>
+<span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">(</span><span class="n">analyzer</span><span class="o">=</span><span class="n">ChineseAnalyzer</span><span class="p">())</span>
+</pre></div>
+
+
+<p><a id="orgccf04c8"></a></p>
+<h1>Configure</h1>
+<div class="highlight"><pre><span></span>WHOOSH_BASE = &#39;whoosh_index&#39;
+WHOOSH_ENABLE = True
+</pre></div>
+
+
+<p>项目地址:<a href="https://github.com/honmaple/flask-msearch">https://github.com/honmaple/flask-msearch</a></p><p>There are <a href="../../articles/2017/04/基于whoosh实现的flask全文搜索插件.html#disqus_thread">comments</a>.</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../../articles/2017/03/himawari8图片下载改进版.html" rel="bookmark" title="Permalink to himawari8图片下载改进版">himawari8图片下载改进版</a></h1>
+                </header>
+                
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2017-03-23T00:00:00+08:00">
                 四 23 三月 2017
@@ -46,109 +143,14 @@
                 By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
         </address>
 <p>In <a href="../../category/python/index.html">Python</a>. </p>
-<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/earth/index.html">earth</a><a href="../../tag/himawari8/index.html">himawari8</a></p></footer><!-- /.post-info --><p>第一版下载图片后设为壁纸,四周都是黑黑的不好看,
+<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/earth/index.html">earth</a><a href="../../tag/himawari8/index.html">himawari8</a></p></footer><!-- /.post-info -->                <p>第一版下载图片后设为壁纸,四周都是黑黑的不好看,
 所以结合本地壁纸将两张图片进行合成</p>
 <p>只要计算一下要缩减的大小与要放置的位置</p>
 <blockquote>
-<p>我的方法是:打开 <strong>gimp</strong>,合成两张图片,记下缩减的大小(214,214)与位置(160,160)</p>
-</blockquote>
-<p>每次只要运行一下</p>
-<div class="highlight"><pre><span></span>python himawari8.py
-</pre></div>
-
-
-<p>源码</p>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageOps</span><span class="p">,</span> <span class="n">ImageDraw</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
-<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">urlopen</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
-<span class="kn">import</span> <span class="nn">json</span>
-
-<span class="n">SCALE</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
-<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
-
-
-<span class="k">def</span> <span class="nf">get_info</span><span class="p">():</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&quot;</span>
-    <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-
-
-<span class="k">def</span> <span class="nf">download</span><span class="p">():</span>
-    <span class="n">png</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">550</span> <span class="o">*</span> <span class="n">SCALE</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="n">SCALE</span><span class="p">))</span>
-    <span class="c1"># desktop = Image.new(&#39;RGB&#39;, (WIDTH, HEIGHT))</span>
-    <span class="n">desktop</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;/home/jianglin/Pictures/308556.png&#39;</span><span class="p">)</span>
-    <span class="n">url_format</span> <span class="o">=</span> <span class="s1">&#39;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/{}d/{}/{}_{}_{}.png&#39;</span>
-    <span class="n">info</span> <span class="o">=</span> <span class="n">get_info</span><span class="p">()</span>
-    <span class="c1"># date = datetime.strptime(info[&#39;date&#39;], &#39;%Y-%m-%d %H:%M:%S&#39;) + timedelta(</span>
-    <span class="c1">#     hours=-8)</span>
-    <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SCALE</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SCALE</span><span class="p">):</span>
-            <span class="n">url</span> <span class="o">=</span> <span class="n">url_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">SCALE</span><span class="p">,</span> <span class="mi">550</span><span class="p">,</span>
-                                    <span class="n">date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y/%m/</span><span class="si">%d</span><span class="s2">/%H%M%S&quot;</span><span class="p">),</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-            <span class="k">print</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-            <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
-            <span class="n">png</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="mi">550</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">550</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
-    <span class="n">png</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">png</span><span class="p">)</span>
-    <span class="n">desktop</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">png</span><span class="p">,</span> <span class="p">(</span><span class="mi">160</span><span class="p">,</span> <span class="mi">160</span><span class="p">),</span> <span class="n">png</span><span class="p">)</span>
-    <span class="n">desktop</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;/tmp/earth.png&#39;</span><span class="p">,</span> <span class="s2">&quot;PNG&quot;</span><span class="p">)</span>
-    <span class="n">set_background</span><span class="p">()</span>
-
-
-<span class="k">def</span> <span class="nf">circle</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
-    <span class="n">width</span> <span class="o">=</span> <span class="n">SCALE</span> <span class="o">*</span> <span class="mi">550</span>
-    <span class="n">height</span> <span class="o">=</span> <span class="n">SCALE</span> <span class="o">*</span> <span class="mi">550</span>
-    <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
-    <span class="n">draw</span><span class="o">.</span><span class="n">ellipse</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">width</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="n">height</span> <span class="o">-</span> <span class="mi">3</span><span class="p">),</span> <span class="n">fill</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">ImageOps</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mask</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">centering</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
-    <span class="n">output</span><span class="o">.</span><span class="n">putalpha</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
-    <span class="n">output</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="mi">214</span><span class="p">,</span> <span class="mi">214</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">ANTIALIAS</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">output</span>
-
-
-<span class="k">def</span> <span class="nf">convert</span><span class="p">():</span>
-    <span class="c1"># size = (768, 768)</span>
-    <span class="c1"># mask = Image.new(&#39;L&#39;, size, 0)</span>
-    <span class="c1"># draw = ImageDraw.Draw(mask)</span>
-    <span class="c1"># draw.ellipse((3, 3, 765, 765), fill=255)</span>
-    <span class="c1"># im = Image.open(&#39;/tmp/earth.png&#39;)</span>
-    <span class="c1"># output = ImageOps.fit(im, mask.size, centering=(0.5, 0.5))</span>
-    <span class="c1"># output.putalpha(mask)</span>
-    <span class="c1"># output.thumbnail((256, 256), Image.ANTIALIAS)</span>
-    <span class="c1"># output.save(&#39;output.png&#39;)</span>
-    <span class="c1"># output.convert(&quot;RGBA&quot;)</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;output.png&#39;</span><span class="p">)</span>
-    <span class="n">output</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="mi">214</span><span class="p">,</span> <span class="mi">214</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">ANTIALIAS</span><span class="p">)</span>
-    <span class="n">desktop</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;/home/jianglin/Pictures/308556.png&#39;</span><span class="p">)</span>
-    <span class="n">desktop</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="p">(</span><span class="mi">160</span><span class="p">,</span> <span class="mi">160</span><span class="p">),</span> <span class="n">output</span><span class="p">)</span>
-    <span class="n">desktop</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;/tmp/earch.png&#39;</span><span class="p">,</span> <span class="s2">&quot;PNG&quot;</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">set_background</span><span class="p">():</span>
-    <span class="kn">import</span> <span class="nn">os</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;feh --bg-scale /tmp/earth.png&#39;</span><span class="p">)</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">download</span><span class="p">()</span>
-</pre></div>
-
-
-<p><img alt="img" src="//images.honmaple.com/images/admin/show/2017/03/149023917874284.png"></p>
-<p><img alt="img" src="//images.honmaple.com/images/admin/show/2017/03/149023928036061.png"></p>
-<p><img alt="img" src="//images.honmaple.com/images/admin/show/2017/03/149023934880774.png"></p><p>There are <a href="../../articles/2017/03/himawari8图片下载改进版.html#disqus_thread">comments</a>.</p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+<p>我的方法是:打开 <strong>gimp</strong>,合成两张图片,记下缩减的大小 …</p></blockquote>
+                <a class="readmore" href="../../articles/2017/03/himawari8图片下载改进版.html">read more</a>
+<p>There are <a href="../../articles/2017/03/himawari8图片下载改进版.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
         
 
  
@@ -342,35 +344,6 @@
 <p>直接给出代码 …</p>
                 <a class="readmore" href="../../articles/2016/12/利用网易云api获取歌曲信息.html">read more</a>
 <p>There are <a href="../../articles/2016/12/利用网易云api获取歌曲信息.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../../articles/2016/11/常用正则表达式.html" rel="bookmark" title="Permalink to 常用正则表达式">常用正则表达式</a></h1>
-                </header>
-                
-                <div class="entry-content" style="color:#666;">
-<footer class="post-info">
-        <abbr class="published" title="2016-11-26T00:00:00+08:00">
-                六 26 十一月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../../category/python/index.html">Python</a>. </p>
-<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/regex/index.html">regex</a></p></footer><!-- /.post-info -->                <div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
-<ul>
-<li><a href="#orgheadline20">1. 校验数字的表达式</a>
-<ul>
-<li><a href="#orgheadline1">1.1. 数字:</a></li>
-<li><a href="#orgheadline2">1 …</a></li></ul></li></ul></div></div>
-                <a class="readmore" href="../../articles/2016/11/常用正则表达式.html">read more</a>
-<p>There are <a href="../../articles/2016/11/常用正则表达式.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
 <p class="paginator">
     Page 1 / 5

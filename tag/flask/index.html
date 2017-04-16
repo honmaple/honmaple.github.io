@@ -36,7 +36,104 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../../articles/2017/03/使用flask实现一个简单的图片上传存储服务.html">使用flask实现一个简单的图片上传存储服务</a></h1> 
+                    <h1 class="entry-title"><a href="../../articles/2017/04/基于whoosh实现的flask全文搜索插件.html">基于whoosh实现的flask全文搜索插件</a></h1> 
+<footer class="post-info">
+        <abbr class="published" title="2017-04-16T00:00:00+08:00">
+                日 16 四月 2017
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../category/python/index.html">Python</a>. </p>
+<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/flask/index.html">flask</a><a href="../../tag/whoosh/index.html">whoosh</a></p></footer><!-- /.post-info --><div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org209fc54">1. Quickstart</a></li>
+<li><a href="#org10e086c">2. Usage</a>
+<ul>
+<li><a href="#org37a8ad9">2.1. 创建更新删除索引</a></li>
+<li><a href="#orgfd01c57">2.2. 自定义analyzer</a></li>
+</ul>
+</li>
+<li><a href="#orgccf04c8">3. Configure</a></li>
+</ul>
+</div>
+</div>
+
+<p>flask 貌似很少全文搜索的插件,有一个 <a href="https://github.com/gyllstromk/Flask-WhooshAlchemy">Flask-WhooshAlchemy</a> , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个</p>
+<p><a id="org209fc54"></a></p>
+<h1>Quickstart</h1>
+<p>插件基于 whoosh,纯 python 编写,使用上很简单</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask_msearch</span> <span class="kn">import</span> <span class="n">Search</span>
+<span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
+<span class="n">search</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+<span class="c1"># models.py</span>
+<span class="k">class</span> <span class="nc">Post</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;post&#39;</span>
+    <span class="n">__searchable__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">]</span>
+
+<span class="c1"># views.py</span>
+<span class="nd">@app.route</span><span class="p">(</span><span class="s2">&quot;/search&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">w_search</span><span class="p">():</span>
+    <span class="n">keyword</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;keyword&#39;</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">whoosh_search</span><span class="p">(</span><span class="n">Post</span><span class="p">,</span><span class="n">query</span><span class="o">=</span><span class="n">keyword</span><span class="p">,</span><span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">],</span><span class="n">limit</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+</pre></div>
+
+
+<p><a id="org10e086c"></a></p>
+<h1>Usage</h1>
+<p><a id="org37a8ad9"></a></p>
+<h2>创建更新删除索引</h2>
+<p>如果要对已存在的数据创建索引(全部)</p>
+<div class="highlight"><pre><span></span># 创建
+search.create_index()
+# 更新
+search.create_index(update=True)
+# 删除
+search.create_index(update=True)
+</pre></div>
+
+
+<p>如果只想要为指定的表创建索引</p>
+<div class="highlight"><pre><span></span>search.create_index(Model)
+</pre></div>
+
+
+<p><a id="orgfd01c57"></a></p>
+<h2>自定义analyzer</h2>
+<p>比如使用jieba的中文分词</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">jieba.analyse</span> <span class="kn">import</span> <span class="n">ChineseAnalyzer</span>
+<span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">(</span><span class="n">analyzer</span><span class="o">=</span><span class="n">ChineseAnalyzer</span><span class="p">())</span>
+</pre></div>
+
+
+<p><a id="orgccf04c8"></a></p>
+<h1>Configure</h1>
+<div class="highlight"><pre><span></span>WHOOSH_BASE = &#39;whoosh_index&#39;
+WHOOSH_ENABLE = True
+</pre></div>
+
+
+<p>项目地址:<a href="https://github.com/honmaple/flask-msearch">https://github.com/honmaple/flask-msearch</a></p><p>There are <a href="../../articles/2017/04/基于whoosh实现的flask全文搜索插件.html#disqus_thread">comments</a>.</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../../articles/2017/03/使用flask实现一个简单的图片上传存储服务.html" rel="bookmark" title="Permalink to 使用flask实现一个简单的图片上传存储服务">使用flask实现一个简单的图片上传存储服务</a></h1>
+                </header>
+                
+                <div class="entry-content" style="color:#666;">
 <footer class="post-info">
         <abbr class="published" title="2017-03-14T00:00:00+08:00">
                 二 14 三月 2017
@@ -46,182 +143,12 @@
                 By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
         </address>
 <p>In <a href="../../category/python/index.html">Python</a>. </p>
-<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/flask/index.html">flask</a><a href="../../tag/linux/index.html">linux</a></p></footer><!-- /.post-info --><p>GitHub地址: <a href="https://github.com/honmaple/maple-file">https://github.com/honmaple/maple-file</a></p>
+<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/flask/index.html">flask</a><a href="../../tag/linux/index.html">linux</a></p></footer><!-- /.post-info -->                <p>GitHub地址: <a href="https://github.com/honmaple/maple-file">https://github.com/honmaple/maple-file</a></p>
 <div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
-<ul>
-<li><a href="#org269e3c4">1. maple-file</a>
-<ul>
-<li><a href="#org7c6cb1e">1.1. 设计初衷</a></li>
-<li><a href="#org97baa2a">1.2. 使用</a>
-<ul>
-<li><a href="#orgc428f36">1.2.1. API</a></li>
-<li><a href="#org921606b">1.2.2. 配置</a></li>
-<li><a href="#org1f88b3a">1.2.3. 创建账户</a></li>
-<li><a href="#org87063f2">1.2.4. 上传</a></li>
-<li><a href="#org06d4c86">1.2.5. example</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
-
-<p><a id="org269e3c4"></a></p>
-<h1>maple-file</h1>
-<blockquote>
-<p>使用flask实现的一个简单的图片上传服务</p>
-</blockquote>
-<p><a id="org7c6cb1e"></a></p>
-<h2>设计初衷</h2>
-<p>对于图片的存储,有很多选择,一般采用云服务如(七牛,又拍等),但是国内的服务像七牛
-自定义域名竟然需要域名备案(<strong>Excuse me</strong>,当初就是因为备案麻烦才选择国外的),而且浪费了我十块钱,</p>
-<p>而我又想像七牛一样可以直接在本地就可以上传图片,找来找去，没有找到一个比较合适的，所以花两天时间自己写了一个</p>
-<p><a id="org97baa2a"></a></p>
-<h2>使用</h2>
-<p>由于初衷是本地脚本就可以发布,所以没有前端界面,等以后有时间了再加上</p>
-<p><a id="orgc428f36"></a></p>
-<h3>API</h3>
-<ul>
-<li><strong>/api/login</strong><ul>
-<li>POST
-    登录</li>
-</ul>
-</li>
-<li><strong>/api/logout</strong><ul>
-<li>GET
-    注销</li>
-</ul>
-</li>
-<li><strong>/api/albums</strong><ul>
-<li>GET
-    获取相册列表</li>
-<li>POST
-    新建相册<ul>
-<li>name 相册名称</li>
-<li>description 相册描述</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>
-<p><strong>/api/albums/<int:pk></strong></p>
-<p>pk 相册ID</p>
-<ul>
-<li>GET
-    获取相册信息</li>
-<li>PUT
-    修改相册信息<ul>
-<li>name 相册名称</li>
-<li>description 相册描述</li>
-</ul>
-</li>
-<li>DELETE
-    删除相册</li>
-<li><strong>/api/images</strong></li>
-<li>GET
-    获取图片列表</li>
-<li>POST
-    上传图片<ul>
-<li>images 上传图片列表</li>
-<li>album 相册ID(默认会新建一个<strong>default</strong>相册)</li>
-</ul>
-</li>
-<li><strong>/api/images/<int:pk></strong></li>
-<li>GET
-    获取图片信息</li>
-<li>PUT
-    修改图片信息<ul>
-<li>name 图片名称</li>
-<li>description 图片描述</li>
-</ul>
-</li>
-<li>DELETE
-    删除图片</li>
-</ul>
-</li>
-</ul>
-<p><a id="org921606b"></a></p>
-<h3>配置</h3>
-<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="n">DEBUG</span> <span class="o">=</span> <span class="bp">True</span> <span class="c1"># 生产环境设置为False</span>
-    <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="s1">&#39;ccc&#39;</span> <span class="c1"># import os;os.urandom(24)</span>
-    <span class="n">SECRET_KEY_SALT</span> <span class="o">=</span> <span class="s1">&#39;ssss&#39;</span>
-    <span class="n">JSON_AS_ASCII</span> <span class="o">=</span> <span class="bp">False</span>
-
-    <span class="n">PERMANENT_SESSION_LIFETIME</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-
-    <span class="n">PER_PAGE</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1"># 分页</span>
-    <span class="n">ADMIN_URL</span> <span class="o">=</span> <span class="s1">&#39;/admin/aaaaa&#39;</span> <span class="c1"># 后台地址</span>
-
-    <span class="n">LOGIN_TOKEN_HEADER</span> <span class="o">=</span> <span class="s1">&#39;Api-Key&#39;</span> <span class="c1"># 将会影响到后面headers设置</span>
-    <span class="n">LOGIN_TOKEN</span> <span class="o">=</span> <span class="s1">&#39;api_key&#39;</span> <span class="c1">#url?api_key=21312313</span>
-
-    <span class="n">MIDDLEWARE</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;storage.common.middleware.CommonMiddleware&#39;</span><span class="p">]</span>
-
-    <span class="n">SQLALCHEMY_TRACK_MODIFICATIONS</span> <span class="o">=</span> <span class="bp">False</span>
-    <span class="n">SQLALCHEMY_DATABASE_URI</span> <span class="o">=</span> <span class="s1">&#39;sqlite:///test.db&#39;</span>
-    <span class="c1"># SQLALCHEMY_ECHO = DEBUG</span>
-    <span class="n">UPLOAD_ALLOWED_EXTENSIONS</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="s1">&#39;jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;jpeg&#39;</span><span class="p">])</span> <span class="c1"># 允许上传的扩展名</span>
-    <span class="n">UPLOAD_FOLDER_ROOT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
-    <span class="n">UPLOAD_FOLDER_PATH</span> <span class="o">=</span> <span class="s1">&#39;images&#39;</span> <span class="c1"># 相对于当前文件路径的地址</span>
-    <span class="n">UPLOAD_FOLDER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">UPLOAD_FOLDER_ROOT</span><span class="p">,</span> <span class="n">UPLOAD_FOLDER_PATH</span><span class="p">)</span>
-</pre></div>
-
-
-<p><a id="org1f88b3a"></a></p>
-<h3>创建账户</h3>
-<div class="highlight"><pre><span></span>python manager.py create_user
-</pre></div>
-
-
-<p>将同时创建一个<strong>default</strong>的相册</p>
-<div class="highlight"><pre><span></span>python manager.py key
-</pre></div>
-
-
-<p>显示用户key</p>
-<p><a id="org87063f2"></a></p>
-<h3>上传</h3>
-<p>上传后图片保存路径</p>
-<ul>
-<li>
-<p>原图路径:</p>
-<p>UPLOAD_FOLDER + 'username' + 'photo' + %Y + %m + (时间戳+随机数).png</p>
-</li>
-<li>
-<p>缩略图路径:</p>
-<p>UPLOAD_FOLDER + 'username' + 'thumb' + %Y + %m + (时间戳+随机数).png</p>
-</li>
-</ul>
-<p><a id="org06d4c86"></a></p>
-<h3>example</h3>
-<p>使用<strong>requests</strong>本地上传</p>
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
-
-<span class="k">def</span> <span class="nf">images</span><span class="p">():</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;http://127.0.0.1:8000/api/images&#39;</span>
-    <span class="n">files</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;images&#39;</span><span class="p">:</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;desktop.png&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)}</span>
-    <span class="n">multiple_files</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;11.png&#39;</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;11.png&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">),</span> <span class="s1">&#39;image/png&#39;</span><span class="p">)),</span>
-        <span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;desktop.png&#39;</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;desktop.png&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">),</span> <span class="s1">&#39;image/png&#39;</span><span class="p">))</span>
-    <span class="p">]</span>
-    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;Api-Key&#39;</span><span class="p">:</span>
-        <span class="s1">&#39;InhpeWFuZzA4MDdJBtx4AWlPpI_Oxx1Ki8&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;User-Agent&#39;</span><span class="p">:</span> <span class="s1">&#39;Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36&#39;</span>
-    <span class="p">}</span>
-    <span class="c1"># r = requests.post(url, files=multiple_files, headers=headers)</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</pre></div><p>There are <a href="../../articles/2017/03/使用flask实现一个简单的图片上传存储服务.html#disqus_thread">comments</a>.</p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+<h2>Table of Contents …</h2></div>
+                <a class="readmore" href="../../articles/2017/03/使用flask实现一个简单的图片上传存储服务.html">read more</a>
+<p>There are <a href="../../articles/2017/03/使用flask实现一个简单的图片上传存储服务.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
         
 
  
@@ -406,30 +333,6 @@
 <div class="highlight"><pre><span></span>questions = Questions.query.offset(num) # 从num开始 …</pre></div>
                 <a class="readmore" href="../../articles/2016/04/flask实现分页.html">read more</a>
 <p>There are <a href="../../articles/2016/04/flask实现分页.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../../articles/2016/04/flask解决f5刷新问题.html" rel="bookmark" title="Permalink to flask解决f5刷新问题">flask解决f5刷新问题</a></h1>
-                </header>
-                
-                <div class="entry-content" style="color:#666;">
-<footer class="post-info">
-        <abbr class="published" title="2016-04-07T00:00:00+08:00">
-                四 07 四月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../../category/python/index.html">python</a>. </p>
-<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/flask/index.html">flask</a></p></footer><!-- /.post-info -->                <p><a href="https://segmentfault.com/q/1010000002486706">问题来源</a>  </p>
-<div class="highlight"><pre><span></span>def index():
-    if form.validate_on_submit() and request.method …</pre></div>
-                <a class="readmore" href="../../articles/2016/04/flask解决f5刷新问题.html">read more</a>
-<p>There are <a href="../../articles/2016/04/flask解决f5刷新问题.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
 <p class="paginator">
     Page 1 / 3

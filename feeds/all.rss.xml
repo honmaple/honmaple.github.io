@@ -1,5 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/all.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-04-09T00:00:00+08:00</updated><entry><title>心死</title><link href="http://honmaple.org/articles/2017/04/%E5%BF%83%E6%AD%BB.html" rel="alternate"></link><published>2017-04-09T00:00:00+08:00</published><updated>2017-04-09T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-04-09:/articles/2017/04/心死.html</id><summary type="html">&lt;p&gt;心死了,&lt;br&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/all.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-04-16T00:00:00+08:00</updated><entry><title>基于whoosh实现的flask全文搜索插件</title><link href="http://honmaple.org/articles/2017/04/%E5%9F%BA%E4%BA%8Ewhoosh%E5%AE%9E%E7%8E%B0%E7%9A%84flask%E5%85%A8%E6%96%87%E6%90%9C%E7%B4%A2%E6%8F%92%E4%BB%B6.html" rel="alternate"></link><published>2017-04-16T00:00:00+08:00</published><updated>2017-04-16T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-04-16:/articles/2017/04/基于whoosh实现的flask全文搜索插件.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org209fc54"&gt;1. Quickstart&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org10e086c"&gt;2. Usage&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org37a8ad9"&gt;2.1 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org209fc54"&gt;1. Quickstart&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org10e086c"&gt;2. Usage&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org37a8ad9"&gt;2.1. 创建更新删除索引&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgfd01c57"&gt;2.2. 自定义analyzer&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgccf04c8"&gt;3. Configure&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;flask 貌似很少全文搜索的插件,有一个 &lt;a href="https://github.com/gyllstromk/Flask-WhooshAlchemy"&gt;Flask-WhooshAlchemy&lt;/a&gt; , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个&lt;/p&gt;
+&lt;p&gt;&lt;a id="org209fc54"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;Quickstart&lt;/h1&gt;
+&lt;p&gt;插件基于 whoosh,纯 python 编写,使用上很简单&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask_msearch&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Search&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;search&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Search&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;search&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;init_app&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="c1"&gt;# models.py&lt;/span&gt;
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;__tablename__&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;post&amp;#39;&lt;/span&gt;
+    &lt;span class="n"&gt;__searchable__&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;content&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="c1"&gt;# views.py&lt;/span&gt;
+&lt;span class="nd"&gt;@app.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;/search&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;w_search&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;keyword&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;keyword&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;results&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;search&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;whoosh_search&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Post&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;keyword&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;fields&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;&lt;span class="n"&gt;limit&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="org10e086c"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;Usage&lt;/h1&gt;
+&lt;p&gt;&lt;a id="org37a8ad9"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;创建更新删除索引&lt;/h2&gt;
+&lt;p&gt;如果要对已存在的数据创建索引(全部)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 创建
+search.create_index()
+# 更新
+search.create_index(update=True)
+# 删除
+search.create_index(update=True)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果只想要为指定的表创建索引&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;search.create_index(Model)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="orgfd01c57"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;自定义analyzer&lt;/h2&gt;
+&lt;p&gt;比如使用jieba的中文分词&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;jieba.analyse&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;ChineseAnalyzer&lt;/span&gt;
+&lt;span class="n"&gt;search&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Search&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;analyzer&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;ChineseAnalyzer&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a id="orgccf04c8"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;Configure&lt;/h1&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;WHOOSH_BASE = &amp;#39;whoosh_index&amp;#39;
+WHOOSH_ENABLE = True
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;项目地址:&lt;a href="https://github.com/honmaple/flask-msearch"&gt;https://github.com/honmaple/flask-msearch&lt;/a&gt;&lt;/p&gt;</content><category term="python"></category><category term="flask"></category><category term="whoosh"></category></entry><entry><title>心死</title><link href="http://honmaple.org/articles/2017/04/%E5%BF%83%E6%AD%BB.html" rel="alternate"></link><published>2017-04-09T00:00:00+08:00</published><updated>2017-04-09T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-04-09:/articles/2017/04/心死.html</id><summary type="html">&lt;p&gt;心死了,&lt;br&gt;
 没事,&lt;br&gt;
 只要人没事,  &lt;/p&gt;
 &lt;p&gt;心死了,&lt;br&gt;
@@ -693,304 +773,4 @@ pip install -r requestments.txt
 &lt;blockquote&gt;
 &lt;p&gt;super + shift + r 重载i3wm&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;不管怎样，恭喜python发布新的版本&lt;/p&gt;</content><category term="linux"></category><category term="i3wm"></category><category term="python"></category><category term="py3status"></category></entry><entry><title>我的毕业设计--数据库设计之站内信</title><link href="http://honmaple.org/articles/2016/12/%E6%88%91%E7%9A%84%E6%AF%95%E4%B8%9A%E8%AE%BE%E8%AE%A1--%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E4%B9%8B%E7%AB%99%E5%86%85%E4%BF%A1.html" rel="alternate"></link><published>2016-12-28T00:00:00+08:00</published><updated>2016-12-28T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-12-28:/articles/2016/12/我的毕业设计--数据库设计之站内信.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline7"&gt;1. 站内信设计&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline3"&gt;1.1. 逻辑实现&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline1"&gt;1 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline7"&gt;1. 站内信设计&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline3"&gt;1.1. 逻辑实现&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline1"&gt;1.1.1. 点对点(私信)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline2"&gt;1.1.2. 点对面(系统消息)&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline6"&gt;1.2. 数据库设计&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline4"&gt;1.2.1. 信息表(关联)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline5"&gt;1.2.2. 信息内容表&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;h1&gt;站内信设计&lt;a id="orgheadline7"&gt;&lt;/a&gt;&lt;/h1&gt;
-&lt;h2&gt;逻辑实现&lt;a id="orgheadline3"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h3&gt;点对点(私信)&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;发送方
-    sender&lt;/li&gt;
-&lt;li&gt;接收方
-    receiver&lt;/li&gt;
-&lt;li&gt;状态
-    status&lt;/li&gt;
-&lt;li&gt;信息内容
-    message&lt;/li&gt;
-&lt;li&gt;信息分类
-    message_type&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;发送时间
-    created_at&lt;/p&gt;
-&lt;p&gt;点对点发送消息比较简单,每次发送为单表时插入 &lt;strong&gt;sender&lt;/strong&gt;, &lt;strong&gt;receiver&lt;/strong&gt;, &lt;strong&gt;message&lt;/strong&gt;, &lt;strong&gt;created_at&lt;/strong&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;(伪代码)
--   获取未读信息&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;select message from message where reveiver_id == &amp;#39;user.id&amp;#39; and status = &amp;#39;unread&amp;#39;;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;获取系统未读信息&lt;/p&gt;
-&lt;p&gt;select message from message where reveiver_id == 'user.id' and status = 'unread' and message_type = 'sys'
--   获取已读信息&lt;/p&gt;
-&lt;p&gt;status = 'read'&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3&gt;点对面(系统消息)&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;点对面实现不能像&lt;strong&gt;点对点&lt;/strong&gt;一样为每一个用户创建一条数据(如果数以十万百万计)  &lt;/p&gt;
-&lt;p&gt;具体实现看这里 &lt;a href="http://www.cnblogs.com/grenet/archive/2010/04/09/1708008.html"&gt;&lt;a href="http://www.cnblogs.com/grenet/archive/2010/04/09/1708008.html"&gt;http://www.cnblogs.com/grenet/archive/2010/04/09/1708008.html&lt;/a&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;简单讲一下我理解的逻辑(伪代码):&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;发送私信(点对点)&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 先保存消息主体内容
-message_text = MessageText(
-    sender = sender,
-    message = message,
-    message_type = message_type(私信)
-)
-# 保存接受方，并关联消息主体
-message = Message(
-    message_text_id = message_text.id,
-    receiver = receiver,
-    status = &amp;#39;unread&amp;#39;
-)
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;ul&gt;
-&lt;li&gt;获取未读信息&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;messages = Message.query.filter_by(receiver = current_user,status = &amp;#39;unread&amp;#39;)
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;系统消息&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 只保存消息主体内容
-message_text = MessageText(
-    sender = sender,
-    message = message,
-    message_type = message_type(系统消息)
-)
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;获取未读信息
-    判断 &lt;strong&gt;message&lt;/strong&gt; 表中 &lt;strong&gt;message_text_id&lt;/strong&gt; 是否存在于 &lt;strong&gt;message_text_id__list&lt;/strong&gt; (receiver = current_user)&lt;/p&gt;
-&lt;p&gt;&lt;del&gt;不存在&lt;/del&gt;,标记为&lt;strong&gt;系统未读&lt;/strong&gt;  &lt;/p&gt;
-&lt;p&gt;存在,判断是否未读
-    -   获取具体未读信息&lt;/p&gt;
-&lt;p&gt;如上&lt;del&gt;不存在&lt;/del&gt;时&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 保存消息
-message = Message(receiver = current_user,
-                  status = &amp;#39;read&amp;#39;,
-                  message_text_id = message_text.id)
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;&lt;strong&gt;存在&lt;/strong&gt;时,&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;message.status = &amp;#39;read&amp;#39;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;数据库设计&lt;a id="orgheadline6"&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h3&gt;信息表(关联)&lt;a id="orgheadline4"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;tablename&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" class="table table-bordered table-hover"&gt;
-
-&lt;colgroup&gt;
-&lt;col  class="org-left" /&gt;
-
-&lt;col  class="org-left" /&gt;
-
-&lt;col  class="org-left" /&gt;
-
-&lt;col  class="org-left" /&gt;
-
-&lt;col  class="org-left" /&gt;
-
-&lt;col  class="org-left" /&gt;
-&lt;/colgroup&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th scope="col" class="org-left"&gt;字段名&lt;/th&gt;
-&lt;th scope="col" class="org-left"&gt;字段类型&lt;/th&gt;
-&lt;th scope="col" class="org-left"&gt;字段描述&lt;/th&gt;
-&lt;th scope="col" class="org-left"&gt;是否为空&lt;/th&gt;
-&lt;th scope="col" class="org-left"&gt;是否unique&lt;/th&gt;
-&lt;th scope="col" class="org-left"&gt;默认值&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td class="org-left"&gt;receiver_id&lt;/td&gt;
-&lt;td class="org-left"&gt;integer&lt;/td&gt;
-&lt;td class="org-left"&gt;接收方外键ID&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
-&lt;/tr&gt;
-
-
-&lt;tr&gt;
-&lt;td class="org-left"&gt;receiver&lt;/td&gt;
-&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
-&lt;td class="org-left"&gt;接收方&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
-&lt;/tr&gt;
-
-
-&lt;tr&gt;
-&lt;td class="org-left"&gt;message_text_id&lt;/td&gt;
-&lt;td class="org-left"&gt;integer&lt;/td&gt;
-&lt;td class="org-left"&gt;站内信主体内容外键ID&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
-&lt;/tr&gt;
-
-
-&lt;tr&gt;
-&lt;td class="org-left"&gt;message_text&lt;/td&gt;
-&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
-&lt;td class="org-left"&gt;站内信主体内容&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
-&lt;/tr&gt;
-
-
-&lt;tr&gt;
-&lt;td class="org-left"&gt;status&lt;/td&gt;
-&lt;td class="org-left"&gt;string&lt;/td&gt;
-&lt;td class="org-left"&gt;站内信状态&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;0(未读)&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;h3&gt;信息内容表&lt;a id="orgheadline5"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;tablename&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;message_text&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" class="table table-bordered table-hover"&gt;
-
-&lt;colgroup&gt;
-&lt;col  class="org-left" /&gt;
-
-&lt;col  class="org-left" /&gt;
-
-&lt;col  class="org-left" /&gt;
-
-&lt;col  class="org-left" /&gt;
-
-&lt;col  class="org-left" /&gt;
-
-&lt;col  class="org-left" /&gt;
-&lt;/colgroup&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th scope="col" class="org-left"&gt;字段名&lt;/th&gt;
-&lt;th scope="col" class="org-left"&gt;字段类型&lt;/th&gt;
-&lt;th scope="col" class="org-left"&gt;字段描述&lt;/th&gt;
-&lt;th scope="col" class="org-left"&gt;是否为空&lt;/th&gt;
-&lt;th scope="col" class="org-left"&gt;是否unique&lt;/th&gt;
-&lt;th scope="col" class="org-left"&gt;默认值&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td class="org-left"&gt;title&lt;/td&gt;
-&lt;td class="org-left"&gt;string(128)&lt;/td&gt;
-&lt;td class="org-left"&gt;站内信标题&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
-&lt;/tr&gt;
-
-
-&lt;tr&gt;
-&lt;td class="org-left"&gt;content&lt;/td&gt;
-&lt;td class="org-left"&gt;text(1024)&lt;/td&gt;
-&lt;td class="org-left"&gt;站内信内容&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
-&lt;/tr&gt;
-
-
-&lt;tr&gt;
-&lt;td class="org-left"&gt;message_type&lt;/td&gt;
-&lt;td class="org-left"&gt;string&lt;/td&gt;
-&lt;td class="org-left"&gt;站内信类别&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;2(系统信息)&lt;/td&gt;
-&lt;/tr&gt;
-
-
-&lt;tr&gt;
-&lt;td class="org-left"&gt;sender_id&lt;/td&gt;
-&lt;td class="org-left"&gt;integer&lt;/td&gt;
-&lt;td class="org-left"&gt;发送方外键ID&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
-&lt;/tr&gt;
-
-
-&lt;tr&gt;
-&lt;td class="org-left"&gt;sender&lt;/td&gt;
-&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
-&lt;td class="org-left"&gt;发送方&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;False&lt;/td&gt;
-&lt;td class="org-left"&gt;&amp;#xa0;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;</content><category term="生活随笔"></category><category term="毕业设计"></category></entry></feed>
+&lt;p&gt;不管怎样，恭喜python发布新的版本&lt;/p&gt;</content><category term="linux"></category><category term="i3wm"></category><category term="python"></category><category term="py3status"></category></entry></feed>
