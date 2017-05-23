@@ -36,7 +36,82 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../../articles/2017/04/emacs实现智能注释.html">emacs实现智能注释</a></h1> 
+                    <h1 class="entry-title"><a href="../../articles/2017/05/方便的切换emacs主题.html">方便的切换emacs主题</a></h1> 
+<footer class="post-info">
+        <abbr class="published" title="2017-05-23T00:00:00+08:00">
+                二 23 五月 2017
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../category/linux/index.html">Linux</a>. </p>
+<p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/emacs/index.html">emacs</a><a href="../../tag/elisp/index.html">elisp</a></p></footer><!-- /.post-info --><p>作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，<strong>M-x</strong>,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了<strong>hydra</strong>这个插件,也想实践一下</p>
+<p>获取主题列表</p>
+<div class="highlight"><pre><span></span>(setq maple-cycle-themes (mapcar &#39;symbol-name (custom-available-themes)))
+</pre></div>
+
+
+<p>获取当前主题索引</p>
+<div class="highlight"><pre><span></span>(cl-position (car (mapcar &#39;symbol-name custom-enabled-themes)) maple-cycle-themes :test &#39;equal)
+</pre></div>
+
+
+<p>获取下一个主题</p>
+<div class="highlight"><pre><span></span>(setq maple-current-theme-index
+      (+ 1 maple-current-theme-index))
+(setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
+</pre></div>
+
+
+<p>加载主题</p>
+<div class="highlight"><pre><span></span>(load-theme (intern maple-current-theme) t)
+</pre></div>
+
+
+<p>最后得到这样的函数</p>
+<div class="highlight"><pre><span></span>(defun maple/cycle-theme (num)
+  (interactive)
+  (setq maple-current-theme-index
+        (+ num
+           (cl-position
+            (car (mapcar &#39;symbol-name custom-enabled-themes)) maple-cycle-themes :test &#39;equal)))
+  (when (&gt;= maple-current-theme-index (length maple-cycle-themes))
+    (setq maple-current-theme-index 0))
+  (setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
+  (mapc &#39;disable-theme custom-enabled-themes)
+  (let ((progress-reporter
+         (make-progress-reporter
+          (format &quot;Loading theme %s...&quot; maple-current-theme))))
+    (load-theme (intern maple-current-theme) t)
+    (progress-reporter-done progress-reporter)))
+(defun maple/next-theme()
+  (interactive)
+  (maple/cycle-theme 1))
+(defun maple/previous-theme()
+  (interactive)
+  (maple/cycle-theme -1))
+(defhydra maple/cycle-themes ()
+  (&quot;n&quot; maple/next-theme &quot;next theme&quot;)
+  (&quot;p&quot; maple/previous-theme &quot;prev theme&quot;))
+</pre></div>
+
+
+<p>ok,绑定一个快捷键吧</p><p>There are <a href="../../articles/2017/05/方便的切换emacs主题.html#disqus_thread">comments</a>.</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../../articles/2017/04/emacs实现智能注释.html" rel="bookmark" title="Permalink to emacs实现智能注释">emacs实现智能注释</a></h1>
+                </header>
+                
+                <div class="entry-content" style="color:#333;">
 <footer class="post-info">
         <abbr class="published" title="2017-04-21T00:00:00+08:00">
                 五 21 四月 2017
@@ -46,7 +121,7 @@
                 By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
         </address>
 <p>In <a href="../../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../../tag/emacs/index.html">emacs</a><a href="../../tag/elisp/index.html">elisp</a><a href="../../tag/linux/index.html">linux</a></p></footer><!-- /.post-info --><p>之前使用emacs时遇到这么一个问题</p>
+<p>tags: <a href="../../tag/emacs/index.html">emacs</a><a href="../../tag/elisp/index.html">elisp</a><a href="../../tag/linux/index.html">linux</a></p></footer><!-- /.post-info -->                <p>之前使用emacs时遇到这么一个问题</p>
 <blockquote>
 <p>当前行存在代码折叠时,如果想要注释,必须先选中当前行,否则只能注释代码折叠块的第一行</p>
 </blockquote>
@@ -54,68 +129,10 @@
 <p><img alt="img" src="//images.honmaple.com/images/admin/photo/2017/04/149274346737550.png"></p>
 <p><img alt="img" src="//images.honmaple.com/images/admin/photo/2017/04/149274352705945.png"></p>
 <p>基础注释函数来源于 <strong>stackoverflow</strong></p>
-<div class="highlight"><pre><span></span>(defun comment-or-uncomment-region-or-line ()
-  &quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;
-  (interactive)
-  (let (beg end)
-    (if (region-active-p)
-        (setq beg (region-beginning) end (region-end))
-      (setq beg (line-beginning-position) end (line-end-position)))
-    (comment-or-uncomment-region beg end)))
-</pre></div>
-
-
-<p>在此函数的位置上进行修改,刚开始使用</p>
-<div class="highlight"><pre><span></span>(when (hs-already-hidden-p)
-    (evil-visual-line))
-</pre></div>
-
-
-<p>但是一直没得到想要的效果,后来修改了一下,使用</p>
-<div class="highlight"><pre><span></span>(when (hs-already-hidden-p)
-  (progn
-    (end-of-visual-line)
-    (evil-visual-state)
-    (beginning-of-visual-line)))
-</pre></div>
-
-
-<p>意思就是如果当前位置存在代码折叠,先选中当前行,然后注释整个选中区域</p>
-<p>因为光标被移动到首位,我对这个不太在意,如果有在意的话,可以使用 <strong>save-excursion</strong></p>
-<div class="highlight"><pre><span></span>(save-excursion
-(when (hs-already-hidden-p)
-  (progn
-    (end-of-visual-line)
-    (evil-visual-state)
-    (beginning-of-visual-line)))
-    ......)
-</pre></div>
-
-
-<p>完整代码</p>
-<div class="highlight"><pre><span></span>(defun comment-or-uncomment-region-or-line ()
-  &quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;
-  (interactive)
-  (save-excursion
-    (when (hs-already-hidden-p)
-      (progn
-        (end-of-visual-line)
-        (evil-visual-state)
-        (beginning-of-visual-line)))
-    (let (beg end)
-      (if (region-active-p)
-          (setq beg (region-beginning) end (region-end))
-        (setq beg (line-beginning-position) end (line-end-position)))
-      (comment-or-uncomment-region beg end))))
-</pre></div>
-
-
-<p>ok,就这样</p><p>There are <a href="../../articles/2017/04/emacs实现智能注释.html#disqus_thread">comments</a>.</p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+<div class="highlight"><pre><span></span>(defun …</pre></div>
+                <a class="readmore" href="../../articles/2017/04/emacs实现智能注释.html">read more</a>
+<p>There are <a href="../../articles/2017/04/emacs实现智能注释.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
         
 
  

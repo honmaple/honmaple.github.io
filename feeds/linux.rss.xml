@@ -1,5 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Linux</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/linux.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-05-01T00:00:00+08:00</updated><entry><title>晒晒我的Linux及桌面</title><link href="http://honmaple.org/articles/2017/05/%E6%99%92%E6%99%92%E6%88%91%E7%9A%84Linux%E5%8F%8A%E6%A1%8C%E9%9D%A2.html" rel="alternate"></link><published>2017-05-01T00:00:00+08:00</published><updated>2017-05-01T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-05-01:/articles/2017/05/晒晒我的Linux及桌面.html</id><summary type="html">&lt;p&gt;&lt;img alt="img" src="//images.honmaple.com/images/admin/show/2017/05/149364033937825.png"&gt;&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Linux</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/linux.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-05-23T00:00:00+08:00</updated><entry><title>方便的切换emacs主题</title><link href="http://honmaple.org/articles/2017/05/%E6%96%B9%E4%BE%BF%E7%9A%84%E5%88%87%E6%8D%A2emacs%E4%B8%BB%E9%A2%98.html" rel="alternate"></link><published>2017-05-23T00:00:00+08:00</published><updated>2017-05-23T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-05-23:/articles/2017/05/方便的切换emacs主题.html</id><summary type="html">&lt;p&gt;作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，&lt;strong&gt;M-x&lt;/strong&gt;,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了&lt;strong&gt;hydra …&lt;/strong&gt;&lt;/p&gt;</summary><content type="html">&lt;p&gt;作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，&lt;strong&gt;M-x&lt;/strong&gt;,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了&lt;strong&gt;hydra&lt;/strong&gt;这个插件,也想实践一下&lt;/p&gt;
+&lt;p&gt;获取主题列表&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(setq maple-cycle-themes (mapcar &amp;#39;symbol-name (custom-available-themes)))
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;获取当前主题索引&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(cl-position (car (mapcar &amp;#39;symbol-name custom-enabled-themes)) maple-cycle-themes :test &amp;#39;equal)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;获取下一个主题&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(setq maple-current-theme-index
+      (+ 1 maple-current-theme-index))
+(setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;加载主题&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(load-theme (intern maple-current-theme) t)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;最后得到这样的函数&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(defun maple/cycle-theme (num)
+  (interactive)
+  (setq maple-current-theme-index
+        (+ num
+           (cl-position
+            (car (mapcar &amp;#39;symbol-name custom-enabled-themes)) maple-cycle-themes :test &amp;#39;equal)))
+  (when (&amp;gt;= maple-current-theme-index (length maple-cycle-themes))
+    (setq maple-current-theme-index 0))
+  (setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
+  (mapc &amp;#39;disable-theme custom-enabled-themes)
+  (let ((progress-reporter
+         (make-progress-reporter
+          (format &amp;quot;Loading theme %s...&amp;quot; maple-current-theme))))
+    (load-theme (intern maple-current-theme) t)
+    (progress-reporter-done progress-reporter)))
+(defun maple/next-theme()
+  (interactive)
+  (maple/cycle-theme 1))
+(defun maple/previous-theme()
+  (interactive)
+  (maple/cycle-theme -1))
+(defhydra maple/cycle-themes ()
+  (&amp;quot;n&amp;quot; maple/next-theme &amp;quot;next theme&amp;quot;)
+  (&amp;quot;p&amp;quot; maple/previous-theme &amp;quot;prev theme&amp;quot;))
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ok,绑定一个快捷键吧&lt;/p&gt;</content><category term="linux"></category><category term="emacs"></category><category term="elisp"></category></entry><entry><title>晒晒我的Linux及桌面</title><link href="http://honmaple.org/articles/2017/05/%E6%99%92%E6%99%92%E6%88%91%E7%9A%84Linux%E5%8F%8A%E6%A1%8C%E9%9D%A2.html" rel="alternate"></link><published>2017-05-01T00:00:00+08:00</published><updated>2017-05-01T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-05-01:/articles/2017/05/晒晒我的Linux及桌面.html</id><summary type="html">&lt;p&gt;&lt;img alt="img" src="//images.honmaple.com/images/admin/show/2017/05/149364033937825.png"&gt;&lt;/p&gt;
 &lt;p&gt;&lt;img alt="img" src="//images.honmaple.com/images/admin/show/2017/05/149364138162872.png"&gt;&lt;/p&gt;
 &lt;p&gt;&lt;img alt="img" src="//images.honmaple.com/images/admin/show/2017/05/149364171386276.png"&gt;&lt;/p&gt;
 &lt;p&gt;ps:真TM的闲着蛋疼&lt;/p&gt;</summary><content type="html">&lt;p&gt;&lt;img alt="img" src="//images.honmaple.com/images/admin/show/2017/05/149364033937825.png"&gt;&lt;/p&gt;
@@ -366,40 +417,4 @@ Successfully uninstalled &amp;quot;Oracle VM VirtualBox Extension Pack&amp;quot;
 &lt;p&gt;虚拟机需要 &lt;strong&gt;关机&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;设置-&amp;gt;USB设备-&amp;gt;启用USB控制器-&amp;gt;勾选3.0&lt;/p&gt;
 &lt;p&gt;开机:顶部 &lt;strong&gt;设备&lt;/strong&gt; 里选择 &lt;strong&gt;USB&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;OK,就这样&lt;/p&gt;</content><category term="linux"></category><category term="virtualbox"></category></entry><entry><title>emacs解决windowns文件乱码</title><link href="http://honmaple.org/articles/2016/06/emacs%E8%A7%A3%E5%86%B3windowns%E6%96%87%E4%BB%B6%E4%B9%B1%E7%A0%81.html" rel="alternate"></link><published>2016-06-22T00:00:00+08:00</published><updated>2016-06-22T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-06-22:/articles/2016/06/emacs解决windowns文件乱码.html</id><summary type="html">&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline1"&gt;1. 换系统&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline2"&gt;2. 修改language环境&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline3"&gt;3. 重新以gb2312的编码载入文件 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline1"&gt;1. 换系统&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline2"&gt;2. 修改language环境&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline3"&gt;3. 重新以gb2312的编码载入文件(推荐)&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;p&gt;最近在看windows文件时总是乱码，查了资料后才知道windowns下的编码为 &lt;strong&gt;gb2312&lt;/strong&gt; ,
-而linux下的编码为 &lt;strong&gt;utf-8&lt;/strong&gt; ,所以打开文件会乱码&lt;/p&gt;
-&lt;p&gt;如何解决?&lt;/p&gt;
-&lt;h3&gt;换系统&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;这不是废话吗!&lt;/p&gt;
-&lt;h3&gt;修改language环境&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;在配置文件中加入这么一行&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(set-language-environment &amp;#39;Chinese-GB)
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;重启就行,结果····打开 linux下的文件乱码&lt;/p&gt;
-&lt;h3&gt;重新以gb2312的编码载入文件(推荐)&lt;a id="orgheadline3"&gt;&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;&lt;a href="http://blog.csdn.net/pfanaya/article/details/6205640"&gt;参考这里&lt;/a&gt;&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;M-x revert-buffer-with-coding-system
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;选择chinese-gb2312,确认载入(不需要重启)&lt;/p&gt;
-&lt;p&gt;ok,是不是很简单&lt;/p&gt;</content><category term="linux"></category><category term="emacs"></category></entry></feed>
+&lt;p&gt;OK,就这样&lt;/p&gt;</content><category term="linux"></category><category term="virtualbox"></category></entry></feed>

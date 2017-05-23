@@ -36,7 +36,82 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../../articles/2017/05/晒晒我的Linux及桌面.html">晒晒我的Linux及桌面</a></h1> 
+                    <h1 class="entry-title"><a href="../../articles/2017/05/方便的切换emacs主题.html">方便的切换emacs主题</a></h1> 
+<footer class="post-info">
+        <abbr class="published" title="2017-05-23T00:00:00+08:00">
+                二 23 五月 2017
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+        </address>
+<p>In <a href="../../category/linux/index.html">Linux</a>. </p>
+<p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/emacs/index.html">emacs</a><a href="../../tag/elisp/index.html">elisp</a></p></footer><!-- /.post-info --><p>作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，<strong>M-x</strong>,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了<strong>hydra</strong>这个插件,也想实践一下</p>
+<p>获取主题列表</p>
+<div class="highlight"><pre><span></span>(setq maple-cycle-themes (mapcar &#39;symbol-name (custom-available-themes)))
+</pre></div>
+
+
+<p>获取当前主题索引</p>
+<div class="highlight"><pre><span></span>(cl-position (car (mapcar &#39;symbol-name custom-enabled-themes)) maple-cycle-themes :test &#39;equal)
+</pre></div>
+
+
+<p>获取下一个主题</p>
+<div class="highlight"><pre><span></span>(setq maple-current-theme-index
+      (+ 1 maple-current-theme-index))
+(setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
+</pre></div>
+
+
+<p>加载主题</p>
+<div class="highlight"><pre><span></span>(load-theme (intern maple-current-theme) t)
+</pre></div>
+
+
+<p>最后得到这样的函数</p>
+<div class="highlight"><pre><span></span>(defun maple/cycle-theme (num)
+  (interactive)
+  (setq maple-current-theme-index
+        (+ num
+           (cl-position
+            (car (mapcar &#39;symbol-name custom-enabled-themes)) maple-cycle-themes :test &#39;equal)))
+  (when (&gt;= maple-current-theme-index (length maple-cycle-themes))
+    (setq maple-current-theme-index 0))
+  (setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
+  (mapc &#39;disable-theme custom-enabled-themes)
+  (let ((progress-reporter
+         (make-progress-reporter
+          (format &quot;Loading theme %s...&quot; maple-current-theme))))
+    (load-theme (intern maple-current-theme) t)
+    (progress-reporter-done progress-reporter)))
+(defun maple/next-theme()
+  (interactive)
+  (maple/cycle-theme 1))
+(defun maple/previous-theme()
+  (interactive)
+  (maple/cycle-theme -1))
+(defhydra maple/cycle-themes ()
+  (&quot;n&quot; maple/next-theme &quot;next theme&quot;)
+  (&quot;p&quot; maple/previous-theme &quot;prev theme&quot;))
+</pre></div>
+
+
+<p>ok,绑定一个快捷键吧</p><p>There are <a href="../../articles/2017/05/方便的切换emacs主题.html#disqus_thread">comments</a>.</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+        
+
+ 
+            <li><article class="hentry">    
+                <header>
+                        <h1><a href="../../articles/2017/05/晒晒我的Linux及桌面.html" rel="bookmark" title="Permalink to 晒晒我的Linux及桌面">晒晒我的Linux及桌面</a></h1>
+                </header>
+                
+                <div class="entry-content" style="color:#333;">
 <footer class="post-info">
         <abbr class="published" title="2017-05-01T00:00:00+08:00">
                 一 01 五月 2017
@@ -46,15 +121,13 @@
                 By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
         </address>
 <p>In <a href="../../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/i3wm/index.html">i3wm</a></p></footer><!-- /.post-info --><p><img alt="img" src="//images.honmaple.com/images/admin/show/2017/05/149364033937825.png"></p>
+<p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/i3wm/index.html">i3wm</a></p></footer><!-- /.post-info -->                <p><img alt="img" src="//images.honmaple.com/images/admin/show/2017/05/149364033937825.png"></p>
 <p><img alt="img" src="//images.honmaple.com/images/admin/show/2017/05/149364138162872.png"></p>
 <p><img alt="img" src="//images.honmaple.com/images/admin/show/2017/05/149364171386276.png"></p>
-<p>ps:真TM的闲着蛋疼</p><p>There are <a href="../../articles/2017/05/晒晒我的Linux及桌面.html#disqus_thread">comments</a>.</p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+<p>ps:真TM的闲着蛋疼</p>
+                <a class="readmore" href="../../articles/2017/05/晒晒我的Linux及桌面.html">read more</a>
+<p>There are <a href="../../articles/2017/05/晒晒我的Linux及桌面.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
         
 
  
@@ -251,34 +324,6 @@
 <div class="highlight"><pre><span></span>tar zcvf hello.tar.gz …</pre></div>
                 <a class="readmore" href="../../articles/2016/07/tar打包排除目录.html">read more</a>
 <p>There are <a href="../../articles/2016/07/tar打包排除目录.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-        
-
- 
-            <li><article class="hentry">    
-                <header>
-                        <h1><a href="../../articles/2016/07/virtualbox中使用U盘等usb设备.html" rel="bookmark" title="Permalink to virtualbox中使用U盘等usb设备">virtualbox中使用U盘等usb设备</a></h1>
-                </header>
-                
-                <div class="entry-content" style="color:#333;">
-<footer class="post-info">
-        <abbr class="published" title="2016-07-15T00:00:00+08:00">
-                五 15 七月 2016
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
-        </address>
-<p>In <a href="../../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/virtualbox/index.html">virtualbox</a></p></footer><!-- /.post-info -->                <div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
-<ul>
-<li><a href="#orgheadline4">1. 安装VirtualBox Extension Pack</a>
-<ul>
-<li><a href="#orgheadline1">1.1 …</a></li></ul></li></ul></div></div>
-                <a class="readmore" href="../../articles/2016/07/virtualbox中使用U盘等usb设备.html">read more</a>
-<p>There are <a href="../../articles/2016/07/virtualbox中使用U盘等usb设备.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
 <p class="paginator">
     Page 1 / 5
