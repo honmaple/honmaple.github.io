@@ -64,7 +64,10 @@
 <p>Jinja是flask的默认模板引擎。</p>
 <h2>jinja设置</h2>
 <ul>
-<li>在扩展名为 .html 、 .htm …</li></ul>
+<li>在扩展名为 .html 、 .htm 、 .xml 和 .xhtml 的模板中开启自动 转义。</li>
+<li>在模板中可以使用 {% autoescape %} 来手动设置是否转义。</li>
+<li>Flask 在 Jinja2 环境中加入一些全局函数和辅助对象，以增强模板的功能。</li>
+</ul>
             <a class="readmore" href="../../articles/2015/12/flask学习--jinja模板.html">read more</a>
 <p>There are <a href="../../articles/2015/12/flask学习--jinja模板.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -91,7 +94,31 @@
 暂时使用较简单的sqlite作为例子</p>
 <h3>相关环境的安装</h3>
 <p><em>建议使用ve虚拟环境</em></p>
-<div class="highlight"><pre><span></span>sudo pacman …</pre></div>
+<div class="highlight"><pre><span></span>sudo pacman -S sqlite # archlinux
+sudo pip install virtualenv 
+# 在vertualenv环境下执行
+pip install Flask-SQLAlchemy Jinja2 SQLAlchemy
+</pre></div>
+
+
+<p><strong>最好是多看文档</strong></p>
+<h3>1.使用sqlite3模块API</h3>
+<p><a href="http://www.runoob.com/sqlite/sqlite-python.html">参考资料</a><br>
+<em>这是最简单的方法,不仅适用于flask,python的其他方面也一样适用,如爬虫之类</em>  </p>
+<h4>连接数据库</h4>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding=UTF-8 -*-</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="n">database</span> <span class="o">=</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">test</span><span class="o">.</span><span class="n">db</span>  <span class="c1">#数据库文件路径</span>
+<span class="n">test</span> <span class="o">=</span> <span class="n">sqlite</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;database&#39;</span><span class="p">)</span> <span class="c1">#连接数据库，如果数据库文件不存在则创建</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;connect database successfully&#39;</span><span class="p">)</span>
+<span class="n">test</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1">#关闭数据库连接 …</span></pre></div></td></tr></table>
             <a class="readmore" href="../../articles/2015/12/flask学习——数据库操作.html">read more</a>
 <p>There are <a href="../../articles/2015/12/flask学习——数据库操作.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -116,7 +143,37 @@
 <p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/flask/index.html">flask</a></p></footer><!-- /.post-info -->            <h2>基本知识</h2>
 <p>python html/css javascript http等</p>
 <h2>flask安装</h2>
-<p>Flask 依赖两个外部库 …</p>
+<p>Flask 依赖两个外部库： Werkzeug 和 Jinja2 。
+Werkzeug 是一个 WSGI 套件。 WSGI 是 Web 应用与 多种服务器之间的标准 Python 接口，即用于开发，也用于部署。 
+Jinja2 是用于渲染 模板的。</p>
+<h3>virtualenv</h3>
+<p><strong>关于virtualenv</strong>  </p>
+<p>安装 virtualenv  </p>
+<div class="highlight"><pre><span></span>$ sudo pip install virtualenv
+</pre></div>
+
+
+<p>安装完virtualenv后创建自己的文件夹  </p>
+<div class="highlight"><pre><span></span>$ mkdir flask
+$ <span class="nb">cd</span> flask
+$ virtualenv venv
+New python executable in env/bin/python
+Installing setuptools............done.
+</pre></div>
+
+
+<p>以后要使用virtualenv只用输入  </p>
+<div class="highlight"><pre><span></span>$ . venv/bin/activate   <span class="c1">#不要忘记了&quot;.&quot;</span>
+</pre></div>
+
+
+<p>你会发现在终端PS1前会出现(venv),代表你已经进入virtualenv虚拟环境<br>
+退出virtualenv  </p>
+<div class="highlight"><pre><span></span>$ deactivate
+</pre></div>
+
+
+<h3>在virtualenv中安装flask …</h3>
             <a class="readmore" href="../../articles/2015/12/flask学习笔记--1.html">read more</a>
 <p>There are <a href="../../articles/2015/12/flask学习笔记--1.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -142,7 +199,33 @@
 <p>记录一下今天学到的</p>
 <h2>蓝图</h2>
 <p>|-app/<br>
-|-|<strong>init …</strong></p>
+|-|<strong>init</strong>.py
+|-|views.py<br>
+|-|<strong>init</strong>.py<br>
+|-|templates/<br>
+|-|static/<br>
+|-config.py<br>
+|-run.py<br>
+|-tmp/  </p>
+<h3>run.py</h3>
+<p>输入<code>python run.py</code>就可以运行程序</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">app</span> <span class="kn">import</span> <span class="n">app</span> <span class="c1">#从app包中调用app模块</span>
+<span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">()</span> <span class="c1">#运行程序</span>
+</pre></div>
+
+
+<h3>config.py</h3>
+<p>一些基本的配置</p>
+<div class="highlight"><pre><span></span>DEBUG = True #打开调试模式
+</pre></div>
+
+
+<h3>app/<strong>init</strong>.py</h3>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">url_for</span><span class="p">,</span> \
+     <span class="n">abort</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">flash</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_object</span><span class="p">(</span><span class="s2">&quot;config …</span></pre></div>
             <a class="readmore" href="../../articles/2015/12/flask学习笔记--2.html">read more</a>
 <p>There are <a href="../../articles/2015/12/flask学习笔记--2.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -164,7 +247,12 @@
       By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
     </address>
   <p>In <a href="../../category/python/index.html">python</a>. </p>
-<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/flask/index.html">flask</a></p></footer><!-- /.post-info -->            <p>好久没有写东西的，主要是最近在用flask写一个网站，由于写前端界面时为了让UI好看一点，搞得自己晕头转向，方向都错了,在此期间也遇到很多问题，虽然绝大部分已经解决了，但是还有很多没有解决。其实 …</p>
+<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/flask/index.html">flask</a></p></footer><!-- /.post-info -->            <p>好久没有写东西的，主要是最近在用flask写一个网站，由于写前端界面时为了让UI好看一点，搞得自己晕头转向，方向都错了,在此期间也遇到很多问题，虽然绝大部分已经解决了，但是还有很多没有解决。其实，做一个项目是最能检验能力的。  </p>
+<h3>中文网站链接编码</h3>
+<p>如果访问一个含中文字符的网站，很大可能会提示错误</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">urllib</span>
+<span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</pre></div>
             <a class="readmore" href="../../articles/2015/12/flask学习笔记——3.html">read more</a>
 <p>There are <a href="../../articles/2015/12/flask学习笔记——3.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -192,7 +280,40 @@
 │   ├── <strong>init</strong>.py<br>
 │   ├── email/<br>
 │   ├── forms/<br>
-│   ├── models …</p>
+│   ├── models/<br>
+│   ├── static/<br>
+│   ├── templates/<br>
+│   ├── utils/<br>
+│   └── views/<br>
+├── config/<br>
+│   ├── default.py<br>
+│   ├── development.py<br>
+│   └── <strong>init</strong>.py<br>
+├── gunicorn.conf<br>
+├── README.md<br>
+├── requirements.txt<br>
+├── run.py  </p>
+<h3>视图</h3>
+<p>views/<br>
+├── admin.py<br>
+├── blog.py<br>
+├── book.py<br>
+├── index.py<br>
+├── <strong>init</strong>.py<br>
+└── question.py  </p>
+<h3>表单</h3>
+<p>forms/<br>
+├── admin_form.py<br>
+├── article_form.py<br>
+├── comment_form.py<br>
+├── <strong>init</strong>.py<br>
+├── question_form.py<br>
+└── register_form.py  </p>
+<h3>数据库</h3>
+<p>models/<br>
+├── account_db.py<br>
+├── article_db.py<br>
+├── base.py …</p>
             <a class="readmore" href="../../articles/2015/12/我的flask项目结构.html">read more</a>
 <p>There are <a href="../../articles/2015/12/我的flask项目结构.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>

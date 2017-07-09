@@ -46,6 +46,62 @@
             <ol id="posts-list" class="hfeed" start="8">
         <li><article class="hentry">    
           <header>
+            <h1><a href="../../articles/2015/12/linux的一些操作命令.html" rel="bookmark" title="Permalink to linux的一些操作命令">linux的一些操作命令</a></h1>
+          </header>
+          
+          <div class="entry-content">
+<footer class="post-info">
+  <abbr class="published" title="2015-12-22T00:00:00+08:00">
+    二 22 十二月 2015
+  </abbr>
+
+    <address class="vcard author">
+      By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+    </address>
+  <p>In <a href="../../category/linux/index.html">linux</a>. </p>
+<p>tags: <a href="../../tag/linux/index.html">linux</a></p></footer><!-- /.post-info -->            <p>一些linux下的基本操作命令，linux下命令太多，不可能完全记住，记个笔记还是有必要的</p>
+<h3>命令行快捷操作</h3>
+<p><code>ctrl + 左右键</code>:在单词间跳转<br>
+<code>ctrl+a</code>:跳到本行的行首<br>
+<code>ctrl+e</code>:跳到页尾<br>
+<code>Ctrl+u</code>：删除当前光标前面的文字<br>
+<code>ctrl+k</code>：删除当前光标后面的文字<br>
+<code>Ctrl+L</code>：进行清屏操作<br>
+<code>Ctrl+y</code>:进行恢复删除做<br>
+<code>Ctrl+w</code>:删除光标前面的单词的字符<br>
+<code>Alt – d</code> ：由光标位置开始，往右删除单词。往行尾删  </p>
+<h3>字符界面播放ascii视频</h3>
+<div class="highlight"><pre><span></span>$ mplayer -vo caca MovieName
+</pre></div>
+
+
+<h3>打开nvidia设置</h3>
+<div class="highlight"><pre><span></span>$ optirun nvidia-settings -c :8
+</pre></div>
+
+
+<h3>更新google禁用 GPG 签名检查</h3>
+<div class="highlight"><pre><span></span>$ sudo dnf update google-chrome-stable* --nogpgcheck
+</pre></div>
+
+
+<h3>字符界面使用鼠标</h3>
+<div class="highlight"><pre><span></span>$ sudo dnf install gpm
+$ sudo service gpm start
+</pre></div>
+
+
+<h3>新字体安装</h3>
+<p>字体目录下运行</p>
+<div class="highlight"><pre><span></span>$ mkfontscale …</pre></div>
+            <a class="readmore" href="../../articles/2015/12/linux的一些操作命令.html">read more</a>
+<p>There are <a href="../../articles/2015/12/linux的一些操作命令.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
+        </article></li>
+        
+
+ 
+        <li><article class="hentry">    
+          <header>
             <h1><a href="../../articles/2015/12/postgresql学习1——安装.html" rel="bookmark" title="Permalink to postgresql学习1——安装">postgresql学习1——安装</a></h1>
           </header>
           
@@ -63,7 +119,23 @@
 <h3>archlinux</h3>
 <p><a href="https://wiki.archlinux.org/index.php/PostgreSQL">参考资料</a></p>
 <div class="highlight"><pre><span></span>$ sudo pacman -S postgresql
-$ sudo …</pre></div>
+$ sudo mkdir /var/lib/postgres/data <span class="c1">#如果已存在则可以不建立</span>
+$ sudo chmod -R postgres:postgres /var/lib/postgres/data
+由于我安装系统时没有生成en_US_UTF-8本地化文件<span class="o">(</span>如果已经生成了的就
+不必再生成<span class="o">)</span>
+$ sudo vim /etc/locale.gen <span class="c1">#找到en_US_UTF-8，注释掉</span>
+$ locale-gen
+
+然后运行
+$ sudo -i -u postgres <span class="c1">#或者使用root账户su - postgres</span>
+$ initdb --locale en_US.UTF-8 -E UTF8 -D <span class="s1">&#39;/var/lib/postgres/data&#39;</span>
+$ createuser -i <span class="c1">#输入你的账户名称,并给管理员权限</span>
+
+最好给postgres用户设置密码
+<span class="o">(</span>注意不是linux系统帐号<span class="o">)</span>
+<span class="c1"># su - postgres</span>
+$ psql
+&gt;ALTER USER …</pre></div>
             <a class="readmore" href="../../articles/2015/12/postgresql学习1——安装.html">read more</a>
 <p>There are <a href="../../articles/2015/12/postgresql学习1——安装.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -94,7 +166,37 @@ $ sudo …</pre></div>
 </pre></div>
 
 
-<p>这个API打开一个连接到PostgreSQL数据库 …</p>
+<p>这个API打开一个连接到PostgreSQL数据库。如果成功打开数据库时，它返回一个连接对象  </p>
+<div class="highlight"><pre><span></span>psycopg2.connect(database=&quot;testdb&quot;, user=&quot;postgres&quot;, password=&quot;cohondob&quot;, host=&quot;127.0.0.1&quot;, port=&quot;5432&quot;)
+</pre></div>
+
+
+<p>该程序创建一个光标将用于整个数据库使用Python编程。  </p>
+<div class="highlight"><pre><span></span>connection.cursor()
+</pre></div>
+
+
+<p>此例程执行SQL语句。可被参数化的SQL语句（即占位符，而不是SQL文字）。 psycopg2的模块支持占位符用％s标志  </p>
+<div class="highlight"><pre><span></span>cursor.execute(sql [, optional parameters])
+</pre></div>
+
+
+<p>该程序执行SQL命令对所有参数序列或序列中的sql映射  </p>
+<div class="highlight"><pre><span></span>curosr.executemany(sql, seq_of_parameters)
+</pre></div>
+
+
+<p>这个程序执行的存储数据库程序给定的名称。该程序预计为每一个参数，参数的顺序必须包含一个条目。  </p>
+<div class="highlight"><pre><span></span>curosr.callproc(procname[, parameters])
+</pre></div>
+
+
+<p>这个只读属性，它返回数据库中的行的总数已修改，插入或删除最后 execute*().  </p>
+<div class="highlight"><pre><span></span>cursor.rowcount
+</pre></div>
+
+
+<p>此方法提交当前事务。如果不调用这个方法，无论做了什么修改，自从上次调用commit()是不可见的，从其他的数据库连接 …</p>
             <a class="readmore" href="../../articles/2015/12/postgresql学习2——使用.html">read more</a>
 <p>There are <a href="../../articles/2015/12/postgresql学习2——使用.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -118,7 +220,22 @@ $ sudo …</pre></div>
   <p>In <a href="../../category/linux/index.html">linux</a>. </p>
 <p>tags: <a href="../../tag/vim/index.html">vim</a><a href="../../tag/linux/index.html">linux</a></p></footer><!-- /.post-info -->            <p>vim号称编辑器之神，最近也一直使用vim写代码，最大的印象就是快，无论是临时修改文件，还是专门写代码.现在记录vim主要操作快捷键和我的vim配置 </p>
 <h1>vim操作</h1>
-<h2>一、移动光标 …</h2>
+<h2>一、移动光标</h2>
+<p>1.左移h、右移l、下移j、上移k  <br>
+2.向下翻页ctrl + f，向上翻页ctrl + b<br>
+3.向下翻半页ctrl + d，向上翻半页ctrl + u<br>
+4.移动到行尾$，移动到行首0（数字），移动到行首第一个字符处^<br>
+5.移动光标到下一个句子 ），移动光标到上一个句子（<br>
+6.移动到段首{，移动到段尾}<br>
+7.移动到下一个词w，移动到上一个词b<br>
+8.移动到文档开始gg，移动到文档结束G<br>
+9.移动到匹配的{}.().[]处%<br>
+10、跳到第n行 ngg 或 nG 或 :n<br>
+11、移动光标到屏幕顶端H，移动到屏幕中间M，移动到底部L<br>
+12、读取当前字符，并移动到本屏幕内下一次出现的地方 *<br>
+13、读取当前字符，并移动到本屏幕内上一次出现的地方 #  </p>
+<h2>二、查找替换</h2>
+<p>1 …</p>
             <a class="readmore" href="../../articles/2015/12/vim配置.html">read more</a>
 <p>There are <a href="../../articles/2015/12/vim配置.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -143,7 +260,46 @@ $ sudo …</pre></div>
 <p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/vim/index.html">vim</a></p></footer><!-- /.post-info -->            <p>关于一些vim插件的使用方法，vim插件多，快捷键也多，记录一下</p>
 <h3>tpope/vim-surround</h3>
 <p>光标在</p>
-<div class="highlight"><pre><span></span>&quot;Hello world …</pre></div>
+<div class="highlight"><pre><span></span>&quot;Hello world!&quot;
+</pre></div>
+
+
+<p>中时按下 cs"' ，则会替换双引号为单引号：</p>
+<div class="highlight"><pre><span></span>&#39;Hello world!&#39;
+</pre></div>
+
+
+<p>继续按下 cs'<q> ，则会替换单引号为 标签</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;q&gt;</span>Hello world!<span class="nt">&lt;/q&gt;</span>
+</pre></div>
+
+
+<p>按下 cst" ，则回到初始的双引号：</p>
+<div class="highlight"><pre><span></span> &quot;Hello world!&quot;
+</pre></div>
+
+
+<p>要删除符号，则按下 ds"</p>
+<div class="highlight"><pre><span></span>Hello world!
+</pre></div>
+
+
+<p>当光标在hello上时，按下 ysiw] ，则会变为</p>
+<div class="highlight"><pre><span></span>[Hello] world!
+</pre></div>
+
+
+<p>这个操作为其加上了包围符号。</p>
+<h4>总结：</h4>
+<p>1.删除包围符号的命令是 ds ,后面加的字符表示要删除的符号。比如：</p>
+<blockquote>
+<p>"Hello *world!"           ds"         Hello world!  </p>
+</blockquote>
+<p>2.替换包围符号的命令是 cs ,命令后跟两个参数，分别是被替换的符号和需要使用的符号。比如</p>
+<blockquote>
+<p>"Hello *world!"           cs"'        'Hello world!'  </p>
+</blockquote>
+<p>3.添加包围符号的命令是 ys …</p>
             <a class="readmore" href="../../articles/2015/12/一些vim插件的使用方法.html">read more</a>
 <p>There are <a href="../../articles/2015/12/一些vim插件的使用方法.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -167,7 +323,23 @@ $ sudo …</pre></div>
   <p>In <a href="../../category/linux/index.html">linux</a>. </p>
 <p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/vps/index.html">vps</a></p></footer><!-- /.post-info -->            <p>主要介绍通过scp和sftp上传文件到服务器，或者从服务器下载文件到本地,其主要命令</p>
 <h3>scp介绍</h3>
-<p>SCP的全称是secure copy (remote file copy …</p>
+<p>SCP的全称是secure copy (remote file copy program)，此命令是openssh-clients附带
+的,它的作用就是在机器之间实现拷贝，且机器之间的传输完全是加密的。</p>
+<h3>scp简单操作</h3>
+<div class="highlight"><pre><span></span>$ scp 帐号@主机:path/filename path/ <span class="c1">#从服务器下载文件到本地</span>
+$ scp path/filename 帐号@主机:path/  <span class="c1">#上传文件到服务器指定文件夹</span>
+</pre></div>
+
+
+<blockquote>
+<p>选项与参数：<br>
+-p ：保留原本档案的权限数据；<br>
+-r ：复制来源为目录时，可以复制整个目录 (含子目录)<br>
+-l ：可以限制传输的速度，单位为 Kb/s ，例如 [-l 100] 代表传输速限 100Kb/s</p>
+</blockquote>
+<h3>scp实例</h3>
+<div class="highlight"><pre><span></span>$ scp /home/xxx/test.md xxx@xxxx:~/ <span class="c1">#在使用本地~/目录时，使用tab自动补全会转化为绝对路径</span>
+test.md                                       <span class="m">100</span>%   <span class="m">86</span>     <span class="m">0</span>.1KB …</pre></div>
             <a class="readmore" href="../../articles/2015/12/如何上传文件到服务器.html">read more</a>
 <p>There are <a href="../../articles/2015/12/如何上传文件到服务器.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>

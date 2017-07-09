@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>honmaple's blog - celery</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../theme/css/main.css" type="text/css" />
+  </head>
+  <body id="index" class="home">
+    <div id="particles-js"></div>
+    <div class="wrap">
+      <div class="main">
+        <header id="banner" class="body">
+          <h1><a href="../..">honmaple's blog </a></h1>
+          <nav><ul>
+              <li><a href="http://honmaple.org">主页</a></li>
+                <li ><a href="../../category/linux/index.html">Linux</a></li>
+                <li ><a href="../../category/python/index.html">Python</a></li>
+                <li ><a href="../../category/security/index.html">Security</a></li>
+                <li class="dropdown">
+                  <a href="../../category/sheng-huo-sui-bi/index.html" >生活随笔</a>
+                  <dl>
+                      <dd><a href="../../category/hui-yi/index.html">回忆</a></dd>
+                  </dl>
+                </li>
+            <li class="dropdown">
+              <a href="../../archives.html">Archives</a>
+              <dl>
+                <dd><a href="../../tags.html">Tags</a></dd>
+                <dd><a href="../../categories.html">Categories</a></dd>
+                <dd><a href="../../authors.html">Authors</a></dd>
+              </dl>
+            </li>
+            <li style="float:right;margin-right:15px;">
+              <form onsubmit="return dispatch()" class="search has-feedback">
+                <input type="text" id="search" name="search"/>
+                <i class="form-control-feedback"></i>
+              </form>
+            </li>
+          </ul></nav>
+        </header><!-- /#banner -->
+        
+        
+
+        <aside id="featured" class="body">
+          <article>
+            <h1 class="entry-title"><a href="../../articles/2017/07/celery动态添加任务.html">celery动态添加任务</a></h1> 
+<footer style="color:#bbb;margin:0 auto;font-size:12px;">
+  <span class="published" title="2017-07-09T00:00:00+08:00">
+    Posted on 日 09 七月 2017
+  </span>
+
+    <span class="vcard author">
+      By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+    </span>
+  <span>In <a href="../../category/linux/index.html">Linux</a>. </span>
+<span class="tag">tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/celery/index.html">celery</a><a href="../../tag/python/index.html">python</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
+            <p>celery是一个基于Python的分布式调度系统，<a href="http://docs.celeryproject.org/en/latest/">文档在这</a> ,最近有个需求,想要动态的添加任务而不用重启celery服务,找了一圈没找到什么好办法(也有可能是文档没看仔细)，所以只能自己实现囉</p>
+<p>为celery动态添加任务，首先我想到的是传递一个函数进去，让某个特定任务去执行这个传递过去的函数，就像这样</p>
+<div class="highlight"><pre><span></span>@app.task
+def execute(func, *args, **kwargs):
+    return func(*args, **kwargs)
+</pre></div>
+
+
+<p>很可惜，会出现这样的错误</p>
+<div class="highlight"><pre><span></span>kombu.exceptions.EncodeError: Object of type &#39;function&#39; is not JSON serializable
+</pre></div>
+
+
+<p>换一种序列化方式</p>
+<div class="highlight"><pre><span></span>@app.task(serializer=&#39;pickle&#39;)
+def execute(func, *args, **kwargs):
+    return func(*args, **kwargs)
+</pre></div>
+
+
+<p>结果又出现一大串错误信息</p>
+<div class="highlight"><pre><span></span>ERROR/MainProcess] Pool callback raised exception: ContentDisallowed(&#39;Refusing to deserialize untrusted content of type pickle (application/x-python-serialize)&#39;,)
+Traceback (most recent call last):
+  File &quot;/home/jl/.virtualenvs/test/lib/python3.6/site-packages/kombu/utils/objects.py&quot;, line 42, in __get__
+    return obj.__dict__[self.__name__]
+KeyError: &#39;chord&#39;
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File &quot;/home/jl/.virtualenvs/test/lib/python3.6/site-packages/kombu/utils/objects.py&quot;, line 42, in __get__
+    return obj.__dict__[self.__name__]
+KeyError: &#39;_payload&#39;
+</pre></div>
+
+
+<p>换一种思路</p>
+<div class="highlight"><pre><span></span>func = import_string(func)
+</pre></div>
+
+
+<p>不知道这样是否可以，结果测试: <strong>No</strong></p>
+<p>哎，流年不利.</p>
+<p>最后一直测试，一直测试，终于找到了一种办法,直接上代码</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">import_module</span><span class="p">,</span> <span class="nb">reload</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">CELERY_IMPORTS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;task&#39;</span><span class="p">,</span> <span class="s1">&#39;task.all_task&#39;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">import_string</span><span class="p">(</span><span class="n">import_name</span><span class="p">):</span>
+    <span class="n">import_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">import_name</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span>
+    <span class="n">modules</span> <span class="o">=</span> <span class="n">import_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">comp</span><span class="p">):</span>
+            <span class="nb">reload</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">comp</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mod</span>
+
+<span class="nd">@app.task</span>
+<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+
+
+<p>项目结构是这样的</p>
+<blockquote>
+<p>├── celery_app.py<br>
+├── config.py<br>
+├── task<br>
+│   ├── all_task.py<br>
+│   ├── <span class="underline"><span class="underline">init</span></span>.py  </p>
+</blockquote>
+<p>注意: <strong>任务必须大于等于两层目录</strong></p>
+<p>以后每次添加任务都可以先添加到<strong>all_task.py</strong>里，调用时不用再重启celery服务</p>
+<div class="highlight"><pre><span></span><span class="c1"># task/all_task.py</span>
+
+<span class="k">def</span> <span class="nf">ee</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="s1">&#39;你好&#39;</span>
+
+<span class="c1"># example</span>
+<span class="kn">from</span> <span class="nn">celery_app</span> <span class="kn">import</span> <span class="n">execute</span>
+
+<span class="n">execute</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="s1">&#39;task.all_task.ee&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">444</span><span class="p">)</span>
+</pre></div>
+
+
+<p>ok，另外发现celery也支持任务定时调用,就像这样</p>
+<div class="highlight"><pre><span></span>execute.apply_async(args=[&#39;task.all_task.aa&#39;], eta=datetime(2017, 7, 9, 8, 12, 0))
+</pre></div>
+
+
+<p>简单实现一个任务重复调用的功能</p>
+<div class="highlight"><pre><span></span>@app.task
+def interval(func, seconds, args=(), task_id=None):
+    next_run_time = current_time() + timedelta(seconds=seconds)
+    kwargs = dict(args=(func, seconds, args), eta=next_run_time)
+    if task_id is not None:
+        kwargs.update(task_id=task_id)
+    interval.apply_async(**kwargs)
+    func = import_string(func)
+    return func(*args)
+</pre></div>
+
+
+<p>大概意思就是先计算下次运行的时间,然后把任务添加到celery队列里,这里有个task_id有些问题,因为假设添加了每隔3s执行一个任务,
+它的task_id默认会使用uuid生成，如果想要再移除这个任务就不太方便，自定task_id可能会好一些，另外也许需要判断task_id是否存在</p>
+<div class="highlight"><pre><span></span>AsyncResult(task_id).state
+</pre></div>
+
+
+<p>ok,再献上一个好用的函数</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">getmembers</span><span class="p">,</span> <span class="n">isfunction</span>
+
+<span class="k">def</span> <span class="nf">get_tasks</span><span class="p">(</span><span class="n">module</span><span class="o">=</span><span class="s1">&#39;task&#39;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;task:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
+        <span class="s1">&#39;doc&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
+    <span class="p">}</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">getmembers</span><span class="p">(</span><span class="n">import_module</span><span class="p">(</span><span class="n">module</span><span class="p">),</span> <span class="n">isfunction</span><span class="p">)]</span>
+</pre></div>
+
+
+<p>就这样.</p><p>There are <a href="../../articles/2017/07/celery动态添加任务.html#disqus_thread">comments</a>.</p>          </article>
+<p class="paginator">
+    Page 1 / 1
+</p>
+        </aside><!-- /#featured -->
+            </ol><!-- /#posts-list -->
+          </section><!-- /#content -->
+      </div>
+    </div>
+    <div class="footer">
+      <section id="extras">
+          <div class="blogroll">
+            <h2>blogroll</h2>
+            <ul>
+                <li><a href="http://getpelican.com/">Pelican</a></li>
+                <li><a href="http://python.org/">Python.org</a></li>
+                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                <li><a href="https://honmaple.com">个人博客</a></li>
+            </ul>
+          </div><!-- /.blogroll -->
+          <div class="social">
+            <h2>social</h2>
+            <ul>
+                <li><a href="http://honmaple.org/feeds/all.rss.xml">Atom Feed</a></li>
+                <li><a href="https://github.com/honmaple">GitHub</a></li>
+                <li><a href="https://twitter.com/xiyang87">Twitter</a></li>
+            </ul>
+          </div><!-- /.social -->
+      </section><!-- /#extras -->
+    </div>
+
+<script>
+ (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+ })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ ga('create', 'UA-88401692-2', 'auto');
+ ga('send', 'pageview');
+
+</script>
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+    <script src="https://cdn.bootcss.com/particles.js/2.0.0/particles.min.js"></script>
+    <script type="text/javascript" src="../../theme/js/particles.js"></script>
+  </body>
+</html>

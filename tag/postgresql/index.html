@@ -133,7 +133,23 @@ postgres~ $ createuser xxx --interactive
 <h3>archlinux</h3>
 <p><a href="https://wiki.archlinux.org/index.php/PostgreSQL">参考资料</a></p>
 <div class="highlight"><pre><span></span>$ sudo pacman -S postgresql
-$ sudo …</pre></div>
+$ sudo mkdir /var/lib/postgres/data <span class="c1">#如果已存在则可以不建立</span>
+$ sudo chmod -R postgres:postgres /var/lib/postgres/data
+由于我安装系统时没有生成en_US_UTF-8本地化文件<span class="o">(</span>如果已经生成了的就
+不必再生成<span class="o">)</span>
+$ sudo vim /etc/locale.gen <span class="c1">#找到en_US_UTF-8，注释掉</span>
+$ locale-gen
+
+然后运行
+$ sudo -i -u postgres <span class="c1">#或者使用root账户su - postgres</span>
+$ initdb --locale en_US.UTF-8 -E UTF8 -D <span class="s1">&#39;/var/lib/postgres/data&#39;</span>
+$ createuser -i <span class="c1">#输入你的账户名称,并给管理员权限</span>
+
+最好给postgres用户设置密码
+<span class="o">(</span>注意不是linux系统帐号<span class="o">)</span>
+<span class="c1"># su - postgres</span>
+$ psql
+&gt;ALTER USER …</pre></div>
             <a class="readmore" href="../../articles/2015/12/postgresql学习1——安装.html">read more</a>
 <p>There are <a href="../../articles/2015/12/postgresql学习1——安装.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -164,7 +180,37 @@ $ sudo …</pre></div>
 </pre></div>
 
 
-<p>这个API打开一个连接到PostgreSQL数据库 …</p>
+<p>这个API打开一个连接到PostgreSQL数据库。如果成功打开数据库时，它返回一个连接对象  </p>
+<div class="highlight"><pre><span></span>psycopg2.connect(database=&quot;testdb&quot;, user=&quot;postgres&quot;, password=&quot;cohondob&quot;, host=&quot;127.0.0.1&quot;, port=&quot;5432&quot;)
+</pre></div>
+
+
+<p>该程序创建一个光标将用于整个数据库使用Python编程。  </p>
+<div class="highlight"><pre><span></span>connection.cursor()
+</pre></div>
+
+
+<p>此例程执行SQL语句。可被参数化的SQL语句（即占位符，而不是SQL文字）。 psycopg2的模块支持占位符用％s标志  </p>
+<div class="highlight"><pre><span></span>cursor.execute(sql [, optional parameters])
+</pre></div>
+
+
+<p>该程序执行SQL命令对所有参数序列或序列中的sql映射  </p>
+<div class="highlight"><pre><span></span>curosr.executemany(sql, seq_of_parameters)
+</pre></div>
+
+
+<p>这个程序执行的存储数据库程序给定的名称。该程序预计为每一个参数，参数的顺序必须包含一个条目。  </p>
+<div class="highlight"><pre><span></span>curosr.callproc(procname[, parameters])
+</pre></div>
+
+
+<p>这个只读属性，它返回数据库中的行的总数已修改，插入或删除最后 execute*().  </p>
+<div class="highlight"><pre><span></span>cursor.rowcount
+</pre></div>
+
+
+<p>此方法提交当前事务。如果不调用这个方法，无论做了什么修改，自从上次调用commit()是不可见的，从其他的数据库连接 …</p>
             <a class="readmore" href="../../articles/2015/12/postgresql学习2——使用.html">read more</a>
 <p>There are <a href="../../articles/2015/12/postgresql学习2——使用.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>

@@ -6,7 +6,33 @@
 &lt;li&gt;&lt;a href="#org04e2e47"&gt;1. Quickstart&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#orgb039f71"&gt;2. Usage&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgd3a6e6e"&gt;2.1 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
+&lt;li&gt;&lt;a href="#orgd3a6e6e"&gt;2.1. 创建更新删除索引&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org8b379f4"&gt;2.2. 自定义analyzer&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orga5e2ce5"&gt;3. Configure&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;flask 貌似很少全文搜索的插件,有一个 &lt;a href="https://github.com/gyllstromk/Flask-WhooshAlchemy"&gt;https://github.com/gyllstromk/Flask-WhooshAlchemy&lt;/a&gt; , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个&lt;/p&gt;
+&lt;p&gt;&lt;a id="org04e2e47"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;Quickstart&lt;/h1&gt;
+&lt;p&gt;插件基于 whoosh,纯 python 编写,使用上很简单&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask_msearch&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Search&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;search&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Search&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;search&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;init_app&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="c1"&gt;# models.py&lt;/span&gt;
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;__tablename__&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;post&amp;#39;&lt;/span&gt;
+    &lt;span class="n"&gt;__searchable__&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;content&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="c1"&gt;# views.py&lt;/span&gt;
+&lt;span class="nd"&gt;@app.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;/search&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;w_search&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;keyword&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;args …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents&lt;/h2&gt;
 &lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
@@ -83,7 +109,28 @@ WHOOSH_ENABLE = True
 所以结合本地壁纸将两张图片进行合成&lt;/p&gt;
 &lt;p&gt;只要计算一下要缩减的大小与要放置的位置&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;我的方法是:打开 &lt;strong&gt;gimp&lt;/strong&gt;,合成两张图片,记下缩减的大小 …&lt;/p&gt;&lt;/blockquote&gt;</summary><content type="html">&lt;p&gt;第一版下载图片后设为壁纸,四周都是黑黑的不好看,
+&lt;p&gt;我的方法是:打开 &lt;strong&gt;gimp&lt;/strong&gt;,合成两张图片,记下缩减的大小(214,214)与位置(160,160)&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;每次只要运行一下&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;python himawari8.py
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;源码&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;PIL&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ImageOps&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ImageDraw&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;io&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;BytesIO&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;urllib.request&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;urlopen&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;datetime&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timedelta&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;json&lt;/span&gt;
+
+&lt;span class="n"&gt;SCALE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="n"&gt;WIDTH&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1368&lt;/span&gt;
+&lt;span class="n"&gt;HEIGHT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;768&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_info&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Request&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;第一版下载图片后设为壁纸,四周都是黑黑的不好看,
 所以结合本地壁纸将两张图片进行合成&lt;/p&gt;
 &lt;p&gt;只要计算一下要缩减的大小与要放置的位置&lt;/p&gt;
 &lt;blockquote&gt;
@@ -186,7 +233,27 @@ WHOOSH_ENABLE = True
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;设置桌面大小,及图片放大倍数 …&lt;/p&gt;</summary><content type="html">&lt;p&gt;直接给出源码&lt;/p&gt;
+&lt;p&gt;设置桌面大小,及图片放大倍数&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;SCALE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;
+&lt;span class="n"&gt;WIDTH&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1368&lt;/span&gt;
+&lt;span class="n"&gt;HEIGHT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;768&lt;/span&gt;
+
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;PIL&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Image&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;io&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;BytesIO&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;urllib.request&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;urlopen&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;datetime&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;json&lt;/span&gt;
+
+&lt;span class="n"&gt;SCALE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;
+&lt;span class="n"&gt;WIDTH&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1368&lt;/span&gt;
+&lt;span class="n"&gt;HEIGHT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;768&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_info&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&amp;quot;&lt;/span&gt;
+    &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Request&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;urlopen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timeout&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;json …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;直接给出源码&lt;/p&gt;
 &lt;p&gt;设置壁纸&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;feh --bg-scale /tmp/earch.png
 &lt;/pre&gt;&lt;/div&gt;
@@ -247,7 +314,39 @@ WHOOSH_ENABLE = True
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="#org9c10e0a"&gt;1. sqlalchemy object序列化为json&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgc0bfd4d"&gt;1.1. 多个实例 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
+&lt;li&gt;&lt;a href="#orgc0bfd4d"&gt;1.1. 多个实例&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org32910ef"&gt;1.2. 单个实例&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org45d6d27"&gt;1.3. 排除字段&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org05e0fee"&gt;1.4. 仅包括字段&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org21bafe1"&gt;1.5. 关系查询深度&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org1d34f9c"&gt;1.6. 增加一些自定义的函数&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org9d7f676"&gt;1.7. 可传递参数的函数&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgb5f861c"&gt;2. 像django orm一样使用sqlalchemy&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgd2dc2ac"&gt;2.1. 基本查询(已实现)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgd8c971d"&gt;2.2. 关系查询&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org6169882"&gt;2.3. 其它&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org2b6acdb"&gt;3. 去掉一些sqlalchemy的重复工作&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org7fa06d7"&gt;3.1. ModelMixin&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org4b5ba4e"&gt;3.2. ModelTimeMixin&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org971ec1a"&gt;3.3. ModelUserMixin&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-json"&gt;https://github.com/honmaple/maple-json&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a id="org9c10e0a"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;sqlalchemy object序列化为json&lt;/h1&gt;
+&lt;p&gt;灵感来源于 &lt;strong&gt;Django REST framework&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a id="orgc0bfd4d"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;多个实例 …&lt;/h2&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents&lt;/h2&gt;
 &lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
@@ -430,7 +529,46 @@ post.delete() # 保存
     &lt;span class="nx"&gt;titile&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;...&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;</content><category term="python"></category><category term="sql"></category><category term="sqlalchemy"></category></entry><entry><title>使用flask实现一个简单的图片上传存储服务</title><link href="http://honmaple.org/articles/2017/03/%E4%BD%BF%E7%94%A8flask%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1.html" rel="alternate"></link><published>2017-03-14T00:00:00+08:00</published><updated>2017-03-14T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-03-14:/articles/2017/03/使用flask实现一个简单的图片上传存储服务.html</id><summary type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
 &lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents …&lt;/h2&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org269e3c4"&gt;1. maple-file&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org7c6cb1e"&gt;1.1. 设计初衷&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org97baa2a"&gt;1.2. 使用&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgc428f36"&gt;1.2.1. API&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org921606b"&gt;1.2.2. 配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org1f88b3a"&gt;1.2.3. 创建账户&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org87063f2"&gt;1.2.4. 上传&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org06d4c86"&gt;1.2.5. example&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;a id="org269e3c4"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;maple-file&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;使用flask实现的一个简单的图片上传服务&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;a id="org7c6cb1e"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;设计初衷&lt;/h2&gt;
+&lt;p&gt;对于图片的存储,有很多选择,一般采用云服务如(七牛,又拍等),但是国内的服务像七牛
+自定义域名竟然需要域名备案(&lt;strong&gt;Excuse me&lt;/strong&gt;,当初就是因为备案麻烦才选择国外的),而且浪费了我十块钱,&lt;/p&gt;
+&lt;p&gt;而我又想像七牛一样可以直接在本地就可以上传图片,找来找去，没有找到一个比较合适的，所以花两天时间自己写了一个&lt;/p&gt;
+&lt;p&gt;&lt;a id="org97baa2a"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;使用&lt;/h2&gt;
+&lt;p&gt;由于初衷是本地脚本就可以发布,所以没有前端界面,等以后有时间了再加上&lt;/p&gt;
+&lt;p&gt;&lt;a id="orgc428f36"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;API&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;/api/login&lt;/strong&gt;&lt;ul&gt;
+&lt;li&gt;POST
+    登录 …&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;</summary><content type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
 &lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents&lt;/h2&gt;
 &lt;div id="text-table-of-contents"&gt;
@@ -611,7 +749,33 @@ post.delete() # 保存
 &lt;/div&gt;
 
 &lt;h1&gt;__main__&lt;/h1&gt;
-&lt;p&gt;转自 …&lt;/p&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
+&lt;p&gt;转自 &lt;a href="http://www.jb51.net/article/51892.html"&gt;这里&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;很多新手刚开始学习python的时候经常会看到python 中 &lt;strong&gt;&lt;strong&gt;name&lt;/strong&gt; = '&lt;strong&gt;main&lt;/strong&gt;'&lt;/strong&gt;
+这样的代码，可能很多新手一开始学习的时候都比较疑惑，python 中 &lt;strong&gt;&lt;strong&gt;name&lt;/strong&gt; = '&lt;strong&gt;main&lt;/strong&gt;'&lt;/strong&gt; 的作用，到底干嘛的？&lt;/p&gt;
+&lt;p&gt;有句话经典的概括了这段代码的意义：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“Make a script both importable and executable”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;意思就是说让你写的脚本模块既可以导入到别的模块中用，另外该模块自己也可执行。
+这句话，可能一开始听的还不是很懂。下面举例说明：
+先写一个模块：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;#module.py
+def main():
+    print(&amp;quot;we are in %s&amp;quot; % __name__)
+
+if __name__ == &amp;#39;__main__&amp;#39;:
+    main()
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这个函数定义了一个main函数，我们执行一下该py文件发现结果是打印出&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;we are in __main__
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;说明我们的if语句中的内容被执行了，调用了 &lt;strong&gt;main()：&lt;/strong&gt;
+但是如果我们从另我一个模块导入该模块，并调用一次&lt;strong&gt;main()&lt;/strong&gt;函数会是怎样的结果呢？&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;#anothermodle …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents&lt;/h2&gt;
 &lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
@@ -687,7 +851,41 @@ if __name__ == &amp;#39;__main__&amp;#39;:
 &lt;li&gt;&lt;a href="#orgheadline1"&gt;1. 为什么需要用token验证&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#orgheadline6"&gt;2. 如何使用token?&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgheadline2"&gt;2.1 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
+&lt;li&gt;&lt;a href="#orgheadline2"&gt;2.1. 生成token&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline3"&gt;2.2. 验证token&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline4"&gt;2.3. 使用flask-login&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline5"&gt;2.4. 设置csrf白名单&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline7"&gt;3. 使用脚本发表&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h1&gt;为什么需要用token验证&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;原因呢是因为写博客时已经在本地写好了，但是要发表到网站上还需要这么几步:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;[X] 打开浏览器&lt;/li&gt;
+&lt;li&gt;[X] 打开我的网站&lt;/li&gt;
+&lt;li&gt;[X] 进入登陆页&lt;/li&gt;
+&lt;li&gt;[X] 登陆&lt;/li&gt;
+&lt;li&gt;[X] 进入后台页&lt;/li&gt;
+&lt;li&gt;[X] 进入文章发表页&lt;/li&gt;
+&lt;li&gt;[X] 复制粘贴&lt;/li&gt;
+&lt;li&gt;[X] 发表&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以使用&lt;strong&gt;token&lt;/strong&gt;验证成为必然&lt;/p&gt;
+&lt;h1&gt;如何使用token?&lt;a id="orgheadline6"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;h2&gt;生成token&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;使用&lt;strong&gt;itsdangerous&lt;/strong&gt;对token进行加密&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;User&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;model&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="p"&gt;......&lt;/span&gt;
+
+    &lt;span class="kd"&gt;@property&lt;/span&gt;
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;token&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;config&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;current_app&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;config&lt;/span&gt;
+        &lt;span class="nx"&gt;secret_key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;config&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;setdefault&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;SECRET_KEY&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="nx"&gt;salt&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;config …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents&lt;/h2&gt;
 &lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
@@ -862,7 +1060,31 @@ return login_manager
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="#orgheadline1"&gt;1. 为什么需要这个需求?&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#orgheadline2"&gt;2. 如何实现?&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline8"&gt;3. 具体使用 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
+&lt;li&gt;&lt;a href="#orgheadline8"&gt;3. 具体使用&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#orgheadline3"&gt;3.1. 多个实例&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline4"&gt;3.2. 单个实例&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline5"&gt;3.3. 排除字段&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline6"&gt;3.4. only字段&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline7"&gt;3.5. 关系查询深度&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h1&gt;为什么需要这个需求?&lt;a id="orgheadline1"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;sqlalchemy&lt;/strong&gt; 是个好东西,虽然其文档犹如&lt;em&gt;老太婆的裹脚布--又臭又长&lt;/em&gt;,饱受诟病&lt;/p&gt;
+&lt;p&gt;使用 &lt;strong&gt;restful&lt;/strong&gt; 时sqlalchemy返回的是一个 &lt;strong&gt;object&lt;/strong&gt; 类，假设前后端分离,前端无法处理&lt;/p&gt;
+&lt;h1&gt;如何实现?&lt;a id="orgheadline2"&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;直接给出代码&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Serializer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;object&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;instance&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;many&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nx"&gt;False&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;include&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="nx"&gt;exclude&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[],&lt;/span&gt; &lt;span class="nx"&gt;depth&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;instance&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;instance&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;many&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;many&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;include&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;include&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;exclude&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;exclude …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents&lt;/h2&gt;
 &lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
@@ -1046,7 +1268,20 @@ data = serializer.data
     默认为2&lt;/li&gt;
 &lt;/ul&gt;</content><category term="python"></category><category term="sqlalchemy"></category><category term="json"></category></entry><entry><title>利用网易云api获取歌曲信息</title><link href="http://honmaple.org/articles/2016/12/%E5%88%A9%E7%94%A8%E7%BD%91%E6%98%93%E4%BA%91api%E8%8E%B7%E5%8F%96%E6%AD%8C%E6%9B%B2%E4%BF%A1%E6%81%AF.html" rel="alternate"></link><published>2016-12-11T00:00:00+08:00</published><updated>2016-12-11T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-12-11:/articles/2016/12/利用网易云api获取歌曲信息.html</id><summary type="html">&lt;p&gt;最近是增加了一个&lt;strong&gt;aplayer&lt;/strong&gt;在网站上,但原本想要使用qiniu存储，最后觉得太麻烦了,直接利用网易云api获取歌曲&lt;/p&gt;
 &lt;p&gt;使用&lt;strong&gt;python标准库urllib&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;直接给出代码 …&lt;/p&gt;</summary><content type="html">&lt;p&gt;最近是增加了一个&lt;strong&gt;aplayer&lt;/strong&gt;在网站上,但原本想要使用qiniu存储，最后觉得太麻烦了,直接利用网易云api获取歌曲&lt;/p&gt;
+&lt;p&gt;直接给出代码&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;urllib&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;json&lt;/span&gt;
+
+&lt;span class="nb"&gt;id&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;28819878&amp;#39;&lt;/span&gt;
+&lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://music.163.com/api/song/detail/?id=&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;&amp;amp;ids=%5B&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;%5D&amp;amp;csrf_token&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;rep&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urlopen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;decode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;UTF-8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;rep&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;json&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;loads&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;songs&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;artist&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;artists&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;mp3url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;mp3Url&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;picurl&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;rep&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;album&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;blurPicUrl&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;name:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;print …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;最近是增加了一个&lt;strong&gt;aplayer&lt;/strong&gt;在网站上,但原本想要使用qiniu存储，最后觉得太麻烦了,直接利用网易云api获取歌曲&lt;/p&gt;
 &lt;p&gt;使用&lt;strong&gt;python标准库urllib&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;直接给出代码&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;urllib&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;
@@ -1089,7 +1324,24 @@ data = serializer.data
 &lt;li&gt;&lt;a href="#orgheadline20"&gt;1. 校验数字的表达式&lt;/a&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="#orgheadline1"&gt;1.1. 数字:&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#orgheadline2"&gt;1 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
+&lt;li&gt;&lt;a href="#orgheadline2"&gt;1.2. n位的数字：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline3"&gt;1.3. 至少n位的数字：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline4"&gt;1.4. m-n位的数字：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline5"&gt;1.5. 零和非零开头的数字：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline6"&gt;1.6. 非零开头的最多带两位小数的数字：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline7"&gt;1.7. 带1-2位小数的正数或负数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline8"&gt;1.8. 正数、负数、和小数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline9"&gt;1.9. 有两位小数的正实数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline10"&gt;1.10. 有1~3位小数的正实数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline11"&gt;1.11. 非零的正整数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline12"&gt;1.12. 非零的负整数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline13"&gt;1.13. 非负整数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline14"&gt;1.14. 非正整数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline15"&gt;1.15. 非负浮点数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline16"&gt;1.16. 非正浮点数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline17"&gt;1.17. 正浮点数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline18"&gt;1.18. 负浮点数：&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#orgheadline19"&gt;1.19 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;
 &lt;h2&gt;Table of Contents&lt;/h2&gt;
 &lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;

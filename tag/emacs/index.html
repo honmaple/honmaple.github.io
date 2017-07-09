@@ -137,7 +137,34 @@
 <p><img alt="img" src="//images.honmaple.com/images/admin/photo/2017/04/149274346737550.png"></p>
 <p><img alt="img" src="//images.honmaple.com/images/admin/photo/2017/04/149274352705945.png"></p>
 <p>基础注释函数来源于 <strong>stackoverflow</strong></p>
-<div class="highlight"><pre><span></span>(defun …</pre></div>
+<div class="highlight"><pre><span></span>(defun comment-or-uncomment-region-or-line ()
+  &quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;
+  (interactive)
+  (let (beg end)
+    (if (region-active-p)
+        (setq beg (region-beginning) end (region-end))
+      (setq beg (line-beginning-position) end (line-end-position)))
+    (comment-or-uncomment-region beg end)))
+</pre></div>
+
+
+<p>在此函数的位置上进行修改,刚开始使用</p>
+<div class="highlight"><pre><span></span>(when (hs-already-hidden-p)
+    (evil-visual-line))
+</pre></div>
+
+
+<p>但是一直没得到想要的效果,后来修改了一下,使用</p>
+<div class="highlight"><pre><span></span>(when (hs-already-hidden-p)
+  (progn
+    (end-of-visual-line)
+    (evil-visual-state)
+    (beginning-of-visual-line)))
+</pre></div>
+
+
+<p>意思就是如果当前位置存在代码折叠,先选中当前行,然后注释整个选中区域</p>
+<p>因为光标被移动到首位,我对这个不太在意,如果有在意的话 …</p>
             <a class="readmore" href="../../articles/2017/04/emacs实现智能注释.html">read more</a>
 <p>There are <a href="../../articles/2017/04/emacs实现智能注释.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -170,7 +197,32 @@
 </div>
 
 <h1>需求<a id="orgheadline1"></a></h1>
-<p>在使用 …</p>
+<p>在使用 <strong>org-mode</strong> 写文档时，插入图片后默认不显示，想要直接在 <strong>org</strong>文件中预览图片，可以使用</p>
+<div class="highlight"><pre><span></span>org-toggle-inline-images
+</pre></div>
+
+
+<p>但是问题来了，开启预览模式后，移动光标跳过文件内容，找了一下</p>
+<p><a href="https://github.com/syl20bnr/spacemacs/issues/3824">参考链接</a> <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>
+那么问题来了，如何只在开启 <strong>org-toggle-inline-images</strong> 后关闭 <strong>smooth-scrooling</strong>,
+关闭 <strong>org-toggle-inline-images</strong> 后开启 <strong>smooth-scrooling</strong></p>
+<h1>解决<a id="orgheadline2"></a></h1>
+<p>给出代码,使用 <strong>defadvice</strong></p>
+<div class="highlight"><pre><span></span>(defadvice org-toggle-inline-images (after org-open-at-point activate)
+  (if smooth-scrolling-mode (smooth-scrolling-mode -1)
+        (smooth-scrolling-mode 1)))
+</pre></div>
+
+
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara">[https://github.com/syl20bnr/spacemacs/issues/3824](https://github.com/syl20bnr/spacemacs/issues/3824)</div></div>
+
+
+</div>
+</div>
             <a class="readmore" href="../../articles/2016/12/emacs预览图片时禁止smooth-scrolling.html">read more</a>
 <p>There are <a href="../../articles/2016/12/emacs预览图片时禁止smooth-scrolling.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -198,7 +250,31 @@
 <ul>
 <li><a href="#orgheadline1">1. 换系统</a></li>
 <li><a href="#orgheadline2">2. 修改language环境</a></li>
-<li><a href="#orgheadline3">3. 重新以gb2312的编码载入文件 …</a></li></ul></div></div>
+<li><a href="#orgheadline3">3. 重新以gb2312的编码载入文件(推荐)</a></li>
+</ul>
+</div>
+</div>
+
+<p>最近在看windows文件时总是乱码，查了资料后才知道windowns下的编码为 <strong>gb2312</strong> ,
+而linux下的编码为 <strong>utf-8</strong> ,所以打开文件会乱码</p>
+<p>如何解决?</p>
+<h3>换系统<a id="orgheadline1"></a></h3>
+<p>这不是废话吗!</p>
+<h3>修改language环境<a id="orgheadline2"></a></h3>
+<p>在配置文件中加入这么一行</p>
+<div class="highlight"><pre><span></span>(set-language-environment &#39;Chinese-GB)
+</pre></div>
+
+
+<p>重启就行,结果····打开 linux下的文件乱码</p>
+<h3>重新以gb2312的编码载入文件(推荐)<a id="orgheadline3"></a></h3>
+<p><a href="http://blog.csdn.net/pfanaya/article/details/6205640">参考这里</a></p>
+<div class="highlight"><pre><span></span>M-x revert-buffer-with-coding-system
+</pre></div>
+
+
+<p>选择chinese-gb2312,确认载入(不需要重启)</p>
+<p>ok,是不是很简单</p>
             <a class="readmore" href="../../articles/2016/06/emacs解决windowns文件乱码.html">read more</a>
 <p>There are <a href="../../articles/2016/06/emacs解决windowns文件乱码.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -221,7 +297,20 @@
     </address>
   <p>In <a href="../../category/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/emacs/index.html">emacs</a></p></footer><!-- /.post-info -->            <p>在一个多月前我给 <em>evil-escape</em> 开发者提了一个issue,但是不幸的是，没人理我，人理我，理我，我·····  </p>
-<p>于是这一个多月来我使用visual-state下选择段落的方式是 …</p>
+<p>于是这一个多月来我使用visual-state下选择段落的方式是: <strong>跳到段落最后,按k从下往上选择</strong>,
+现如今都快成为习惯了,今天终于有人解决了我的问题,非常感谢 <strong>ZzAntares</strong></p>
+<p>之前我用</p>
+<div class="highlight"><pre><span></span>(setq evil-escape-excluded-major-modes &#39;(dired-mode neotree-mode evil-visual-state))
+</pre></div>
+
+
+<p>解决了'jj'在 <em>dired-mode neotree-mode</em> 下的问题,但是遗憾的是 <em>visual-state</em> 下的选择问题仍然没有解决</p>
+<p>现在终于解决了, <a href="https://github.com/syl20bnr/evil-escape/issues/66">issue</a></p>
+<div class="highlight"><pre><span></span>(setq evil-escape-inhibit-functions &#39;(evil-visual-state-p))
+</pre></div>
+
+
+<p>ok ,就这样</p>
             <a class="readmore" href="../../articles/2016/05/解决evil-escape下visual-state不能使用'jj'的问题.html">read more</a>
 <p>There are <a href="../../articles/2016/05/解决evil-escape下visual-state不能使用'jj'的问题.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
