@@ -13,8 +13,8 @@
           <h1><a href="../../..">honmaple's blog </a></h1>
           <nav><ul>
               <li><a href="http://honmaple.org">主页</a></li>
-                <li class="active"><a href="../../../category/linux/index.html">Linux</a></li>
-                <li ><a href="../../../category/python/index.html">Python</a></li>
+                <li ><a href="../../../category/linux/index.html">Linux</a></li>
+                <li class="active"><a href="../../../category/python/index.html">Python</a></li>
                 <li ><a href="../../../category/security/index.html">Security</a></li>
                 <li class="dropdown">
                   <a href="../../../category/sheng-huo-sui-bi/index.html" >生活随笔</a>
@@ -56,73 +56,78 @@
     <address class="vcard author">
       By <a class="url fn" href="../../../author/honmaple.html">honmaple</a>
     </address>
-  <p>In <a href="../../../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../../../tag/python/index.html">python</a><a href="../../../tag/flask/index.html">flask</a><a href="../../../tag/datetime/index.html">datetime</a></p></footer><!-- /.post-info -->            <p>在前端显示为该问题 "几分钟前发表或几天前发表"</p>
+  <p>In <a href="../../../category/python/index.html">Python</a>. </p>
+<p>tags: <a href="../../../tag/flask/index.html">flask</a><a href="../../../tag/python/index.html">python</a><a href="../../../tag/time/index.html">time</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-15014130311126">设计需求</a></li>
+<li><a href="#org-15014130311129">具体实现</a></li>
+<li><a href="#org-15014130311130">具体代码</a></li>
+</ul>
+</div></div>
+
+
+<p>在前端显示为该问题 "几分钟前发表或几天前发表"</p>
+
 <p>后端通过filter注册</p>
+
 <p><a href="http://flask.pocoo.org/snippets/33/">参考资料</a></p>
-<h3>设计需求<a id="orgheadline1"></a></h3>
+
+<h1 id="org-15014130311126">设计需求</h1>
 <ul>
-<li>
-<p>如果问题发表超过 <strong>10天</strong> ,则显示为 <em>%Y-%m-%d %H:%M</em></p>
+<li>如果问题发表超过<b>10天</b> ,则显示为 /%Y-%m-%d %H:%M/
 </li>
-<li>
-<p>如果小于 <strong>10天</strong> ，但是大于 <strong>1天</strong> ，则显示为 <em>n天前</em> 发表</p>
+<li>如果小于<b>10天</b> ，但是大于<b>1天</b> ，则显示为 /n天前/ 发表
 </li>
-<li>
-<p>如果小于 <strong>1天</strong> ，但是大于 <strong>1小时</strong> ，则显示为 <em>n小时前</em> 发表</p>
+<li>如果小于<b>1天</b> ，但是大于<b>1小时</b> ，则显示为 /n小时前/ 发表
 </li>
-<li>
-<p>如果小于 <strong>1小时</strong> ，但是大于 <strong>90秒</strong> ，则显示为 <em>n分钟前</em> 发表</p>
+<li>如果小于<b>1小时</b> ，但是大于<b>90秒</b> ，则显示为 /n分钟前/ 发表
 </li>
-<li>
-<p>如果小于 <strong>90秒</strong> ，则显示为 <em>刚刚</em> 发表</p>
+<li>如果小于<b>90秒</b> ，则显示为 /刚刚/ 发表
 </li>
 </ul>
-<h3>具体实现<a id="orgheadline2"></a></h3>
-<p>通过 <code>diff.days</code> 和 <code>diff.seconds</code> 实现</p>
-<p>比如，大于10天</p>
-<div class="highlight"><pre><span></span>if diff.days &gt; 10:
-    return dt.strftime(&#39;%Y-%m-%d %H:%M&#39;)
-</pre></div>
+<h1 id="org-15014130311129">具体实现</h1>
+<p>通过 `diff.days` 和 `diff.seconds` 实现</p>
 
+<p>比如，大于10天
+<pre class="python">
+if diff.days > 10:
+    return dt.strftime('%Y-%m-%d %H:%M')
+</pre></p>
 
-<p>大于90秒,小于1小时</p>
-<div class="highlight"><pre><span></span>if diff.seconds &lt;= 3600 and diff.seconds &gt; 90:
-    periods = ((diff.seconds / 60, &quot;minute&quot;, &quot;minutes&quot;), )
-</pre></div>
+<p>大于90秒,小于1小时
+<pre class="python">
+if diff.seconds <= 3600 and diff.seconds > 90:
+    periods = ((diff.seconds / 60, "minute", "minutes"), )
+</pre></p>
 
-
-<h3>具体代码<a id="orgheadline3"></a></h3>
-<div class="highlight"><pre><span></span>def timesince(dt, default=&quot;just now&quot;):
+<h1 id="org-15014130311130">具体代码</h1>
+<pre class="python">
+def timesince(dt, default="just now"):
     now = datetime.now()
     diff = now - dt
-    if diff.days &gt; 10:
-        return dt.strftime(&#39;%Y-%m-%d %H:%M&#39;)
-    if diff.days &lt;= 10 and diff.days &gt; 0:
-        periods = ((diff.days, &quot;day&quot;, &quot;days&quot;), )
-    if diff.days &lt;= 0 and diff.seconds &gt; 3600:
-        periods = ((diff.seconds / 3600, &quot;hour&quot;, &quot;hours&quot;), )
-    if diff.seconds &lt;= 3600 and diff.seconds &gt; 90:
-        periods = ((diff.seconds / 60, &quot;minute&quot;, &quot;minutes&quot;), )
-    if diff.seconds &lt;= 90:
+    if diff.days > 10:
+        return dt.strftime('%Y-%m-%d %H:%M')
+    if diff.days <= 10 and diff.days > 0:
+        periods = ((diff.days, "day", "days"), )
+    if diff.days <= 0 and diff.seconds > 3600:
+        periods = ((diff.seconds / 3600, "hour", "hours"), )
+    if diff.seconds <= 3600 and diff.seconds > 90:
+        periods = ((diff.seconds / 60, "minute", "minutes"), )
+    if diff.seconds <= 90:
         return default
 
     for period, singular, plural in periods:
 
         if period:
-            return &quot;%d %s ago&quot; % (period, singular if period == 1 else
+            return "%d %s ago" % (period, singular if period == 1 else
                                     plural)
 
     return default
-</pre></div>
-
-
-<p>ok,之后就可以</p>
-<div class="highlight"><pre><span></span>app.jinja_env.filters[&#39;timesince&#39;] = timesince
-</pre></div>
-
-
-<p>来实现几分钟前发表的功能了</p>
+</pre>
+<p>ok,之后就可以
+<pre class="python">
+    app.jinja_env.filters['timesince'] = timesince
+</pre>
+来实现几分钟前发表的功能了</p>
         </div><!-- /.entry-content -->
         <div class="comments">
             <h2>Comments !</h2>

@@ -54,188 +54,186 @@
     </span>
   <span>In <a href="../../category/python/index.html">Python</a>. </span>
 <span class="tag">tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/sqlalchemy/index.html">sqlalchemy</a><a href="../../tag/json/index.html">json</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
-            <div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-15014130311408">为什么需要这个需求?</a></li>
+<li><a href="#org-15014130311409">如何实现?</a></li>
+<li><a href="#org-15014130311413">具体使用</a>
 <ul>
-<li><a href="#orgheadline1">1. 为什么需要这个需求?</a></li>
-<li><a href="#orgheadline2">2. 如何实现?</a></li>
-<li><a href="#orgheadline8">3. 具体使用</a>
-<ul>
-<li><a href="#orgheadline3">3.1. 多个实例</a></li>
-<li><a href="#orgheadline4">3.2. 单个实例</a></li>
-<li><a href="#orgheadline5">3.3. 排除字段</a></li>
-<li><a href="#orgheadline6">3.4. only字段</a></li>
-<li><a href="#orgheadline7">3.5. 关系查询深度</a></li>
+<li><a href="#org-15014130311414">多个实例</a></li>
+<li><a href="#org-15014130311414">单个实例</a></li>
+<li><a href="#org-15014130311414">排除字段</a></li>
+<li><a href="#org-15014130311414">仅包括字段</a></li>
+<li><a href="#org-15014130311415">关系查询深度</a></li>
+</ul></li>
 </ul>
-</li>
-</ul>
-</div>
-</div>
-
-<h1>为什么需要这个需求?<a id="orgheadline1"></a></h1>
-<p><strong>sqlalchemy</strong> 是个好东西,虽然其文档犹如<em>老太婆的裹脚布--又臭又长</em>,饱受诟病</p>
-<p>使用 <strong>restful</strong> 时sqlalchemy返回的是一个 <strong>object</strong> 类，假设前后端分离,前端无法处理</p>
-<h1>如何实现?<a id="orgheadline2"></a></h1>
-<p>直接给出代码</p>
-<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Serializer</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
-
-    <span class="nx">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">many</span><span class="o">=</span><span class="nx">False</span><span class="p">,</span> <span class="nx">include</span><span class="o">=</span><span class="p">[],</span> <span class="nx">exclude</span><span class="o">=</span><span class="p">[],</span> <span class="nx">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">:</span>
-        <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span> <span class="o">=</span> <span class="nx">instance</span>
-        <span class="nx">self</span><span class="p">.</span><span class="nx">many</span> <span class="o">=</span> <span class="nx">many</span>
-        <span class="nx">self</span><span class="p">.</span><span class="nx">include</span> <span class="o">=</span> <span class="nx">include</span>
-        <span class="nx">self</span><span class="p">.</span><span class="nx">exclude</span> <span class="o">=</span> <span class="nx">exclude</span>
-        <span class="nx">self</span><span class="p">.</span><span class="nx">depth</span> <span class="o">=</span> <span class="nx">depth</span>
-
-    <span class="kd">@property</span>
-    <span class="nx">def</span> <span class="nx">data</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
-        <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">include</span> <span class="nx">and</span> <span class="nx">self.exclude</span>:
-            <span class="kt">raise</span> <span class="nx">ValueError</span><span class="p">(</span><span class="s1">&#39;include and exclude can\&#39;t work together&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nx">self.many</span>:
-            <span class="kt">if</span> <span class="nx">isinstance</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">list</span><span class="p">)</span><span class="o">:</span>
-                <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializerlist</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">self</span><span class="p">.</span><span class="nx">depth</span><span class="p">)</span>
-            <span class="nx">pageinfo</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s1">&#39;items&#39;</span><span class="o">:</span> <span class="nx">True</span><span class="p">,</span>
-                <span class="s1">&#39;pages&#39;</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">pages</span><span class="p">,</span>
-                <span class="s1">&#39;has_prev&#39;</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">has_prev</span><span class="p">,</span>
-                <span class="s1">&#39;page&#39;</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">page</span><span class="p">,</span>
-                <span class="s1">&#39;has_next&#39;</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">has_next</span><span class="p">,</span>
-                <span class="s1">&#39;iter_pages&#39;</span><span class="o">:</span> <span class="nx">list</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">iter_pages</span><span class="p">(</span><span class="nx">left_edge</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                                            <span class="nx">left_current</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                                                            <span class="nx">right_current</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                                                            <span class="nx">right_edge</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-            <span class="p">}</span>
-            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializerlist</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">items</span><span class="p">,</span>
-                                                 <span class="nx">self</span><span class="p">.</span><span class="nx">depth</span><span class="p">),</span>
-                    <span class="s1">&#39;pageinfo&#39;</span><span class="o">:</span> <span class="nx">pageinfo</span><span class="p">}</span>
-        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializer</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">self</span><span class="p">.</span><span class="nx">depth</span><span class="p">)</span>
-
-    <span class="nx">def</span> <span class="nx">_serializerlist</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">instances</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span><span class="o">:</span>
-        <span class="nx">results</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="nx">instance</span> <span class="k">in</span> <span class="nx">instances</span>:
-            <span class="kt">result</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializer</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nx">result</span>:
-                <span class="kt">results.append</span><span class="p">(</span><span class="nx">result</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nx">results</span>
-
-    <span class="nx">def</span> <span class="nx">_serializer</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span><span class="o">:</span>
-        <span class="nx">result</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">if</span> <span class="nx">depth</span> <span class="o">==</span> <span class="nx">0</span>:
-            <span class="kt">return</span> <span class="nx">result</span>
-        <span class="nx">depth</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="nx">model_class</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">get_model_class</span><span class="p">(</span><span class="nx">instance</span><span class="p">)</span>
-        <span class="nx">inp</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">get_inspect</span><span class="p">(</span><span class="nx">model_class</span><span class="p">)</span>
-        <span class="nx">model_data</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializer_model</span><span class="p">(</span><span class="nx">inp</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span>
-        <span class="nx">relation_data</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_serializer_relation</span><span class="p">(</span><span class="nx">inp</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span>
-        <span class="nx">result</span><span class="p">.</span><span class="nx">update</span><span class="p">(</span><span class="nx">model_data</span><span class="p">)</span>
-        <span class="nx">result</span><span class="p">.</span><span class="nx">update</span><span class="p">(</span><span class="nx">relation_data</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nx">result</span>
-
-    <span class="nx">def</span> <span class="nx">_serializer_model</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">inp</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span><span class="o">:</span>
-        <span class="nx">result</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="nx">model_columns</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">get_model_columns</span><span class="p">(</span><span class="nx">inp</span><span class="p">)</span>
-        <span class="k">for</span> <span class="nx">column</span> <span class="k">in</span> <span class="nx">model_columns</span>:
-            <span class="kt">result</span><span class="p">[</span><span class="nx">column</span><span class="p">]</span> <span class="o">=</span> <span class="nx">getattr</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">column</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nx">result</span>
-
-    <span class="nx">def</span> <span class="nx">_serializer_relation</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">inp</span><span class="p">,</span> <span class="nx">instance</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span><span class="o">:</span>
-        <span class="nx">result</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="nx">relation_columns</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">get_relation_columns</span><span class="p">(</span><span class="nx">inp</span><span class="p">)</span>
-        <span class="k">for</span> <span class="nx">relation</span> <span class="k">in</span> <span class="nx">relation_columns</span>:
-            <span class="kt">column</span> <span class="o">=</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">key</span>
-            <span class="k">if</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">direction</span> <span class="k">in</span> <span class="p">[</span><span class="nx">ONETOMANY</span><span class="p">,</span> <span class="nx">MANYTOMANY</span><span class="p">]</span><span class="o">:</span>
-                <span class="nx">children</span> <span class="o">=</span> <span class="nx">getattr</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">column</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">lazy</span> <span class="o">==</span> <span class="s1">&#39;dynamic&#39;</span><span class="o">:</span>
-                    <span class="nx">children</span> <span class="o">=</span> <span class="nx">children</span><span class="p">.</span><span class="nx">all</span><span class="p">()</span>
-                <span class="nx">result</span><span class="p">[</span><span class="nx">column</span><span class="p">]</span> <span class="o">=</span> <span class="nx">Serializer</span><span class="p">(</span>
-                    <span class="nx">children</span><span class="p">,</span>
-                    <span class="nx">many</span><span class="o">=</span><span class="nx">True</span><span class="p">,</span>
-                    <span class="nx">exclude</span><span class="o">=</span><span class="p">[</span><span class="nx">relation</span><span class="p">.</span><span class="nx">back_populates</span><span class="p">],</span>
-                    <span class="nx">depth</span><span class="o">=</span><span class="nx">depth</span><span class="p">).</span><span class="nx">data</span>
-            <span class="k">else</span><span class="o">:</span>
-                <span class="nx">child</span> <span class="o">=</span> <span class="nx">getattr</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">column</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">lazy</span> <span class="o">==</span> <span class="s1">&#39;dynamic&#39;</span><span class="o">:</span>
-                    <span class="nx">child</span> <span class="o">=</span> <span class="nx">child</span><span class="p">.</span><span class="nx">first</span><span class="p">()</span>
-                <span class="nx">result</span><span class="p">[</span><span class="nx">column</span><span class="p">]</span> <span class="o">=</span> <span class="nx">Serializer</span><span class="p">(</span>
-                    <span class="nx">child</span><span class="p">,</span>
-                    <span class="nx">many</span><span class="o">=</span><span class="nx">False</span><span class="p">,</span>
-                    <span class="nx">exclude</span><span class="o">=</span><span class="p">[</span><span class="nx">relation</span><span class="p">.</span><span class="nx">back_populates</span><span class="p">],</span>
-                    <span class="nx">depth</span><span class="o">=</span><span class="nx">depth</span><span class="p">).</span><span class="nx">data</span>
-        <span class="k">return</span> <span class="nx">result</span>
-
-    <span class="nx">def</span> <span class="nx">get_model_class</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">instance</span><span class="p">)</span><span class="o">:</span>
-        <span class="k">return</span> <span class="nx">getattr</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="s1">&#39;__class__&#39;</span><span class="p">)</span>
-
-    <span class="nx">def</span> <span class="nx">get_inspect</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">model_class</span><span class="p">)</span><span class="o">:</span>
-        <span class="k">return</span> <span class="nx">inspect</span><span class="p">(</span><span class="nx">model_class</span><span class="p">)</span>
-
-    <span class="nx">def</span> <span class="nx">get_model_columns</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">inp</span><span class="p">)</span><span class="o">:</span>
-        <span class="k">if</span> <span class="nx">self.include</span>:
-            <span class="kt">model_columns</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="nx">column</span><span class="p">.</span><span class="nx">name</span> <span class="k">for</span> <span class="nx">column</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">columns</span>
-                <span class="k">if</span> <span class="nx">column</span><span class="p">.</span><span class="nx">name</span> <span class="k">in</span> <span class="nx">self</span><span class="p">.</span><span class="nx">include</span>
-            <span class="p">]</span>
-        <span class="nx">elif</span> <span class="nx">self.exclude</span>:
-            <span class="kt">model_columns</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="nx">column</span><span class="p">.</span><span class="nx">name</span> <span class="k">for</span> <span class="nx">column</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">columns</span>
-                <span class="k">if</span> <span class="nx">column</span><span class="p">.</span><span class="nx">name</span> <span class="nx">not</span> <span class="k">in</span> <span class="nx">self</span><span class="p">.</span><span class="nx">exclude</span>
-            <span class="p">]</span>
-        <span class="k">else</span><span class="o">:</span>
-            <span class="nx">model_columns</span> <span class="o">=</span> <span class="p">[</span><span class="nx">column</span><span class="p">.</span><span class="nx">name</span> <span class="k">for</span> <span class="nx">column</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">columns</span><span class="p">]</span>
-
-        <span class="k">return</span> <span class="nx">model_columns</span>
-
-    <span class="nx">def</span> <span class="nx">get_relation_columns</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">inp</span><span class="p">)</span><span class="o">:</span>
-        <span class="k">if</span> <span class="nx">self.include</span>:
-            <span class="kt">relation_columns</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="nx">relation</span> <span class="k">for</span> <span class="nx">relation</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">relationships</span>
-                <span class="k">if</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">key</span> <span class="k">in</span> <span class="nx">self</span><span class="p">.</span><span class="nx">include</span>
-            <span class="p">]</span>
-        <span class="nx">elif</span> <span class="nx">self.exclude</span>:
-            <span class="kt">relation_columns</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="nx">relation</span> <span class="k">for</span> <span class="nx">relation</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">relationships</span>
-                <span class="k">if</span> <span class="nx">relation</span><span class="p">.</span><span class="nx">key</span> <span class="nx">not</span> <span class="k">in</span> <span class="nx">self</span><span class="p">.</span><span class="nx">exclude</span>
-            <span class="p">]</span>
-        <span class="k">else</span><span class="o">:</span>
-            <span class="nx">relation_columns</span> <span class="o">=</span> <span class="p">[</span><span class="nx">relation</span> <span class="k">for</span> <span class="nx">relation</span> <span class="k">in</span> <span class="nx">inp</span><span class="p">.</span><span class="nx">relationships</span><span class="p">]</span>
-        <span class="k">return</span> <span class="nx">relation_columns</span>
-</pre></div>
+</div></div>
 
 
-<h1>具体使用<a id="orgheadline8"></a></h1>
-<p>使用上很简单(以flask-sqlalchemy为例),原生<strong>sqlalchemy</strong>类似</p>
-<h2>多个实例<a id="orgheadline3"></a></h2>
-<div class="highlight"><pre><span></span>posts = Post.query.all()
-serializer = Seralizer(posts,many=True)
-data = serializer.data
-</pre></div>
+<h1 id="org-15014130311408">为什么需要这个需求?</h1>
+<p><b>sqlalchemy</b> 是个好东西,虽然其文档犹如/老太婆的裹脚布--又臭又长/,饱受诟病</p>
 
+<p>使用<b>restful</b> 时sqlalchemy返回的是一个<b>object</b> 类，假设前后端分离,前端无法处理</p>
 
-<h2>单个实例<a id="orgheadline4"></a></h2>
-<div class="highlight"><pre><span></span>post = Post.query.first()
-serializer = Seralizer(post,many=False)
-data = serializer.data
-</pre></div>
+<h1 id="org-15014130311409">如何实现?</h1>
+<p>直接给出代码
+<pre class="python">
+  class Serializer(object):
 
+      def __init__(self, instance, many=False, include=[], exclude=[], depth=2):
+          self.instance = instance
+          self.many = many
+          self.include = include
+          self.exclude = exclude
+          self.depth = depth
 
-<h2>排除字段<a id="orgheadline5"></a></h2>
-<div class="highlight"><pre><span></span>serializer = Seralizer(post,exclude=[&#39;title&#39;])
-</pre></div>
+      @property
+      def data(self):
+          if self.include and self.exclude:
+              raise ValueError('include and exclude can\'t work together')
+          if self.many:
+              if isinstance(self.instance, list):
+                  return self._serializerlist(self.instance, self.depth)
+              pageinfo = {
+                  'items': True,
+                  'pages': self.instance.pages,
+                  'has_prev': self.instance.has_prev,
+                  'page': self.instance.page,
+                  'has_next': self.instance.has_next,
+                  'iter_pages': list(self.instance.iter_pages(left_edge=1,
+                                                              left_current=2,
+                                                              right_current=3,
+                                                              right_edge=1))
+              }
+              return {'data': self._serializerlist(self.instance.items,
+                                                   self.depth),
+                      'pageinfo': pageinfo}
+          return self._serializer(self.instance, self.depth)
 
+      def _serializerlist(self, instances, depth):
+          results = []
+          for instance in instances:
+              result = self._serializer(instance, depth)
+              if result:
+                  results.append(result)
+          return results
 
-<h2>only字段<a id="orgheadline6"></a></h2>
-<div class="highlight"><pre><span></span>serializer = Seralizer(post,include=[&#39;title&#39;])
-</pre></div>
+      def _serializer(self, instance, depth):
+          result = {}
+          if depth == 0:
+              return result
+          depth -= 1
+          model_class = self.get_model_class(instance)
+          inp = self.get_inspect(model_class)
+          model_data = self._serializer_model(inp, instance, depth)
+          relation_data = self._serializer_relation(inp, instance, depth)
+          result.update(model_data)
+          result.update(relation_data)
+          return result
 
+      def _serializer_model(self, inp, instance, depth):
+          result = {}
+          model_columns = self.get_model_columns(inp)
+          for column in model_columns:
+              result[column] = getattr(instance, column)
+          return result
 
-<h2>关系查询深度<a id="orgheadline7"></a></h2>
-<div class="highlight"><pre><span></span>serializer = Seralizer(post,depth=3)
-</pre></div>
+      def _serializer_relation(self, inp, instance, depth):
+          result = {}
+          relation_columns = self.get_relation_columns(inp)
+          for relation in relation_columns:
+              column = relation.key
+              if relation.direction in [ONETOMANY, MANYTOMANY]:
+                  children = getattr(instance, column)
+                  if relation.lazy == 'dynamic':
+                      children = children.all()
+                  result[column] = Serializer(
+                      children,
+                      many=True,
+                      exclude=[relation.back_populates],
+                      depth=depth).data
+              else:
+                  child = getattr(instance, column)
+                  if relation.lazy == 'dynamic':
+                      child = child.first()
+                  result[column] = Serializer(
+                      child,
+                      many=False,
+                      exclude=[relation.back_populates],
+                      depth=depth).data
+          return result
 
+      def get_model_class(self, instance):
+          return getattr(instance, '__class__')
 
+      def get_inspect(self, model_class):
+          return inspect(model_class)
+
+      def get_model_columns(self, inp):
+          if self.include:
+              model_columns = [
+                  column.name for column in inp.columns
+                  if column.name in self.include
+              ]
+          elif self.exclude:
+              model_columns = [
+                  column.name for column in inp.columns
+                  if column.name not in self.exclude
+              ]
+          else:
+              model_columns = [column.name for column in inp.columns]
+
+          return model_columns
+
+      def get_relation_columns(self, inp):
+          if self.include:
+              relation_columns = [
+                  relation for relation in inp.relationships
+                  if relation.key in self.include
+              ]
+          elif self.exclude:
+              relation_columns = [
+                  relation for relation in inp.relationships
+                  if relation.key not in self.exclude
+              ]
+          else:
+              relation_columns = [relation for relation in inp.relationships]
+          return relation_columns
+</pre></p>
+
+<h1 id="org-15014130311413">具体使用</h1>
+<p>使用上很简单(以flask-sqlalchemy为例),原生*sqlalchemy*类似</p>
+
+<h2 id="org-15014130311414">多个实例</h2>
+<pre class="python">
+   posts = Post.query.all()
+   serializer = Seralizer(posts,many=True)
+   data = serializer.data
+</pre>
+
+<h2 id="org-15014130311414">单个实例</h2>
+<pre class="python">
+   post = Post.query.first()
+   serializer = Seralizer(post,many=False)
+   data = serializer.data
+</pre>
+
+<h2 id="org-15014130311414">排除字段</h2>
+<pre class="python">
+   serializer = Seralizer(post,exclude=['title'])
+</pre>
+
+<h2 id="org-15014130311414">仅包括字段</h2>
+<pre class="python">
+   serializer = Seralizer(post,include=['title'])
+</pre>
+
+<h2 id="org-15014130311415">关系查询深度</h2>
+<pre class="python">
+   serializer = Seralizer(post,depth=3)
+</pre>
 <ul>
 <li>depth
-    默认为2</li>
+<p>默认为2</p></li>
 </ul><p>There are <a href="../../articles/2016/12/sqlalchemy序列化为json.html#disqus_thread">comments</a>.</p>          </article>
 <p class="paginator">
     Page 1 / 1

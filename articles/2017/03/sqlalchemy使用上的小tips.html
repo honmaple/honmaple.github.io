@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>sqlalchemy使用上的小tips</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../theme/css/main.css" type="text/css" />
+  </head>
+  <body id="index" class="home">
+    <div id="particles-js"></div>
+    <div class="wrap">
+      <div class="main">
+        <header id="banner" class="body">
+          <h1><a href="../../..">honmaple's blog </a></h1>
+          <nav><ul>
+              <li><a href="http://honmaple.org">主页</a></li>
+                <li ><a href="../../../category/linux/index.html">Linux</a></li>
+                <li class="active"><a href="../../../category/python/index.html">Python</a></li>
+                <li ><a href="../../../category/security/index.html">Security</a></li>
+                <li class="dropdown">
+                  <a href="../../../category/sheng-huo-sui-bi/index.html" >生活随笔</a>
+                  <dl>
+                      <dd><a href="../../../category/hui-yi/index.html">回忆</a></dd>
+                  </dl>
+                </li>
+            <li class="dropdown">
+              <a href="../../../archives.html">Archives</a>
+              <dl>
+                <dd><a href="../../../tags.html">Tags</a></dd>
+                <dd><a href="../../../categories.html">Categories</a></dd>
+                <dd><a href="../../../authors.html">Authors</a></dd>
+              </dl>
+            </li>
+            <li style="float:right;margin-right:15px;">
+              <form onsubmit="return dispatch()" class="search has-feedback">
+                <input type="text" id="search" name="search"/>
+                <i class="form-control-feedback"></i>
+              </form>
+            </li>
+          </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+    <article>
+        <header>
+            <h1 class="entry-title">
+                <a href="articles/2017/03/sqlalchemy使用上的小tips.html" rel="bookmark"
+                   title="Permalink to sqlalchemy使用上的小tips">sqlalchemy使用上的小tips</a></h1>
+            <hr style="margin-top: 20px;margin-bottom: 20px;border: 0;border-top: 1px solid #eee;" />
+        </header>
+
+        <div class="entry-content article-content">
+<footer class="post-info">
+  <abbr class="published" title="2017-03-15T00:00:00+08:00">
+    三 15 三月 2017
+  </abbr>
+
+    <address class="vcard author">
+      By <a class="url fn" href="../../../author/honmaple.html">honmaple</a>
+    </address>
+  <p>In <a href="../../../category/python/index.html">Python</a>. </p>
+<p>tags: <a href="../../../tag/python/index.html">python</a><a href="../../../tag/sqlalchemy/index.html">sqlalchemy</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-15014130310427">sqlalchemy object序列化为json</a>
+<ul>
+<li><a href="#org-15014130310427">多个实例</a></li>
+<li><a href="#org-15014130310428">单个实例</a></li>
+<li><a href="#org-15014130310428">排除字段</a></li>
+<li><a href="#org-15014130310428">仅包括字段</a></li>
+<li><a href="#org-15014130310428">关系查询深度</a></li>
+<li><a href="#org-15014130310429">增加一些自定义的函数</a></li>
+<li><a href="#org-15014130310430">可传递参数的函数</a></li>
+</ul></li>
+<li><a href="#org-15014130310430">像django orm一样使用sqlalchemy</a>
+<ul>
+<li><a href="#org-15014130310430">基本查询(已实现)</a></li>
+<li><a href="#org-15014130310433">关系查询</a></li>
+<li><a href="#org-15014130310433">其它</a></li>
+</ul></li>
+<li><a href="#org-15014130310433">去掉一些sqlalchemy的重复工作</a>
+<ul>
+<li><a href="#org-15014130310434">ModelMixin</a></li>
+<li><a href="#org-15014130310435">ModelTimeMixin</a></li>
+<li><a href="#org-15014130310436">ModelUserMixin</a></li>
+</ul></li>
+</ul>
+</div></div>
+
+
+<h1 id="org-15014130310427">sqlalchemy object序列化为json</h1>
+<p>灵感来源于 *Django REST framework*
+<pre class="python">
+   posts = Post.query.all()
+   serializer = Seralizer(posts,many=True)
+   data = serializer.data
+</pre></p>
+<h2 id="org-15014130310427">多个实例</h2>
+
+<h2 id="org-15014130310428">单个实例</h2>
+<pre class="python">
+   post = Post.query.first()
+   serializer = Seralizer(post,many=False)
+   data = serializer.data
+</pre>
+
+<h2 id="org-15014130310428">排除字段</h2>
+<pre class="python">
+   serializer = Seralizer(post,exclude=['title'])
+</pre>
+
+<h2 id="org-15014130310428">仅包括字段</h2>
+<pre class="python">
+   serializer = Seralizer(post,include=['title'])
+</pre>
+
+<h2 id="org-15014130310428">关系查询深度</h2>
+<pre class="python">
+   serializer = Seralizer(post,depth=3)
+</pre>
+<ul>
+<li>depth
+<p>默认为2</p>
+</li>
+</ul>
+<h2 id="org-15014130310429">增加一些自定义的函数</h2>
+<pre class="python">
+   serializer = Serializer(post,extra=['get_post_count'])
+</pre>
+<p>Post
+<pre class="python">
+     class Post(Model):
+         ......
+         def get_post_count(self):
+             return 11
+</pre></p>
+
+<h2 id="org-15014130310430">可传递参数的函数</h2>
+<pre class="python">
+    class PostSerializer(Serializer):
+        count = Field(source = 'get_post_count',args={'name':'hello'},default=20)
+        class Meta:
+            include = []
+            depth = 2
+            include = []
+            exclude = []
+            extra = ['count']
+</pre>
+<h1 id="org-15014130310430">像django orm一样使用sqlalchemy</h1>
+<p>*djang orm*与sqlalchemy相比,为什么很多人都认为django orm更好用,大概就是因为django orm更方便</p>
+
+<h2 id="org-15014130310430">基本查询(已实现)</h2>
+<ul>
+<li>gt</li>
+<li>lt</li>
+<li>lte</li>
+<li>gte</li>
+<li>contains</li>
+<li>in</li>
+<li>exact</li>
+<li>iexact</li>
+<li>startswith</li>
+<li>istartswith</li>
+<li>iendswith</li>
+<li>endswith</li>
+<li>isnull</li>
+<li>range</li>
+<li>year</li>
+<li>month</li>
+<li>day
+</li>
+</ul>
+<p>示例:
+<pre class="python">
+   Post.query.filter_by(title__contains = 'sql').all()
+   Post.query.exclude_by(title__contains = 'sql').all()
+</pre></p>
+
+<h2 id="org-15014130310433">关系查询</h2>
+<pre class="python">
+   Post.query.filter_by(tags__name__contains = 'sql').all()
+</pre>
+
+<h2 id="org-15014130310433">其它</h2>
+<pre class="python">
+   Post.query.filter_by(tags__name__contains = 'sql').or(Post.id == 1,Post.id == 2).all()
+   Post.query.filter_by(tags__name__contains = 'sql').and(Post.id == 1,Post.id == 2).all()
+   Post.query.filter_by(tags__name__contains = 'sql').exists()
+   Post.query.load_only('title')
+</pre>
+
+<h1 id="org-15014130310433">去掉一些sqlalchemy的重复工作</h1>
+<p>以*flask-sqlalchemy*为例,通过继承<b>models.py</b> 中的*Mixin*,就可以去除部分重复工作</p>
+
+<h2 id="org-15014130310434">ModelMixin</h2>
+<p>自增ID -- id</p>
+
+<pre class="python">
+   post = Post(·····)
+   post.save() # 保存
+   post.delete() # 保存
+</pre>
+
+<p>批量操作</p>
+<ul>
+<li>bulk_insert</li>
+<li>bulk_update</li>
+<li>bulk_save
+</li>
+</ul>
+<h2 id="org-15014130310435">ModelTimeMixin</h2>
+<p>增加两字段</p>
+<ul>
+<li>created_at
+<p>数据创建时间</p></li>
+<li>updated_at
+<p>数据更新时间</p>
+</li>
+</ul>
+<h2 id="org-15014130310436">ModelUserMixin</h2>
+<p>关联用户表,与*User*表现为*多对一*关系(即一个用户有多个post)
+<pre class="python">
+     class Post(ModelUserMixin, Model):
+
+         user_related_name = 'posts'
+         titile = ...
+</pre></p>
+        </div><!-- /.entry-content -->
+        <div class="comments">
+            <h2>Comments !</h2>
+            <div id="disqus_thread"></div>
+            <script type="text/javascript">
+             var disqus_identifier = "articles/2017/03/sqlalchemy使用上的小tips.html";
+             (function() {
+                 var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                 dsq.src = 'https://honmaple.disqus.com/embed.js';
+                 (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             })();
+            </script>
+        </div>
+
+    </article>
+</section>
+      </div>
+    </div>
+    <div class="footer">
+      <section id="extras">
+          <div class="blogroll">
+            <h2>blogroll</h2>
+            <ul>
+                <li><a href="http://getpelican.com/">Pelican</a></li>
+                <li><a href="http://python.org/">Python.org</a></li>
+                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                <li><a href="https://honmaple.com">个人博客</a></li>
+            </ul>
+          </div><!-- /.blogroll -->
+          <div class="social">
+            <h2>social</h2>
+            <ul>
+                <li><a href="http://honmaple.org/feeds/all.rss.xml">Atom Feed</a></li>
+                <li><a href="https://github.com/honmaple">GitHub</a></li>
+                <li><a href="https://twitter.com/xiyang87">Twitter</a></li>
+            </ul>
+          </div><!-- /.social -->
+      </section><!-- /#extras -->
+    </div>
+
+<script>
+ (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+ })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ ga('create', 'UA-88401692-2', 'auto');
+ ga('send', 'pageview');
+
+</script>
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+    <script src="https://cdn.bootcss.com/particles.js/2.0.0/particles.min.js"></script>
+    <script type="text/javascript" src="../../../theme/js/particles.js"></script>
+  </body>
+</html>

@@ -54,298 +54,181 @@
     </span>
   <span>In <a href="../../category/sheng-huo-sui-bi/index.html">生活随笔</a>. </span>
 <span class="tag">tags: <a href="../../tag/sheng-huo-sui-bi/index.html">生活随笔</a><a href="../../tag/bi-ye-she-ji/index.html">毕业设计</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
-            <div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-15014130310998">站内信设计</a>
 <ul>
-<li><a href="#orgheadline7">1. 站内信设计</a>
+<li><a href="#org-15014130310998">逻辑实现</a>
 <ul>
-<li><a href="#orgheadline3">1.1. 逻辑实现</a>
+<li><a href="#org-15014130310998">点对点(私信)</a></li>
+<li><a href="#org-15014130311001">点对面(系统消息)</a></li>
+</ul></li>
+<li><a href="#org-15014130311006">数据库设计</a>
 <ul>
-<li><a href="#orgheadline1">1.1.1. 点对点(私信)</a></li>
-<li><a href="#orgheadline2">1.1.2. 点对面(系统消息)</a></li>
+<li><a href="#org-15014130311007">信息表(关联)</a></li>
+<li><a href="#org-15014130311009">信息内容表</a></li>
+</ul></li>
+</ul></li>
 </ul>
-</li>
-<li><a href="#orgheadline6">1.2. 数据库设计</a>
-<ul>
-<li><a href="#orgheadline4">1.2.1. 信息表(关联)</a></li>
-<li><a href="#orgheadline5">1.2.2. 信息内容表</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
+</div></div>
 
-<h1>站内信设计<a id="orgheadline7"></a></h1>
-<h2>逻辑实现<a id="orgheadline3"></a></h2>
-<h3>点对点(私信)<a id="orgheadline1"></a></h3>
+
+<h1 id="org-15014130310998">站内信设计</h1>
+
+<h2 id="org-15014130310998">逻辑实现</h2>
+
+<h3 id="org-15014130310998">点对点(私信)</h3>
 <ul>
 <li>发送方
-    sender</li>
+<p>sender</p></li>
 <li>接收方
-    receiver</li>
+<p>receiver</p></li>
 <li>状态
-    status</li>
+<p>status</p></li>
 <li>信息内容
-    message</li>
+<p>message</p></li>
 <li>信息分类
-    message_type</li>
-<li>
-<p>发送时间
-    created_at</p>
-<p>点对点发送消息比较简单,每次发送为单表时插入 <strong>sender</strong>, <strong>receiver</strong>, <strong>message</strong>, <strong>created_at</strong></p>
+<p>message_type</p></li>
+<li>发送时间
+<p>created_at</p>
+
+<p>点对点发送消息比较简单,每次发送为单表时插入<b>sender</b>,<b>receiver</b>,<b>message</b>,<b>created_at</b></p>
+
 <blockquote>
-<p>(伪代码)
--   获取未读信息</p>
-</blockquote>
-<div class="highlight"><pre><span></span>select message from message where reveiver_id == &#39;user.id&#39; and status = &#39;unread&#39;;
-</pre></div>
+<p>(伪代码)</p>
+</blockquote></li>
+<li>获取未读信息
+<pre class="sql">
+      select message from message where reveiver_id == 'user.id' and status = 'unread';
+</pre></li>
+<li>获取系统未读信息
+<pre class="sql">
+      select message from message where reveiver_id == 'user.id' and status = 'unread' and message_type = 'sys'
+</pre></li>
+<li>获取已读信息
+<pre class="sql">
+      status = 'read'
+</pre>
 
-
-<ul>
-<li>
-<p>获取系统未读信息</p>
-<p>select message from message where reveiver_id == 'user.id' and status = 'unread' and message_type = 'sys'
--   获取已读信息</p>
-<p>status = 'read'</p>
 </li>
 </ul>
-</li>
-</ul>
-<h3>点对面(系统消息)<a id="orgheadline2"></a></h3>
-<p>点对面实现不能像<strong>点对点</strong>一样为每一个用户创建一条数据(如果数以十万百万计)  </p>
-<p>具体实现看这里 <a href="http://www.cnblogs.com/grenet/archive/2010/04/09/1708008.html"><a href="http://www.cnblogs.com/grenet/archive/2010/04/09/1708008.html">http://www.cnblogs.com/grenet/archive/2010/04/09/1708008.html</a></a></p>
+<h3 id="org-15014130311001">点对面(系统消息)</h3>
+<p>点对面实现不能像*点对点*一样为每一个用户创建一条数据(如果数以十万百万计)
+具体实现看这里 <a href="http://www.cnblogs.com/grenet/archive/2010/04/09/1708008.html">http://www.cnblogs.com/grenet/archive/2010/04/09/1708008.html</a></p>
+
 <blockquote>
 <p>简单讲一下我理解的逻辑(伪代码):</p>
 </blockquote>
 <ul>
-<li>
-<p>发送私信(点对点)</p>
-<div class="highlight"><pre><span></span># 先保存消息主体内容
-message_text = MessageText(
-    sender = sender,
-    message = message,
-    message_type = message_type(私信)
-)
-# 保存接受方，并关联消息主体
-message = Message(
-    message_text_id = message_text.id,
-    receiver = receiver,
-    status = &#39;unread&#39;
-)
-</pre></div>
-
-
+<li>发送私信(点对点)
+<pre class="python">
+        # 先保存消息主体内容
+        message_text = MessageText(
+            sender = sender,
+            message = message,
+            message_type = message_type(私信)
+        )
+        # 保存接受方，并关联消息主体
+        message = Message(
+            message_text_id = message_text.id,
+            receiver = receiver,
+            status = 'unread'
+        )
+</pre>
 <ul>
-<li>获取未读信息<div class="highlight"><pre><span></span>messages = Message.query.filter_by(receiver = current_user,status = &#39;unread&#39;)
-</pre></div>
-
-
+<li>获取未读信息
+<pre class="python">
+          messages = Message.query.filter_by(receiver = current_user,status = 'unread')
+</pre>
 </li>
-</ul>
-</li>
-<li>
-<p>系统消息</p>
-<div class="highlight"><pre><span></span># 只保存消息主体内容
-message_text = MessageText(
-    sender = sender,
-    message = message,
-    message_type = message_type(系统消息)
-)
-</pre></div>
-
-
+</ul></li>
+<li>系统消息
+<pre class="python">
+        # 只保存消息主体内容
+        message_text = MessageText(
+            sender = sender,
+            message = message,
+            message_type = message_type(系统消息)
+        )
+</pre>
 <ul>
-<li>
-<p>获取未读信息
-    判断 <strong>message</strong> 表中 <strong>message_text_id</strong> 是否存在于 <strong>message_text_id__list</strong> (receiver = current_user)</p>
-<p><del>不存在</del>,标记为<strong>系统未读</strong>  </p>
-<p>存在,判断是否未读
-    -   获取具体未读信息</p>
-<p>如上<del>不存在</del>时</p>
-<div class="highlight"><pre><span></span># 保存消息
-message = Message(receiver = current_user,
-                  status = &#39;read&#39;,
-                  message_text_id = message_text.id)
-</pre></div>
+<li>获取未读信息
+<p>判断<b>message</b> 表中<b>message_text_id</b> 是否存在于<b>message_text_id__list</b>(receiver = current_user)
+<del>不存在</del>,标记为*系统未读*
+存在,判断是否未读</p></li>
+<li>获取具体未读信息
+<p>如上+不存在+时
+<pre class="python">
+          # 保存消息
+          message = Message(receiver = current_user,
+                            status = 'read',
+                            message_text_id = message_text.id)
+</pre></p>
 
+<p><b>存在</b>时,
 
-<p><strong>存在</strong>时,</p>
-<div class="highlight"><pre><span></span>message.status = &#39;read&#39;
-</pre></div>
-
+<pre class="example">
+        message.status = 'read'
+</pre>
+</p>
 
 </li>
+</ul></li>
 </ul>
-</li>
-</ul>
-<h2>数据库设计<a id="orgheadline6"></a></h2>
-<h3>信息表(关联)<a id="orgheadline4"></a></h3>
-<div class="highlight"><pre><span></span><span class="n">tablename</span><span class="o">:</span> <span class="n">message</span>
-</pre></div>
+<h2 id="org-15014130311006">数据库设计</h2>
 
+<h3 id="org-15014130311007">信息表(关联)</h3>
 
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" class="table table-bordered table-hover">
+<pre class="example">
+    tablename: message
+</pre>
 
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">字段名</th>
-<th scope="col" class="org-left">字段类型</th>
-<th scope="col" class="org-left">字段描述</th>
-<th scope="col" class="org-left">是否为空</th>
-<th scope="col" class="org-left">是否unique</th>
-<th scope="col" class="org-left">默认值</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td class="org-left">receiver_id</td>
-<td class="org-left">integer</td>
-<td class="org-left">接收方外键ID</td>
-<td class="org-left">False</td>
-<td class="org-left">False</td>
-<td class="org-left">&#xa0;</td>
-</tr>
-
+<table>
 
 <tr>
-<td class="org-left">receiver</td>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">接收方</td>
-<td class="org-left">False</td>
-<td class="org-left">False</td>
-<td class="org-left">&#xa0;</td>
+<th>字段名</th><th>字段类型</th><th>字段描述</th><th>是否为空</th><th>是否unique</th><th>默认值</th>
 </tr>
-
-
 <tr>
-<td class="org-left">message_text_id</td>
-<td class="org-left">integer</td>
-<td class="org-left">站内信主体内容外键ID</td>
-<td class="org-left">False</td>
-<td class="org-left">False</td>
-<td class="org-left">&#xa0;</td>
+<td>receiver_id</td><td>integer</td><td>接收方外键ID</td><td>False</td><td>False</td><td></td>
 </tr>
-
-
 <tr>
-<td class="org-left">message_text</td>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">站内信主体内容</td>
-<td class="org-left">False</td>
-<td class="org-left">False</td>
-<td class="org-left">&#xa0;</td>
+<td>receiver</td><td></td><td>接收方</td><td>False</td><td>False</td><td></td>
 </tr>
-
-
 <tr>
-<td class="org-left">status</td>
-<td class="org-left">string</td>
-<td class="org-left">站内信状态</td>
-<td class="org-left">False</td>
-<td class="org-left">False</td>
-<td class="org-left">0(未读)</td>
+<td>message_text_id</td><td>integer</td><td>站内信主体内容外键ID</td><td>False</td><td>False</td><td></td>
 </tr>
-</tbody>
+<tr>
+<td>message_text</td><td></td><td>站内信主体内容</td><td>False</td><td>False</td><td></td>
+</tr>
+<tr>
+<td>status</td><td>string</td><td>站内信状态</td><td>False</td><td>False</td><td>0(未读)</td>
+</tr>
 </table>
+<h3 id="org-15014130311009">信息内容表</h3>
 
-<h3>信息内容表<a id="orgheadline5"></a></h3>
-<div class="highlight"><pre><span></span><span class="n">tablename</span><span class="o">:</span> <span class="n">message_text</span>
-</pre></div>
+<pre class="example">
+    tablename: message_text
+</pre>
 
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" class="table table-bordered table-hover">
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">字段名</th>
-<th scope="col" class="org-left">字段类型</th>
-<th scope="col" class="org-left">字段描述</th>
-<th scope="col" class="org-left">是否为空</th>
-<th scope="col" class="org-left">是否unique</th>
-<th scope="col" class="org-left">默认值</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td class="org-left">title</td>
-<td class="org-left">string(128)</td>
-<td class="org-left">站内信标题</td>
-<td class="org-left">False</td>
-<td class="org-left">False</td>
-<td class="org-left">&#xa0;</td>
-</tr>
-
+<table>
 
 <tr>
-<td class="org-left">content</td>
-<td class="org-left">text(1024)</td>
-<td class="org-left">站内信内容</td>
-<td class="org-left">False</td>
-<td class="org-left">False</td>
-<td class="org-left">&#xa0;</td>
+<th>字段名</th><th>字段类型</th><th>字段描述</th><th>是否为空</th><th>是否unique</th><th>默认值</th>
 </tr>
-
-
 <tr>
-<td class="org-left">message_type</td>
-<td class="org-left">string</td>
-<td class="org-left">站内信类别</td>
-<td class="org-left">False</td>
-<td class="org-left">False</td>
-<td class="org-left">2(系统信息)</td>
+<td>title</td><td>string(128)</td><td>站内信标题</td><td>False</td><td>False</td><td></td>
 </tr>
-
-
 <tr>
-<td class="org-left">sender_id</td>
-<td class="org-left">integer</td>
-<td class="org-left">发送方外键ID</td>
-<td class="org-left">False</td>
-<td class="org-left">False</td>
-<td class="org-left">&#xa0;</td>
+<td>content</td><td>text(1024)</td><td>站内信内容</td><td>False</td><td>False</td><td></td>
 </tr>
-
-
 <tr>
-<td class="org-left">sender</td>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">发送方</td>
-<td class="org-left">False</td>
-<td class="org-left">False</td>
-<td class="org-left">&#xa0;</td>
+<td>message_type</td><td>string</td><td>站内信类别</td><td>False</td><td>False</td><td>2(系统信息)</td>
 </tr>
-</tbody>
+<tr>
+<td>sender_id</td><td>integer</td><td>发送方外键ID</td><td>False</td><td>False</td><td></td>
+</tr>
+<tr>
+<td>sender</td><td></td><td>发送方</td><td>False</td><td>False</td><td></td>
+</tr>
 </table><p>There are <a href="../../articles/2016/12/我的毕业设计--数据库设计之站内信.html#disqus_thread">comments</a>.</p>          </article>
         </aside><!-- /#featured -->
           <section id="content" class="body">
@@ -357,7 +240,7 @@ message = Message(receiver = current_user,
  
         <li><article class="hentry">    
           <header>
-            <h1><a href="../../articles/2016/12/我的毕业设计-数据库设计之登陆注册.html" rel="bookmark" title="Permalink to 我的毕业设计-数据库设计之登陆注册">我的毕业设计-数据库设计之登陆注册</a></h1>
+            <h1><a href="../../articles/2016/12/我的毕业设计--数据库设计之登陆注册.html" rel="bookmark" title="Permalink to 我的毕业设计--数据库设计之登陆注册">我的毕业设计--数据库设计之登陆注册</a></h1>
           </header>
           
           <div class="entry-content">
@@ -370,102 +253,67 @@ message = Message(receiver = current_user,
       By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
     </address>
   <p>In <a href="../../category/sheng-huo-sui-bi/index.html">生活随笔</a>. </p>
-<p>tags: <a href="../../tag/bi-ye-she-ji/index.html">毕业设计</a></p></footer><!-- /.post-info -->            <div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
+<p>tags: <a href="../../tag/bi-ye-she-ji/index.html">毕业设计</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-15014130311243">登陆注册数据库设计</a>
 <ul>
-<li><a href="#orgheadline5">1. 登陆注册数据库设计</a>
+<li><a href="#org-15014130311244">用户表</a></li>
+<li><a href="#org-15014130311248">用户信息表</a></li>
+<li><a href="#org-15014130311250">用户设置表</a></li>
+<li><a href="#org-15014130311252">用户token表</a></li>
+</ul></li>
+<li><a href="#org-15014130311255">数据库实现</a>
 <ul>
-<li><a href="#orgheadline1">1.1. 用户表</a></li>
-<li><a href="#orgheadline2">1.2. 用户信息表</a></li>
-<li><a href="#orgheadline3">1.3. 用户设置表</a></li>
-<li><a href="#orgheadline4">1.4. 用户token表</a></li>
+<li><a href="#org-15014130311255">用户表</a></li>
+<li><a href="#org-15014130311256">用户信息表</a></li>
+<li><a href="#org-15014130311256">用户设置表</a></li>
+<li><a href="#org-15014130311257">用户token表</a></li>
+</ul></li>
 </ul>
-</li>
-<li><a href="#orgheadline10">2. 数据库实现</a>
-<ul>
-<li><a href="#orgheadline6">2.1. 用户表</a></li>
-<li><a href="#orgheadline7">2.2. 用户信息表</a></li>
-<li><a href="#orgheadline8">2.3. 用户设置表</a></li>
-<li><a href="#orgheadline9">2.4. 用户token表</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
+</div></div>
 
-<h1>登陆注册数据库设计<a id="orgheadline5"></a></h1>
+
+
+<h1 id="org-15014130311243">登陆注册数据库设计</h1>
 <p>共同字段:</p>
 <ul>
 <li>id
-    主键,自增ID</li>
+<p>主键,自增ID</p>
+</li>
 </ul>
-<h2>用户表<a id="orgheadline1"></a></h2>
-<div class="highlight"><pre><span></span><span class="n">tablename</span><span class="o">:</span> <span class="n">user</span>
-</pre></div>
+<h2 id="org-15014130311244">用户表</h2>
+
+<pre class="example">
+   tablename: user
+</pre>
 
 
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" class="table table-bordered table-hover">
+<table>
 
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<thead>
 <tr>
-<th scope="col" class="org-left">字段名</th>
-<th scope="col" class="org-left">字段类型</th>
-<th scope="col" class="org-left">字段描述</th>
-<th scope="col" class="org-left">是否为空</th>
-<th scope="col" class="org-left">是否unique</th>
-<th scope="col" class="org-left">默认值</th>
+<th>字段名</th><th>字段类型</th><th>字段描述</th><th>是否为空</th><th>是否unique</th><th>默认值</th>
 </tr>
-</thead>
-
-<tbody>
 <tr>
-<td class="org-left">username</td>
-<td class="org-left">string(20)</td>
-<td class="org-left">用户名</td>
-<td class="org-left">False</td>
-<td class="org-left">True</td>
-<td class="org-left">&#xa0;</td>
+<td>username</td><td>string(20)</td><td>用户名</td><td>False</td><td>True</td><td></td>
 </tr>
-
-
 <tr>
-<td class="org-left">password</td>
-<td class="org-left">string(100)</td>
-<td class="org-left">密码</td>
-<td class="org-left">False</td>
-<td class="org-left">False</td>
-<td class="org-left">&#xa0;</td>
+<td>password</td><td>string(100)</td><td>密码</td><td>False</td><td>False</td><td></td>
 </tr>
-
-
 <tr>
-<td class="org-left">email</td>
-<td class="org-left">string(49)</td>
-<td class="org-left">邮箱</td>
-<td class="org-left">False</td>
-<td class="org-left">True</td>
-<td class="org-left">&#xa0;</td>
+<td>email</td><td>string(49)</td><td>邮箱</td><td>False</td><td>True</td><td></td>
 </tr>
-
-
 <tr>
-<td class="org-left">is …</td></tr></tbody></table>
-            <a class="readmore" href="../../articles/2016/12/我的毕业设计-数据库设计之登陆注册.html">read more</a>
-<p>There are <a href="../../articles/2016/12/我的毕业设计-数据库设计之登陆注册.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
+<td>is_superuser</td><td>bool</td><td>是否为超级管理员</td><td>False</td><td>False</td><td>False</td>
+</tr>
+<tr>
+<td>is_confirmed</td><td>bool</td><td>邮箱是否验证</td><td>False</td><td>False</td><td>False</td>
+</tr>
+<tr>
+<td>register_time</td><td>datetime</td><td>注册时间</td><td>False</td><td>False</td><td>UTC时间</td>
+</tr>
+<tr>
+<td>last_login …</td></tr></table>
+            <a class="readmore" href="../../articles/2016/12/我的毕业设计--数据库设计之登陆注册.html">read more</a>
+<p>There are <a href="../../articles/2016/12/我的毕业设计--数据库设计之登陆注册.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
 <p class="paginator">
     Page 1 / 1

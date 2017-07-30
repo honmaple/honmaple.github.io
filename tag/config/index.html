@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>honmaple's blog - config</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../theme/css/main.css" type="text/css" />
+  </head>
+  <body id="index" class="home">
+    <div id="particles-js"></div>
+    <div class="wrap">
+      <div class="main">
+        <header id="banner" class="body">
+          <h1><a href="../..">honmaple's blog </a></h1>
+          <nav><ul>
+              <li><a href="http://honmaple.org">主页</a></li>
+                <li ><a href="../../category/linux/index.html">Linux</a></li>
+                <li ><a href="../../category/python/index.html">Python</a></li>
+                <li ><a href="../../category/security/index.html">Security</a></li>
+                <li class="dropdown">
+                  <a href="../../category/sheng-huo-sui-bi/index.html" >生活随笔</a>
+                  <dl>
+                      <dd><a href="../../category/hui-yi/index.html">回忆</a></dd>
+                  </dl>
+                </li>
+            <li class="dropdown">
+              <a href="../../archives.html">Archives</a>
+              <dl>
+                <dd><a href="../../tags.html">Tags</a></dd>
+                <dd><a href="../../categories.html">Categories</a></dd>
+                <dd><a href="../../authors.html">Authors</a></dd>
+              </dl>
+            </li>
+            <li style="float:right;margin-right:15px;">
+              <form onsubmit="return dispatch()" class="search has-feedback">
+                <input type="text" id="search" name="search"/>
+                <i class="form-control-feedback"></i>
+              </form>
+            </li>
+          </ul></nav>
+        </header><!-- /#banner -->
+        
+        
+
+        <aside id="featured" class="body">
+          <article>
+            <h1 class="entry-title"><a href="../../articles/2016/07/honmaple社区程序config介绍.html">honmaple社区程序config介绍</a></h1> 
+<footer style="color:#bbb;margin:0 auto;font-size:12px;">
+  <span class="published" title="2016-07-26T00:00:00+08:00">
+    Posted on 二 26 七月 2016
+  </span>
+
+    <span class="vcard author">
+      By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+    </span>
+  <span>In <a href="../../category/sheng-huo-sui-bi/index.html">生活随笔</a>. </span>
+<span class="tag">tags: <a href="../../tag/honmape/index.html">honmape</a><a href="../../tag/config/index.html">config</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-15014130310341">邮箱设置</a></li>
+<li><a href="#org-15014130310342">数据库设置</a></li>
+<li><a href="#org-15014130310342">时区及语言设置</a></li>
+</ul>
+</div></div>
+
+
+<p><b>DEBUG</b>
+生产环境选择False
+测试环境选择True</p>
+
+<p><b>SECRET_KEY</b>
+安全密钥,可通过下面方法生成:</p>
+
+<pre class="python">
+>>> import os
+>>> os.urandom(24)
+b'\xdfr\xff\xd1\xbcO\xc1\xa9_\xcb\x18\x04\xa6ZVJ\xf8\xd26]\x07_HE'
+</pre>
+
+<p><b>SECURITY_PASSWORD_SALT</b>
+加盐,主要用于生成邮箱验证url</p>
+
+<p><b>REMEMBER_COOKIE_DURATION</b>
+<b>PERMANENT_SESSION_LIFETIME</b>
+设置记住我之后cookies保存时间
+使用<i>datetime.timedelta(days=3)</i></p>
+
+<p><b>PER_PAGE</b>
+设置每页显示多少条主题</p>
+
+<p><b>定制缓存</b>
+缓存这块暂时还有一些问题
+主要设置
+CACHE_REDIS_HOST = '127.0.0.1'
+CACHE_REDIS_PORT = '6379'
+CACHE_REDIS_PASSWORD = ''
+CACHE_REDIS_DB = 1</p>
+
+<p>CACHE_DEFAULT_TIMEOUT = 60
+CACHE_KEY_PREFIX = 'cache:'</p>
+
+<p><b>SERVER_NAME</b>
+设置域名,本地测试使用
+<pre class="python">
+SERVER_NAME = 'localhost:5000'
+</pre></p>
+
+<p>生产环境使用
+<pre class="python">
+SERVER_NAME = '你的域名'
+</pre></p>
+
+<p>/注意/ : 该论坛程序默认使用的是 forums.example.com 子域名,并且启用了 docs.example.com子域名
+如果想要使用<b>example.com</b> 作为论坛域名,需要注释</p>
+
+<p><b>maple/__init__.py</b>
+<pre class="python">
+app.url_map._rules.clear()
+app.url_map._rules_by_endpoint.clear()
+app.url_map.default_subdomain = 'forums'
+app.add_url_rule(app.static_url_path + '/<path:filename>',
+                    endpoint='static',
+                    view_func=app.send_static_file,
+                    subdomain='forums')
+</pre></p>
+
+<p>不想启用 docs 子域名</p>
+
+<p>请修改</p>
+
+<p><b>maple/urls.py</b>
+<pre class="python">
+app.register_blueprint(docs_site, subdomain='docs')
+</pre>
+改成
+<pre class="python">
+app.register_blueprint(docs_site, url_prefix='/docs)
+</pre></p>
+
+<p><b>ONLINE_LAST_MINUTES</b>
+记录在线时间,默认为5分钟</p>
+
+<h1 id="org-15014130310341">邮箱设置</h1>
+<p>MAIL_SERVER =
+MAIL_PORT =
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME =
+MAIL_PASSWORD =
+MAIL_DEFAULT_SENDER =</p>
+
+<h1 id="org-15014130310342">数据库设置</h1>
+<p>SQLALCHEMY_DATABASE_URI = ''</p>
+
+<h1 id="org-15014130310342">时区及语言设置</h1>
+<p>LANGUAGES = {'en': 'English', 'zh': 'Chinese'}</p><p>There are <a href="../../articles/2016/07/honmaple社区程序config介绍.html#disqus_thread">comments</a>.</p>          </article>
+<p class="paginator">
+    Page 1 / 1
+</p>
+        </aside><!-- /#featured -->
+            </ol><!-- /#posts-list -->
+          </section><!-- /#content -->
+      </div>
+    </div>
+    <div class="footer">
+      <section id="extras">
+          <div class="blogroll">
+            <h2>blogroll</h2>
+            <ul>
+                <li><a href="http://getpelican.com/">Pelican</a></li>
+                <li><a href="http://python.org/">Python.org</a></li>
+                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                <li><a href="https://honmaple.com">个人博客</a></li>
+            </ul>
+          </div><!-- /.blogroll -->
+          <div class="social">
+            <h2>social</h2>
+            <ul>
+                <li><a href="http://honmaple.org/feeds/all.rss.xml">Atom Feed</a></li>
+                <li><a href="https://github.com/honmaple">GitHub</a></li>
+                <li><a href="https://twitter.com/xiyang87">Twitter</a></li>
+            </ul>
+          </div><!-- /.social -->
+      </section><!-- /#extras -->
+    </div>
+
+<script>
+ (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+ })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ ga('create', 'UA-88401692-2', 'auto');
+ ga('send', 'pageview');
+
+</script>
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+    <script src="https://cdn.bootcss.com/particles.js/2.0.0/particles.min.js"></script>
+    <script type="text/javascript" src="../../theme/js/particles.js"></script>
+  </body>
+</html>

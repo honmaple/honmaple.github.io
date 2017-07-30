@@ -57,62 +57,67 @@
       By <a class="url fn" href="../../../author/honmaple.html">honmaple</a>
     </address>
   <p>In <a href="../../../category/python/index.html">Python</a>. </p>
-<p>tags: <a href="../../../tag/python/index.html">python</a><a href="../../../tag/earth/index.html">earth</a></p></footer><!-- /.post-info -->            <p>直接给出源码</p>
-<p>设置壁纸</p>
-<div class="highlight"><pre><span></span>feh --bg-scale /tmp/earch.png
-</pre></div>
+<p>tags: <a href="../../../tag/python/index.html">python</a><a href="../../../tag/earth/index.html">earth</a></p></footer><!-- /.post-info -->            
+<p>直接给出源码</p>
+
+<p>设置壁纸
+<pre class="sh">
+feh --bg-scale /tmp/earth.png
+</pre></p>
+
+<p>设置桌面大小,及图片放大倍数
+<pre class="python">
+SCALE = 4
+WIDTH = 1368
+HEIGHT = 768
+</pre></p>
+
+<pre class="python">
+from PIL import Image
+from io import BytesIO
+from urllib.request import Request, urlopen
+from datetime import datetime
+import json
+
+SCALE = 4
+WIDTH = 1368
+HEIGHT = 768
 
 
-<p>设置桌面大小,及图片放大倍数</p>
-<div class="highlight"><pre><span></span><span class="n">SCALE</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
-<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
-
-<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
-<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">urlopen</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">import</span> <span class="nn">json</span>
-
-<span class="n">SCALE</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
-<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
+def get_info():
+    url = "http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json"
+    request = Request(url)
+    response = urlopen(request, timeout=10)
+    return json.loads(response.read())
 
 
-<span class="k">def</span> <span class="nf">get_info</span><span class="p">():</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&quot;</span>
-    <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+def download():
+    png = Image.new('RGB', (550 * SCALE, 550 * SCALE))
+    desktop = Image.new('RGB', (WIDTH, HEIGHT))
+    url_format = 'http://himawari8-dl.nict.go.jp/himawari8/img/D531106/{}d/{}/{}_{}_{}.png'
+    info = get_info()
+    date = datetime.strptime(info['date'], '%Y-%m-%d %H:%M:%S')
+    for x in range(SCALE):
+        for y in range(SCALE):
+            url = url_format.format(SCALE, 550,
+                                    date.strftime("%Y/%m/%d/%H%M%S"), x, y)
+            print(url)
+            request = Request(url)
+            response = urlopen(request, timeout=10)
+            img = Image.open(BytesIO(response.read()))
+            png.paste(img, (550 * x, 550 * y, 550 * (x + 1), 550 * (y + 1)))
+    png.thumbnail((HEIGHT, HEIGHT), Image.ANTIALIAS)
+    desktop.paste(png, ((WIDTH - HEIGHT) // 2, 0))
+    desktop.save('/tmp/earth.png', "PNG")
 
-
-<span class="k">def</span> <span class="nf">download</span><span class="p">():</span>
-    <span class="n">png</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">550</span> <span class="o">*</span> <span class="n">SCALE</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="n">SCALE</span><span class="p">))</span>
-    <span class="n">desktop</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">WIDTH</span><span class="p">,</span> <span class="n">HEIGHT</span><span class="p">))</span>
-    <span class="n">url_format</span> <span class="o">=</span> <span class="s1">&#39;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/{}d/{}/{}_{}_{}.png&#39;</span>
-    <span class="n">info</span> <span class="o">=</span> <span class="n">get_info</span><span class="p">()</span>
-    <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SCALE</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SCALE</span><span class="p">):</span>
-            <span class="n">url</span> <span class="o">=</span> <span class="n">url_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">SCALE</span><span class="p">,</span> <span class="mi">550</span><span class="p">,</span>
-                                    <span class="n">date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y/%m/</span><span class="si">%d</span><span class="s2">/%H%M%S&quot;</span><span class="p">),</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-            <span class="k">print</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-            <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
-            <span class="n">png</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="mi">550</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">550</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
-    <span class="n">png</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="n">HEIGHT</span><span class="p">,</span> <span class="n">HEIGHT</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">ANTIALIAS</span><span class="p">)</span>
-    <span class="n">desktop</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">png</span><span class="p">,</span> <span class="p">((</span><span class="n">WIDTH</span> <span class="o">-</span> <span class="n">HEIGHT</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-    <span class="n">desktop</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;/tmp/earch.png&#39;</span><span class="p">,</span> <span class="s2">&quot;PNG&quot;</span><span class="p">)</span>
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">download</span><span class="p">()</span>
-</pre></div>
-
+if __name__ == '__main__':
+    download()
+</pre>
 
 <p>或许应该找一张有星星的照片
-<img alt="img" src="//images.honmaple.com/images/admin/thumb/2017/03/149019162934663.png"></p>
-<p><img alt="img" src="//images.honmaple.com/images/admin/thumb/2017/03/149019186230320.png"></p>
+<img src="https://images.honmaple.com/images/admin/photo/2017/03/149019162934663.png"/></p>
+
+<p><img src="https://images.honmaple.com/images/admin/photo/2017/03/149019186230320.png"/></p>
         </div><!-- /.entry-content -->
         <div class="comments">
             <h2>Comments !</h2>

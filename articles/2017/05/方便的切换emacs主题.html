@@ -57,56 +57,59 @@
       By <a class="url fn" href="../../../author/honmaple.html">honmaple</a>
     </address>
   <p>In <a href="../../../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../../../tag/linux/index.html">linux</a><a href="../../../tag/emacs/index.html">emacs</a><a href="../../../tag/elisp/index.html">elisp</a></p></footer><!-- /.post-info -->            <p>作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，<strong>M-x</strong>,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了<strong>hydra</strong>这个插件,也想实践一下</p>
-<p>获取主题列表</p>
-<div class="highlight"><pre><span></span>(setq maple-cycle-themes (mapcar &#39;symbol-name (custom-available-themes)))
-</pre></div>
+<p>tags: <a href="../../../tag/linux/index.html">linux</a><a href="../../../tag/emacs/index.html">emacs</a><a href="../../../tag/elisp/index.html">elisp</a></p></footer><!-- /.post-info -->            
 
+<p>作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，*M-x*,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了*hydra*这个插件,也想实践一下</p>
 
-<p>获取当前主题索引</p>
-<div class="highlight"><pre><span></span>(cl-position (car (mapcar &#39;symbol-name custom-enabled-themes)) maple-cycle-themes :test &#39;equal)
-</pre></div>
+<p>获取主题列表
+<pre class="elisp">
+  (setq maple-cycle-themes (mapcar 'symbol-name (custom-available-themes)))
+</pre></p>
 
+<p>获取当前主题索引
+<pre class="elisp">
+  (cl-position (car (mapcar 'symbol-name custom-enabled-themes)) maple-cycle-themes :test 'equal)
+</pre></p>
 
-<p>获取下一个主题</p>
-<div class="highlight"><pre><span></span>(setq maple-current-theme-index
-      (+ 1 maple-current-theme-index))
-(setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
-</pre></div>
-
-
-<p>加载主题</p>
-<div class="highlight"><pre><span></span>(load-theme (intern maple-current-theme) t)
-</pre></div>
-
-
-<p>最后得到这样的函数</p>
-<div class="highlight"><pre><span></span>(defun maple/cycle-theme (num)
-  (interactive)
+<p>获取下一个主题
+<pre class="elisp">
   (setq maple-current-theme-index
-        (+ num
-           (cl-position
-            (car (mapcar &#39;symbol-name custom-enabled-themes)) maple-cycle-themes :test &#39;equal)))
-  (when (&gt;= maple-current-theme-index (length maple-cycle-themes))
-    (setq maple-current-theme-index 0))
+        (+ 1 maple-current-theme-index))
   (setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
-  (mapc &#39;disable-theme custom-enabled-themes)
-  (let ((progress-reporter
-         (make-progress-reporter
-          (format &quot;Loading theme %s...&quot; maple-current-theme))))
-    (load-theme (intern maple-current-theme) t)
-    (progress-reporter-done progress-reporter)))
-(defun maple/next-theme()
-  (interactive)
-  (maple/cycle-theme 1))
-(defun maple/previous-theme()
-  (interactive)
-  (maple/cycle-theme -1))
-(defhydra maple/cycle-themes ()
-  (&quot;n&quot; maple/next-theme &quot;next theme&quot;)
-  (&quot;p&quot; maple/previous-theme &quot;prev theme&quot;))
-</pre></div>
+</pre></p>
 
+<p>加载主题
+<pre class="elisp">
+  (load-theme (intern maple-current-theme) t)
+</pre></p>
+
+<p>最后得到这样的函数
+<pre class="elisp">
+  (defun maple/cycle-theme (num)
+    (interactive)
+    (setq maple-current-theme-index
+          (+ num
+             (cl-position
+              (car (mapcar 'symbol-name custom-enabled-themes)) maple-cycle-themes :test 'equal)))
+    (when (>= maple-current-theme-index (length maple-cycle-themes))
+      (setq maple-current-theme-index 0))
+    (setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
+    (mapc 'disable-theme custom-enabled-themes)
+    (let ((progress-reporter
+           (make-progress-reporter
+            (format "Loading theme %s..." maple-current-theme))))
+      (load-theme (intern maple-current-theme) t)
+      (progress-reporter-done progress-reporter)))
+  (defun maple/next-theme()
+    (interactive)
+    (maple/cycle-theme 1))
+  (defun maple/previous-theme()
+    (interactive)
+    (maple/cycle-theme -1))
+  (defhydra maple/cycle-themes ()
+    ("n" maple/next-theme "next theme")
+    ("p" maple/previous-theme "prev theme"))
+</pre></p>
 
 <p>ok,绑定一个快捷键吧</p>
         </div><!-- /.entry-content -->

@@ -57,55 +57,62 @@
       By <a class="url fn" href="../../../author/honmaple.html">honmaple</a>
     </address>
   <p>In <a href="../../../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../../../tag/emacs/index.html">emacs</a><a href="../../../tag/elisp/index.html">elisp</a><a href="../../../tag/linux/index.html">linux</a></p></footer><!-- /.post-info -->            <p>之前使用emacs时遇到这么一个问题</p>
+<p>tags: <a href="../../../tag/emacs/index.html">emacs</a><a href="../../../tag/elisp/index.html">elisp</a><a href="../../../tag/linux/index.html">linux</a></p></footer><!-- /.post-info -->            
+<p>之前使用emacs时遇到这么一个问题
 <blockquote>
 <p>当前行存在代码折叠时,如果想要注释,必须先选中当前行,否则只能注释代码折叠块的第一行</p>
-</blockquote>
+</blockquote></p>
+
 <p>就像这样</p>
-<p><img alt="img" src="//images.honmaple.com/images/admin/photo/2017/04/149274346737550.png"></p>
-<p><img alt="img" src="//images.honmaple.com/images/admin/photo/2017/04/149274352705945.png"></p>
-<p>基础注释函数来源于 <strong>stackoverflow</strong></p>
-<div class="highlight"><pre><span></span>(defun comment-or-uncomment-region-or-line ()
-  &quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;
+
+<p><img src="https://images.honmaple.com/images/admin/photo/2017/04/149274346737550.png"/></p>
+
+<p><img src="https://images.honmaple.com/images/admin/photo/2017/04/149274352705945.png"/></p>
+
+<p>基础注释函数来源于<b>stackoverflow</b>
+<pre class="elisp">
+(defun comment-or-uncomment-region-or-line ()
+  "Comments or uncomments the region or the current line if there's no active region."
   (interactive)
   (let (beg end)
     (if (region-active-p)
         (setq beg (region-beginning) end (region-end))
       (setq beg (line-beginning-position) end (line-end-position)))
     (comment-or-uncomment-region beg end)))
-</pre></div>
+</pre></p>
 
+<p>在此函数的位置上进行修改,刚开始使用
+<pre class="elisp">
+  (when (hs-already-hidden-p)
+      (evil-visual-line))
+</pre></p>
 
-<p>在此函数的位置上进行修改,刚开始使用</p>
-<div class="highlight"><pre><span></span>(when (hs-already-hidden-p)
-    (evil-visual-line))
-</pre></div>
-
-
-<p>但是一直没得到想要的效果,后来修改了一下,使用</p>
-<div class="highlight"><pre><span></span>(when (hs-already-hidden-p)
-  (progn
-    (end-of-visual-line)
-    (evil-visual-state)
-    (beginning-of-visual-line)))
-</pre></div>
-
+<p>但是一直没得到想要的效果,后来修改了一下,使用
+<pre class="elisp">
+  (when (hs-already-hidden-p)
+    (progn
+      (end-of-visual-line)
+      (evil-visual-state)
+      (beginning-of-visual-line)))
+</pre></p>
 
 <p>意思就是如果当前位置存在代码折叠,先选中当前行,然后注释整个选中区域</p>
-<p>因为光标被移动到首位,我对这个不太在意,如果有在意的话,可以使用 <strong>save-excursion</strong></p>
-<div class="highlight"><pre><span></span>(save-excursion
-(when (hs-already-hidden-p)
-  (progn
-    (end-of-visual-line)
-    (evil-visual-state)
-    (beginning-of-visual-line)))
-    ......)
-</pre></div>
 
+<p>因为光标被移动到首位,我对这个不太在意,如果有在意的话,可以使用<b>save-excursion</b>
+<pre class="elisp">
+  (save-excursion
+  (when (hs-already-hidden-p)
+    (progn
+      (end-of-visual-line)
+      (evil-visual-state)
+      (beginning-of-visual-line)))
+      ......)
+</pre></p>
 
-<p>完整代码</p>
-<div class="highlight"><pre><span></span>(defun comment-or-uncomment-region-or-line ()
-  &quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;
+<p>完整代码
+<pre class="elisp">
+(defun comment-or-uncomment-region-or-line ()
+  "Comments or uncomments the region or the current line if there's no active region."
   (interactive)
   (save-excursion
     (when (hs-already-hidden-p)
@@ -118,8 +125,7 @@
           (setq beg (region-beginning) end (region-end))
         (setq beg (line-beginning-position) end (line-end-position)))
       (comment-or-uncomment-region beg end))))
-</pre></div>
-
+</pre></p>
 
 <p>ok,就这样</p>
         </div><!-- /.entry-content -->

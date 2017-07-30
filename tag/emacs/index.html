@@ -54,56 +54,59 @@
     </span>
   <span>In <a href="../../category/linux/index.html">Linux</a>. </span>
 <span class="tag">tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/emacs/index.html">emacs</a><a href="../../tag/elisp/index.html">elisp</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
-            <p>作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，<strong>M-x</strong>,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了<strong>hydra</strong>这个插件,也想实践一下</p>
-<p>获取主题列表</p>
-<div class="highlight"><pre><span></span>(setq maple-cycle-themes (mapcar &#39;symbol-name (custom-available-themes)))
-</pre></div>
+            
 
+<p>作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，*M-x*,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了*hydra*这个插件,也想实践一下</p>
 
-<p>获取当前主题索引</p>
-<div class="highlight"><pre><span></span>(cl-position (car (mapcar &#39;symbol-name custom-enabled-themes)) maple-cycle-themes :test &#39;equal)
-</pre></div>
+<p>获取主题列表
+<pre class="elisp">
+  (setq maple-cycle-themes (mapcar 'symbol-name (custom-available-themes)))
+</pre></p>
 
+<p>获取当前主题索引
+<pre class="elisp">
+  (cl-position (car (mapcar 'symbol-name custom-enabled-themes)) maple-cycle-themes :test 'equal)
+</pre></p>
 
-<p>获取下一个主题</p>
-<div class="highlight"><pre><span></span>(setq maple-current-theme-index
-      (+ 1 maple-current-theme-index))
-(setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
-</pre></div>
-
-
-<p>加载主题</p>
-<div class="highlight"><pre><span></span>(load-theme (intern maple-current-theme) t)
-</pre></div>
-
-
-<p>最后得到这样的函数</p>
-<div class="highlight"><pre><span></span>(defun maple/cycle-theme (num)
-  (interactive)
+<p>获取下一个主题
+<pre class="elisp">
   (setq maple-current-theme-index
-        (+ num
-           (cl-position
-            (car (mapcar &#39;symbol-name custom-enabled-themes)) maple-cycle-themes :test &#39;equal)))
-  (when (&gt;= maple-current-theme-index (length maple-cycle-themes))
-    (setq maple-current-theme-index 0))
+        (+ 1 maple-current-theme-index))
   (setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
-  (mapc &#39;disable-theme custom-enabled-themes)
-  (let ((progress-reporter
-         (make-progress-reporter
-          (format &quot;Loading theme %s...&quot; maple-current-theme))))
-    (load-theme (intern maple-current-theme) t)
-    (progress-reporter-done progress-reporter)))
-(defun maple/next-theme()
-  (interactive)
-  (maple/cycle-theme 1))
-(defun maple/previous-theme()
-  (interactive)
-  (maple/cycle-theme -1))
-(defhydra maple/cycle-themes ()
-  (&quot;n&quot; maple/next-theme &quot;next theme&quot;)
-  (&quot;p&quot; maple/previous-theme &quot;prev theme&quot;))
-</pre></div>
+</pre></p>
 
+<p>加载主题
+<pre class="elisp">
+  (load-theme (intern maple-current-theme) t)
+</pre></p>
+
+<p>最后得到这样的函数
+<pre class="elisp">
+  (defun maple/cycle-theme (num)
+    (interactive)
+    (setq maple-current-theme-index
+          (+ num
+             (cl-position
+              (car (mapcar 'symbol-name custom-enabled-themes)) maple-cycle-themes :test 'equal)))
+    (when (>= maple-current-theme-index (length maple-cycle-themes))
+      (setq maple-current-theme-index 0))
+    (setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
+    (mapc 'disable-theme custom-enabled-themes)
+    (let ((progress-reporter
+           (make-progress-reporter
+            (format "Loading theme %s..." maple-current-theme))))
+      (load-theme (intern maple-current-theme) t)
+      (progress-reporter-done progress-reporter)))
+  (defun maple/next-theme()
+    (interactive)
+    (maple/cycle-theme 1))
+  (defun maple/previous-theme()
+    (interactive)
+    (maple/cycle-theme -1))
+  (defhydra maple/cycle-themes ()
+    ("n" maple/next-theme "next theme")
+    ("p" maple/previous-theme "prev theme"))
+</pre></p>
 
 <p>ok,绑定一个快捷键吧</p><p>There are <a href="../../articles/2017/05/方便的切换emacs主题.html#disqus_thread">comments</a>.</p>          </article>
         </aside><!-- /#featured -->
@@ -129,42 +132,48 @@
       By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
     </address>
   <p>In <a href="../../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../../tag/emacs/index.html">emacs</a><a href="../../tag/elisp/index.html">elisp</a><a href="../../tag/linux/index.html">linux</a></p></footer><!-- /.post-info -->            <p>之前使用emacs时遇到这么一个问题</p>
+<p>tags: <a href="../../tag/emacs/index.html">emacs</a><a href="../../tag/elisp/index.html">elisp</a><a href="../../tag/linux/index.html">linux</a></p></footer><!-- /.post-info -->            
+<p>之前使用emacs时遇到这么一个问题
 <blockquote>
 <p>当前行存在代码折叠时,如果想要注释,必须先选中当前行,否则只能注释代码折叠块的第一行</p>
-</blockquote>
+</blockquote></p>
+
 <p>就像这样</p>
-<p><img alt="img" src="//images.honmaple.com/images/admin/photo/2017/04/149274346737550.png"></p>
-<p><img alt="img" src="//images.honmaple.com/images/admin/photo/2017/04/149274352705945.png"></p>
-<p>基础注释函数来源于 <strong>stackoverflow</strong></p>
-<div class="highlight"><pre><span></span>(defun comment-or-uncomment-region-or-line ()
-  &quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;
+
+<p><img src="https://images.honmaple.com/images/admin/photo/2017/04/149274346737550.png"/></p>
+
+<p><img src="https://images.honmaple.com/images/admin/photo/2017/04/149274352705945.png"/></p>
+
+<p>基础注释函数来源于<b>stackoverflow</b>
+<pre class="elisp">
+(defun comment-or-uncomment-region-or-line ()
+  "Comments or uncomments the region or the current line if there's no active region."
   (interactive)
   (let (beg end)
     (if (region-active-p)
         (setq beg (region-beginning) end (region-end))
       (setq beg (line-beginning-position) end (line-end-position)))
     (comment-or-uncomment-region beg end)))
-</pre></div>
+</pre></p>
 
+<p>在此函数的位置上进行修改,刚开始使用
+<pre class="elisp">
+  (when (hs-already-hidden-p)
+      (evil-visual-line))
+</pre></p>
 
-<p>在此函数的位置上进行修改,刚开始使用</p>
-<div class="highlight"><pre><span></span>(when (hs-already-hidden-p)
-    (evil-visual-line))
-</pre></div>
-
-
-<p>但是一直没得到想要的效果,后来修改了一下,使用</p>
-<div class="highlight"><pre><span></span>(when (hs-already-hidden-p)
-  (progn
-    (end-of-visual-line)
-    (evil-visual-state)
-    (beginning-of-visual-line)))
-</pre></div>
-
+<p>但是一直没得到想要的效果,后来修改了一下,使用
+<pre class="elisp">
+  (when (hs-already-hidden-p)
+    (progn
+      (end-of-visual-line)
+      (evil-visual-state)
+      (beginning-of-visual-line)))
+</pre></p>
 
 <p>意思就是如果当前位置存在代码折叠,先选中当前行,然后注释整个选中区域</p>
-<p>因为光标被移动到首位,我对这个不太在意,如果有在意的话 …</p>
+
+<p>因为光标被移动到首位,我对这个不太在意,如果有在意的话,可以使用 …</p>
             <a class="readmore" href="../../articles/2017/04/emacs实现智能注释.html">read more</a>
 <p>There are <a href="../../articles/2017/04/emacs实现智能注释.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -186,43 +195,36 @@
       By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
     </address>
   <p>In <a href="../../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/emacs/index.html">emacs</a><a href="../../tag/org-mode/index.html">org-mode</a></p></footer><!-- /.post-info -->            <div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
-<ul>
-<li><a href="#orgheadline1">1. 需求</a></li>
-<li><a href="#orgheadline2">2. 解决</a></li>
+<p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/emacs/index.html">emacs</a><a href="../../tag/org-mode/index.html">org-mode</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-15014130311777">需求</a></li>
+<li><a href="#org-15014130311780">解决</a></li>
+<li><a href="#org-15014130311780">Footnotes</a></li>
 </ul>
-</div>
-</div>
-
-<h1>需求<a id="orgheadline1"></a></h1>
-<p>在使用 <strong>org-mode</strong> 写文档时，插入图片后默认不显示，想要直接在 <strong>org</strong>文件中预览图片，可以使用</p>
-<div class="highlight"><pre><span></span>org-toggle-inline-images
-</pre></div>
+</div></div>
 
 
-<p>但是问题来了，开启预览模式后，移动光标跳过文件内容，找了一下</p>
-<p><a href="https://github.com/syl20bnr/spacemacs/issues/3824">参考链接</a> <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>
-那么问题来了，如何只在开启 <strong>org-toggle-inline-images</strong> 后关闭 <strong>smooth-scrooling</strong>,
-关闭 <strong>org-toggle-inline-images</strong> 后开启 <strong>smooth-scrooling</strong></p>
-<h1>解决<a id="orgheadline2"></a></h1>
-<p>给出代码,使用 <strong>defadvice</strong></p>
-<div class="highlight"><pre><span></span>(defadvice org-toggle-inline-images (after org-open-at-point activate)
-  (if smooth-scrolling-mode (smooth-scrolling-mode -1)
-        (smooth-scrolling-mode 1)))
-</pre></div>
+<h1 id="org-15014130311777">需求</h1>
+<p>在使用<b>org-mode</b> 写文档时，插入图片后默认不显示，想要直接在<b>org</b>文件中预览图片，可以使用
+<pre class="elisp">
+org-toggle-inline-images
+</pre>
+但是问题来了，开启预览模式后，移动光标跳过文件内容，找了一下</p>
 
+<p><a href="https://github.com/syl20bnr/spacemacs/issues/3824">参考链接</a> <sup><a id="fnr:1" class="footref" href="#fn.1">1</a></sup>
+那么问题来了，如何只在开启<b>org-toggle-inline-images</b> 后关闭<b>smooth-scrooling</b>,
+关闭<b>org-toggle-inline-images</b> 后开启<b>smooth-scrooling</b></p>
 
-<div id="footnotes">
-<h2 class="footnotes">Footnotes: </h2>
-<div id="text-footnotes">
+<h1 id="org-15014130311780">解决</h1>
+<p>给出代码,使用<b>defadvice</b>
+<pre class="lisp">
+    (defadvice org-toggle-inline-images (after org-open-at-point activate)
+      (if smooth-scrolling-mode (smooth-scrolling-mode -1)
+            (smooth-scrolling-mode 1)))
+</pre></p>
 
-<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara">[https://github.com/syl20bnr/spacemacs/issues/3824](https://github.com/syl20bnr/spacemacs/issues/3824)</div></div>
+<h1 id="org-15014130311780">Footnotes</h1>
 
-
-</div>
-</div>
+<p><sup><a id="fnr:1" class="footref" href="#fn.1">1</a></sup> <a href="https://github.com/syl20bnr/spacemacs/issues/3824">https://github.com/syl20bnr/spacemacs/issues/3824</a></p>
             <a class="readmore" href="../../articles/2016/12/emacs预览图片时禁止smooth-scrolling.html">read more</a>
 <p>There are <a href="../../articles/2016/12/emacs预览图片时禁止smooth-scrolling.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
