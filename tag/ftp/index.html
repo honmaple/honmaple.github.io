@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>honmaple's blog - honmape</title>
+    <title>honmaple's blog - ftp</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../theme/css/main.css" type="text/css" />
   </head>
@@ -43,115 +43,70 @@
 
         <aside id="featured" class="body">
           <article>
-            <h1 class="entry-title"><a href="../../articles/2016/07/honmaple社区程序config介绍.html">honmaple社区程序config介绍</a></h1> 
+            <h1 class="entry-title"><a href="../../articles/2017/07/手机与Linux桌面文件共享.html">手机与Linux桌面文件共享</a></h1> 
 <footer style="color:#bbb;margin:0 auto;font-size:12px;">
-  <span class="published" title="2016-07-26T00:00:00+08:00">
-    Posted on 二 26 七月 2016
+  <span class="published" title="2017-07-30T00:00:00+08:00">
+    Posted on 日 30 七月 2017
   </span>
 
     <span class="vcard author">
       By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
     </span>
-  <span>In <a href="../../category/sheng-huo-sui-bi/index.html">生活随笔</a>. </span>
-<span class="tag">tags: <a href="../../tag/honmape/index.html">honmape</a><a href="../../tag/config/index.html">config</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
+  <span>In <a href="../../category/linux/index.html">Linux</a>. </span>
+<span class="tag">tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/ftp/index.html">ftp</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257228069">邮箱设置</a></li>
-<li><a href="#org-15014257228070">数据库设置</a></li>
-<li><a href="#org-15014257228070">时区及语言设置</a></li>
+<li><a href="#org-15014257239671">手机共享文件到电脑</a></li>
+<li><a href="#org-15014257239672">电脑共享文件到手机</a></li>
 </ul>
 </div></div>
 
 
-<p><b>DEBUG</b>
-生产环境选择False
-测试环境选择True</p>
+<p>手机: 某米
+电脑: archlinux
+环境: 同一wifi下</p>
 
-<p><b>SECRET_KEY</b>
-安全密钥,可通过下面方法生成:</p>
+<h1 id="org-15014257239671">手机共享文件到电脑</h1>
+<p>最近才发现手机可以开启ftp服务对文件进行共享,直接进入文件管理器开启就行,电脑上使用
 
-<pre class="python">
->>> import os
->>> os.urandom(24)
-b'\xdfr\xff\xd1\xbcO\xc1\xa9_\xcb\x18\x04\xa6ZVJ\xf8\xd26]\x07_HE'
+<pre class="example">
+  ftp target
 </pre>
 
-<p><b>SECURITY_PASSWORD_SALT</b>
-加盐,主要用于生成邮箱验证url</p>
+进行连接</p>
 
-<p><b>REMEMBER_COOKIE_DURATION</b>
-<b>PERMANENT_SESSION_LIFETIME</b>
-设置记住我之后cookies保存时间
-使用<i>datetime.timedelta(days=3)</i></p>
+<p>注：<b>get</b> 下载<b>put</b> 上传</p>
 
-<p><b>PER_PAGE</b>
-设置每页显示多少条主题</p>
 
-<p><b>定制缓存</b>
-缓存这块暂时还有一些问题
-主要设置
-CACHE_REDIS_HOST = '127.0.0.1'
-CACHE_REDIS_PORT = '6379'
-CACHE_REDIS_PASSWORD = ''
-CACHE_REDIS_DB = 1</p>
+<h1 id="org-15014257239672">电脑共享文件到手机</h1>
+<p>这里采用python搭建一个简单的web服务(python3)供手机下载文件
 
-<p>CACHE_DEFAULT_TIMEOUT = 60
-CACHE_KEY_PREFIX = 'cache:'</p>
-
-<p><b>SERVER_NAME</b>
-设置域名,本地测试使用
-<pre class="python">
-SERVER_NAME = 'localhost:5000'
-</pre></p>
-
-<p>生产环境使用
-<pre class="python">
-SERVER_NAME = '你的域名'
-</pre></p>
-
-<p>/注意/ : 该论坛程序默认使用的是 forums.example.com 子域名,并且启用了 docs.example.com子域名
-如果想要使用<b>example.com</b> 作为论坛域名,需要注释</p>
-
-<p><b>maple/__init__.py</b>
-<pre class="python">
-app.url_map._rules.clear()
-app.url_map._rules_by_endpoint.clear()
-app.url_map.default_subdomain = 'forums'
-app.add_url_rule(app.static_url_path + '/<path:filename>',
-                    endpoint='static',
-                    view_func=app.send_static_file,
-                    subdomain='forums')
-</pre></p>
-
-<p>不想启用 docs 子域名</p>
-
-<p>请修改</p>
-
-<p><b>maple/urls.py</b>
-<pre class="python">
-app.register_blueprint(docs_site, subdomain='docs')
+<pre class="example">
+  # 首先 cd 到要共享的目录
+  python -m http.server --bind 0.0.0.0
 </pre>
-改成
-<pre class="python">
-app.register_blueprint(docs_site, url_prefix='/docs)
-</pre></p>
+</p>
 
-<p><b>ONLINE_LAST_MINUTES</b>
-记录在线时间,默认为5分钟</p>
+<p>查看本机IP
 
-<h1 id="org-15014257228069">邮箱设置</h1>
-<p>MAIL_SERVER =
-MAIL_PORT =
-MAIL_USE_TLS = True
-MAIL_USE_SSL = False
-MAIL_USERNAME =
-MAIL_PASSWORD =
-MAIL_DEFAULT_SENDER =</p>
+<pre class="example">
+  ifconfig
+  # 或者
+  ip addr
+</pre>
+</p>
 
-<h1 id="org-15014257228070">数据库设置</h1>
-<p>SQLALCHEMY_DATABASE_URI = ''</p>
+<p><b>重要</b>: 请确保关闭防火墙,否则手机无法连接
 
-<h1 id="org-15014257228070">时区及语言设置</h1>
-<p>LANGUAGES = {'en': 'English', 'zh': 'Chinese'}</p><p>There are <a href="../../articles/2016/07/honmaple社区程序config介绍.html#disqus_thread">comments</a>.</p>          </article>
+<pre class="example">
+  sudo systemctl stop iptables
+</pre>
+</p>
+
+<p>然后手机浏览器访问<b>ip:8000</b> 就能下载电脑端的文件了</p>
+
+
+<p><b>非同一wifi环境下</b> : 可以先在电脑端开启wifi热点(可以不联网),我是直接使用networkmanger进行创建的
+<img src="https://images.honmaple.com/images/admin/show/2017/07/150142558495491.png"/></p><p>There are <a href="../../articles/2017/07/手机与Linux桌面文件共享.html#disqus_thread">comments</a>.</p>          </article>
 <p class="paginator">
     Page 1 / 1
 </p>
