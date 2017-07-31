@@ -58,20 +58,20 @@
     </address>
   <p>In <a href="../../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../../tag/flask/index.html">flask</a><a href="../../../tag/python/index.html">python</a><a href="../../../tag/token/index.html">token</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257229058">为什么需要用token验证</a></li>
-<li><a href="#org-15014257229061">如何使用token?</a>
+<li><a href="#org-15014704489203">为什么需要用token验证</a></li>
+<li><a href="#org-15014704489205">如何使用token?</a>
 <ul>
-<li><a href="#org-15014257229061">生成token</a></li>
-<li><a href="#org-15014257229062">验证token</a></li>
-<li><a href="#org-15014257229063">使用flask-login</a></li>
-<li><a href="#org-15014257229064">设置csrf白名单</a></li>
+<li><a href="#org-15014704489205">生成token</a></li>
+<li><a href="#org-15014704489219">验证token</a></li>
+<li><a href="#org-15014704489261">使用flask-login</a></li>
+<li><a href="#org-15014704489289">设置csrf白名单</a></li>
 </ul></li>
-<li><a href="#org-15014257229064">使用脚本发表</a></li>
+<li><a href="#org-15014704489289">使用脚本发表</a></li>
 </ul>
 </div></div>
 
 
-<h1 id="org-15014257229058">为什么需要用token验证</h1>
+<h1 id="org-15014704489203">为什么需要用token验证</h1>
 <p>原因呢是因为写博客时已经在本地写好了，但是要发表到网站上还需要这么几步:</p>
 
 <ul>
@@ -87,134 +87,134 @@
 </ul>
 <p>所以使用*token*验证成为必然</p>
 
-<h1 id="org-15014257229061">如何使用token?</h1>
+<h1 id="org-15014704489205">如何使用token?</h1>
 
-<h2 id="org-15014257229061">生成token</h2>
+<h2 id="org-15014704489205">生成token</h2>
 <p>使用*itsdangerous*对token进行加密
-<pre class="python">
-     class User(model):
-         ......
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+         <span class="o">......</span>
 
-         @property
-         def token(self):
-             config = current_app.config
-             secret_key = config.setdefault('SECRET_KEY')
-             salt = config.setdefault('SECURITY_PASSWORD_SALT')
-             serializer = URLSafeTimedSerializer(secret_key)
-             # column = self.(需要加密的字段)
-             token = serializer.dumps(column, salt=salt)
-             return token
-</pre>
+         <span class="nd">@property</span>
+         <span class="k">def</span> <span class="nf">token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+             <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
+             <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+             <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+             <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
+             <span class="c1"># column = self.(需要加密的字段)</span>
+             <span class="n">token</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">)</span>
+             <span class="k">return</span> <span class="n">token</span>
+</pre></div>
+
 请保管好*SECRET_KEY* 和<b>SECURITY_PASSWORD_SALT</b>,不要泄露</p>
 
-<h2 id="org-15014257229062">验证token</h2>
-<pre class="python">
-     class User(Model):
-         ......
+<h2 id="org-15014704489219">验证token</h2>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+         <span class="o">......</span>
 
-         @staticmethod
-         def check_token(token, max_age=86400):
-             config = current_app.config
-             secret_key = config.setdefault('SECRET_KEY')
-             salt = config.setdefault('SECURITY_PASSWORD_SALT')
-             serializer = URLSafeTimedSerializer(secret_key)
-             try:
-                 column = serializer.loads(token, salt=salt, max_age=max_age)
-             except BadSignature:
-                 return False
-             except SignatureExpired:
-                 return False
-</pre>
+         <span class="nd">@staticmethod</span>
+         <span class="k">def</span> <span class="nf">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="mi">86400</span><span class="p">):</span>
+             <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
+             <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+             <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+             <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
+             <span class="k">try</span><span class="p">:</span>
+                 <span class="n">column</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
+             <span class="k">except</span> <span class="n">BadSignature</span><span class="p">:</span>
+                 <span class="k">return</span> <span class="bp">False</span>
+             <span class="k">except</span> <span class="n">SignatureExpired</span><span class="p">:</span>
+                 <span class="k">return</span> <span class="bp">False</span>
+</pre></div>
+
 <ul>
 <li>max-age
 <p>最大过期时间</p>
 </li>
 </ul>
 <p>如果验证成功查找*该用户*是否存在
-<pre class="python">
-     user = User.query.filter_by(column=column).first()
-     if user is None:
-         return False
-     return user
-</pre></p>
+<div class="highlight"><pre><span></span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="n">column</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+     <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+         <span class="k">return</span> <span class="bp">False</span>
+     <span class="k">return</span> <span class="n">user</span>
+</pre></div>
+</p>
 
 <p>示例:
-<pre class="python">
-     @staticmethod
-     def check_token(token, max_age=86400):
-         config = current_app.config
-         secret_key = config.setdefault('SECRET_KEY')
-         salt = config.setdefault('SECURITY_PASSWORD_SALT')
-         serializer = URLSafeTimedSerializer(secret_key)
-         try:
-             username = serializer.loads(token, salt=salt, max_age=max_age)
-         except BadSignature:
-             return False
-         except SignatureExpired:
-             return False
-         user = User.query.filter_by(username=username).first()
-         if user is None:
-             return False
-         return user
-</pre></p>
+<div class="highlight"><pre><span></span><span class="nd">@staticmethod</span>
+     <span class="k">def</span> <span class="nf">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="mi">86400</span><span class="p">):</span>
+         <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
+         <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+         <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+         <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
+         <span class="k">try</span><span class="p">:</span>
+             <span class="n">username</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
+         <span class="k">except</span> <span class="n">BadSignature</span><span class="p">:</span>
+             <span class="k">return</span> <span class="bp">False</span>
+         <span class="k">except</span> <span class="n">SignatureExpired</span><span class="p">:</span>
+             <span class="k">return</span> <span class="bp">False</span>
+         <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+         <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+             <span class="k">return</span> <span class="bp">False</span>
+         <span class="k">return</span> <span class="n">user</span>
+</pre></div>
+</p>
 
-<h2 id="org-15014257229063">使用flask-login</h2>
+<h2 id="org-15014704489261">使用flask-login</h2>
 <p>flask-login是flask的一个登陆扩展,自带token验证,<b>但是请一定要设</b>
-<pre class="python">
-    login_manager.session_protection = "basic"
-</pre>
+<div class="highlight"><pre><span></span><span class="n">login_manager</span><span class="o">.</span><span class="n">session_protection</span> <span class="o">=</span> <span class="s2">&quot;basic&quot;</span>
+</pre></div>
+
 这是我在试验了n次后,读了flask-login的源码后才发现的（其实后面发现文档有写☹）</p>
 
 <p>然后设置<b>request_loader</b>
-<pre class="python">
-    @login_manager.request_loader
-    def user_loader_from_request(request):
-        token = request.args.get('your_token')
-        if token is not None:
-            user = User.check_token(token)
-            if user:
-                return user
+<div class="highlight"><pre><span></span><span class="nd">@login_manager.request_loader</span>
+    <span class="k">def</span> <span class="nf">user_loader_from_request</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;your_token&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">token</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">user</span>
 
-    return login_manager
-</pre>
+    <span class="k">return</span> <span class="n">login_manager</span>
+</pre></div>
+
 这是简单的从*url*中获取*token*进行验证,也可以从<b>header</b>中获取(更安全)
-<pre class="python">
-     token = request.headers.get('your_token')
-</pre>
+<div class="highlight"><pre><span></span><span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;your_token&#39;</span><span class="p">)</span>
+</pre></div>
+
 非常不幸的是，假设你开启了*csrf*保护,本地使用脚本验证时会报*400*错误,设置*csrf*白名单
-<pre class="python">
-    csrf.exempt
-</pre></p>
-<h2 id="org-15014257229064">设置csrf白名单</h2>
+<div class="highlight"><pre><span></span><span class="n">csrf</span><span class="o">.</span><span class="n">exempt</span>
+</pre></div>
+</p>
+<h2 id="org-15014704489289">设置csrf白名单</h2>
 
-<h1 id="org-15014257229064">使用脚本发表</h1>
+<h1 id="org-15014704489289">使用脚本发表</h1>
 <p>直接给出代码
-<pre class="python">
-    from urllib import request
-    import json
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">request</span>
+    <span class="kn">import</span> <span class="nn">json</span>
 
-    content = '''
-        ,* adssad
-        ,** adasd
-        ,*** adsad
-        '''
+    <span class="n">content</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">        ,* adssad</span>
+<span class="s1">        ,** adasd</span>
+<span class="s1">        ,*** adsad</span>
+<span class="s1">        &#39;&#39;&#39;</span>
 
-    data = {
-        'title': 'hello world',
-        'content':content
-    }
-    data = json.dumps(data)
-    data = bytes(data, 'utf8')
-    url = 'xxxxx' + '?your_token='
-    req = request.Request(url, data=data)
-    req.add_header('Content-Type', 'application/json')
-    req.add_header(
-        'User-Agent',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.107 Safari/537.36'
-    )
-    result = request.urlopen(req).read().decode('utf-8')
-    print(result)
-</pre></p>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;hello world&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;content&#39;</span><span class="p">:</span><span class="n">content</span>
+    <span class="p">}</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;xxxxx&#39;</span> <span class="o">+</span> <span class="s1">&#39;?your_token=&#39;</span>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+    <span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span>
+        <span class="s1">&#39;User-Agent&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.107 Safari/537.36&#39;</span>
+    <span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</p>
 
 <p>现在的步骤是:</p>
 <ul>

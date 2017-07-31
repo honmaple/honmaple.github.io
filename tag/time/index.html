@@ -55,9 +55,9 @@
   <span>In <a href="../../category/python/index.html">Python</a>. </span>
 <span class="tag">tags: <a href="../../tag/flask/index.html">flask</a><a href="../../tag/python/index.html">python</a><a href="../../tag/time/index.html">time</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257229084">设计需求</a></li>
-<li><a href="#org-15014257229085">具体实现</a></li>
-<li><a href="#org-15014257229086">具体代码</a></li>
+<li><a href="#org-15014704489327">设计需求</a></li>
+<li><a href="#org-15014704489328">具体实现</a></li>
+<li><a href="#org-15014704489345">具体代码</a></li>
 </ul>
 </div></div>
 
@@ -68,7 +68,7 @@
 
 <p><a href="http://flask.pocoo.org/snippets/33/">参考资料</a></p>
 
-<h1 id="org-15014257229084">设计需求</h1>
+<h1 id="org-15014704489327">设计需求</h1>
 <ul>
 <li>如果问题发表超过<b>10天</b> ,则显示为 /%Y-%m-%d %H:%M/
 </li>
@@ -81,49 +81,49 @@
 <li>如果小于<b>90秒</b> ，则显示为 /刚刚/ 发表
 </li>
 </ul>
-<h1 id="org-15014257229085">具体实现</h1>
+<h1 id="org-15014704489328">具体实现</h1>
 <p>通过 `diff.days` 和 `diff.seconds` 实现</p>
 
 <p>比如，大于10天
-<pre class="python">
-if diff.days > 10:
-    return dt.strftime('%Y-%m-%d %H:%M')
-</pre></p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">diff</span><span class="o">.</span><span class="n">days</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M&#39;</span><span class="p">)</span>
+</pre></div>
+</p>
 
 <p>大于90秒,小于1小时
-<pre class="python">
-if diff.seconds <= 3600 and diff.seconds > 90:
-    periods = ((diff.seconds / 60, "minute", "minutes"), )
-</pre></p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">diff</span><span class="o">.</span><span class="n">seconds</span> <span class="o">&lt;=</span> <span class="mi">3600</span> <span class="ow">and</span> <span class="n">diff</span><span class="o">.</span><span class="n">seconds</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
+    <span class="n">periods</span> <span class="o">=</span> <span class="p">((</span><span class="n">diff</span><span class="o">.</span><span class="n">seconds</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span> <span class="s2">&quot;minute&quot;</span><span class="p">,</span> <span class="s2">&quot;minutes&quot;</span><span class="p">),</span> <span class="p">)</span>
+</pre></div>
+</p>
 
-<h1 id="org-15014257229086">具体代码</h1>
-<pre class="python">
-def timesince(dt, default="just now"):
-    now = datetime.now()
-    diff = now - dt
-    if diff.days > 10:
-        return dt.strftime('%Y-%m-%d %H:%M')
-    if diff.days <= 10 and diff.days > 0:
-        periods = ((diff.days, "day", "days"), )
-    if diff.days <= 0 and diff.seconds > 3600:
-        periods = ((diff.seconds / 3600, "hour", "hours"), )
-    if diff.seconds <= 3600 and diff.seconds > 90:
-        periods = ((diff.seconds / 60, "minute", "minutes"), )
-    if diff.seconds <= 90:
-        return default
+<h1 id="org-15014704489345">具体代码</h1>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">timesince</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;just now&quot;</span><span class="p">):</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">dt</span>
+    <span class="k">if</span> <span class="n">diff</span><span class="o">.</span><span class="n">days</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">diff</span><span class="o">.</span><span class="n">days</span> <span class="o">&lt;=</span> <span class="mi">10</span> <span class="ow">and</span> <span class="n">diff</span><span class="o">.</span><span class="n">days</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">periods</span> <span class="o">=</span> <span class="p">((</span><span class="n">diff</span><span class="o">.</span><span class="n">days</span><span class="p">,</span> <span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;days&quot;</span><span class="p">),</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="n">diff</span><span class="o">.</span><span class="n">days</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">diff</span><span class="o">.</span><span class="n">seconds</span> <span class="o">&gt;</span> <span class="mi">3600</span><span class="p">:</span>
+        <span class="n">periods</span> <span class="o">=</span> <span class="p">((</span><span class="n">diff</span><span class="o">.</span><span class="n">seconds</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="s2">&quot;hour&quot;</span><span class="p">,</span> <span class="s2">&quot;hours&quot;</span><span class="p">),</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="n">diff</span><span class="o">.</span><span class="n">seconds</span> <span class="o">&lt;=</span> <span class="mi">3600</span> <span class="ow">and</span> <span class="n">diff</span><span class="o">.</span><span class="n">seconds</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
+        <span class="n">periods</span> <span class="o">=</span> <span class="p">((</span><span class="n">diff</span><span class="o">.</span><span class="n">seconds</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span> <span class="s2">&quot;minute&quot;</span><span class="p">,</span> <span class="s2">&quot;minutes&quot;</span><span class="p">),</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="n">diff</span><span class="o">.</span><span class="n">seconds</span> <span class="o">&lt;=</span> <span class="mi">90</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">default</span>
 
-    for period, singular, plural in periods:
+    <span class="k">for</span> <span class="n">period</span><span class="p">,</span> <span class="n">singular</span><span class="p">,</span> <span class="n">plural</span> <span class="ow">in</span> <span class="n">periods</span><span class="p">:</span>
 
-        if period:
-            return "%d %s ago" % (period, singular if period == 1 else
-                                    plural)
+        <span class="k">if</span> <span class="n">period</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> ago&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">singular</span> <span class="k">if</span> <span class="n">period</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span>
+                                    <span class="n">plural</span><span class="p">)</span>
 
-    return default
-</pre>
+    <span class="k">return</span> <span class="n">default</span>
+</pre></div>
+
 <p>ok,之后就可以
-<pre class="python">
-    app.jinja_env.filters['timesince'] = timesince
-</pre>
+<div class="highlight"><pre><span></span><span class="n">app</span><span class="o">.</span><span class="n">jinja_env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s1">&#39;timesince&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timesince</span>
+</pre></div>
+
 来实现几分钟前发表的功能了</p><p>There are <a href="../../articles/2016/06/flask时间格式化.html#disqus_thread">comments</a>.</p>          </article>
 <p class="paginator">
     Page 1 / 1

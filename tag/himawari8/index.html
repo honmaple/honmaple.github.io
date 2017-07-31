@@ -64,95 +64,93 @@
 </blockquote></p>
 
 <p>每次只要运行一下
-
-<pre class="example">
-python himawari8.py
-</pre>
+<div class="highlight"><pre><span></span>python himawari8.py
+</pre></div>
 </p>
 
 <p>源码
-<pre class="python">
-from PIL import Image, ImageOps, ImageDraw
-from io import BytesIO
-from urllib.request import Request, urlopen
-from datetime import datetime, timedelta
-import json
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageOps</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">urlopen</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
-SCALE = 2
-WIDTH = 1368
-HEIGHT = 768
-
-
-def get_info():
-    url = "http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json"
-    request = Request(url)
-    response = urlopen(request, timeout=10)
-    return json.loads(response.read())
+<span class="n">SCALE</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
+<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
 
 
-def download():
-    png = Image.new('RGB', (550 * SCALE, 550 * SCALE))
-    # desktop = Image.new('RGB', (WIDTH, HEIGHT))
-    desktop = Image.open('/home/jianglin/Pictures/308556.png')
-    url_format = 'http://himawari8-dl.nict.go.jp/himawari8/img/D531106/{}d/{}/{}_{}_{}.png'
-    info = get_info()
-    # date = datetime.strptime(info['date'], '%Y-%m-%d %H:%M:%S') + timedelta(
-    #     hours=-8)
-    date = datetime.strptime(info['date'], '%Y-%m-%d %H:%M:%S')
-    for x in range(SCALE):
-        for y in range(SCALE):
-            url = url_format.format(SCALE, 550,
-                                    date.strftime("%Y/%m/%d/%H%M%S"), x, y)
-            print(url)
-            request = Request(url)
-            response = urlopen(request, timeout=10)
-            img = Image.open(BytesIO(response.read()))
-            png.paste(img, (550 * x, 550 * y, 550 * (x + 1), 550 * (y + 1)))
-    png = circle(png)
-    desktop.paste(png, (160, 160), png)
-    desktop.save('/tmp/earth.png', "PNG")
-    set_background()
+<span class="k">def</span> <span class="nf">get_info</span><span class="p">():</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&quot;</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
 
 
-def circle(img):
-    width = SCALE * 550
-    height = SCALE * 550
-    size = (width, height)
-    mask = Image.new('L', size, 0)
-    draw = ImageDraw.Draw(mask)
-    draw.ellipse((3, 3, width - 3, height - 3), fill=255)
-    output = ImageOps.fit(img, mask.size, centering=(0.5, 0.5))
-    output.putalpha(mask)
-    output.thumbnail((214, 214), Image.ANTIALIAS)
-    return output
+<span class="k">def</span> <span class="nf">download</span><span class="p">():</span>
+    <span class="n">png</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">550</span> <span class="o">*</span> <span class="n">SCALE</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="n">SCALE</span><span class="p">))</span>
+    <span class="c1"># desktop = Image.new(&#39;RGB&#39;, (WIDTH, HEIGHT))</span>
+    <span class="n">desktop</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;/home/jianglin/Pictures/308556.png&#39;</span><span class="p">)</span>
+    <span class="n">url_format</span> <span class="o">=</span> <span class="s1">&#39;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/{}d/{}/{}_{}_{}.png&#39;</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">get_info</span><span class="p">()</span>
+    <span class="c1"># date = datetime.strptime(info[&#39;date&#39;], &#39;%Y-%m-%d %H:%M:%S&#39;) + timedelta(</span>
+    <span class="c1">#     hours=-8)</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SCALE</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SCALE</span><span class="p">):</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">url_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">SCALE</span><span class="p">,</span> <span class="mi">550</span><span class="p">,</span>
+                                    <span class="n">date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y/%m/</span><span class="si">%d</span><span class="s2">/%H%M%S&quot;</span><span class="p">),</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
+            <span class="n">png</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="mi">550</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="mi">550</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">550</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
+    <span class="n">png</span> <span class="o">=</span> <span class="n">circle</span><span class="p">(</span><span class="n">png</span><span class="p">)</span>
+    <span class="n">desktop</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">png</span><span class="p">,</span> <span class="p">(</span><span class="mi">160</span><span class="p">,</span> <span class="mi">160</span><span class="p">),</span> <span class="n">png</span><span class="p">)</span>
+    <span class="n">desktop</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;/tmp/earth.png&#39;</span><span class="p">,</span> <span class="s2">&quot;PNG&quot;</span><span class="p">)</span>
+    <span class="n">set_background</span><span class="p">()</span>
 
 
-def convert():
-    # size = (768, 768)
-    # mask = Image.new('L', size, 0)
-    # draw = ImageDraw.Draw(mask)
-    # draw.ellipse((3, 3, 765, 765), fill=255)
-    # im = Image.open('/tmp/earth.png')
-    # output = ImageOps.fit(im, mask.size, centering=(0.5, 0.5))
-    # output.putalpha(mask)
-    # output.thumbnail((256, 256), Image.ANTIALIAS)
-    # output.save('output.png')
-    # output.convert("RGBA")
-    output = Image.open('output.png')
-    output.thumbnail((214, 214), Image.ANTIALIAS)
-    desktop = Image.open('/home/jianglin/Pictures/308556.png')
-    desktop.paste(output, (160, 160), output)
-    desktop.save('/tmp/earch.png', "PNG")
+<span class="k">def</span> <span class="nf">circle</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">SCALE</span> <span class="o">*</span> <span class="mi">550</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">SCALE</span> <span class="o">*</span> <span class="mi">550</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">draw</span><span class="o">.</span><span class="n">ellipse</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">width</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="n">height</span> <span class="o">-</span> <span class="mi">3</span><span class="p">),</span> <span class="n">fill</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">ImageOps</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mask</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">centering</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">putalpha</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="mi">214</span><span class="p">,</span> <span class="mi">214</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">ANTIALIAS</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
 
 
-def set_background():
-    import os
-    os.system('feh --bg-scale /tmp/earth.png')
+<span class="k">def</span> <span class="nf">convert</span><span class="p">():</span>
+    <span class="c1"># size = (768, 768)</span>
+    <span class="c1"># mask = Image.new(&#39;L&#39;, size, 0)</span>
+    <span class="c1"># draw = ImageDraw.Draw(mask)</span>
+    <span class="c1"># draw.ellipse((3, 3, 765, 765), fill=255)</span>
+    <span class="c1"># im = Image.open(&#39;/tmp/earth.png&#39;)</span>
+    <span class="c1"># output = ImageOps.fit(im, mask.size, centering=(0.5, 0.5))</span>
+    <span class="c1"># output.putalpha(mask)</span>
+    <span class="c1"># output.thumbnail((256, 256), Image.ANTIALIAS)</span>
+    <span class="c1"># output.save(&#39;output.png&#39;)</span>
+    <span class="c1"># output.convert(&quot;RGBA&quot;)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;output.png&#39;</span><span class="p">)</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="mi">214</span><span class="p">,</span> <span class="mi">214</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">ANTIALIAS</span><span class="p">)</span>
+    <span class="n">desktop</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;/home/jianglin/Pictures/308556.png&#39;</span><span class="p">)</span>
+    <span class="n">desktop</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="p">(</span><span class="mi">160</span><span class="p">,</span> <span class="mi">160</span><span class="p">),</span> <span class="n">output</span><span class="p">)</span>
+    <span class="n">desktop</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;/tmp/earch.png&#39;</span><span class="p">,</span> <span class="s2">&quot;PNG&quot;</span><span class="p">)</span>
 
 
-if __name__ == '__main__':
-    download()
-</pre>
+<span class="k">def</span> <span class="nf">set_background</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;feh --bg-scale /tmp/earth.png&#39;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">download</span><span class="p">()</span>
+</pre></div>
+
 <img src="https://images.honmaple.com/images/admin/show/2017/03/149023917874284.png"/></p>
 
 <p><img src="https://images.honmaple.com/images/admin/show/2017/03/149023928036061.png"/></p>

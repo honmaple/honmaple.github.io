@@ -55,70 +55,70 @@
   <span>In <a href="../../category/python/index.html">Python</a>. </span>
 <span class="tag">tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/flask/index.html">flask</a><a href="../../tag/whoosh/index.html">whoosh</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257229930">Quickstart</a></li>
-<li><a href="#org-15014257229931">Usage</a>
+<li><a href="#org-15014704491263">Quickstart</a></li>
+<li><a href="#org-15014704491280">Usage</a>
 <ul>
-<li><a href="#org-15014257229931">创建更新删除索引</a></li>
-<li><a href="#org-15014257229932">自定义analyzer</a></li>
+<li><a href="#org-15014704491280">创建更新删除索引</a></li>
+<li><a href="#org-15014704491293">自定义analyzer</a></li>
 </ul></li>
-<li><a href="#org-15014257229932">Configure</a></li>
+<li><a href="#org-15014704491300">Configure</a></li>
 </ul>
 </div></div>
 
 
 <p>flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/Flask-WhooshAlchemy , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个</p>
 
-<h1 id="org-15014257229930">Quickstart</h1>
+<h1 id="org-15014704491263">Quickstart</h1>
 <p>插件基于 whoosh,纯 python 编写,使用上很简单
-<pre class="python">
-    from flask_msearch import Search
-    [...]
-    search = Search()
-    search.init_app(app)
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask_msearch</span> <span class="kn">import</span> <span class="n">Search</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
+    <span class="n">search</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
 
-    # models.py
-    class Post(db.Model):
-        __tablename__ = 'post'
-        __searchable__ = ['title', 'content']
+    <span class="c1"># models.py</span>
+    <span class="k">class</span> <span class="nc">Post</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+        <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;post&#39;</span>
+        <span class="n">__searchable__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">]</span>
 
-    # views.py
-    @app.route("/search")
-    def w_search():
-        keyword = request.args.get('keyword')
-        results = search.whoosh_search(Post,query=keyword,fields=['title'],limit=20)
-        return ''
-</pre></p>
+    <span class="c1"># views.py</span>
+    <span class="nd">@app.route</span><span class="p">(</span><span class="s2">&quot;/search&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">w_search</span><span class="p">():</span>
+        <span class="n">keyword</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;keyword&#39;</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">whoosh_search</span><span class="p">(</span><span class="n">Post</span><span class="p">,</span><span class="n">query</span><span class="o">=</span><span class="n">keyword</span><span class="p">,</span><span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">],</span><span class="n">limit</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+</pre></div>
+</p>
 
-<h1 id="org-15014257229931">Usage</h1>
-<h2 id="org-15014257229931">创建更新删除索引</h2>
+<h1 id="org-15014704491280">Usage</h1>
+<h2 id="org-15014704491280">创建更新删除索引</h2>
 <p>如果要对已存在的数据创建索引(全部)
-<pre class="python">
-    # 创建
-    search.create_index()
-    # 更新
-    search.create_index(update=True)
-    # 删除
-    search.create_index(delete=True)
-</pre></p>
+<div class="highlight"><pre><span></span><span class="c1"># 创建</span>
+    <span class="n">search</span><span class="o">.</span><span class="n">create_index</span><span class="p">()</span>
+    <span class="c1"># 更新</span>
+    <span class="n">search</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="c1"># 删除</span>
+    <span class="n">search</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</p>
 
 <p>如果只想要为指定的表创建索引
-<pre class="python">
-    search.create_index(Model)
-</pre></p>
+<div class="highlight"><pre><span></span><span class="n">search</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+</pre></div>
+</p>
 
-<h2 id="org-15014257229932">自定义analyzer</h2>
+<h2 id="org-15014704491293">自定义analyzer</h2>
 
 <p>比如使用jieba的中文分词
-<pre class="python">
-     from jieba.analyse import ChineseAnalyzer
-     search = Search(analyzer=ChineseAnalyzer())
-</pre></p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">jieba.analyse</span> <span class="kn">import</span> <span class="n">ChineseAnalyzer</span>
+     <span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">(</span><span class="n">analyzer</span><span class="o">=</span><span class="n">ChineseAnalyzer</span><span class="p">())</span>
+</pre></div>
+</p>
 
-<h1 id="org-15014257229932">Configure</h1>
-<pre class="python">
-    WHOOSH_BASE = 'whoosh_index'
-    WHOOSH_ENABLE = True
-</pre>
+<h1 id="org-15014704491300">Configure</h1>
+<div class="highlight"><pre><span></span><span class="n">WHOOSH_BASE</span> <span class="o">=</span> <span class="s1">&#39;whoosh_index&#39;</span>
+    <span class="n">WHOOSH_ENABLE</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+
 
 <p>项目地址:https://github.com/honmaple/flask-msearch</p><p>There are <a href="../../articles/2017/04/基于whoosh实现的flask全文搜索插件.html#disqus_thread">comments</a>.</p>          </article>
         </aside><!-- /#featured -->
@@ -154,28 +154,25 @@
 </blockquote></p>
 
 <p>每次只要运行一下
-
-<pre class="example">
-python himawari8.py
-</pre>
+<div class="highlight"><pre><span></span>python himawari8.py
+</pre></div>
 </p>
 
 <p>源码
-<pre class="python">
-from PIL import Image, ImageOps, ImageDraw
-from io import BytesIO
-from urllib.request import Request, urlopen
-from datetime import datetime, timedelta
-import json
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageOps</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">urlopen</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
-SCALE = 2
-WIDTH = 1368
-HEIGHT = 768
+<span class="n">SCALE</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
+<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
 
 
-def get_info():
-    url = "http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json"
-    request = Request(url …</pre></p>
+<span class="k">def</span> <span class="nf">get_info</span><span class="p">():</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&quot;</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url …</span></pre></div></p>
             <a class="readmore" href="../../articles/2017/03/himawari8图片下载改进版.html">read more</a>
 <p>There are <a href="../../articles/2017/03/himawari8图片下载改进版.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -201,34 +198,33 @@ def get_info():
 <p>直接给出源码</p>
 
 <p>设置壁纸
-<pre class="sh">
-feh --bg-scale /tmp/earth.png
-</pre></p>
+<div class="highlight"><pre><span></span>feh --bg-scale /tmp/earth.png
+</pre></div>
+</p>
 
 <p>设置桌面大小,及图片放大倍数
-<pre class="python">
-SCALE = 4
-WIDTH = 1368
-HEIGHT = 768
-</pre></p>
+<div class="highlight"><pre><span></span><span class="n">SCALE</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
+<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
+</pre></div>
+</p>
 
-<pre class="python">
-from PIL import Image
-from io import BytesIO
-from urllib.request import Request, urlopen
-from datetime import datetime
-import json
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">urlopen</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
-SCALE = 4
-WIDTH = 1368
-HEIGHT = 768
+<span class="n">SCALE</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
+<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
 
 
-def get_info():
-    url = "http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json"
-    request = Request(url)
-    response = urlopen(request, timeout=10)
-    return json …</pre>
+<span class="k">def</span> <span class="nf">get_info</span><span class="p">():</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&quot;</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">json …</span></pre></div>
             <a class="readmore" href="../../articles/2017/03/下载Himawari8拍摄的实时地球图片.html">read more</a>
 <p>There are <a href="../../articles/2017/03/下载Himawari8拍摄的实时地球图片.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -251,56 +247,55 @@ def get_info():
     </address>
   <p>In <a href="../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/sqlalchemy/index.html">sqlalchemy</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257228284">sqlalchemy object序列化为json</a>
+<li><a href="#org-15014704487277">sqlalchemy object序列化为json</a>
 <ul>
-<li><a href="#org-15014257228284">多个实例</a></li>
-<li><a href="#org-15014257228285">单个实例</a></li>
-<li><a href="#org-15014257228285">排除字段</a></li>
-<li><a href="#org-15014257228285">仅包括字段</a></li>
-<li><a href="#org-15014257228286">关系查询深度</a></li>
-<li><a href="#org-15014257228286">增加一些自定义的函数</a></li>
-<li><a href="#org-15014257228287">可传递参数的函数</a></li>
+<li><a href="#org-15014704487287">多个实例</a></li>
+<li><a href="#org-15014704487287">单个实例</a></li>
+<li><a href="#org-15014704487296">排除字段</a></li>
+<li><a href="#org-15014704487303">仅包括字段</a></li>
+<li><a href="#org-15014704487309">关系查询深度</a></li>
+<li><a href="#org-15014704487315">增加一些自定义的函数</a></li>
+<li><a href="#org-15014704487329">可传递参数的函数</a></li>
 </ul></li>
-<li><a href="#org-15014257228289">像django orm一样使用sqlalchemy</a>
+<li><a href="#org-15014704487341">像django orm一样使用sqlalchemy</a>
 <ul>
-<li><a href="#org-15014257228290">基本查询(已实现)</a></li>
-<li><a href="#org-15014257228298">关系查询</a></li>
-<li><a href="#org-15014257228298">其它</a></li>
+<li><a href="#org-15014704487342">基本查询(已实现)</a></li>
+<li><a href="#org-15014704487351">关系查询</a></li>
+<li><a href="#org-15014704487357">其它</a></li>
 </ul></li>
-<li><a href="#org-15014257228299">去掉一些sqlalchemy的重复工作</a>
+<li><a href="#org-15014704487372">去掉一些sqlalchemy的重复工作</a>
 <ul>
-<li><a href="#org-15014257228301">ModelMixin</a></li>
-<li><a href="#org-15014257228303">ModelTimeMixin</a></li>
-<li><a href="#org-15014257228304">ModelUserMixin</a></li>
+<li><a href="#org-15014704487372">ModelMixin</a></li>
+<li><a href="#org-15014704487381">ModelTimeMixin</a></li>
+<li><a href="#org-15014704487381">ModelUserMixin</a></li>
 </ul></li>
 </ul>
 </div></div>
 
 
-<h1 id="org-15014257228284">sqlalchemy object序列化为json</h1>
+<h1 id="org-15014704487277">sqlalchemy object序列化为json</h1>
 <p>灵感来源于 *Django REST framework*
-<pre class="python">
-   posts = Post.query.all()
-   serializer = Seralizer(posts,many=True)
-   data = serializer.data
-</pre></p>
-<h2 id="org-15014257228284">多个实例</h2>
+<div class="highlight"><pre><span></span><span class="n">posts</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+   <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">posts</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+   <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</p>
+<h2 id="org-15014704487287">多个实例</h2>
 
-<h2 id="org-15014257228285">单个实例</h2>
-<pre class="python">
-   post = Post.query.first()
-   serializer = Seralizer(post,many=False)
-   data = serializer.data
-</pre>
+<h2 id="org-15014704487287">单个实例</h2>
+<div class="highlight"><pre><span></span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+   <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+   <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
 
-<h2 id="org-15014257228285">排除字段</h2>
-<pre class="python">
-   serializer = Seralizer(post,exclude=['title'])
-</pre>
 
-<h2 id="org-15014257228285">仅包括字段</h2>
-<pre class="python">
-   serializer = Seralizer(post …</pre>
+<h2 id="org-15014704487296">排除字段</h2>
+<div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<h2 id="org-15014704487303">仅包括字段</h2>
+<div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post …</span></pre></div>
             <a class="readmore" href="../../articles/2017/03/sqlalchemy使用上的小tips.html">read more</a>
 <p>There are <a href="../../articles/2017/03/sqlalchemy使用上的小tips.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -386,13 +381,13 @@ def get_info():
     </address>
   <p>In <a href="../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../tag/python/index.html">python</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257229562">__main__</a></li>
-<li><a href="#org-15014257229565">总结一下：</a></li>
+<li><a href="#org-15014704490920">__main__</a></li>
+<li><a href="#org-15014704490968">总结一下：</a></li>
 </ul>
 </div></div>
 
 
-<h2 id="org-15014257229562">__main__</h2>
+<h2 id="org-15014704490920">__main__</h2>
 
 <p>转自 <a href="http://www.jb51.net/article/51892.html">这里</a></p>
 
@@ -408,27 +403,24 @@ def get_info():
 <p>意思就是说让你写的脚本模块既可以导入到别的模块中用，另外该模块自己也可执行。
 这句话，可能一开始听的还不是很懂。下面举例说明：
 先写一个模块：
-<pre class="python">
-  #module.py
-  def main():
-      print("we are in %s" % __name__)
+<div class="highlight"><pre><span></span><span class="c1">#module.py</span>
+  <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+      <span class="k">print</span><span class="p">(</span><span class="s2">&quot;we are in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="vm">__name__</span><span class="p">)</span>
 
-  if __name__ == '__main__':
-      main()
-</pre></p>
+  <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+      <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</p>
 
 <p>这个函数定义了一个main函数，我们执行一下该py文件发现结果是打印出
-
-<pre class="example">
-we are in __main__
-</pre>
+<div class="highlight"><pre><span></span>we are in __main__
+</pre></div>
 
 说明我们的if语句中的内容被执行了，调用了<b>main()：</b>
 但是如果我们从另我一个模块导入该模块，并调用一次*main()*函数会是怎样的结果呢？</p>
 
-<pre class="python">
-  #anothermodle.py
-  from module …</pre>
+<div class="highlight"><pre><span></span><span class="c1">#anothermodle.py</span>
+  <span class="kn">from</span> <span class="nn">module …</span></pre></div>
             <a class="readmore" href="../../articles/2016/12/Python中的__main__函数.html">read more</a>
 <p>There are <a href="../../articles/2016/12/Python中的__main__函数.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -451,20 +443,20 @@ we are in __main__
     </address>
   <p>In <a href="../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../tag/flask/index.html">flask</a><a href="../../tag/python/index.html">python</a><a href="../../tag/token/index.html">token</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257229058">为什么需要用token验证</a></li>
-<li><a href="#org-15014257229061">如何使用token?</a>
+<li><a href="#org-15014704489203">为什么需要用token验证</a></li>
+<li><a href="#org-15014704489205">如何使用token?</a>
 <ul>
-<li><a href="#org-15014257229061">生成token</a></li>
-<li><a href="#org-15014257229062">验证token</a></li>
-<li><a href="#org-15014257229063">使用flask-login</a></li>
-<li><a href="#org-15014257229064">设置csrf白名单</a></li>
+<li><a href="#org-15014704489205">生成token</a></li>
+<li><a href="#org-15014704489219">验证token</a></li>
+<li><a href="#org-15014704489261">使用flask-login</a></li>
+<li><a href="#org-15014704489289">设置csrf白名单</a></li>
 </ul></li>
-<li><a href="#org-15014257229064">使用脚本发表</a></li>
+<li><a href="#org-15014704489289">使用脚本发表</a></li>
 </ul>
 </div></div>
 
 
-<h1 id="org-15014257229058">为什么需要用token验证</h1>
+<h1 id="org-15014704489203">为什么需要用token验证</h1>
 <p>原因呢是因为写博客时已经在本地写好了，但是要发表到网站上还需要这么几步:</p>
 
 <ul>
@@ -480,24 +472,24 @@ we are in __main__
 </ul>
 <p>所以使用*token*验证成为必然</p>
 
-<h1 id="org-15014257229061">如何使用token?</h1>
+<h1 id="org-15014704489205">如何使用token?</h1>
 
-<h2 id="org-15014257229061">生成token</h2>
+<h2 id="org-15014704489205">生成token</h2>
 <p>使用*itsdangerous*对token进行加密
-<pre class="python">
-     class User(model):
-         ......
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+         <span class="o">......</span>
 
-         @property
-         def token(self):
-             config = current_app.config
-             secret_key = config.setdefault('SECRET_KEY')
-             salt = config.setdefault('SECURITY_PASSWORD_SALT')
-             serializer = URLSafeTimedSerializer(secret_key)
-             # column = self.(需要加密的字段)
-             token = serializer.dumps(column, salt=salt)
-             return token
-</pre>
+         <span class="nd">@property</span>
+         <span class="k">def</span> <span class="nf">token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+             <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
+             <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+             <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+             <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
+             <span class="c1"># column = self.(需要加密的字段)</span>
+             <span class="n">token</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">)</span>
+             <span class="k">return</span> <span class="n">token</span>
+</pre></div>
+
 请保管好*SECRET_KEY* 和 …</p>
             <a class="readmore" href="../../articles/2016/12/flask使用token进行登陆.html">read more</a>
 <p>There are <a href="../../articles/2016/12/flask使用token进行登陆.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
@@ -521,40 +513,39 @@ we are in __main__
     </address>
   <p>In <a href="../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/sqlalchemy/index.html">sqlalchemy</a><a href="../../tag/json/index.html">json</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257229521">为什么需要这个需求?</a></li>
-<li><a href="#org-15014257229522">如何实现?</a></li>
-<li><a href="#org-15014257229525">具体使用</a>
+<li><a href="#org-15014704490751">为什么需要这个需求?</a></li>
+<li><a href="#org-15014704490752">如何实现?</a></li>
+<li><a href="#org-15014704490853">具体使用</a>
 <ul>
-<li><a href="#org-15014257229525">多个实例</a></li>
-<li><a href="#org-15014257229525">单个实例</a></li>
-<li><a href="#org-15014257229526">排除字段</a></li>
-<li><a href="#org-15014257229526">仅包括字段</a></li>
-<li><a href="#org-15014257229526">关系查询深度</a></li>
+<li><a href="#org-15014704490854">多个实例</a></li>
+<li><a href="#org-15014704490862">单个实例</a></li>
+<li><a href="#org-15014704490870">排除字段</a></li>
+<li><a href="#org-15014704490876">仅包括字段</a></li>
+<li><a href="#org-15014704490882">关系查询深度</a></li>
 </ul></li>
 </ul>
 </div></div>
 
 
-<h1 id="org-15014257229521">为什么需要这个需求?</h1>
+<h1 id="org-15014704490751">为什么需要这个需求?</h1>
 <p><b>sqlalchemy</b> 是个好东西,虽然其文档犹如/老太婆的裹脚布--又臭又长/,饱受诟病</p>
 
 <p>使用<b>restful</b> 时sqlalchemy返回的是一个<b>object</b> 类，假设前后端分离,前端无法处理</p>
 
-<h1 id="org-15014257229522">如何实现?</h1>
+<h1 id="org-15014704490752">如何实现?</h1>
 <p>直接给出代码
-<pre class="python">
-  class Serializer(object):
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Serializer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-      def __init__(self, instance, many=False, include=[], exclude=[], depth=2):
-          self.instance = instance
-          self.many = many
-          self.include = include
-          self.exclude = exclude
-          self.depth = depth
+      <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="p">[],</span> <span class="n">exclude</span><span class="o">=</span><span class="p">[],</span> <span class="n">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">instance</span> <span class="o">=</span> <span class="n">instance</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">many</span> <span class="o">=</span> <span class="n">many</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">include</span> <span class="o">=</span> <span class="n">include</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">exclude</span> <span class="o">=</span> <span class="n">exclude</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">depth</span>
 
-      @property
-      def data(self):
-          if self.include and self.exclude …</pre></p>
+      <span class="nd">@property</span>
+      <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+          <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude …</span></pre></div></p>
             <a class="readmore" href="../../articles/2016/12/sqlalchemy序列化为json.html">read more</a>
 <p>There are <a href="../../articles/2016/12/sqlalchemy序列化为json.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>

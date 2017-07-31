@@ -58,182 +58,182 @@
     </address>
   <p>In <a href="../../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../../tag/python/index.html">python</a><a href="../../../tag/sqlalchemy/index.html">sqlalchemy</a><a href="../../../tag/json/index.html">json</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257229521">为什么需要这个需求?</a></li>
-<li><a href="#org-15014257229522">如何实现?</a></li>
-<li><a href="#org-15014257229525">具体使用</a>
+<li><a href="#org-15014704490751">为什么需要这个需求?</a></li>
+<li><a href="#org-15014704490752">如何实现?</a></li>
+<li><a href="#org-15014704490853">具体使用</a>
 <ul>
-<li><a href="#org-15014257229525">多个实例</a></li>
-<li><a href="#org-15014257229525">单个实例</a></li>
-<li><a href="#org-15014257229526">排除字段</a></li>
-<li><a href="#org-15014257229526">仅包括字段</a></li>
-<li><a href="#org-15014257229526">关系查询深度</a></li>
+<li><a href="#org-15014704490854">多个实例</a></li>
+<li><a href="#org-15014704490862">单个实例</a></li>
+<li><a href="#org-15014704490870">排除字段</a></li>
+<li><a href="#org-15014704490876">仅包括字段</a></li>
+<li><a href="#org-15014704490882">关系查询深度</a></li>
 </ul></li>
 </ul>
 </div></div>
 
 
-<h1 id="org-15014257229521">为什么需要这个需求?</h1>
+<h1 id="org-15014704490751">为什么需要这个需求?</h1>
 <p><b>sqlalchemy</b> 是个好东西,虽然其文档犹如/老太婆的裹脚布--又臭又长/,饱受诟病</p>
 
 <p>使用<b>restful</b> 时sqlalchemy返回的是一个<b>object</b> 类，假设前后端分离,前端无法处理</p>
 
-<h1 id="org-15014257229522">如何实现?</h1>
+<h1 id="org-15014704490752">如何实现?</h1>
 <p>直接给出代码
-<pre class="python">
-  class Serializer(object):
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Serializer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-      def __init__(self, instance, many=False, include=[], exclude=[], depth=2):
-          self.instance = instance
-          self.many = many
-          self.include = include
-          self.exclude = exclude
-          self.depth = depth
+      <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="p">[],</span> <span class="n">exclude</span><span class="o">=</span><span class="p">[],</span> <span class="n">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">instance</span> <span class="o">=</span> <span class="n">instance</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">many</span> <span class="o">=</span> <span class="n">many</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">include</span> <span class="o">=</span> <span class="n">include</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">exclude</span> <span class="o">=</span> <span class="n">exclude</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">depth</span>
 
-      @property
-      def data(self):
-          if self.include and self.exclude:
-              raise ValueError('include and exclude can\'t work together')
-          if self.many:
-              if isinstance(self.instance, list):
-                  return self._serializerlist(self.instance, self.depth)
-              pageinfo = {
-                  'items': True,
-                  'pages': self.instance.pages,
-                  'has_prev': self.instance.has_prev,
-                  'page': self.instance.page,
-                  'has_next': self.instance.has_next,
-                  'iter_pages': list(self.instance.iter_pages(left_edge=1,
-                                                              left_current=2,
-                                                              right_current=3,
-                                                              right_edge=1))
-              }
-              return {'data': self._serializerlist(self.instance.items,
-                                                   self.depth),
-                      'pageinfo': pageinfo}
-          return self._serializer(self.instance, self.depth)
+      <span class="nd">@property</span>
+      <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+          <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude</span><span class="p">:</span>
+              <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;include and exclude can</span><span class="se">\&#39;</span><span class="s1">t work together&#39;</span><span class="p">)</span>
+          <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">many</span><span class="p">:</span>
+              <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serializerlist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">)</span>
+              <span class="n">pageinfo</span> <span class="o">=</span> <span class="p">{</span>
+                  <span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                  <span class="s1">&#39;pages&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">pages</span><span class="p">,</span>
+                  <span class="s1">&#39;has_prev&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">has_prev</span><span class="p">,</span>
+                  <span class="s1">&#39;page&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">page</span><span class="p">,</span>
+                  <span class="s1">&#39;has_next&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">has_next</span><span class="p">,</span>
+                  <span class="s1">&#39;iter_pages&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">iter_pages</span><span class="p">(</span><span class="n">left_edge</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                              <span class="n">left_current</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                                                              <span class="n">right_current</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                                                              <span class="n">right_edge</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+              <span class="p">}</span>
+              <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serializerlist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">items</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">),</span>
+                      <span class="s1">&#39;pageinfo&#39;</span><span class="p">:</span> <span class="n">pageinfo</span><span class="p">}</span>
+          <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serializer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">)</span>
 
-      def _serializerlist(self, instances, depth):
-          results = []
-          for instance in instances:
-              result = self._serializer(instance, depth)
-              if result:
-                  results.append(result)
-          return results
+      <span class="k">def</span> <span class="nf">_serializerlist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instances</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+          <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+          <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">:</span>
+              <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serializer</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">depth</span><span class="p">)</span>
+              <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+                  <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+          <span class="k">return</span> <span class="n">results</span>
 
-      def _serializer(self, instance, depth):
-          result = {}
-          if depth == 0:
-              return result
-          depth -= 1
-          model_class = self.get_model_class(instance)
-          inp = self.get_inspect(model_class)
-          model_data = self._serializer_model(inp, instance, depth)
-          relation_data = self._serializer_relation(inp, instance, depth)
-          result.update(model_data)
-          result.update(relation_data)
-          return result
+      <span class="k">def</span> <span class="nf">_serializer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+          <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+          <span class="k">if</span> <span class="n">depth</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+              <span class="k">return</span> <span class="n">result</span>
+          <span class="n">depth</span> <span class="o">-=</span> <span class="mi">1</span>
+          <span class="n">model_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model_class</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+          <span class="n">inp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_inspect</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span>
+          <span class="n">model_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serializer_model</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">depth</span><span class="p">)</span>
+          <span class="n">relation_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serializer_relation</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">depth</span><span class="p">)</span>
+          <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">model_data</span><span class="p">)</span>
+          <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">relation_data</span><span class="p">)</span>
+          <span class="k">return</span> <span class="n">result</span>
 
-      def _serializer_model(self, inp, instance, depth):
-          result = {}
-          model_columns = self.get_model_columns(inp)
-          for column in model_columns:
-              result[column] = getattr(instance, column)
-          return result
+      <span class="k">def</span> <span class="nf">_serializer_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+          <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+          <span class="n">model_columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model_columns</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+          <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">model_columns</span><span class="p">:</span>
+              <span class="n">result</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span>
+          <span class="k">return</span> <span class="n">result</span>
 
-      def _serializer_relation(self, inp, instance, depth):
-          result = {}
-          relation_columns = self.get_relation_columns(inp)
-          for relation in relation_columns:
-              column = relation.key
-              if relation.direction in [ONETOMANY, MANYTOMANY]:
-                  children = getattr(instance, column)
-                  if relation.lazy == 'dynamic':
-                      children = children.all()
-                  result[column] = Serializer(
-                      children,
-                      many=True,
-                      exclude=[relation.back_populates],
-                      depth=depth).data
-              else:
-                  child = getattr(instance, column)
-                  if relation.lazy == 'dynamic':
-                      child = child.first()
-                  result[column] = Serializer(
-                      child,
-                      many=False,
-                      exclude=[relation.back_populates],
-                      depth=depth).data
-          return result
+      <span class="k">def</span> <span class="nf">_serializer_relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+          <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+          <span class="n">relation_columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_relation_columns</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+          <span class="k">for</span> <span class="n">relation</span> <span class="ow">in</span> <span class="n">relation_columns</span><span class="p">:</span>
+              <span class="n">column</span> <span class="o">=</span> <span class="n">relation</span><span class="o">.</span><span class="n">key</span>
+              <span class="k">if</span> <span class="n">relation</span><span class="o">.</span><span class="n">direction</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ONETOMANY</span><span class="p">,</span> <span class="n">MANYTOMANY</span><span class="p">]:</span>
+                  <span class="n">children</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span>
+                  <span class="k">if</span> <span class="n">relation</span><span class="o">.</span><span class="n">lazy</span> <span class="o">==</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">:</span>
+                      <span class="n">children</span> <span class="o">=</span> <span class="n">children</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                  <span class="n">result</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">Serializer</span><span class="p">(</span>
+                      <span class="n">children</span><span class="p">,</span>
+                      <span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                      <span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="n">relation</span><span class="o">.</span><span class="n">back_populates</span><span class="p">],</span>
+                      <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+              <span class="k">else</span><span class="p">:</span>
+                  <span class="n">child</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span>
+                  <span class="k">if</span> <span class="n">relation</span><span class="o">.</span><span class="n">lazy</span> <span class="o">==</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">:</span>
+                      <span class="n">child</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+                  <span class="n">result</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">Serializer</span><span class="p">(</span>
+                      <span class="n">child</span><span class="p">,</span>
+                      <span class="n">many</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                      <span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="n">relation</span><span class="o">.</span><span class="n">back_populates</span><span class="p">],</span>
+                      <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+          <span class="k">return</span> <span class="n">result</span>
 
-      def get_model_class(self, instance):
-          return getattr(instance, '__class__')
+      <span class="k">def</span> <span class="nf">get_model_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+          <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="s1">&#39;__class__&#39;</span><span class="p">)</span>
 
-      def get_inspect(self, model_class):
-          return inspect(model_class)
+      <span class="k">def</span> <span class="nf">get_inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_class</span><span class="p">):</span>
+          <span class="k">return</span> <span class="n">inspect</span><span class="p">(</span><span class="n">model_class</span><span class="p">)</span>
 
-      def get_model_columns(self, inp):
-          if self.include:
-              model_columns = [
-                  column.name for column in inp.columns
-                  if column.name in self.include
-              ]
-          elif self.exclude:
-              model_columns = [
-                  column.name for column in inp.columns
-                  if column.name not in self.exclude
-              ]
-          else:
-              model_columns = [column.name for column in inp.columns]
+      <span class="k">def</span> <span class="nf">get_model_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
+          <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include</span><span class="p">:</span>
+              <span class="n">model_columns</span> <span class="o">=</span> <span class="p">[</span>
+                  <span class="n">column</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">inp</span><span class="o">.</span><span class="n">columns</span>
+                  <span class="k">if</span> <span class="n">column</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">include</span>
+              <span class="p">]</span>
+          <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude</span><span class="p">:</span>
+              <span class="n">model_columns</span> <span class="o">=</span> <span class="p">[</span>
+                  <span class="n">column</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">inp</span><span class="o">.</span><span class="n">columns</span>
+                  <span class="k">if</span> <span class="n">column</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude</span>
+              <span class="p">]</span>
+          <span class="k">else</span><span class="p">:</span>
+              <span class="n">model_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">column</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">inp</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
 
-          return model_columns
+          <span class="k">return</span> <span class="n">model_columns</span>
 
-      def get_relation_columns(self, inp):
-          if self.include:
-              relation_columns = [
-                  relation for relation in inp.relationships
-                  if relation.key in self.include
-              ]
-          elif self.exclude:
-              relation_columns = [
-                  relation for relation in inp.relationships
-                  if relation.key not in self.exclude
-              ]
-          else:
-              relation_columns = [relation for relation in inp.relationships]
-          return relation_columns
-</pre></p>
+      <span class="k">def</span> <span class="nf">get_relation_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
+          <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include</span><span class="p">:</span>
+              <span class="n">relation_columns</span> <span class="o">=</span> <span class="p">[</span>
+                  <span class="n">relation</span> <span class="k">for</span> <span class="n">relation</span> <span class="ow">in</span> <span class="n">inp</span><span class="o">.</span><span class="n">relationships</span>
+                  <span class="k">if</span> <span class="n">relation</span><span class="o">.</span><span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">include</span>
+              <span class="p">]</span>
+          <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude</span><span class="p">:</span>
+              <span class="n">relation_columns</span> <span class="o">=</span> <span class="p">[</span>
+                  <span class="n">relation</span> <span class="k">for</span> <span class="n">relation</span> <span class="ow">in</span> <span class="n">inp</span><span class="o">.</span><span class="n">relationships</span>
+                  <span class="k">if</span> <span class="n">relation</span><span class="o">.</span><span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude</span>
+              <span class="p">]</span>
+          <span class="k">else</span><span class="p">:</span>
+              <span class="n">relation_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">relation</span> <span class="k">for</span> <span class="n">relation</span> <span class="ow">in</span> <span class="n">inp</span><span class="o">.</span><span class="n">relationships</span><span class="p">]</span>
+          <span class="k">return</span> <span class="n">relation_columns</span>
+</pre></div>
+</p>
 
-<h1 id="org-15014257229525">具体使用</h1>
+<h1 id="org-15014704490853">具体使用</h1>
 <p>使用上很简单(以flask-sqlalchemy为例),原生*sqlalchemy*类似</p>
 
-<h2 id="org-15014257229525">多个实例</h2>
-<pre class="python">
-   posts = Post.query.all()
-   serializer = Seralizer(posts,many=True)
-   data = serializer.data
-</pre>
+<h2 id="org-15014704490854">多个实例</h2>
+<div class="highlight"><pre><span></span><span class="n">posts</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+   <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">posts</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+   <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
 
-<h2 id="org-15014257229525">单个实例</h2>
-<pre class="python">
-   post = Post.query.first()
-   serializer = Seralizer(post,many=False)
-   data = serializer.data
-</pre>
 
-<h2 id="org-15014257229526">排除字段</h2>
-<pre class="python">
-   serializer = Seralizer(post,exclude=['title'])
-</pre>
+<h2 id="org-15014704490862">单个实例</h2>
+<div class="highlight"><pre><span></span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+   <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+   <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
 
-<h2 id="org-15014257229526">仅包括字段</h2>
-<pre class="python">
-   serializer = Seralizer(post,include=['title'])
-</pre>
 
-<h2 id="org-15014257229526">关系查询深度</h2>
-<pre class="python">
-   serializer = Seralizer(post,depth=3)
-</pre>
+<h2 id="org-15014704490870">排除字段</h2>
+<div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<h2 id="org-15014704490876">仅包括字段</h2>
+<div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<h2 id="org-15014704490882">关系查询深度</h2>
+<div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">depth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
 <ul>
 <li>depth
 <p>默认为2</p></li>

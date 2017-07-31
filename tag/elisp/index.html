@@ -59,54 +59,54 @@
 <p>作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，*M-x*,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了*hydra*这个插件,也想实践一下</p>
 
 <p>获取主题列表
-<pre class="elisp">
-  (setq maple-cycle-themes (mapcar 'symbol-name (custom-available-themes)))
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">maple-cycle-themes</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="p">(</span><span class="nv">custom-available-themes</span><span class="p">)))</span>
+</pre></div>
+</p>
 
 <p>获取当前主题索引
-<pre class="elisp">
-  (cl-position (car (mapcar 'symbol-name custom-enabled-themes)) maple-cycle-themes :test 'equal)
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">cl-position</span> <span class="p">(</span><span class="nf">car</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="nv">custom-enabled-themes</span><span class="p">))</span> <span class="nv">maple-cycle-themes</span> <span class="nb">:test</span> <span class="ss">&#39;equal</span><span class="p">)</span>
+</pre></div>
+</p>
 
 <p>获取下一个主题
-<pre class="elisp">
-  (setq maple-current-theme-index
-        (+ 1 maple-current-theme-index))
-  (setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index</span>
+        <span class="p">(</span><span class="nf">+</span> <span class="mi">1</span> <span class="nv">maple-current-theme-index</span><span class="p">))</span>
+  <span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme</span> <span class="p">(</span><span class="nf">nth</span> <span class="nv">maple-current-theme-index</span> <span class="nv">maple-cycle-themes</span><span class="p">))</span>
+</pre></div>
+</p>
 
 <p>加载主题
-<pre class="elisp">
-  (load-theme (intern maple-current-theme) t)
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">load-theme</span> <span class="p">(</span><span class="nf">intern</span> <span class="nv">maple-current-theme</span><span class="p">)</span> <span class="no">t</span><span class="p">)</span>
+</pre></div>
+</p>
 
 <p>最后得到这样的函数
-<pre class="elisp">
-  (defun maple/cycle-theme (num)
-    (interactive)
-    (setq maple-current-theme-index
-          (+ num
-             (cl-position
-              (car (mapcar 'symbol-name custom-enabled-themes)) maple-cycle-themes :test 'equal)))
-    (when (>= maple-current-theme-index (length maple-cycle-themes))
-      (setq maple-current-theme-index 0))
-    (setq maple-current-theme (nth maple-current-theme-index maple-cycle-themes))
-    (mapc 'disable-theme custom-enabled-themes)
-    (let ((progress-reporter
-           (make-progress-reporter
-            (format "Loading theme %s..." maple-current-theme))))
-      (load-theme (intern maple-current-theme) t)
-      (progress-reporter-done progress-reporter)))
-  (defun maple/next-theme()
-    (interactive)
-    (maple/cycle-theme 1))
-  (defun maple/previous-theme()
-    (interactive)
-    (maple/cycle-theme -1))
-  (defhydra maple/cycle-themes ()
-    ("n" maple/next-theme "next theme")
-    ("p" maple/previous-theme "prev theme"))
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/cycle-theme</span> <span class="p">(</span><span class="nv">num</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index</span>
+          <span class="p">(</span><span class="nf">+</span> <span class="nv">num</span>
+             <span class="p">(</span><span class="nv">cl-position</span>
+              <span class="p">(</span><span class="nf">car</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="nv">custom-enabled-themes</span><span class="p">))</span> <span class="nv">maple-cycle-themes</span> <span class="nb">:test</span> <span class="ss">&#39;equal</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nf">&gt;=</span> <span class="nv">maple-current-theme-index</span> <span class="p">(</span><span class="nf">length</span> <span class="nv">maple-cycle-themes</span><span class="p">))</span>
+      <span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme</span> <span class="p">(</span><span class="nf">nth</span> <span class="nv">maple-current-theme-index</span> <span class="nv">maple-cycle-themes</span><span class="p">))</span>
+    <span class="p">(</span><span class="nf">mapc</span> <span class="ss">&#39;disable-theme</span> <span class="nv">custom-enabled-themes</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">progress-reporter</span>
+           <span class="p">(</span><span class="nv">make-progress-reporter</span>
+            <span class="p">(</span><span class="nf">format</span> <span class="s">&quot;Loading theme %s...&quot;</span> <span class="nv">maple-current-theme</span><span class="p">))))</span>
+      <span class="p">(</span><span class="nv">load-theme</span> <span class="p">(</span><span class="nf">intern</span> <span class="nv">maple-current-theme</span><span class="p">)</span> <span class="no">t</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">progress-reporter-done</span> <span class="nv">progress-reporter</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/next-theme</span><span class="p">()</span>
+    <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+    <span class="p">(</span><span class="nv">maple/cycle-theme</span> <span class="mi">1</span><span class="p">))</span>
+  <span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/previous-theme</span><span class="p">()</span>
+    <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+    <span class="p">(</span><span class="nv">maple/cycle-theme</span> <span class="mi">-1</span><span class="p">))</span>
+  <span class="p">(</span><span class="nv">defhydra</span> <span class="nv">maple/cycle-themes</span> <span class="p">()</span>
+    <span class="p">(</span><span class="s">&quot;n&quot;</span> <span class="nv">maple/next-theme</span> <span class="s">&quot;next theme&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="s">&quot;p&quot;</span> <span class="nv">maple/previous-theme</span> <span class="s">&quot;prev theme&quot;</span><span class="p">))</span>
+</pre></div>
+</p>
 
 <p>ok,绑定一个快捷键吧</p><p>There are <a href="../../articles/2017/05/方便的切换emacs主题.html#disqus_thread">comments</a>.</p>          </article>
         </aside><!-- /#featured -->
@@ -145,35 +145,35 @@
 <p><img src="https://images.honmaple.com/images/admin/photo/2017/04/149274352705945.png"/></p>
 
 <p>基础注释函数来源于<b>stackoverflow</b>
-<pre class="elisp">
-(defun comment-or-uncomment-region-or-line ()
-  "Comments or uncomments the region or the current line if there's no active region."
-  (interactive)
-  (let (beg end)
-    (if (region-active-p)
-        (setq beg (region-beginning) end (region-end))
-      (setq beg (line-beginning-position) end (line-end-position)))
-    (comment-or-uncomment-region beg end)))
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">comment-or-uncomment-region-or-line</span> <span class="p">()</span>
+  <span class="s">&quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">(</span><span class="nv">beg</span> <span class="nv">end</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">region-active-p</span><span class="p">)</span>
+        <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">region-beginning</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">region-end</span><span class="p">))</span>
+      <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">line-beginning-position</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">line-end-position</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nv">comment-or-uncomment-region</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)))</span>
+</pre></div>
+</p>
 
 <p>在此函数的位置上进行修改,刚开始使用
-<pre class="elisp">
-  (when (hs-already-hidden-p)
-      (evil-visual-line))
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">hs-already-hidden-p</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">evil-visual-line</span><span class="p">))</span>
+</pre></div>
+</p>
 
 <p>但是一直没得到想要的效果,后来修改了一下,使用
-<pre class="elisp">
-  (when (hs-already-hidden-p)
-    (progn
-      (end-of-visual-line)
-      (evil-visual-state)
-      (beginning-of-visual-line)))
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">hs-already-hidden-p</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">progn</span>
+      <span class="p">(</span><span class="nv">end-of-visual-line</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">evil-visual-state</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">beginning-of-visual-line</span><span class="p">)))</span>
+</pre></div>
+</p>
 
 <p>意思就是如果当前位置存在代码折叠,先选中当前行,然后注释整个选中区域</p>
 
-<p>因为光标被移动到首位,我对这个不太在意,如果有在意的话,可以使用 …</p>
+<p>因为光标被移动到首位,我对这个不太在意,如果有在意的话 …</p>
             <a class="readmore" href="../../articles/2017/04/emacs实现智能注释.html">read more</a>
 <p>There are <a href="../../articles/2017/04/emacs实现智能注释.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>

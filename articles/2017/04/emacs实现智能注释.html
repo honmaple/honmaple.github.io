@@ -70,62 +70,62 @@
 <p><img src="https://images.honmaple.com/images/admin/photo/2017/04/149274352705945.png"/></p>
 
 <p>基础注释函数来源于<b>stackoverflow</b>
-<pre class="elisp">
-(defun comment-or-uncomment-region-or-line ()
-  "Comments or uncomments the region or the current line if there's no active region."
-  (interactive)
-  (let (beg end)
-    (if (region-active-p)
-        (setq beg (region-beginning) end (region-end))
-      (setq beg (line-beginning-position) end (line-end-position)))
-    (comment-or-uncomment-region beg end)))
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">comment-or-uncomment-region-or-line</span> <span class="p">()</span>
+  <span class="s">&quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">(</span><span class="nv">beg</span> <span class="nv">end</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">region-active-p</span><span class="p">)</span>
+        <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">region-beginning</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">region-end</span><span class="p">))</span>
+      <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">line-beginning-position</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">line-end-position</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nv">comment-or-uncomment-region</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)))</span>
+</pre></div>
+</p>
 
 <p>在此函数的位置上进行修改,刚开始使用
-<pre class="elisp">
-  (when (hs-already-hidden-p)
-      (evil-visual-line))
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">hs-already-hidden-p</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">evil-visual-line</span><span class="p">))</span>
+</pre></div>
+</p>
 
 <p>但是一直没得到想要的效果,后来修改了一下,使用
-<pre class="elisp">
-  (when (hs-already-hidden-p)
-    (progn
-      (end-of-visual-line)
-      (evil-visual-state)
-      (beginning-of-visual-line)))
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">hs-already-hidden-p</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">progn</span>
+      <span class="p">(</span><span class="nv">end-of-visual-line</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">evil-visual-state</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">beginning-of-visual-line</span><span class="p">)))</span>
+</pre></div>
+</p>
 
 <p>意思就是如果当前位置存在代码折叠,先选中当前行,然后注释整个选中区域</p>
 
 <p>因为光标被移动到首位,我对这个不太在意,如果有在意的话,可以使用<b>save-excursion</b>
-<pre class="elisp">
-  (save-excursion
-  (when (hs-already-hidden-p)
-    (progn
-      (end-of-visual-line)
-      (evil-visual-state)
-      (beginning-of-visual-line)))
-      ......)
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">save-excursion</span>
+  <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">hs-already-hidden-p</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">progn</span>
+      <span class="p">(</span><span class="nv">end-of-visual-line</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">evil-visual-state</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">beginning-of-visual-line</span><span class="p">)))</span>
+      <span class="o">......</span><span class="p">)</span>
+</pre></div>
+</p>
 
 <p>完整代码
-<pre class="elisp">
-(defun comment-or-uncomment-region-or-line ()
-  "Comments or uncomments the region or the current line if there's no active region."
-  (interactive)
-  (save-excursion
-    (when (hs-already-hidden-p)
-      (progn
-        (end-of-visual-line)
-        (evil-visual-state)
-        (beginning-of-visual-line)))
-    (let (beg end)
-      (if (region-active-p)
-          (setq beg (region-beginning) end (region-end))
-        (setq beg (line-beginning-position) end (line-end-position)))
-      (comment-or-uncomment-region beg end))))
-</pre></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">comment-or-uncomment-region-or-line</span> <span class="p">()</span>
+  <span class="s">&quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">save-excursion</span>
+    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">hs-already-hidden-p</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">progn</span>
+        <span class="p">(</span><span class="nv">end-of-visual-line</span><span class="p">)</span>
+        <span class="p">(</span><span class="nv">evil-visual-state</span><span class="p">)</span>
+        <span class="p">(</span><span class="nv">beginning-of-visual-line</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k">let</span> <span class="p">(</span><span class="nv">beg</span> <span class="nv">end</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">region-active-p</span><span class="p">)</span>
+          <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">region-beginning</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">region-end</span><span class="p">))</span>
+        <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">line-beginning-position</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">line-end-position</span><span class="p">)))</span>
+      <span class="p">(</span><span class="nv">comment-or-uncomment-region</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">))))</span>
+</pre></div>
+</p>
 
 <p>ok,就这样</p>
         </div><!-- /.entry-content -->

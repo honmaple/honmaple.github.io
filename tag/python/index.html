@@ -59,73 +59,69 @@
 <p>celery是一个基于Python的分布式调度系统，<a href="http://docs.celeryproject.org/en/latest/">文档在这</a> ,最近有个需求,想要动态的添加任务而不用重启celery服务,找了一圈没找到什么好办法(也有可能是文档没看仔细)，所以只能自己实现囉</p>
 
 <p>为celery动态添加任务，首先我想到的是传递一个函数进去，让某个特定任务去执行这个传递过去的函数，就像这样
-<pre class="python">
-@app.task
-def execute(func, *args, **kwargs):
-    return func(*args, **kwargs)
-</pre></p>
+<div class="highlight"><pre><span></span><span class="nd">@app.task</span>
+<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</p>
 
 <p>很可惜，会出现这样的错误
-
-<pre class="example">
-kombu.exceptions.EncodeError: Object of type 'function' is not JSON serializable
-</pre>
+<div class="highlight"><pre><span></span>kombu.exceptions.EncodeError: Object of type &#39;function&#39; is not JSON serializable
+</pre></div>
 </p>
 
 <p>换一种序列化方式
-<pre class="python">
-@app.task(serializer='pickle')
-def execute(func, *args, **kwargs):
-    return func(*args, **kwargs)
-</pre></p>
+<div class="highlight"><pre><span></span><span class="nd">@app.task</span><span class="p">(</span><span class="n">serializer</span><span class="o">=</span><span class="s1">&#39;pickle&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</p>
 
 <p>结果又出现一大串错误信息
-
-<pre class="example">
-ERROR/MainProcess] Pool callback raised exception: ContentDisallowed('Refusing to deserialize untrusted content of type pickle (application/x-python-serialize)',)
+<div class="highlight"><pre><span></span>ERROR/MainProcess] Pool callback raised exception: ContentDisallowed(&#39;Refusing to deserialize untrusted content of type pickle (application/x-python-serialize)&#39;,)
 Traceback (most recent call last):
-  File "/home/jl/.virtualenvs/test/lib/python3.6/site-packages/kombu/utils/objects.py", line 42, in __get__
+  File &quot;/home/jl/.virtualenvs/test/lib/python3.6/site-packages/kombu/utils/objects.py&quot;, line 42, in __get__
     return obj.__dict__[self.__name__]
-KeyError: 'chord'
+KeyError: &#39;chord&#39;
 
 During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
-  File "/home/jl/.virtualenvs/test/lib/python3.6/site-packages/kombu/utils/objects.py", line 42, in __get__
+  File &quot;/home/jl/.virtualenvs/test/lib/python3.6/site-packages/kombu/utils/objects.py&quot;, line 42, in __get__
     return obj.__dict__[self.__name__]
-KeyError: '_payload'
-</pre>
+KeyError: &#39;_payload&#39;
+</pre></div>
 </p>
 
 <p>换一种思路
-<pre class="python">
-func = import_string(func)
-</pre>
+<div class="highlight"><pre><span></span><span class="n">func</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+</pre></div>
+
 不知道这样是否可以，结果测试:<b>No</b></p>
 
 <p>哎，流年不利.</p>
 
 <p>最后一直测试，一直测试，终于找到了一种办法,直接上代码
-<pre class="python">
-from importlib import import_module, reload
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">import_module</span><span class="p">,</span> <span class="nb">reload</span>
 
-app.conf.CELERY_IMPORTS = ['task', 'task.all_task']
+<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">CELERY_IMPORTS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;task&#39;</span><span class="p">,</span> <span class="s1">&#39;task.all_task&#39;</span><span class="p">]</span>
 
-def import_string(import_name):
-    import_name = str(import_name).replace(':', '.')
-    modules = import_name.split('.')
-    mod = import_module(modules[0])
-    for comp in modules[1:]:
-        if not hasattr(mod, comp):
-            reload(mod)
-        mod = getattr(mod, comp)
-    return mod
+<span class="k">def</span> <span class="nf">import_string</span><span class="p">(</span><span class="n">import_name</span><span class="p">):</span>
+    <span class="n">import_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">import_name</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span>
+    <span class="n">modules</span> <span class="o">=</span> <span class="n">import_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">comp</span><span class="p">):</span>
+            <span class="nb">reload</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">comp</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mod</span>
 
-@app.task
-def execute(func, *args, **kwargs):
-    func = import_string(func)
-    return func(*args, **kwargs)
-</pre></p>
+<span class="nd">@app.task</span>
+<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</p>
 
 <p>项目结构是这样的
 <blockquote>
@@ -139,54 +135,52 @@ def execute(func, *args, **kwargs):
 
 <p>以后每次添加任务都可以先添加到*all_task.py*里，调用时不用再重启celery服务</p>
 
+<div class="highlight"><pre><span></span><span class="c1"># task/all_task.py</span>
 
-<pre class="example">
-# task/all_task.py
+<span class="k">def</span> <span class="nf">ee</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="s1">&#39;你好&#39;</span>
 
-def ee(c, d):
-    return c, d, '你好'
+<span class="c1"># example</span>
+<span class="kn">from</span> <span class="nn">celery_app</span> <span class="kn">import</span> <span class="n">execute</span>
 
-# example
-from celery_app import execute
-
-execute.delay('task.all_task.ee', 2, 444)
-</pre>
+<span class="n">execute</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="s1">&#39;task.all_task.ee&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">444</span><span class="p">)</span>
+</pre></div>
 
 
 <p>ok，另外发现celery也支持任务定时调用,就像这样
-<pre class="python">
-execute.apply_async(args=['task.all_task.aa'], eta=datetime(2017, 7, 9, 8, 12, 0))
-</pre></p>
+<div class="highlight"><pre><span></span><span class="n">execute</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;task.all_task.aa&#39;</span><span class="p">],</span> <span class="n">eta</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</p>
 
 <p>简单实现一个任务重复调用的功能
-<pre class="python">
-@app.task
-def interval(func, seconds, args=(), task_id=None):
-    next_run_time = current_time() + timedelta(seconds=seconds)
-    kwargs = dict(args=(func, seconds, args), eta=next_run_time)
-    if task_id is not None:
-        kwargs.update(task_id=task_id)
-    interval.apply_async(**kwargs)
-    func = import_string(func)
-    return func(*args)
-</pre>
+<div class="highlight"><pre><span></span><span class="nd">@app.task</span>
+<span class="k">def</span> <span class="nf">interval</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">seconds</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">task_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">next_run_time</span> <span class="o">=</span> <span class="n">current_time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">seconds</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">seconds</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span> <span class="n">eta</span><span class="o">=</span><span class="n">next_run_time</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">task_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="n">task_id</span><span class="p">)</span>
+    <span class="n">interval</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+
 大概意思就是先计算下次运行的时间,然后把任务添加到celery队列里,这里有个task_id有些问题,因为假设添加了每隔3s执行一个任务,
 它的task_id默认会使用uuid生成，如果想要再移除这个任务就不太方便，自定task_id可能会好一些，另外也许需要判断task_id是否存在
-<pre class="python">
-AsyncResult(task_id).state
-</pre></p>
+<div class="highlight"><pre><span></span><span class="n">AsyncResult</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span><span class="o">.</span><span class="n">state</span>
+</pre></div>
+</p>
 
 <p>ok,再献上一个好用的函数</p>
 
-<pre class="python">
-from inspect import getmembers, isfunction
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">getmembers</span><span class="p">,</span> <span class="n">isfunction</span>
 
-def get_tasks(module='task'):
-    return [{
-        'name': 'task:{}'.format(f[1].__name__),
-        'doc': f[1].__doc__,
-    } for f in getmembers(import_module(module), isfunction)]
-</pre>
+<span class="k">def</span> <span class="nf">get_tasks</span><span class="p">(</span><span class="n">module</span><span class="o">=</span><span class="s1">&#39;task&#39;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;task:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
+        <span class="s1">&#39;doc&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
+    <span class="p">}</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">getmembers</span><span class="p">(</span><span class="n">import_module</span><span class="p">(</span><span class="n">module</span><span class="p">),</span> <span class="n">isfunction</span><span class="p">)]</span>
+</pre></div>
+
 
 <p>就这样.</p><p>There are <a href="../../articles/2017/07/celery动态添加任务.html#disqus_thread">comments</a>.</p>          </article>
         </aside><!-- /#featured -->
@@ -213,37 +207,36 @@ def get_tasks(module='task'):
     </address>
   <p>In <a href="../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/flask/index.html">flask</a><a href="../../tag/whoosh/index.html">whoosh</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257229930">Quickstart</a></li>
-<li><a href="#org-15014257229931">Usage</a>
+<li><a href="#org-15014704491263">Quickstart</a></li>
+<li><a href="#org-15014704491280">Usage</a>
 <ul>
-<li><a href="#org-15014257229931">创建更新删除索引</a></li>
-<li><a href="#org-15014257229932">自定义analyzer</a></li>
+<li><a href="#org-15014704491280">创建更新删除索引</a></li>
+<li><a href="#org-15014704491293">自定义analyzer</a></li>
 </ul></li>
-<li><a href="#org-15014257229932">Configure</a></li>
+<li><a href="#org-15014704491300">Configure</a></li>
 </ul>
 </div></div>
 
 
 <p>flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/Flask-WhooshAlchemy , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个</p>
 
-<h1 id="org-15014257229930">Quickstart</h1>
+<h1 id="org-15014704491263">Quickstart</h1>
 <p>插件基于 whoosh,纯 python 编写,使用上很简单
-<pre class="python">
-    from flask_msearch import Search
-    [...]
-    search = Search()
-    search.init_app(app)
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask_msearch</span> <span class="kn">import</span> <span class="n">Search</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
+    <span class="n">search</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
 
-    # models.py
-    class Post(db.Model):
-        __tablename__ = 'post'
-        __searchable__ = ['title', 'content']
+    <span class="c1"># models.py</span>
+    <span class="k">class</span> <span class="nc">Post</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+        <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;post&#39;</span>
+        <span class="n">__searchable__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">]</span>
 
-    # views.py
-    @app.route("/search")
-    def w_search():
-        keyword = request.args.get('keyword')
-        results = search.whoosh_search(Post,query …</pre></p>
+    <span class="c1"># views.py</span>
+    <span class="nd">@app.route</span><span class="p">(</span><span class="s2">&quot;/search&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">w_search</span><span class="p">():</span>
+        <span class="n">keyword</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;keyword&#39;</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">whoosh_search</span><span class="p">(</span><span class="n">Post</span><span class="p">,</span><span class="n">query …</span></pre></div></p>
             <a class="readmore" href="../../articles/2017/04/基于whoosh实现的flask全文搜索插件.html">read more</a>
 <p>There are <a href="../../articles/2017/04/基于whoosh实现的flask全文搜索插件.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -275,28 +268,25 @@ def get_tasks(module='task'):
 </blockquote></p>
 
 <p>每次只要运行一下
-
-<pre class="example">
-python himawari8.py
-</pre>
+<div class="highlight"><pre><span></span>python himawari8.py
+</pre></div>
 </p>
 
 <p>源码
-<pre class="python">
-from PIL import Image, ImageOps, ImageDraw
-from io import BytesIO
-from urllib.request import Request, urlopen
-from datetime import datetime, timedelta
-import json
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageOps</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">urlopen</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
-SCALE = 2
-WIDTH = 1368
-HEIGHT = 768
+<span class="n">SCALE</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
+<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
 
 
-def get_info():
-    url = "http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json"
-    request = Request(url …</pre></p>
+<span class="k">def</span> <span class="nf">get_info</span><span class="p">():</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&quot;</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url …</span></pre></div></p>
             <a class="readmore" href="../../articles/2017/03/himawari8图片下载改进版.html">read more</a>
 <p>There are <a href="../../articles/2017/03/himawari8图片下载改进版.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -322,34 +312,33 @@ def get_info():
 <p>直接给出源码</p>
 
 <p>设置壁纸
-<pre class="sh">
-feh --bg-scale /tmp/earth.png
-</pre></p>
+<div class="highlight"><pre><span></span>feh --bg-scale /tmp/earth.png
+</pre></div>
+</p>
 
 <p>设置桌面大小,及图片放大倍数
-<pre class="python">
-SCALE = 4
-WIDTH = 1368
-HEIGHT = 768
-</pre></p>
+<div class="highlight"><pre><span></span><span class="n">SCALE</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
+<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
+</pre></div>
+</p>
 
-<pre class="python">
-from PIL import Image
-from io import BytesIO
-from urllib.request import Request, urlopen
-from datetime import datetime
-import json
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">urlopen</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
-SCALE = 4
-WIDTH = 1368
-HEIGHT = 768
+<span class="n">SCALE</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
+<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
 
 
-def get_info():
-    url = "http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json"
-    request = Request(url)
-    response = urlopen(request, timeout=10)
-    return json …</pre>
+<span class="k">def</span> <span class="nf">get_info</span><span class="p">():</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json&quot;</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">json …</span></pre></div>
             <a class="readmore" href="../../articles/2017/03/下载Himawari8拍摄的实时地球图片.html">read more</a>
 <p>There are <a href="../../articles/2017/03/下载Himawari8拍摄的实时地球图片.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -372,56 +361,55 @@ def get_info():
     </address>
   <p>In <a href="../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/sqlalchemy/index.html">sqlalchemy</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257228284">sqlalchemy object序列化为json</a>
+<li><a href="#org-15014704487277">sqlalchemy object序列化为json</a>
 <ul>
-<li><a href="#org-15014257228284">多个实例</a></li>
-<li><a href="#org-15014257228285">单个实例</a></li>
-<li><a href="#org-15014257228285">排除字段</a></li>
-<li><a href="#org-15014257228285">仅包括字段</a></li>
-<li><a href="#org-15014257228286">关系查询深度</a></li>
-<li><a href="#org-15014257228286">增加一些自定义的函数</a></li>
-<li><a href="#org-15014257228287">可传递参数的函数</a></li>
+<li><a href="#org-15014704487287">多个实例</a></li>
+<li><a href="#org-15014704487287">单个实例</a></li>
+<li><a href="#org-15014704487296">排除字段</a></li>
+<li><a href="#org-15014704487303">仅包括字段</a></li>
+<li><a href="#org-15014704487309">关系查询深度</a></li>
+<li><a href="#org-15014704487315">增加一些自定义的函数</a></li>
+<li><a href="#org-15014704487329">可传递参数的函数</a></li>
 </ul></li>
-<li><a href="#org-15014257228289">像django orm一样使用sqlalchemy</a>
+<li><a href="#org-15014704487341">像django orm一样使用sqlalchemy</a>
 <ul>
-<li><a href="#org-15014257228290">基本查询(已实现)</a></li>
-<li><a href="#org-15014257228298">关系查询</a></li>
-<li><a href="#org-15014257228298">其它</a></li>
+<li><a href="#org-15014704487342">基本查询(已实现)</a></li>
+<li><a href="#org-15014704487351">关系查询</a></li>
+<li><a href="#org-15014704487357">其它</a></li>
 </ul></li>
-<li><a href="#org-15014257228299">去掉一些sqlalchemy的重复工作</a>
+<li><a href="#org-15014704487372">去掉一些sqlalchemy的重复工作</a>
 <ul>
-<li><a href="#org-15014257228301">ModelMixin</a></li>
-<li><a href="#org-15014257228303">ModelTimeMixin</a></li>
-<li><a href="#org-15014257228304">ModelUserMixin</a></li>
+<li><a href="#org-15014704487372">ModelMixin</a></li>
+<li><a href="#org-15014704487381">ModelTimeMixin</a></li>
+<li><a href="#org-15014704487381">ModelUserMixin</a></li>
 </ul></li>
 </ul>
 </div></div>
 
 
-<h1 id="org-15014257228284">sqlalchemy object序列化为json</h1>
+<h1 id="org-15014704487277">sqlalchemy object序列化为json</h1>
 <p>灵感来源于 *Django REST framework*
-<pre class="python">
-   posts = Post.query.all()
-   serializer = Seralizer(posts,many=True)
-   data = serializer.data
-</pre></p>
-<h2 id="org-15014257228284">多个实例</h2>
+<div class="highlight"><pre><span></span><span class="n">posts</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+   <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">posts</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+   <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</p>
+<h2 id="org-15014704487287">多个实例</h2>
 
-<h2 id="org-15014257228285">单个实例</h2>
-<pre class="python">
-   post = Post.query.first()
-   serializer = Seralizer(post,many=False)
-   data = serializer.data
-</pre>
+<h2 id="org-15014704487287">单个实例</h2>
+<div class="highlight"><pre><span></span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+   <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+   <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
 
-<h2 id="org-15014257228285">排除字段</h2>
-<pre class="python">
-   serializer = Seralizer(post,exclude=['title'])
-</pre>
 
-<h2 id="org-15014257228285">仅包括字段</h2>
-<pre class="python">
-   serializer = Seralizer(post …</pre>
+<h2 id="org-15014704487296">排除字段</h2>
+<div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<h2 id="org-15014704487303">仅包括字段</h2>
+<div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post …</span></pre></div>
             <a class="readmore" href="../../articles/2017/03/sqlalchemy使用上的小tips.html">read more</a>
 <p>There are <a href="../../articles/2017/03/sqlalchemy使用上的小tips.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -507,8 +495,8 @@ def get_info():
     </address>
   <p>In <a href="../../category/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/i3wm/index.html">i3wm</a><a href="../../tag/python/index.html">python</a><a href="../../tag/py3status/index.html">py3status</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257227894">事故（一）</a></li>
-<li><a href="#org-15014257227894">事故（二）</a></li>
+<li><a href="#org-15014704486308">事故（一）</a></li>
+<li><a href="#org-15014704486316">事故（二）</a></li>
 </ul>
 </div></div>
 
@@ -521,22 +509,20 @@ def get_info():
 
 <p>虽然后面都已经解决了</p>
 
-<h2 id="org-15014257227894">事故（一）</h2>
+<h2 id="org-15014704486308">事故（一）</h2>
 <p><b>virtualenv不可用</b>,原先使用python3.5创建的环境直接不能用了,只好删了原有了东西,重新使用python3.6创建</p>
 
-<pre class="python">
-   pip freeze > requestments.txt
-   pip install -r requestments.txt
-</pre>
+<div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">freeze</span> <span class="o">&gt;</span> <span class="n">requestments</span><span class="o">.</span><span class="n">txt</span>
+   <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requestments</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
 
-<h2 id="org-15014257227894">事故（二）</h2>
+
+<h2 id="org-15014704486316">事故（二）</h2>
 <p><b>py3status</b> 报错
-
-<pre class="example">
-   Traceback (most recent call last):
-  File "/usr/bin/py3status", line 11, in <module>
-    load_entry_point('py3status==3.3', 'console_scripts', 'py3status')()
-  File "/usr/lib/python3.6/site-packages/pkg_resources/__init__.py", line …</module></pre></p>
+<div class="highlight"><pre><span></span>   <span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s2">&quot;/usr/bin/py3status&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+    <span class="n">load_entry_point</span><span class="p">(</span><span class="s1">&#39;py3status==3.3&#39;</span><span class="p">,</span> <span class="s1">&#39;console_scripts&#39;</span><span class="p">,</span> <span class="s1">&#39;py3status&#39;</span><span class="p">)()</span>
+  <span class="n">File</span> <span class="s2">&quot;/usr/lib/python3.6/site-packages/pkg_resources/__init__.py …</span></pre></div></p>
             <a class="readmore" href="../../articles/2017/01/升级至python3.6导致环境出错解决.html">read more</a>
 <p>There are <a href="../../articles/2017/01/升级至python3.6导致环境出错解决.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -559,13 +545,13 @@ def get_info():
     </address>
   <p>In <a href="../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../tag/python/index.html">python</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257229562">__main__</a></li>
-<li><a href="#org-15014257229565">总结一下：</a></li>
+<li><a href="#org-15014704490920">__main__</a></li>
+<li><a href="#org-15014704490968">总结一下：</a></li>
 </ul>
 </div></div>
 
 
-<h2 id="org-15014257229562">__main__</h2>
+<h2 id="org-15014704490920">__main__</h2>
 
 <p>转自 <a href="http://www.jb51.net/article/51892.html">这里</a></p>
 
@@ -581,27 +567,24 @@ def get_info():
 <p>意思就是说让你写的脚本模块既可以导入到别的模块中用，另外该模块自己也可执行。
 这句话，可能一开始听的还不是很懂。下面举例说明：
 先写一个模块：
-<pre class="python">
-  #module.py
-  def main():
-      print("we are in %s" % __name__)
+<div class="highlight"><pre><span></span><span class="c1">#module.py</span>
+  <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+      <span class="k">print</span><span class="p">(</span><span class="s2">&quot;we are in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="vm">__name__</span><span class="p">)</span>
 
-  if __name__ == '__main__':
-      main()
-</pre></p>
+  <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+      <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</p>
 
 <p>这个函数定义了一个main函数，我们执行一下该py文件发现结果是打印出
-
-<pre class="example">
-we are in __main__
-</pre>
+<div class="highlight"><pre><span></span>we are in __main__
+</pre></div>
 
 说明我们的if语句中的内容被执行了，调用了<b>main()：</b>
 但是如果我们从另我一个模块导入该模块，并调用一次*main()*函数会是怎样的结果呢？</p>
 
-<pre class="python">
-  #anothermodle.py
-  from module …</pre>
+<div class="highlight"><pre><span></span><span class="c1">#anothermodle.py</span>
+  <span class="kn">from</span> <span class="nn">module …</span></pre></div>
             <a class="readmore" href="../../articles/2016/12/Python中的__main__函数.html">read more</a>
 <p>There are <a href="../../articles/2016/12/Python中的__main__函数.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
@@ -624,20 +607,20 @@ we are in __main__
     </address>
   <p>In <a href="../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../tag/flask/index.html">flask</a><a href="../../tag/python/index.html">python</a><a href="../../tag/token/index.html">token</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014257229058">为什么需要用token验证</a></li>
-<li><a href="#org-15014257229061">如何使用token?</a>
+<li><a href="#org-15014704489203">为什么需要用token验证</a></li>
+<li><a href="#org-15014704489205">如何使用token?</a>
 <ul>
-<li><a href="#org-15014257229061">生成token</a></li>
-<li><a href="#org-15014257229062">验证token</a></li>
-<li><a href="#org-15014257229063">使用flask-login</a></li>
-<li><a href="#org-15014257229064">设置csrf白名单</a></li>
+<li><a href="#org-15014704489205">生成token</a></li>
+<li><a href="#org-15014704489219">验证token</a></li>
+<li><a href="#org-15014704489261">使用flask-login</a></li>
+<li><a href="#org-15014704489289">设置csrf白名单</a></li>
 </ul></li>
-<li><a href="#org-15014257229064">使用脚本发表</a></li>
+<li><a href="#org-15014704489289">使用脚本发表</a></li>
 </ul>
 </div></div>
 
 
-<h1 id="org-15014257229058">为什么需要用token验证</h1>
+<h1 id="org-15014704489203">为什么需要用token验证</h1>
 <p>原因呢是因为写博客时已经在本地写好了，但是要发表到网站上还需要这么几步:</p>
 
 <ul>
@@ -653,24 +636,24 @@ we are in __main__
 </ul>
 <p>所以使用*token*验证成为必然</p>
 
-<h1 id="org-15014257229061">如何使用token?</h1>
+<h1 id="org-15014704489205">如何使用token?</h1>
 
-<h2 id="org-15014257229061">生成token</h2>
+<h2 id="org-15014704489205">生成token</h2>
 <p>使用*itsdangerous*对token进行加密
-<pre class="python">
-     class User(model):
-         ......
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+         <span class="o">......</span>
 
-         @property
-         def token(self):
-             config = current_app.config
-             secret_key = config.setdefault('SECRET_KEY')
-             salt = config.setdefault('SECURITY_PASSWORD_SALT')
-             serializer = URLSafeTimedSerializer(secret_key)
-             # column = self.(需要加密的字段)
-             token = serializer.dumps(column, salt=salt)
-             return token
-</pre>
+         <span class="nd">@property</span>
+         <span class="k">def</span> <span class="nf">token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+             <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
+             <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+             <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+             <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
+             <span class="c1"># column = self.(需要加密的字段)</span>
+             <span class="n">token</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">)</span>
+             <span class="k">return</span> <span class="n">token</span>
+</pre></div>
+
 请保管好*SECRET_KEY* 和 …</p>
             <a class="readmore" href="../../articles/2016/12/flask使用token进行登陆.html">read more</a>
 <p>There are <a href="../../articles/2016/12/flask使用token进行登陆.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
