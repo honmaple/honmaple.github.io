@@ -19,6 +19,7 @@
                 <li class="dropdown">
                   <a href="../../category/sheng-huo-sui-bi/index.html" >生活随笔</a>
                   <dl>
+                      <dd><a href="../../category/dai-ma-fen-xiang/index.html">代码分享</a></dd>
                       <dd><a href="../../category/hui-yi/index.html">回忆</a></dd>
                   </dl>
                 </li>
@@ -43,18 +44,228 @@
 
         <aside id="featured" class="body">
           <article>
-            <h1 class="entry-title"><a href="../../articles/2017/07/celery动态添加任务.html">celery动态添加任务</a></h1> 
+            <h1 class="entry-title"><a href="../../articles/2017/08/tornado中session实现.html">tornado中session实现</a></h1> 
 <footer style="color:#bbb;margin:0 auto;font-size:12px;">
-  <span class="published" title="2017-07-09T00:00:00+08:00">
-    Posted on 日 09 七月 2017
+  <span class="published" title="2017-08-06T00:00:00+08:00">
+    Posted on 日 06 八月 2017
   </span>
 
     <span class="vcard author">
       By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
     </span>
-  <span>In <a href="../../category/linux/index.html">Linux</a>. </span>
-<span class="tag">tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/celery/index.html">celery</a><a href="../../tag/python/index.html">python</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
+  <span>In <a href="../../category/dai-ma-fen-xiang/index.html">代码分享</a>. </span>
+<span class="tag">tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/tornado/index.html">tornado</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
             
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
+<span class="kn">from</span> <span class="nn">redis</span> <span class="kn">import</span> <span class="n">StrictRedis</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="kn">import</span> <span class="n">timezone</span>
+
+
+<span class="k">def</span> <span class="nf">singleton</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="n">instances</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">getinstance</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">:</span>
+            <span class="n">instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">getinstance</span>
+
+
+<span class="k">def</span> <span class="nf">current_time</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">tz</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">tz</span> <span class="o">=</span> <span class="s1">&#39;UTC&#39;</span>
+    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="p">(</span><span class="n">tz</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">CoreSession</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        session[&#39;username&#39;] = &#39;hello&#39;</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_or_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+
+<span class="nd">@singleton</span>
+<span class="k">class</span> <span class="nc">MemorySession</span><span class="p">(</span><span class="n">CoreSession</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        self._client = {&#39;session_id1&#39;:{key:value},</span>
+<span class="sd">                        &#39;session_id2&#39;:{key:value}}</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">expires_days</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">=</span> <span class="n">expires_days</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;is_authenticated&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+                <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="n">current_time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">remove_expires</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expire_sessions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">current_time</span><span class="p">():</span>
+                <span class="n">expire_sessions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span>
+
+
+<span class="nd">@singleton</span>
+<span class="k">class</span> <span class="nc">RedisSession</span><span class="p">(</span><span class="n">CoreSession</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">StrictRedis</span><span class="p">(</span>
+            <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+            <span class="n">port</span><span class="o">=</span><span class="mi">6379</span><span class="p">,</span>
+            <span class="n">db</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">password</span><span class="o">=</span><span class="s1">&#39;redis&#39;</span><span class="p">,</span>
+            <span class="n">decode_responses</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">expires_days</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">=</span> <span class="n">expires_days</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="s1">&#39;is_authenticated&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">expire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hdel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request_handler</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span> <span class="o">=</span> <span class="n">request_handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">get_secure_cookie</span><span class="p">(</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid4</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">set_secure_cookie</span><span class="p">(</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="c1"># get cookies is bytes</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">RedisSession</span><span class="p">()</span>
+        <span class="c1"># self._session = MemorySession()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">clear_cookie</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</pre></div>
+<p>There are <a href="../../articles/2017/08/tornado中session实现.html#disqus_thread">comments</a>.</p>          </article>
+        </aside><!-- /#featured -->
+          <section id="content" class="body">
+            <h1>Other articles</h1>
+            <hr />
+            <ol id="posts-list" class="hfeed">
+        
+
+ 
+        <li><article class="hentry">    
+          <header>
+            <h1><a href="../../articles/2017/07/猜猜数(python版).html" rel="bookmark" title="Permalink to 猜猜数(python版)">猜猜数(python版)</a></h1>
+          </header>
+          
+          <div class="entry-content">
+<footer class="post-info">
+  <abbr class="published" title="2017-07-31T00:00:00+08:00">
+    一 31 七月 2017
+  </abbr>
+
+    <address class="vcard author">
+      By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+    </address>
+  <p>In <a href="../../category/dai-ma-fen-xiang/index.html">代码分享</a>. </p>
+<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/dai-ma-fen-xiang/index.html">代码分享</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-60104496220989259682925660471044962">函数版</a></li>
+<li><a href="#org-601044962318672925660471044962">类版</a></li>
+<li><a href="#org-601044962358432999260471044962">调用</a></li>
+</ul>
+</div></div>
+
+
+<h1 id="org-60104496220989259682925660471044962">函数版</h1>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+
+    <span class="n">min_num</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">max_num</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">selected</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+    <span class="k">def</span> <span class="nf">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">):</span>
+        <span class="n">go</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">min_num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_num</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">go</span> <span class="ow">in</span> <span class="n">selected</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">)</span>
+        <span class="n">selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">go</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">go</span>
+
+
+    <span class="k">def</span> <span class="nf">guess</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">min_num</span><span class="p">,</span> <span class="n">max_num</span>
+        <span class="k">if</span> <span class="n">origin</span> <span class="o">&gt;</span> <span class="n">go</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">go</span><span class="p">,</span> <span class="s1">&#39;小了&#39;</span><span class="p">)</span>
+            <span class="n">min_num</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">go</span><span class="p">,</span> <span class="n">min_num</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">guess</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">origin</span> <span class="o">&lt;</span> <span class="n">go …</span></pre></div>
+            <a class="readmore" href="../../articles/2017/07/猜猜数(python版).html">read more</a>
+<p>There are <a href="../../articles/2017/07/猜猜数(python版).html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
+        </article></li>
+        
+
+ 
+        <li><article class="hentry">    
+          <header>
+            <h1><a href="../../articles/2017/07/celery动态添加任务.html" rel="bookmark" title="Permalink to celery动态添加任务">celery动态添加任务</a></h1>
+          </header>
+          
+          <div class="entry-content">
+<footer class="post-info">
+  <abbr class="published" title="2017-07-09T00:00:00+08:00">
+    日 09 七月 2017
+  </abbr>
+
+    <address class="vcard author">
+      By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+    </address>
+  <p>In <a href="../../category/linux/index.html">Linux</a>. </p>
+<p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/celery/index.html">celery</a><a href="../../tag/python/index.html">python</a></p></footer><!-- /.post-info -->            
 
 <p>celery是一个基于Python的分布式调度系统，<a href="http://docs.celeryproject.org/en/latest/">文档在这</a> ,最近有个需求,想要动态的添加任务而不用重启celery服务,找了一圈没找到什么好办法(也有可能是文档没看仔细)，所以只能自己实现囉</p>
 
@@ -78,116 +289,10 @@
 </p>
 
 <p>结果又出现一大串错误信息
-<div class="highlight"><pre><span></span>ERROR/MainProcess] Pool callback raised exception: ContentDisallowed(&#39;Refusing to deserialize untrusted content of type pickle (application/x-python-serialize)&#39;,)
-Traceback (most recent call last):
-  File &quot;/home/jl/.virtualenvs/test/lib/python3.6/site-packages/kombu/utils/objects.py&quot;, line 42, in __get__
-    return obj.__dict__[self.__name__]
-KeyError: &#39;chord&#39;
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File &quot;/home/jl/.virtualenvs/test/lib/python3.6/site-packages/kombu/utils/objects.py&quot;, line 42, in __get__
-    return obj.__dict__[self.__name__]
-KeyError: &#39;_payload&#39;
-</pre></div>
-</p>
-
-<p>换一种思路
-<div class="highlight"><pre><span></span><span class="n">func</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-</pre></div>
-
-不知道这样是否可以，结果测试:<b>No</b></p>
-
-<p>哎，流年不利.</p>
-
-<p>最后一直测试，一直测试，终于找到了一种办法,直接上代码
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">import_module</span><span class="p">,</span> <span class="nb">reload</span>
-
-<span class="n">app</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">CELERY_IMPORTS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;task&#39;</span><span class="p">,</span> <span class="s1">&#39;task.all_task&#39;</span><span class="p">]</span>
-
-<span class="k">def</span> <span class="nf">import_string</span><span class="p">(</span><span class="n">import_name</span><span class="p">):</span>
-    <span class="n">import_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">import_name</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span>
-    <span class="n">modules</span> <span class="o">=</span> <span class="n">import_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
-    <span class="n">mod</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">comp</span><span class="p">):</span>
-            <span class="nb">reload</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
-        <span class="n">mod</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">comp</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">mod</span>
-
-<span class="nd">@app.task</span>
-<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">func</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</pre></div>
-</p>
-
-<p>项目结构是这样的
-<blockquote>
-<p>├── celery_app.py
-├── config.py
-├── task
-│   ├── all_task.py
-│   ├──<span style="text-decoration:underline">_init_</span>.py</p>
-</blockquote>
-注意:<b>任务必须大于等于两层目录</b></p>
-
-<p>以后每次添加任务都可以先添加到*all_task.py*里，调用时不用再重启celery服务</p>
-
-<div class="highlight"><pre><span></span><span class="c1"># task/all_task.py</span>
-
-<span class="k">def</span> <span class="nf">ee</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="s1">&#39;你好&#39;</span>
-
-<span class="c1"># example</span>
-<span class="kn">from</span> <span class="nn">celery_app</span> <span class="kn">import</span> <span class="n">execute</span>
-
-<span class="n">execute</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="s1">&#39;task.all_task.ee&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">444</span><span class="p">)</span>
-</pre></div>
-
-
-<p>ok，另外发现celery也支持任务定时调用,就像这样
-<div class="highlight"><pre><span></span><span class="n">execute</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;task.all_task.aa&#39;</span><span class="p">],</span> <span class="n">eta</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-</pre></div>
-</p>
-
-<p>简单实现一个任务重复调用的功能
-<div class="highlight"><pre><span></span><span class="nd">@app.task</span>
-<span class="k">def</span> <span class="nf">interval</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">seconds</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">task_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="n">next_run_time</span> <span class="o">=</span> <span class="n">current_time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">seconds</span><span class="p">)</span>
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">seconds</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span> <span class="n">eta</span><span class="o">=</span><span class="n">next_run_time</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">task_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">task_id</span><span class="o">=</span><span class="n">task_id</span><span class="p">)</span>
-    <span class="n">interval</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">func</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-</pre></div>
-
-大概意思就是先计算下次运行的时间,然后把任务添加到celery队列里,这里有个task_id有些问题,因为假设添加了每隔3s执行一个任务,
-它的task_id默认会使用uuid生成，如果想要再移除这个任务就不太方便，自定task_id可能会好一些，另外也许需要判断task_id是否存在
-<div class="highlight"><pre><span></span><span class="n">AsyncResult</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span><span class="o">.</span><span class="n">state</span>
-</pre></div>
-</p>
-
-<p>ok,再献上一个好用的函数</p>
-
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">getmembers</span><span class="p">,</span> <span class="n">isfunction</span>
-
-<span class="k">def</span> <span class="nf">get_tasks</span><span class="p">(</span><span class="n">module</span><span class="o">=</span><span class="s1">&#39;task&#39;</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">[{</span>
-        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;task:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
-        <span class="s1">&#39;doc&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
-    <span class="p">}</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">getmembers</span><span class="p">(</span><span class="n">import_module</span><span class="p">(</span><span class="n">module</span><span class="p">),</span> <span class="n">isfunction</span><span class="p">)]</span>
-</pre></div>
-
-
-<p>就这样.</p><p>There are <a href="../../articles/2017/07/celery动态添加任务.html#disqus_thread">comments</a>.</p>          </article>
-        </aside><!-- /#featured -->
-          <section id="content" class="body">
-            <h1>Other articles</h1>
-            <hr />
-            <ol id="posts-list" class="hfeed">
+<div class="highlight"><pre><span></span>ERROR/MainProcess] Pool callback raised exception: ContentDisallowed(&#39;Refusing to deserialize untrusted content of type …</pre></div></p>
+            <a class="readmore" href="../../articles/2017/07/celery动态添加任务.html">read more</a>
+<p>There are <a href="../../articles/2017/07/celery动态添加任务.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
+        </article></li>
         
 
  
@@ -207,20 +312,20 @@ KeyError: &#39;_payload&#39;
     </address>
   <p>In <a href="../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/flask/index.html">flask</a><a href="../../tag/whoosh/index.html">whoosh</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014704491263">Quickstart</a></li>
-<li><a href="#org-15014704491280">Usage</a>
+<li><a href="#org-60104496281117105991071151169711411660471044962">Quickstart</a></li>
+<li><a href="#org-601044962851159710310160471044962">Usage</a>
 <ul>
-<li><a href="#org-15014704491280">创建更新删除索引</a></li>
-<li><a href="#org-15014704491293">自定义analyzer</a></li>
+<li><a href="#org-601045062210192431426356260322102438500320342434160471045062">创建更新删除索引</a></li>
+<li><a href="#org-601045062332582345020041971109710812112210111460471045062">自定义analyzer</a></li>
 </ul></li>
-<li><a href="#org-15014704491300">Configure</a></li>
+<li><a href="#org-6010449626711111010210510311711410160471044962">Configure</a></li>
 </ul>
 </div></div>
 
 
 <p>flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/Flask-WhooshAlchemy , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个</p>
 
-<h1 id="org-15014704491263">Quickstart</h1>
+<h1 id="org-60104496281117105991071151169711411660471044962">Quickstart</h1>
 <p>插件基于 whoosh,纯 python 编写,使用上很简单
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask_msearch</span> <span class="kn">import</span> <span class="n">Search</span>
     <span class="p">[</span><span class="o">...</span><span class="p">]</span>
@@ -361,54 +466,54 @@ KeyError: &#39;_payload&#39;
     </address>
   <p>In <a href="../../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/sqlalchemy/index.html">sqlalchemy</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014704487277">sqlalchemy object序列化为json</a>
+<li><a href="#org-60104496211511310897108991041011091213211198106101991162420721015212702002610611511111060471044962">sqlalchemy object序列化为json</a>
 <ul>
-<li><a href="#org-15014704487287">多个实例</a></li>
-<li><a href="#org-15014704487287">单个实例</a></li>
-<li><a href="#org-15014704487296">排除字段</a></li>
-<li><a href="#org-15014704487303">仅包括字段</a></li>
-<li><a href="#org-15014704487309">关系查询深度</a></li>
-<li><a href="#org-15014704487315">增加一些自定义的函数</a></li>
-<li><a href="#org-15014704487329">可传递参数的函数</a></li>
+<li><a href="#org-6010450622281020010234542036360471045062">多个实例</a></li>
+<li><a href="#org-6010450622133320010234542036360471045062">单个实例</a></li>
+<li><a href="#org-6010450622549038500233832757360471045062">排除字段</a></li>
+<li><a href="#org-601045062201652125325324233832757360471045062">仅包括字段</a></li>
+<li><a href="#org-60104506220851319952659735810281452423060471045062">关系查询深度</a></li>
+<li><a href="#org-6010450622268621152199682012333258234502004130340209892596860471045062">增加一些自定义的函数</a></li>
+<li><a href="#org-601045062214872025636882214422596830340209892596860471045062">可传递参数的函数</a></li>
 </ul></li>
-<li><a href="#org-15014704487341">像django orm一样使用sqlalchemy</a>
+<li><a href="#org-60104496220687100106971101031113211111410919968266792035129992115113108971089910410110912160471044962">像django orm一样使用sqlalchemy</a>
 <ul>
-<li><a href="#org-15014704487342">基本查询(已实现)</a></li>
-<li><a href="#org-15014704487351">关系查询</a></li>
-<li><a href="#org-15014704487357">其它</a></li>
+<li><a href="#org-60104506222522264122659735810402405023454296164160471045062">基本查询(已实现)</a></li>
+<li><a href="#org-6010450622085131995265973581060471045062">关系查询</a></li>
+<li><a href="#org-601045062208542342760471045062">其它</a></li>
 </ul></li>
-<li><a href="#org-15014704487372">去掉一些sqlalchemy的重复工作</a>
+<li><a href="#org-601044962214352548119968201231151131089710899104101109121303403732522797240372031660471044962">去掉一些sqlalchemy的重复工作</a>
 <ul>
-<li><a href="#org-15014704487372">ModelMixin</a></li>
-<li><a href="#org-15014704487381">ModelTimeMixin</a></li>
-<li><a href="#org-15014704487381">ModelUserMixin</a></li>
+<li><a href="#org-601045062771111001011087710512010511060471045062">ModelMixin</a></li>
+<li><a href="#org-60104506277111100101108841051091017710512010511060471045062">ModelTimeMixin</a></li>
+<li><a href="#org-60104506277111100101108851151011147710512010511060471045062">ModelUserMixin</a></li>
 </ul></li>
 </ul>
 </div></div>
 
 
-<h1 id="org-15014704487277">sqlalchemy object序列化为json</h1>
+<h1 id="org-60104496211511310897108991041011091213211198106101991162420721015212702002610611511111060471044962">sqlalchemy object序列化为json</h1>
 <p>灵感来源于 *Django REST framework*
 <div class="highlight"><pre><span></span><span class="n">posts</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
    <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">posts</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
    <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </p>
-<h2 id="org-15014704487287">多个实例</h2>
+<h2 id="org-6010450622281020010234542036360471045062">多个实例</h2>
 
-<h2 id="org-15014704487287">单个实例</h2>
+<h2 id="org-6010450622133320010234542036360471045062">单个实例</h2>
 <div class="highlight"><pre><span></span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
    <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
    <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 
 
-<h2 id="org-15014704487296">排除字段</h2>
+<h2 id="org-6010450622549038500233832757360471045062">排除字段</h2>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
 </pre></div>
 
 
-<h2 id="org-15014704487303">仅包括字段</h2>
+<h2 id="org-601045062201652125325324233832757360471045062">仅包括字段</h2>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post …</span></pre></div>
             <a class="readmore" href="../../articles/2017/03/sqlalchemy使用上的小tips.html">read more</a>
 <p>There are <a href="../../articles/2017/03/sqlalchemy使用上的小tips.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
@@ -495,8 +600,8 @@ KeyError: &#39;_payload&#39;
     </address>
   <p>In <a href="../../category/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/i3wm/index.html">i3wm</a><a href="../../tag/python/index.html">python</a><a href="../../tag/py3status/index.html">py3status</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014704486308">事故（一）</a></li>
-<li><a href="#org-15014704486316">事故（二）</a></li>
+<li><a href="#org-601045062201072592565288199686528960471045062">事故（一）</a></li>
+<li><a href="#org-601045062201072592565288201086528960471045062">事故（二）</a></li>
 </ul>
 </div></div>
 
@@ -509,7 +614,7 @@ KeyError: &#39;_payload&#39;
 
 <p>虽然后面都已经解决了</p>
 
-<h2 id="org-15014704486308">事故（一）</h2>
+<h2 id="org-601045062201072592565288199686528960471045062">事故（一）</h2>
 <p><b>virtualenv不可用</b>,原先使用python3.5创建的环境直接不能用了,只好删了原有了东西,重新使用python3.6创建</p>
 
 <div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">freeze</span> <span class="o">&gt;</span> <span class="n">requestments</span><span class="o">.</span><span class="n">txt</span>
@@ -517,7 +622,7 @@ KeyError: &#39;_payload&#39;
 </pre></div>
 
 
-<h2 id="org-15014704486316">事故（二）</h2>
+<h2 id="org-601045062201072592565288201086528960471045062">事故（二）</h2>
 <p><b>py3status</b> 报错
 <div class="highlight"><pre><span></span>   <span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
   <span class="n">File</span> <span class="s2">&quot;/usr/bin/py3status&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
@@ -525,138 +630,6 @@ KeyError: &#39;_payload&#39;
   <span class="n">File</span> <span class="s2">&quot;/usr/lib/python3.6/site-packages/pkg_resources/__init__.py …</span></pre></div></p>
             <a class="readmore" href="../../articles/2017/01/升级至python3.6导致环境出错解决.html">read more</a>
 <p>There are <a href="../../articles/2017/01/升级至python3.6导致环境出错解决.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
-        </article></li>
-        
-
- 
-        <li><article class="hentry">    
-          <header>
-            <h1><a href="../../articles/2016/12/Python中的__main__函数.html" rel="bookmark" title="Permalink to Python中的__main__函数">Python中的__main__函数</a></h1>
-          </header>
-          
-          <div class="entry-content">
-<footer class="post-info">
-  <abbr class="published" title="2016-12-14T00:00:00+08:00">
-    三 14 十二月 2016
-  </abbr>
-
-    <address class="vcard author">
-      By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
-    </address>
-  <p>In <a href="../../category/python/index.html">Python</a>. </p>
-<p>tags: <a href="../../tag/python/index.html">python</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014704490920">__main__</a></li>
-<li><a href="#org-15014704490968">总结一下：</a></li>
-</ul>
-</div></div>
-
-
-<h2 id="org-15014704490920">__main__</h2>
-
-<p>转自 <a href="http://www.jb51.net/article/51892.html">这里</a></p>
-
-<p>很多新手刚开始学习python的时候经常会看到python 中 *__name__ = '__main__'*
-这样的代码，可能很多新手一开始学习的时候都比较疑惑，python 中__name__ = '__main__' 的作用，到底干嘛的？</p>
-
-<p>有句话经典的概括了这段代码的意义：</p>
-
-<blockquote>
-<p>“Make a script both importable and executable”</p>
-</blockquote>
-
-<p>意思就是说让你写的脚本模块既可以导入到别的模块中用，另外该模块自己也可执行。
-这句话，可能一开始听的还不是很懂。下面举例说明：
-先写一个模块：
-<div class="highlight"><pre><span></span><span class="c1">#module.py</span>
-  <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-      <span class="k">print</span><span class="p">(</span><span class="s2">&quot;we are in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="vm">__name__</span><span class="p">)</span>
-
-  <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-      <span class="n">main</span><span class="p">()</span>
-</pre></div>
-</p>
-
-<p>这个函数定义了一个main函数，我们执行一下该py文件发现结果是打印出
-<div class="highlight"><pre><span></span>we are in __main__
-</pre></div>
-
-说明我们的if语句中的内容被执行了，调用了<b>main()：</b>
-但是如果我们从另我一个模块导入该模块，并调用一次*main()*函数会是怎样的结果呢？</p>
-
-<div class="highlight"><pre><span></span><span class="c1">#anothermodle.py</span>
-  <span class="kn">from</span> <span class="nn">module …</span></pre></div>
-            <a class="readmore" href="../../articles/2016/12/Python中的__main__函数.html">read more</a>
-<p>There are <a href="../../articles/2016/12/Python中的__main__函数.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
-        </article></li>
-        
-
- 
-        <li><article class="hentry">    
-          <header>
-            <h1><a href="../../articles/2016/12/flask使用token进行登陆.html" rel="bookmark" title="Permalink to flask使用token进行验证">flask使用token进行验证</a></h1>
-          </header>
-          
-          <div class="entry-content">
-<footer class="post-info">
-  <abbr class="published" title="2016-12-13T00:00:00+08:00">
-    二 13 十二月 2016
-  </abbr>
-
-    <address class="vcard author">
-      By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
-    </address>
-  <p>In <a href="../../category/python/index.html">Python</a>. </p>
-<p>tags: <a href="../../tag/flask/index.html">flask</a><a href="../../tag/python/index.html">python</a><a href="../../tag/token/index.html">token</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014704489203">为什么需要用token验证</a></li>
-<li><a href="#org-15014704489205">如何使用token?</a>
-<ul>
-<li><a href="#org-15014704489205">生成token</a></li>
-<li><a href="#org-15014704489219">验证token</a></li>
-<li><a href="#org-15014704489261">使用flask-login</a></li>
-<li><a href="#org-15014704489289">设置csrf白名单</a></li>
-</ul></li>
-<li><a href="#org-15014704489289">使用脚本发表</a></li>
-</ul>
-</div></div>
-
-
-<h1 id="org-15014704489203">为什么需要用token验证</h1>
-<p>原因呢是因为写博客时已经在本地写好了，但是要发表到网站上还需要这么几步:</p>
-
-<ul>
-<li><input type="checkbox" checked="checked" />打开浏览器</li>
-<li><input type="checkbox" checked="checked" />打开我的网站</li>
-<li><input type="checkbox" checked="checked" />进入登陆页</li>
-<li><input type="checkbox" checked="checked" />登陆</li>
-<li><input type="checkbox" checked="checked" />进入后台页</li>
-<li><input type="checkbox" checked="checked" />进入文章发表页</li>
-<li><input type="checkbox" checked="checked" />复制粘贴</li>
-<li><input type="checkbox" checked="checked" />发表
-</li>
-</ul>
-<p>所以使用*token*验证成为必然</p>
-
-<h1 id="org-15014704489205">如何使用token?</h1>
-
-<h2 id="org-15014704489205">生成token</h2>
-<p>使用*itsdangerous*对token进行加密
-<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-         <span class="o">......</span>
-
-         <span class="nd">@property</span>
-         <span class="k">def</span> <span class="nf">token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-             <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
-             <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
-             <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
-             <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
-             <span class="c1"># column = self.(需要加密的字段)</span>
-             <span class="n">token</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">)</span>
-             <span class="k">return</span> <span class="n">token</span>
-</pre></div>
-
-请保管好*SECRET_KEY* 和 …</p>
-            <a class="readmore" href="../../articles/2016/12/flask使用token进行登陆.html">read more</a>
-<p>There are <a href="../../articles/2016/12/flask使用token进行登陆.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
 <p class="paginator">
     Page 1 / 5
@@ -687,7 +660,6 @@ KeyError: &#39;_payload&#39;
           </div><!-- /.social -->
       </section><!-- /#extras -->
     </div>
-
 <script>
  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

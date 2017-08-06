@@ -1,7 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>honmaple's blog - honmaple</title><link>http://honmaple.org/</link><description></description><lastBuildDate>Sun, 30 Jul 2017 00:00:00 +0800</lastBuildDate><item><title>手机与Linux桌面文件共享</title><link>http://honmaple.org/articles/2017/07/%E6%89%8B%E6%9C%BA%E4%B8%8ELinux%E6%A1%8C%E9%9D%A2%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-15014704492452"&gt;手机共享文件到电脑&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15014704492468"&gt;电脑共享文件到手机&lt;/a&gt;&lt;/li&gt;
+<rss version="2.0"><channel><title>honmaple's blog - honmaple</title><link>http://honmaple.org/</link><description></description><lastBuildDate>Sun, 06 Aug 2017 00:00:00 +0800</lastBuildDate><item><title>tornado中session实现</title><link>http://honmaple.org/articles/2017/08/tornado%E4%B8%ADsession%E5%AE%9E%E7%8E%B0.html</link><description>
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;uuid&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;uuid4&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;redis&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;StrictRedis&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;functools&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;wraps&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;datetime&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timedelta&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pytz&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;timezone&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;singleton&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;cls&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;instances&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+
+    &lt;span class="nd"&gt;@wraps&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;cls&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;getinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kw&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="bp"&gt;cls&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;instances&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;instances&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="bp"&gt;cls&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;cls&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kw&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;instances&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="bp"&gt;cls&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;getinstance&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;current_time&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tz&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;tz&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;tz&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;UTC&amp;#39;&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;now&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;timezone&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tz&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;CoreSession&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 06 Aug 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-08-06:/articles/2017/08/tornado中session实现.html</guid><category>python</category><category>tornado</category></item><item><title>猜猜数(python版)</title><link>http://honmaple.org/articles/2017/07/%E7%8C%9C%E7%8C%9C%E6%95%B0(python%E7%89%88).html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-60104496220989259682925660471044962"&gt;函数版&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-601044962318672925660471044962"&gt;类版&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-601044962358432999260471044962"&gt;调用&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+&lt;h1 id="org-60104496220989259682925660471044962"&gt;函数版&lt;/h1&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;random&lt;/span&gt;
+
+    &lt;span class="n"&gt;min_num&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="n"&gt;max_num&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;
+    &lt;span class="n"&gt;selected&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;random_go&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;origin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;go&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;randint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;min_num&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;max_num&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;selected&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;random_go&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;origin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;selected&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;
+
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;guess&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;origin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;min_num&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;max_num&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;origin&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;小了&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;min_num&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;max&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;min_num&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;guess&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;origin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;random_go&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;origin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+        &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;origin&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;go …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Mon, 31 Jul 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-07-31:/articles/2017/07/猜猜数(python版).html</guid><category>python</category><category>代码分享</category></item><item><title>手机与Linux桌面文件共享</title><link>http://honmaple.org/articles/2017/07/%E6%89%8B%E6%9C%BA%E4%B8%8ELinux%E6%A1%8C%E9%9D%A2%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-60104496225163264262084920139259912021421040300053304160471044962"&gt;手机共享文件到电脑&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-60104496230005330412084920139259912021421040251632642660471044962"&gt;电脑共享文件到手机&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
 
@@ -10,7 +66,7 @@
 电脑: archlinux
 环境: 同一wifi下&lt;/p&gt;
 
-&lt;h1 id="org-15014704492452"&gt;手机共享文件到电脑&lt;/h1&gt;
+&lt;h1 id="org-60104496225163264262084920139259912021421040300053304160471044962"&gt;手机共享文件到电脑&lt;/h1&gt;
 &lt;p&gt;最近才发现手机可以开启ftp服务对文件进行共享,直接进入文件管理器开启就行,电脑上使用
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  ftp target
 &lt;/pre&gt;&lt;/div&gt;
@@ -20,7 +76,7 @@
 &lt;p&gt;注：&lt;b&gt;get&lt;/b&gt; 下载&lt;b&gt;put&lt;/b&gt; 上传&lt;/p&gt;
 
 
-&lt;h1 id="org-15014704492468"&gt;电脑共享文件到手机&lt;/h1&gt;
+&lt;h1 id="org-60104496230005330412084920139259912021421040251632642660471044962"&gt;电脑共享文件到手机&lt;/h1&gt;
 &lt;p&gt;这里采用python搭建一个简单的web服务(python3)供手机下载文件
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  # 首先 cd 到要共享的目录
   python -m http.server --bind 0.0.0.0
@@ -44,29 +100,29 @@
 
 &lt;p&gt;&lt;b&gt;非同一wifi环境下&lt;/b&gt; : 可以先在电脑端开启wifi热点(可以不联网),我是直接使用networkmanger进行创建的
 &lt;img src="https://images.honmaple.com/images/admin/show/2017/07/150142558495491.png"/&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 30 Jul 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-07-30:/articles/2017/07/手机与Linux桌面文件共享.html</guid><category>linux</category><category>ftp</category></item><item><title>Linux总结(草稿)</title><link>http://honmaple.org/articles/2017/07/Linux%E4%BC%AA%E6%80%BB%E7%BB%93.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-15014704483175"&gt;Linux发展历史&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15014704483176"&gt;Linux的最小组成&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15014704483176"&gt;Linux的安装与启动&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-601044962761051101171202145723637213822149060471044962"&gt;Linux发展历史&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-60104496276105110117120303402636823567324522510460471044962"&gt;Linux的最小组成&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-6010449627610511011712030340234333501319982215512116060471044962"&gt;Linux的安装与启动&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
 
 
 
-&lt;h1 id="org-15014704483175"&gt;Linux发展历史&lt;/h1&gt;
+&lt;h1 id="org-601044962761051101171202145723637213822149060471044962"&gt;Linux发展历史&lt;/h1&gt;
 &lt;p&gt;Linux是由BSD发展而来，BSD又起源于UNIX。UNIX由贝尔实验室开发，
 后来开放给各大学教学使用,其中伯克利大学通过对UNIX源码的研究以及不断的改进与扩展,
 推出BSD,并于BSD 4.3版本加入网络模块,极大推进UNIX的发展。但后面由于版权等原因,
 UNIX与BSD之间发生冲突与法律纠纷,直到1998年,在此期间,芬兰大学生Linus Torvalds
 于1991年发布首个Linux版本,linux也趁UNIX与BSD纠纷之际,得到非常快速的发展&lt;/p&gt;
 
-&lt;h1 id="org-15014704483176"&gt;Linux的最小组成&lt;/h1&gt;
+&lt;h1 id="org-60104496276105110117120303402636823567324522510460471044962"&gt;Linux的最小组成&lt;/h1&gt;
 &lt;p&gt;Linux最小由内核kernel,文件层次结构FHS,系统启动器bootloader组成,其中内存调度，
 进程调度等由内核管理,内核可单独运行，但需要与其它组成相配合。&lt;/p&gt;
 
 &lt;p&gt;语言:一般有头文件与库文件,头文件为实现,库文件为声明&lt;/p&gt;
 
 
-&lt;h1 id="org-15014704483176"&gt;Linux的安装与启动&lt;/h1&gt;
+&lt;h1 id="org-6010449627610511011712030340234333501319982215512116060471044962"&gt;Linux的安装与启动&lt;/h1&gt;
 &lt;p&gt;当linux启动时，首先启动内核，内核调用init来完成引导进程，init启动时，它会在/etc/inittab内查找默认的运行级别,
 然后运行/etc/rc.d/init.d中运行级别的启动脚本。&lt;/p&gt;
 
@@ -97,26 +153,26 @@ UNIX与BSD之间发生冲突与法律纠纷,直到1998年,在此期间,芬兰大
 
 &lt;p&gt;结果又出现一大串错误信息
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ERROR/MainProcess] Pool callback raised exception: ContentDisallowed(&amp;#39;Refusing to deserialize untrusted content of type …&lt;/pre&gt;&lt;/div&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 09 Jul 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-07-09:/articles/2017/07/celery动态添加任务.html</guid><category>linux</category><category>celery</category><category>python</category></item><item><title>我的Linux历程</title><link>http://honmaple.org/articles/2017/07/%E6%88%91%E7%9A%84Linux%E5%8E%86%E7%A8%8B.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-15014704487111"&gt;Linux&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15014704487112"&gt;Linux发行版&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15014704487113"&gt;Linux历程&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15014704487115"&gt;Linux的娱乐性&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15014704487116"&gt;Linux上的实用性&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15014704487117"&gt;深入了解Linux&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-6010449627610511011712060471044962"&gt;Linux&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-6010449627610511011712021457348922925660471044962"&gt;Linux发行版&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-60104496276105110117120213823124360471044962"&gt;Linux历程&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-601044962761051101171203034023089200482461560471044962"&gt;Linux的娱乐性&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-60104496276105110117120199783034023454299922461560471044962"&gt;Linux上的实用性&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-601044962281452083720102352997610511011712060471044962"&gt;深入了解Linux&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
 
 
 
-&lt;h1 id="org-15014704487111"&gt;Linux&lt;/h1&gt;
+&lt;h1 id="org-6010449627610511011712060471044962"&gt;Linux&lt;/h1&gt;
 &lt;p&gt;是一种计算机操作系统内核,以C语言和汇编语言写成，匹配POSIX标准，以GNU通用公共许可证(GPL2)发布,最早是由林纳斯·托瓦兹开发的类UNIX系统&lt;/p&gt;
 
 &lt;p&gt;Linux与UNIX的区别: UNIX系统大多是与硬件配套的，而Linux则可运行在多种硬件平台上。UNIX是商业软件，而Linux自由免费。&lt;/p&gt;
 
-&lt;h1 id="org-15014704487112"&gt;Linux发行版&lt;/h1&gt;
+&lt;h1 id="org-6010449627610511011712021457348922925660471044962"&gt;Linux发行版&lt;/h1&gt;
 &lt;p&gt;简单的来说将Linux内核与一些系统软件，应用软件进行整合，有的发行版还包括图形界面(x11，wayland),目前所说的Linux大多代表Linux发行版&lt;/p&gt;
 
-&lt;h1 id="org-15014704487113"&gt;Linux历程&lt;/h1&gt;
+&lt;h1 id="org-60104496276105110117120213823124360471044962"&gt;Linux历程&lt;/h1&gt;
 &lt;p&gt;曾经在某论坛看到linux这个名词，立马装上虚拟机然后安装了我的第一个Linux版本--centos，并且装上了gnome桌面环境，随后开始了Linux折腾之旅,
 大概是这样的 centos --&gt; kali --&gt; ubuntu --&gt; fedora --&gt; ubuntu kylin --&gt; mint --&gt; debian --&gt; fedora --&gt; archlinux ......,Linux发行版大概分为3系,
 debain系,包括ubuntu,mint,kali等,使用包管理器apt-get、aptitude、dpkg;centos或者说红帽系，包括众所周知的小白鼠版本fedora，
@@ -203,75 +259,4 @@ debain系,包括ubuntu,mint,kali等,使用包管理器apt-get、aptitude、dpkg;
 
 &lt;p&gt;&lt;img src="https://images.honmaple.com/images/admin/show/2017/05/149364171386276.png"/&gt;&lt;/p&gt;
 
-&lt;p&gt;ps:真TM的闲着蛋疼&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Mon, 01 May 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-05-01:/articles/2017/05/晒晒我的Linux及桌面.html</guid><category>linux</category><category>i3wm</category></item><item><title>emacs实现智能注释</title><link>http://honmaple.org/articles/2017/04/emacs%E5%AE%9E%E7%8E%B0%E6%99%BA%E8%83%BD%E6%B3%A8%E9%87%8A.html</link><description>
-&lt;p&gt;之前使用emacs时遇到这么一个问题
-&lt;blockquote&gt;
-&lt;p&gt;当前行存在代码折叠时,如果想要注释,必须先选中当前行,否则只能注释代码折叠块的第一行&lt;/p&gt;
-&lt;/blockquote&gt;&lt;/p&gt;
-
-&lt;p&gt;就像这样&lt;/p&gt;
-
-&lt;p&gt;&lt;img src="https://images.honmaple.com/images/admin/photo/2017/04/149274346737550.png"/&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src="https://images.honmaple.com/images/admin/photo/2017/04/149274352705945.png"/&gt;&lt;/p&gt;
-
-&lt;p&gt;基础注释函数来源于&lt;b&gt;stackoverflow&lt;/b&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;comment-or-uncomment-region-or-line&lt;/span&gt; &lt;span class="p"&gt;()&lt;/span&gt;
-  &lt;span class="s"&gt;&amp;quot;Comments or uncomments the region or the current line if there&amp;#39;s no active region.&amp;quot;&lt;/span&gt;
-  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;interactive&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;beg&lt;/span&gt; &lt;span class="nv"&gt;end&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;region-active-p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;beg&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;region-beginning&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;end&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;region-end&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;beg&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;line-beginning-position&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;end&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;line-end-position&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;comment-or-uncomment-region&lt;/span&gt; &lt;span class="nv"&gt;beg&lt;/span&gt; &lt;span class="nv"&gt;end&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/p&gt;
-
-&lt;p&gt;在此函数的位置上进行修改,刚开始使用
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;hs-already-hidden-p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;evil-visual-line&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/p&gt;
-
-&lt;p&gt;但是一直没得到想要的效果,后来修改了一下,使用
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;hs-already-hidden-p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;progn&lt;/span&gt;
-      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;end-of-visual-line&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;evil-visual-state&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;beginning-of-visual-line&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/p&gt;
-
-&lt;p&gt;意思就是如果当前位置存在代码折叠,先选中当前行,然后注释整个选中区域&lt;/p&gt;
-
-&lt;p&gt;因为光标被移动到首位,我对这个不太在意,如果有在意的话 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Fri, 21 Apr 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-04-21:/articles/2017/04/emacs实现智能注释.html</guid><category>emacs</category><category>elisp</category><category>linux</category></item><item><title>基于whoosh实现的flask全文搜索插件</title><link>http://honmaple.org/articles/2017/04/%E5%9F%BA%E4%BA%8Ewhoosh%E5%AE%9E%E7%8E%B0%E7%9A%84flask%E5%85%A8%E6%96%87%E6%90%9C%E7%B4%A2%E6%8F%92%E4%BB%B6.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-15014704491263"&gt;Quickstart&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15014704491280"&gt;Usage&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-15014704491280"&gt;创建更新删除索引&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15014704491293"&gt;自定义analyzer&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15014704491300"&gt;Configure&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-
-
-&lt;p&gt;flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/Flask-WhooshAlchemy , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个&lt;/p&gt;
-
-&lt;h1 id="org-15014704491263"&gt;Quickstart&lt;/h1&gt;
-&lt;p&gt;插件基于 whoosh,纯 python 编写,使用上很简单
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask_msearch&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Search&lt;/span&gt;
-    &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-    &lt;span class="n"&gt;search&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Search&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-    &lt;span class="n"&gt;search&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;init_app&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-
-    &lt;span class="c1"&gt;# models.py&lt;/span&gt;
-    &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Model&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="n"&gt;__tablename__&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;post&amp;#39;&lt;/span&gt;
-        &lt;span class="n"&gt;__searchable__&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;content&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-
-    &lt;span class="c1"&gt;# views.py&lt;/span&gt;
-    &lt;span class="nd"&gt;@app.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;/search&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;w_search&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
-        &lt;span class="n"&gt;keyword&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;keyword&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="n"&gt;results&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;search&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;whoosh_search&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Post&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;query …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 16 Apr 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-04-16:/articles/2017/04/基于whoosh实现的flask全文搜索插件.html</guid><category>python</category><category>flask</category><category>whoosh</category></item></channel></rss>
+&lt;p&gt;ps:真TM的闲着蛋疼&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Mon, 01 May 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-05-01:/articles/2017/05/晒晒我的Linux及桌面.html</guid><category>linux</category><category>i3wm</category></item></channel></rss>

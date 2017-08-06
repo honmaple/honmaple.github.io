@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>honmaple's blog - 代码分享</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../theme/css/main.css" type="text/css" />
+  </head>
+  <body id="index" class="home">
+    <div id="particles-js"></div>
+    <div class="wrap">
+      <div class="main">
+        <header id="banner" class="body">
+          <h1><a href="../..">honmaple's blog </a></h1>
+          <nav><ul>
+              <li><a href="http://honmaple.org">主页</a></li>
+                <li ><a href="../../category/linux/index.html">Linux</a></li>
+                <li ><a href="../../category/python/index.html">Python</a></li>
+                <li ><a href="../../category/security/index.html">Security</a></li>
+                <li class="dropdown">
+                  <a href="../../category/sheng-huo-sui-bi/index.html" >生活随笔</a>
+                  <dl>
+                      <dd><a href="../../category/dai-ma-fen-xiang/index.html">代码分享</a></dd>
+                      <dd><a href="../../category/hui-yi/index.html">回忆</a></dd>
+                  </dl>
+                </li>
+            <li class="dropdown">
+              <a href="../../archives.html">Archives</a>
+              <dl>
+                <dd><a href="../../tags.html">Tags</a></dd>
+                <dd><a href="../../categories.html">Categories</a></dd>
+                <dd><a href="../../authors.html">Authors</a></dd>
+              </dl>
+            </li>
+            <li style="float:right;margin-right:15px;">
+              <form onsubmit="return dispatch()" class="search has-feedback">
+                <input type="text" id="search" name="search"/>
+                <i class="form-control-feedback"></i>
+              </form>
+            </li>
+          </ul></nav>
+        </header><!-- /#banner -->
+        
+        
+
+        <aside id="featured" class="body">
+          <article>
+            <h1 class="entry-title"><a href="../../articles/2017/08/tornado中session实现.html">tornado中session实现</a></h1> 
+<footer style="color:#bbb;margin:0 auto;font-size:12px;">
+  <span class="published" title="2017-08-06T00:00:00+08:00">
+    Posted on 日 06 八月 2017
+  </span>
+
+    <span class="vcard author">
+      By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+    </span>
+  <span>In <a href="../../category/dai-ma-fen-xiang/index.html">代码分享</a>. </span>
+<span class="tag">tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/tornado/index.html">tornado</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
+            
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
+<span class="kn">from</span> <span class="nn">redis</span> <span class="kn">import</span> <span class="n">StrictRedis</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="kn">import</span> <span class="n">timezone</span>
+
+
+<span class="k">def</span> <span class="nf">singleton</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="n">instances</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">getinstance</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">:</span>
+            <span class="n">instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">getinstance</span>
+
+
+<span class="k">def</span> <span class="nf">current_time</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">tz</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">tz</span> <span class="o">=</span> <span class="s1">&#39;UTC&#39;</span>
+    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="p">(</span><span class="n">tz</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">CoreSession</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        session[&#39;username&#39;] = &#39;hello&#39;</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_or_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+
+<span class="nd">@singleton</span>
+<span class="k">class</span> <span class="nc">MemorySession</span><span class="p">(</span><span class="n">CoreSession</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        self._client = {&#39;session_id1&#39;:{key:value},</span>
+<span class="sd">                        &#39;session_id2&#39;:{key:value}}</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">expires_days</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">=</span> <span class="n">expires_days</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;is_authenticated&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+                <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="n">current_time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">remove_expires</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expire_sessions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">current_time</span><span class="p">():</span>
+                <span class="n">expire_sessions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span>
+
+
+<span class="nd">@singleton</span>
+<span class="k">class</span> <span class="nc">RedisSession</span><span class="p">(</span><span class="n">CoreSession</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">StrictRedis</span><span class="p">(</span>
+            <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+            <span class="n">port</span><span class="o">=</span><span class="mi">6379</span><span class="p">,</span>
+            <span class="n">db</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">password</span><span class="o">=</span><span class="s1">&#39;redis&#39;</span><span class="p">,</span>
+            <span class="n">decode_responses</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">expires_days</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">=</span> <span class="n">expires_days</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="s1">&#39;is_authenticated&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">expire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hdel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request_handler</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span> <span class="o">=</span> <span class="n">request_handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">get_secure_cookie</span><span class="p">(</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid4</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">set_secure_cookie</span><span class="p">(</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="c1"># get cookies is bytes</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">RedisSession</span><span class="p">()</span>
+        <span class="c1"># self._session = MemorySession()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">clear_cookie</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</pre></div>
+<p>There are <a href="../../articles/2017/08/tornado中session实现.html#disqus_thread">comments</a>.</p>          </article>
+        </aside><!-- /#featured -->
+          <section id="content" class="body">
+            <h1>Other articles</h1>
+            <hr />
+            <ol id="posts-list" class="hfeed">
+        
+
+ 
+        <li><article class="hentry">    
+          <header>
+            <h1><a href="../../articles/2017/07/猜猜数(python版).html" rel="bookmark" title="Permalink to 猜猜数(python版)">猜猜数(python版)</a></h1>
+          </header>
+          
+          <div class="entry-content">
+<footer class="post-info">
+  <abbr class="published" title="2017-07-31T00:00:00+08:00">
+    一 31 七月 2017
+  </abbr>
+
+    <address class="vcard author">
+      By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+    </address>
+  <p>In <a href="../../category/dai-ma-fen-xiang/index.html">代码分享</a>. </p>
+<p>tags: <a href="../../tag/python/index.html">python</a><a href="../../tag/dai-ma-fen-xiang/index.html">代码分享</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-60104496220989259682925660471044962">函数版</a></li>
+<li><a href="#org-601044962318672925660471044962">类版</a></li>
+<li><a href="#org-601044962358432999260471044962">调用</a></li>
+</ul>
+</div></div>
+
+
+<h1 id="org-60104496220989259682925660471044962">函数版</h1>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+
+    <span class="n">min_num</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">max_num</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">selected</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+    <span class="k">def</span> <span class="nf">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">):</span>
+        <span class="n">go</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">min_num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_num</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">go</span> <span class="ow">in</span> <span class="n">selected</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">)</span>
+        <span class="n">selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">go</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">go</span>
+
+
+    <span class="k">def</span> <span class="nf">guess</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">min_num</span><span class="p">,</span> <span class="n">max_num</span>
+        <span class="k">if</span> <span class="n">origin</span> <span class="o">&gt;</span> <span class="n">go</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">go</span><span class="p">,</span> <span class="s1">&#39;小了&#39;</span><span class="p">)</span>
+            <span class="n">min_num</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">go</span><span class="p">,</span> <span class="n">min_num</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">guess</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">origin</span> <span class="o">&lt;</span> <span class="n">go …</span></pre></div>
+            <a class="readmore" href="../../articles/2017/07/猜猜数(python版).html">read more</a>
+<p>There are <a href="../../articles/2017/07/猜猜数(python版).html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
+        </article></li>
+<p class="paginator">
+    Page 1 / 1
+</p>
+            </ol><!-- /#posts-list -->
+          </section><!-- /#content -->
+      </div>
+    </div>
+    <div class="footer">
+      <section id="extras">
+          <div class="blogroll">
+            <h2>blogroll</h2>
+            <ul>
+                <li><a href="http://getpelican.com/">Pelican</a></li>
+                <li><a href="http://python.org/">Python.org</a></li>
+                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                <li><a href="https://honmaple.com">个人博客</a></li>
+            </ul>
+          </div><!-- /.blogroll -->
+          <div class="social">
+            <h2>social</h2>
+            <ul>
+                <li><a href="http://honmaple.org/feeds/all.rss.xml">Atom Feed</a></li>
+                <li><a href="https://github.com/honmaple">GitHub</a></li>
+                <li><a href="https://twitter.com/xiyang87">Twitter</a></li>
+            </ul>
+          </div><!-- /.social -->
+      </section><!-- /#extras -->
+    </div>
+<script>
+ (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+ })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ ga('create', 'UA-88401692-2', 'auto');
+ ga('send', 'pageview');
+
+</script>
+<script type="text/javascript">
+    var disqus_shortname = 'honmaple';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+    <script src="https://cdn.bootcss.com/particles.js/2.0.0/particles.min.js"></script>
+    <script type="text/javascript" src="../../theme/js/particles.js"></script>
+  </body>
+</html>

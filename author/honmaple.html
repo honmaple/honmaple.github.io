@@ -19,6 +19,7 @@
                 <li class="dropdown">
                   <a href="../category/sheng-huo-sui-bi/index.html" >生活随笔</a>
                   <dl>
+                      <dd><a href="../category/dai-ma-fen-xiang/index.html">代码分享</a></dd>
                       <dd><a href="../category/hui-yi/index.html">回忆</a></dd>
                   </dl>
                 </li>
@@ -43,20 +44,230 @@
 
         <aside id="featured" class="body">
           <article>
-            <h1 class="entry-title"><a href="../articles/2017/07/手机与Linux桌面文件共享.html">手机与Linux桌面文件共享</a></h1> 
+            <h1 class="entry-title"><a href="../articles/2017/08/tornado中session实现.html">tornado中session实现</a></h1> 
 <footer style="color:#bbb;margin:0 auto;font-size:12px;">
-  <span class="published" title="2017-07-30T00:00:00+08:00">
-    Posted on 日 30 七月 2017
+  <span class="published" title="2017-08-06T00:00:00+08:00">
+    Posted on 日 06 八月 2017
   </span>
 
     <span class="vcard author">
       By <a class="url fn" href="../author/honmaple.html">honmaple</a>
     </span>
-  <span>In <a href="../category/linux/index.html">Linux</a>. </span>
-<span class="tag">tags: <a href="../tag/linux/index.html">linux</a><a href="../tag/ftp/index.html">ftp</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014704492452">手机共享文件到电脑</a></li>
-<li><a href="#org-15014704492468">电脑共享文件到手机</a></li>
+  <span>In <a href="../category/dai-ma-fen-xiang/index.html">代码分享</a>. </span>
+<span class="tag">tags: <a href="../tag/python/index.html">python</a><a href="../tag/tornado/index.html">tornado</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
+            
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
+<span class="kn">from</span> <span class="nn">redis</span> <span class="kn">import</span> <span class="n">StrictRedis</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="kn">import</span> <span class="n">timezone</span>
+
+
+<span class="k">def</span> <span class="nf">singleton</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="n">instances</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">getinstance</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">:</span>
+            <span class="n">instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">getinstance</span>
+
+
+<span class="k">def</span> <span class="nf">current_time</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">tz</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">tz</span> <span class="o">=</span> <span class="s1">&#39;UTC&#39;</span>
+    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="p">(</span><span class="n">tz</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">CoreSession</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        session[&#39;username&#39;] = &#39;hello&#39;</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_or_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+
+<span class="nd">@singleton</span>
+<span class="k">class</span> <span class="nc">MemorySession</span><span class="p">(</span><span class="n">CoreSession</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        self._client = {&#39;session_id1&#39;:{key:value},</span>
+<span class="sd">                        &#39;session_id2&#39;:{key:value}}</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">expires_days</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">=</span> <span class="n">expires_days</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;is_authenticated&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+                <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="n">current_time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">remove_expires</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expire_sessions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">current_time</span><span class="p">():</span>
+                <span class="n">expire_sessions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span>
+
+
+<span class="nd">@singleton</span>
+<span class="k">class</span> <span class="nc">RedisSession</span><span class="p">(</span><span class="n">CoreSession</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">StrictRedis</span><span class="p">(</span>
+            <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+            <span class="n">port</span><span class="o">=</span><span class="mi">6379</span><span class="p">,</span>
+            <span class="n">db</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">password</span><span class="o">=</span><span class="s1">&#39;redis&#39;</span><span class="p">,</span>
+            <span class="n">decode_responses</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">expires_days</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">=</span> <span class="n">expires_days</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="s1">&#39;is_authenticated&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">expire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hdel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request_handler</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span> <span class="o">=</span> <span class="n">request_handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">get_secure_cookie</span><span class="p">(</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid4</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">set_secure_cookie</span><span class="p">(</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="c1"># get cookies is bytes</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">RedisSession</span><span class="p">()</span>
+        <span class="c1"># self._session = MemorySession()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">clear_cookie</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</pre></div>
+<p>There are <a href="../articles/2017/08/tornado中session实现.html#disqus_thread">comments</a>.</p>          </article>
+        </aside><!-- /#featured -->
+          <section id="content" class="body">
+            <h1>Other articles</h1>
+            <hr />
+            <ol id="posts-list" class="hfeed">
+        
+
+ 
+        <li><article class="hentry">    
+          <header>
+            <h1><a href="../articles/2017/07/猜猜数(python版).html" rel="bookmark" title="Permalink to 猜猜数(python版)">猜猜数(python版)</a></h1>
+          </header>
+          
+          <div class="entry-content">
+<footer class="post-info">
+  <abbr class="published" title="2017-07-31T00:00:00+08:00">
+    一 31 七月 2017
+  </abbr>
+
+    <address class="vcard author">
+      By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+    </address>
+  <p>In <a href="../category/dai-ma-fen-xiang/index.html">代码分享</a>. </p>
+<p>tags: <a href="../tag/python/index.html">python</a><a href="../tag/dai-ma-fen-xiang/index.html">代码分享</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-60104496220989259682925660471044962">函数版</a></li>
+<li><a href="#org-601044962318672925660471044962">类版</a></li>
+<li><a href="#org-601044962358432999260471044962">调用</a></li>
+</ul>
+</div></div>
+
+
+<h1 id="org-60104496220989259682925660471044962">函数版</h1>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+
+    <span class="n">min_num</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">max_num</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">selected</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+    <span class="k">def</span> <span class="nf">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">):</span>
+        <span class="n">go</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">min_num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_num</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">go</span> <span class="ow">in</span> <span class="n">selected</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">)</span>
+        <span class="n">selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">go</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">go</span>
+
+
+    <span class="k">def</span> <span class="nf">guess</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">min_num</span><span class="p">,</span> <span class="n">max_num</span>
+        <span class="k">if</span> <span class="n">origin</span> <span class="o">&gt;</span> <span class="n">go</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">go</span><span class="p">,</span> <span class="s1">&#39;小了&#39;</span><span class="p">)</span>
+            <span class="n">min_num</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">go</span><span class="p">,</span> <span class="n">min_num</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">guess</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">origin</span> <span class="o">&lt;</span> <span class="n">go …</span></pre></div>
+            <a class="readmore" href="../articles/2017/07/猜猜数(python版).html">read more</a>
+<p>There are <a href="../articles/2017/07/猜猜数(python版).html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
+        </article></li>
+        
+
+ 
+        <li><article class="hentry">    
+          <header>
+            <h1><a href="../articles/2017/07/手机与Linux桌面文件共享.html" rel="bookmark" title="Permalink to 手机与Linux桌面文件共享">手机与Linux桌面文件共享</a></h1>
+          </header>
+          
+          <div class="entry-content">
+<footer class="post-info">
+  <abbr class="published" title="2017-07-30T00:00:00+08:00">
+    日 30 七月 2017
+  </abbr>
+
+    <address class="vcard author">
+      By <a class="url fn" href="../author/honmaple.html">honmaple</a>
+    </address>
+  <p>In <a href="../category/linux/index.html">Linux</a>. </p>
+<p>tags: <a href="../tag/linux/index.html">linux</a><a href="../tag/ftp/index.html">ftp</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-60104496225163264262084920139259912021421040300053304160471044962">手机共享文件到电脑</a></li>
+<li><a href="#org-60104496230005330412084920139259912021421040251632642660471044962">电脑共享文件到手机</a></li>
 </ul>
 </div></div>
 
@@ -65,7 +276,7 @@
 电脑: archlinux
 环境: 同一wifi下</p>
 
-<h1 id="org-15014704492452">手机共享文件到电脑</h1>
+<h1 id="org-60104496225163264262084920139259912021421040300053304160471044962">手机共享文件到电脑</h1>
 <p>最近才发现手机可以开启ftp服务对文件进行共享,直接进入文件管理器开启就行,电脑上使用
 <div class="highlight"><pre><span></span>  ftp target
 </pre></div>
@@ -75,7 +286,7 @@
 <p>注：<b>get</b> 下载<b>put</b> 上传</p>
 
 
-<h1 id="org-15014704492468">电脑共享文件到手机</h1>
+<h1 id="org-60104496230005330412084920139259912021421040251632642660471044962">电脑共享文件到手机</h1>
 <p>这里采用python搭建一个简单的web服务(python3)供手机下载文件
 <div class="highlight"><pre><span></span>  # 首先 cd 到要共享的目录
   python -m http.server --bind 0.0.0.0
@@ -98,12 +309,10 @@
 
 
 <p><b>非同一wifi环境下</b> : 可以先在电脑端开启wifi热点(可以不联网),我是直接使用networkmanger进行创建的
-<img src="https://images.honmaple.com/images/admin/show/2017/07/150142558495491.png"/></p><p>There are <a href="../articles/2017/07/手机与Linux桌面文件共享.html#disqus_thread">comments</a>.</p>          </article>
-        </aside><!-- /#featured -->
-          <section id="content" class="body">
-            <h1>Other articles</h1>
-            <hr />
-            <ol id="posts-list" class="hfeed">
+<img src="https://images.honmaple.com/images/admin/show/2017/07/150142558495491.png"/></p>
+            <a class="readmore" href="../articles/2017/07/手机与Linux桌面文件共享.html">read more</a>
+<p>There are <a href="../articles/2017/07/手机与Linux桌面文件共享.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
+        </article></li>
         
 
  
@@ -123,29 +332,29 @@
     </address>
   <p>In <a href="../category/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../tag/linux/index.html">linux</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014704483175">Linux发展历史</a></li>
-<li><a href="#org-15014704483176">Linux的最小组成</a></li>
-<li><a href="#org-15014704483176">Linux的安装与启动</a></li>
+<li><a href="#org-601044962761051101171202145723637213822149060471044962">Linux发展历史</a></li>
+<li><a href="#org-60104496276105110117120303402636823567324522510460471044962">Linux的最小组成</a></li>
+<li><a href="#org-6010449627610511011712030340234333501319982215512116060471044962">Linux的安装与启动</a></li>
 </ul>
 </div></div>
 
 
 
-<h1 id="org-15014704483175">Linux发展历史</h1>
+<h1 id="org-601044962761051101171202145723637213822149060471044962">Linux发展历史</h1>
 <p>Linux是由BSD发展而来，BSD又起源于UNIX。UNIX由贝尔实验室开发，
 后来开放给各大学教学使用,其中伯克利大学通过对UNIX源码的研究以及不断的改进与扩展,
 推出BSD,并于BSD 4.3版本加入网络模块,极大推进UNIX的发展。但后面由于版权等原因,
 UNIX与BSD之间发生冲突与法律纠纷,直到1998年,在此期间,芬兰大学生Linus Torvalds
 于1991年发布首个Linux版本,linux也趁UNIX与BSD纠纷之际,得到非常快速的发展</p>
 
-<h1 id="org-15014704483176">Linux的最小组成</h1>
+<h1 id="org-60104496276105110117120303402636823567324522510460471044962">Linux的最小组成</h1>
 <p>Linux最小由内核kernel,文件层次结构FHS,系统启动器bootloader组成,其中内存调度，
 进程调度等由内核管理,内核可单独运行，但需要与其它组成相配合。</p>
 
 <p>语言:一般有头文件与库文件,头文件为实现,库文件为声明</p>
 
 
-<h1 id="org-15014704483176">Linux的安装与启动</h1>
+<h1 id="org-6010449627610511011712030340234333501319982215512116060471044962">Linux的安装与启动</h1>
 <p>当linux启动时，首先启动内核，内核调用init来完成引导进程，init启动时，它会在/etc/inittab内查找默认的运行级别,
 然后运行/etc/rc.d/init.d中运行级别的启动脚本。</p>
 
@@ -220,26 +429,26 @@ UNIX与BSD之间发生冲突与法律纠纷,直到1998年,在此期间,芬兰大
     </address>
   <p>In <a href="../category/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../tag/linux/index.html">Linux</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-15014704487111">Linux</a></li>
-<li><a href="#org-15014704487112">Linux发行版</a></li>
-<li><a href="#org-15014704487113">Linux历程</a></li>
-<li><a href="#org-15014704487115">Linux的娱乐性</a></li>
-<li><a href="#org-15014704487116">Linux上的实用性</a></li>
-<li><a href="#org-15014704487117">深入了解Linux</a></li>
+<li><a href="#org-6010449627610511011712060471044962">Linux</a></li>
+<li><a href="#org-6010449627610511011712021457348922925660471044962">Linux发行版</a></li>
+<li><a href="#org-60104496276105110117120213823124360471044962">Linux历程</a></li>
+<li><a href="#org-601044962761051101171203034023089200482461560471044962">Linux的娱乐性</a></li>
+<li><a href="#org-60104496276105110117120199783034023454299922461560471044962">Linux上的实用性</a></li>
+<li><a href="#org-601044962281452083720102352997610511011712060471044962">深入了解Linux</a></li>
 </ul>
 </div></div>
 
 
 
-<h1 id="org-15014704487111">Linux</h1>
+<h1 id="org-6010449627610511011712060471044962">Linux</h1>
 <p>是一种计算机操作系统内核,以C语言和汇编语言写成，匹配POSIX标准，以GNU通用公共许可证(GPL2)发布,最早是由林纳斯·托瓦兹开发的类UNIX系统</p>
 
 <p>Linux与UNIX的区别: UNIX系统大多是与硬件配套的，而Linux则可运行在多种硬件平台上。UNIX是商业软件，而Linux自由免费。</p>
 
-<h1 id="org-15014704487112">Linux发行版</h1>
+<h1 id="org-6010449627610511011712021457348922925660471044962">Linux发行版</h1>
 <p>简单的来说将Linux内核与一些系统软件，应用软件进行整合，有的发行版还包括图形界面(x11，wayland),目前所说的Linux大多代表Linux发行版</p>
 
-<h1 id="org-15014704487113">Linux历程</h1>
+<h1 id="org-60104496276105110117120213823124360471044962">Linux历程</h1>
 <p>曾经在某论坛看到linux这个名词，立马装上虚拟机然后安装了我的第一个Linux版本--centos，并且装上了gnome桌面环境，随后开始了Linux折腾之旅,
 大概是这样的 centos --> kali --> ubuntu --> fedora --> ubuntu kylin --> mint --> debian --> fedora --> archlinux ......,Linux发行版大概分为3系,
 debain系,包括ubuntu,mint,kali等,使用包管理器apt-get、aptitude、dpkg;centos或者说红帽系，包括众所周知的小白鼠版本fedora，
@@ -389,98 +598,6 @@ debain系,包括ubuntu,mint,kali等,使用包管理器apt-get、aptitude、dpkg;
             <a class="readmore" href="../articles/2017/05/那些年我们一起写的诗.html">read more</a>
 <p>There are <a href="../articles/2017/05/那些年我们一起写的诗.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
-        
-
- 
-        <li><article class="hentry">    
-          <header>
-            <h1><a href="../articles/2017/05/晒晒我的Linux及桌面.html" rel="bookmark" title="Permalink to 晒晒我的Linux及桌面">晒晒我的Linux及桌面</a></h1>
-          </header>
-          
-          <div class="entry-content">
-<footer class="post-info">
-  <abbr class="published" title="2017-05-01T00:00:00+08:00">
-    一 01 五月 2017
-  </abbr>
-
-    <address class="vcard author">
-      By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-    </address>
-  <p>In <a href="../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../tag/linux/index.html">linux</a><a href="../tag/i3wm/index.html">i3wm</a></p></footer><!-- /.post-info -->            
-<p><img src="https://images.honmaple.com/images/admin/show/2017/05/149364033937825.png"/></p>
-
-<p><img src="https://images.honmaple.com/images/admin/show/2017/05/149364138162872.png"/></p>
-
-<p><img src="https://images.honmaple.com/images/admin/show/2017/05/149364171386276.png"/></p>
-
-<p>ps:真TM的闲着蛋疼</p>
-            <a class="readmore" href="../articles/2017/05/晒晒我的Linux及桌面.html">read more</a>
-<p>There are <a href="../articles/2017/05/晒晒我的Linux及桌面.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
-        </article></li>
-        
-
- 
-        <li><article class="hentry">    
-          <header>
-            <h1><a href="../articles/2017/04/emacs实现智能注释.html" rel="bookmark" title="Permalink to emacs实现智能注释">emacs实现智能注释</a></h1>
-          </header>
-          
-          <div class="entry-content">
-<footer class="post-info">
-  <abbr class="published" title="2017-04-21T00:00:00+08:00">
-    五 21 四月 2017
-  </abbr>
-
-    <address class="vcard author">
-      By <a class="url fn" href="../author/honmaple.html">honmaple</a>
-    </address>
-  <p>In <a href="../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../tag/emacs/index.html">emacs</a><a href="../tag/elisp/index.html">elisp</a><a href="../tag/linux/index.html">linux</a></p></footer><!-- /.post-info -->            
-<p>之前使用emacs时遇到这么一个问题
-<blockquote>
-<p>当前行存在代码折叠时,如果想要注释,必须先选中当前行,否则只能注释代码折叠块的第一行</p>
-</blockquote></p>
-
-<p>就像这样</p>
-
-<p><img src="https://images.honmaple.com/images/admin/photo/2017/04/149274346737550.png"/></p>
-
-<p><img src="https://images.honmaple.com/images/admin/photo/2017/04/149274352705945.png"/></p>
-
-<p>基础注释函数来源于<b>stackoverflow</b>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">comment-or-uncomment-region-or-line</span> <span class="p">()</span>
-  <span class="s">&quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;</span>
-  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
-  <span class="p">(</span><span class="k">let</span> <span class="p">(</span><span class="nv">beg</span> <span class="nv">end</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">region-active-p</span><span class="p">)</span>
-        <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">region-beginning</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">region-end</span><span class="p">))</span>
-      <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">line-beginning-position</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">line-end-position</span><span class="p">)))</span>
-    <span class="p">(</span><span class="nv">comment-or-uncomment-region</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)))</span>
-</pre></div>
-</p>
-
-<p>在此函数的位置上进行修改,刚开始使用
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">hs-already-hidden-p</span><span class="p">)</span>
-      <span class="p">(</span><span class="nv">evil-visual-line</span><span class="p">))</span>
-</pre></div>
-</p>
-
-<p>但是一直没得到想要的效果,后来修改了一下,使用
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">hs-already-hidden-p</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">progn</span>
-      <span class="p">(</span><span class="nv">end-of-visual-line</span><span class="p">)</span>
-      <span class="p">(</span><span class="nv">evil-visual-state</span><span class="p">)</span>
-      <span class="p">(</span><span class="nv">beginning-of-visual-line</span><span class="p">)))</span>
-</pre></div>
-</p>
-
-<p>意思就是如果当前位置存在代码折叠,先选中当前行,然后注释整个选中区域</p>
-
-<p>因为光标被移动到首位,我对这个不太在意,如果有在意的话 …</p>
-            <a class="readmore" href="../articles/2017/04/emacs实现智能注释.html">read more</a>
-<p>There are <a href="../articles/2017/04/emacs实现智能注释.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
-        </article></li>
 <p class="paginator">
     Page 1 / 13
         <a href="../author/honmaple2.html">&raquo;</a>
@@ -510,7 +627,6 @@ debain系,包括ubuntu,mint,kali等,使用包管理器apt-get、aptitude、dpkg;
           </div><!-- /.social -->
       </section><!-- /#extras -->
     </div>
-
 <script>
  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
