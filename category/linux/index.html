@@ -44,18 +44,173 @@
 
         <aside id="featured" class="body">
           <article>
-            <h1 class="entry-title"><a href="../../articles/2017/07/手机与Linux桌面文件共享.html">手机与Linux桌面文件共享</a></h1> 
+            <h1 class="entry-title"><a href="../../articles/2017/08/redis集群搭建.html">redis集群搭建</a></h1> 
 <footer style="color:#bbb;margin:0 auto;font-size:12px;">
-  <span class="published" title="2017-07-30T00:00:00+08:00">
-    Posted on 日 30 七月 2017
+  <span class="published" title="2017-08-13T00:00:00+08:00">
+    Posted on 日 13 八月 2017
   </span>
 
     <span class="vcard author">
       By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
     </span>
   <span>In <a href="../../category/linux/index.html">Linux</a>. </span>
-<span class="tag">tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/ftp/index.html">ftp</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
+<span class="tag">tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/redis/index.html">redis</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-601044962209342279160471044962">准备</a></li>
+<li><a href="#org-6010449622101924314385983267660471044962">创建集群</a></li>
+<li><a href="#org-6010449622797935797385983267660471044962">测试集群</a></li>
+</ul>
+</div></div>
+
+
+<p><a href="http://www.redis.cn/topics/cluster-tutorial.html">参考资料</a></p>
+
+<p>Redis 集群是一个提供在多个Redis间*节点间共享数据*的程序集</p>
+
+<h1 id="org-601044962209342279160471044962">准备</h1>
+
+<p>集群开始需要运行redis集群实例，而且要让集群正常运作至少需要三个主节点,这里创建六个节点，三个为主节点，三个为从节点,端口号分别为9001,9002,9003,9004,9005,9006</p>
+
+<p>并创建六个以端口号为名字的目录， 在每个目录中运行一个Redis实例
+<div class="highlight"><pre><span></span>mkdir -p redis/9001
+<span class="nb">cd</span> redis
+mkdir <span class="m">9002</span>
+mkdir <span class="m">9003</span>
+mkdir <span class="m">9004</span>
+mkdir <span class="m">9005</span>
+mkdir <span class="m">9006</span>
+</pre></div>
+</p>
+
+<p>然后将对应的配置*redis.conf*放入相应的目录中(记得修改端口号)</p>
+
+<blockquote>
+<p>最小配置选项:
+<pre class="example">
+  port 9001
+  cluster-enabled yes
+  cluster-config-file node9001.conf
+  cluster-node-timeout 5000
+  appendonly yes
+</pre></p>
+</blockquote>
+
+<p>然后就可以启动redis实例了
+<div class="highlight"><pre><span></span>redis-server redis/9001/redis.conf
+redis-server redis/9002/redis.conf
+redis-server redis/9003/redis.conf
+redis-server redis/9004/redis.conf
+redis-server redis/9005/redis.conf
+redis-server redis/9006/redis.conf
+</pre></div>
+</p>
+
+<p>由于这个过程很简单而且重复,所以我写了一个脚本进行创建:
+<div class="highlight"><pre><span></span><span class="nd">@cli.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--dirs&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PATH</span><span class="p">)</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">9001</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;redis.conf&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;port {0}</span>
+<span class="s1">cluster-enabled yes</span>
+<span class="s1">cluster-config-file nodes{0}.conf</span>
+<span class="s1">cluster-node-timeout 5000</span>
+<span class="s1">appendonly yes</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;redis-server {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf</span><span class="p">))</span>
+</pre></div>
+</p>
+
+<h1 id="org-6010449622101924314385983267660471044962">创建集群</h1>
+<p>使用redis的官方脚本<a href="https://github.com/antirez/redis/blob/unstable/src/redis-trib.rb">redis-trib</a>进行创建
+<div class="highlight"><pre><span></span>ruby redis-trib.rb create --replicas <span class="m">1</span> <span class="m">127</span>.0.0.1:9001 <span class="m">127</span>.0.0.1:9002 <span class="m">127</span>.0.0.1:9003 <span class="m">127</span>.0.0.1:9004 <span class="m">127</span>.0.0.1:9005 <span class="m">127</span>.0.0.1:9006
+</pre></div>
+
+或者接上面的脚本
+<div class="highlight"><pre><span></span><span class="n">ports</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;127.0.0.1:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;ruby redis-trib.rb create --replicas 1 {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">ports</span><span class="p">)))</span>
+</pre></div>
+</p>
+
+<p>*–replicas 1*:表示为集群中的每个主节点创建一个从节点</p>
+
+<p>结果如图所示:
+<img src="https://images.honmaple.com/images/admin/show/2017/08/150264027839037.png"/></p>
+
+<p>输入*yes*
+最后查看集群是否启动成功
+<img src="https://images.honmaple.com/images/admin/show/2017/08/150264059108046.png"/></p>
+
+<h1 id="org-6010449622797935797385983267660471044962">测试集群</h1>
+<p><b>-c</b> 选项以集群方式启动
+<div class="highlight"><pre><span></span>  $ redis-cli -c -p 7000
+    127.0.0.1:9001&gt; keys *
+    (empty list or set)
+    127.0.0.1:9001&gt; set hello world
+    OK
+    127.0.0.1:9001&gt; get hello
+    &quot;world&quot;
+    127.0.0.1:9001&gt; set hello1 world1
+    -&gt; Redirected to slot [11613] located at 127.0.0.1:9003
+    OK
+    127.0.0.1:9003&gt; get hello1
+    &quot;world1&quot;
+    127.0.0.1:9003&gt; set hello2 world2
+    -&gt; Redirected to slot [7486] located at 127.0.0.1:9002
+    OK
+    127.0.0.1:9002&gt; get hello2
+    &quot;world2&quot;
+</pre></div>
+</p>
+
+<p>进入另一个实例</p>
+
+<div class="highlight"><pre><span></span>  $ redis-cli -c -p 9002
+    127.0.0.1:9002&gt; get hello
+    -&gt; Redirected to slot [866] located at 127.0.0.1:9001
+    &quot;world&quot;
+    127.0.0.1:9001&gt; get hello1
+    -&gt; Redirected to slot [11613] located at 127.0.0.1:9003
+    &quot;world1&quot;
+    127.0.0.1:9003&gt; get hello2
+    -&gt; Redirected to slot [7486] located at 127.0.0.1:9002
+    &quot;world2&quot;
+</pre></div>
+
+
+<p>ok,先这样</p><p>There are <a href="../../articles/2017/08/redis集群搭建.html#disqus_thread">comments</a>.</p>          </article>
+        </aside><!-- /#featured -->
+          <section id="content" class="body">
+            <h1>Other articles</h1>
+            <hr />
+            <ol id="posts-list" class="hfeed">
+        
+
+ 
+        <li><article class="hentry">    
+          <header>
+            <h1><a href="../../articles/2017/07/手机与Linux桌面文件共享.html" rel="bookmark" title="Permalink to 手机与Linux桌面文件共享">手机与Linux桌面文件共享</a></h1>
+          </header>
+          
+          <div class="entry-content">
+<footer class="post-info">
+  <abbr class="published" title="2017-07-30T00:00:00+08:00">
+    日 30 七月 2017
+  </abbr>
+
+    <address class="vcard author">
+      By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
+    </address>
+  <p>In <a href="../../category/linux/index.html">Linux</a>. </p>
+<p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/ftp/index.html">ftp</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
 <li><a href="#org-60104496225163264262084920139259912021421040300053304160471044962">手机共享文件到电脑</a></li>
 <li><a href="#org-60104496230005330412084920139259912021421040251632642660471044962">电脑共享文件到手机</a></li>
 </ul>
@@ -99,12 +254,10 @@
 
 
 <p><b>非同一wifi环境下</b> : 可以先在电脑端开启wifi热点(可以不联网),我是直接使用networkmanger进行创建的
-<img src="https://images.honmaple.com/images/admin/show/2017/07/150142558495491.png"/></p><p>There are <a href="../../articles/2017/07/手机与Linux桌面文件共享.html#disqus_thread">comments</a>.</p>          </article>
-        </aside><!-- /#featured -->
-          <section id="content" class="body">
-            <h1>Other articles</h1>
-            <hr />
-            <ol id="posts-list" class="hfeed">
+<img src="https://images.honmaple.com/images/admin/show/2017/07/150142558495491.png"/></p>
+            <a class="readmore" href="../../articles/2017/07/手机与Linux桌面文件共享.html">read more</a>
+<p>There are <a href="../../articles/2017/07/手机与Linux桌面文件共享.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
+        </article></li>
         
 
  
@@ -427,62 +580,6 @@ debain系,包括ubuntu,mint,kali等,使用包管理器apt-get、aptitude、dpkg;
 <p>因为光标被移动到首位,我对这个不太在意,如果有在意的话 …</p>
             <a class="readmore" href="../../articles/2017/04/emacs实现智能注释.html">read more</a>
 <p>There are <a href="../../articles/2017/04/emacs实现智能注释.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
-        </article></li>
-        
-
- 
-        <li><article class="hentry">    
-          <header>
-            <h1><a href="../../articles/2017/02/修改agetty启动参数自动登陆linux.html" rel="bookmark" title="Permalink to 修改agetty启动参数自动登陆linux">修改agetty启动参数自动登陆linux</a></h1>
-          </header>
-          
-          <div class="entry-content">
-<footer class="post-info">
-  <abbr class="published" title="2017-02-26T00:00:00+08:00">
-    日 26 二月 2017
-  </abbr>
-
-    <address class="vcard author">
-      By <a class="url fn" href="../../author/honmaple.html">honmaple</a>
-    </address>
-  <p>In <a href="../../category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="../../tag/linux/index.html">linux</a><a href="../../tag/agetty/index.html">agetty</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-601044962386562771460471044962">需求</a></li>
-<li><a href="#org-601044962234542961660471044962">实现</a>
-<ul>
-<li><a href="#org-601045062332582116030331384703199532479402999225143215172349430721371171998129992367554160471045062">自动登陆系统(用户名密码都不用输)</a></li>
-<li><a href="#org-6010450623325821160303313847031995324794020165367552083723494307214160471045062">自动登陆系统(仅输入密码)</a></li>
-</ul></li>
-</ul>
-</div></div>
-
-
-
-<p>环境: archlinux
-<a href="https://bbs.archlinux.org/viewtopic.php?id=198097">参考</a></p>
-
-<h1 id="org-601044962386562771460471044962">需求</h1>
-<p>想要Linux启动后默认以指定用户登陆,不用输入用户名,可以直接输入密码进入系统</p>
-
-<h1 id="org-601044962234542961660471044962">实现</h1>
-<div class="highlight"><pre><span></span>man agetty
-</pre></div>
-
-<p>修改以下文件
-<div class="highlight"><pre><span></span>  /sudo:root@localhost:/etc/systemd/system/getty.target.wants/getty@tty1.service
-</pre></div>
-
-<div class="highlight"><pre><span></span>   ExecStart=-/sbin/agetty -a username --noclear %I $TERM
-</pre></div>
-</p>
-<h2 id="org-601045062332582116030331384703199532479402999225143215172349430721371171998129992367554160471045062">自动登陆系统(用户名密码都不用输)</h2>
-
-<h2 id="org-6010450623325821160303313847031995324794020165367552083723494307214160471045062">自动登陆系统(仅输入密码)</h2>
-<div class="highlight"><pre><span></span>   ExecStart=-/sbin/agetty --skip-login --login-options &quot;username&quot; --noclear %I $TERM
-</pre></div>
-
-            <a class="readmore" href="../../articles/2017/02/修改agetty启动参数自动登陆linux.html">read more</a>
-<p>There are <a href="../../articles/2017/02/修改agetty启动参数自动登陆linux.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
 <p class="paginator">
     Page 1 / 6
