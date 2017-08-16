@@ -61,54 +61,54 @@
     </address>
   <p>In <a href="../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../tag/python/index.html">python</a><a href="../tag/sqlalchemy/index.html">sqlalchemy</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-60104496211511310897108991041011091213211198106101991162420721015212702002610611511111060471044962">sqlalchemy object序列化为json</a>
+<li><a href="#org-69982405">sqlalchemy object序列化为json</a>
 <ul>
-<li><a href="#org-6010450622281020010234542036360471045062">多个实例</a></li>
-<li><a href="#org-6010450622133320010234542036360471045062">单个实例</a></li>
-<li><a href="#org-6010450622549038500233832757360471045062">排除字段</a></li>
-<li><a href="#org-601045062201652125325324233832757360471045062">仅包括字段</a></li>
-<li><a href="#org-60104506220851319952659735810281452423060471045062">关系查询深度</a></li>
-<li><a href="#org-6010450622268621152199682012333258234502004130340209892596860471045062">增加一些自定义的函数</a></li>
-<li><a href="#org-601045062214872025636882214422596830340209892596860471045062">可传递参数的函数</a></li>
+<li><a href="#org-61953691">多个实例</a></li>
+<li><a href="#org-11922639">单个实例</a></li>
+<li><a href="#org-22390441">排除字段</a></li>
+<li><a href="#org-45781121">仅包括字段</a></li>
+<li><a href="#org-36696456">关系查询深度</a></li>
+<li><a href="#org-36970297">增加一些自定义的函数</a></li>
+<li><a href="#org-38745582">可传递参数的函数</a></li>
 </ul></li>
-<li><a href="#org-60104496220687100106971101031113211111410919968266792035129992115113108971089910410110912160471044962">像django orm一样使用sqlalchemy</a>
+<li><a href="#org-73883694">像django orm一样使用sqlalchemy</a>
 <ul>
-<li><a href="#org-60104506222522264122659735810402405023454296164160471045062">基本查询(已实现)</a></li>
-<li><a href="#org-6010450622085131995265973581060471045062">关系查询</a></li>
-<li><a href="#org-601045062208542342760471045062">其它</a></li>
+<li><a href="#org-21116061">基本查询(已实现)</a></li>
+<li><a href="#org-6534640">关系查询</a></li>
+<li><a href="#org-83349707">其它</a></li>
 </ul></li>
-<li><a href="#org-601044962214352548119968201231151131089710899104101109121303403732522797240372031660471044962">去掉一些sqlalchemy的重复工作</a>
+<li><a href="#org-41947321">去掉一些sqlalchemy的重复工作</a>
 <ul>
-<li><a href="#org-601045062771111001011087710512010511060471045062">ModelMixin</a></li>
-<li><a href="#org-60104506277111100101108841051091017710512010511060471045062">ModelTimeMixin</a></li>
-<li><a href="#org-60104506277111100101108851151011147710512010511060471045062">ModelUserMixin</a></li>
+<li><a href="#org-43476983">ModelMixin</a></li>
+<li><a href="#org-15700630">ModelTimeMixin</a></li>
+<li><a href="#org-36473281">ModelUserMixin</a></li>
 </ul></li>
 </ul>
 </div></div>
 
 
-<h1 id="org-60104496211511310897108991041011091213211198106101991162420721015212702002610611511111060471044962">sqlalchemy object序列化为json</h1>
+<h1 id="org-69982405">sqlalchemy object序列化为json</h1>
 <p>灵感来源于 *Django REST framework*
 <div class="highlight"><pre><span></span><span class="n">posts</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
    <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">posts</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
    <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </p>
-<h2 id="org-6010450622281020010234542036360471045062">多个实例</h2>
+<h2 id="org-61953691">多个实例</h2>
 
-<h2 id="org-6010450622133320010234542036360471045062">单个实例</h2>
+<h2 id="org-11922639">单个实例</h2>
 <div class="highlight"><pre><span></span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
    <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
    <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 
 
-<h2 id="org-6010450622549038500233832757360471045062">排除字段</h2>
+<h2 id="org-22390441">排除字段</h2>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
 </pre></div>
 
 
-<h2 id="org-601045062201652125325324233832757360471045062">仅包括字段</h2>
+<h2 id="org-45781121">仅包括字段</h2>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post …</span></pre></div>
             <a class="readmore" href="../articles/2017/03/sqlalchemy使用上的小tips.html">read more</a>
 <p>There are <a href="../articles/2017/03/sqlalchemy使用上的小tips.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
@@ -195,11 +195,11 @@
     </address>
   <p>In <a href="../category/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../tag/linux/index.html">linux</a><a href="../tag/agetty/index.html">agetty</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-601044962386562771460471044962">需求</a></li>
-<li><a href="#org-601044962234542961660471044962">实现</a>
+<li><a href="#org-12591774">需求</a></li>
+<li><a href="#org-35812122">实现</a>
 <ul>
-<li><a href="#org-601045062332582116030331384703199532479402999225143215172349430721371171998129992367554160471045062">自动登陆系统(用户名密码都不用输)</a></li>
-<li><a href="#org-6010450623325821160303313847031995324794020165367552083723494307214160471045062">自动登陆系统(仅输入密码)</a></li>
+<li><a href="#org-58090198">自动登陆系统(用户名密码都不用输)</a></li>
+<li><a href="#org-19124193">自动登陆系统(仅输入密码)</a></li>
 </ul></li>
 </ul>
 </div></div>
@@ -209,10 +209,10 @@
 <p>环境: archlinux
 <a href="https://bbs.archlinux.org/viewtopic.php?id=198097">参考</a></p>
 
-<h1 id="org-601044962386562771460471044962">需求</h1>
+<h1 id="org-12591774">需求</h1>
 <p>想要Linux启动后默认以指定用户登陆,不用输入用户名,可以直接输入密码进入系统</p>
 
-<h1 id="org-601044962234542961660471044962">实现</h1>
+<h1 id="org-35812122">实现</h1>
 <div class="highlight"><pre><span></span>man agetty
 </pre></div>
 
@@ -223,9 +223,9 @@
 <div class="highlight"><pre><span></span>   ExecStart=-/sbin/agetty -a username --noclear %I $TERM
 </pre></div>
 </p>
-<h2 id="org-601045062332582116030331384703199532479402999225143215172349430721371171998129992367554160471045062">自动登陆系统(用户名密码都不用输)</h2>
+<h2 id="org-58090198">自动登陆系统(用户名密码都不用输)</h2>
 
-<h2 id="org-6010450623325821160303313847031995324794020165367552083723494307214160471045062">自动登陆系统(仅输入密码)</h2>
+<h2 id="org-19124193">自动登陆系统(仅输入密码)</h2>
 <div class="highlight"><pre><span></span>   ExecStart=-/sbin/agetty --skip-login --login-options &quot;username&quot; --noclear %I $TERM
 </pre></div>
 
@@ -302,8 +302,8 @@
     </address>
   <p>In <a href="../category/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../tag/linux/index.html">linux</a><a href="../tag/i3wm/index.html">i3wm</a><a href="../tag/python/index.html">python</a><a href="../tag/py3status/index.html">py3status</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-601045062201072592565288199686528960471045062">事故（一）</a></li>
-<li><a href="#org-601045062201072592565288201086528960471045062">事故（二）</a></li>
+<li><a href="#org-48082281">事故（一）</a></li>
+<li><a href="#org-4622753">事故（二）</a></li>
 </ul>
 </div></div>
 
@@ -316,7 +316,7 @@
 
 <p>虽然后面都已经解决了</p>
 
-<h2 id="org-601045062201072592565288199686528960471045062">事故（一）</h2>
+<h2 id="org-48082281">事故（一）</h2>
 <p><b>virtualenv不可用</b>,原先使用python3.5创建的环境直接不能用了,只好删了原有了东西,重新使用python3.6创建</p>
 
 <div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">freeze</span> <span class="o">&gt;</span> <span class="n">requestments</span><span class="o">.</span><span class="n">txt</span>
@@ -324,7 +324,7 @@
 </pre></div>
 
 
-<h2 id="org-601045062201072592565288201086528960471045062">事故（二）</h2>
+<h2 id="org-4622753">事故（二）</h2>
 <p><b>py3status</b> 报错
 <div class="highlight"><pre><span></span>   <span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
   <span class="n">File</span> <span class="s2">&quot;/usr/bin/py3status&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
@@ -352,28 +352,28 @@
     </address>
   <p>In <a href="../category/sheng-huo-sui-bi/index.html">生活随笔</a>. </p>
 <p>tags: <a href="../tag/sheng-huo-sui-bi/index.html">生活随笔</a><a href="../tag/bi-ye-she-ji/index.html">毕业设计</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-601044962314492086920449357743574560471044962">站内信设计</a>
+<li><a href="#org-68683550">站内信设计</a>
 <ul>
-<li><a href="#org-6010450623692336753234542961660471045062">逻辑实现</a>
+<li><a href="#org-61699452">逻辑实现</a>
 <ul>
-<li><a href="#org-6010451622885723545288574031169204494160471045162">点对点(私信)</a></li>
-<li><a href="#org-60104516228857235453875440319953247928040246874160471045162">点对面(系统消息)</a></li>
+<li><a href="#org-9780468">点对点(私信)</a></li>
+<li><a href="#org-49041887">点对面(系统消息)</a></li>
 </ul></li>
-<li><a href="#org-601045062259682545424211357743574560471045062">数据库设计</a>
+<li><a href="#org-21405520">数据库设计</a>
 <ul>
-<li><a href="#org-6010451622044924687349204020851328524160471045162">信息表(关联)</a></li>
-<li><a href="#org-601045162204492468720869234813492060471045162">信息内容表</a></li>
+<li><a href="#org-42500141">信息表(关联)</a></li>
+<li><a href="#org-3569568">信息内容表</a></li>
 </ul></li>
 </ul></li>
 </ul>
 </div></div>
 
 
-<h1 id="org-601044962314492086920449357743574560471044962">站内信设计</h1>
+<h1 id="org-68683550">站内信设计</h1>
 
-<h2 id="org-6010450623692336753234542961660471045062">逻辑实现</h2>
+<h2 id="org-61699452">逻辑实现</h2>
 
-<h3 id="org-6010451622885723545288574031169204494160471045162">点对点(私信)</h3>
+<h3 id="org-9780468">点对点(私信)</h3>
 <ul>
 <li>发送方
 <p>sender</p></li>
@@ -424,33 +424,33 @@
     </address>
   <p>In <a href="../category/sheng-huo-sui-bi/index.html">生活随笔</a>. </p>
 <p>tags: <a href="../tag/bi-ye-she-ji/index.html">毕业设计</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-60104496230331384702788020876259682545424211357743574560471044962">登陆注册数据库设计</a>
+<li><a href="#org-58567696">登陆注册数据库设计</a>
 <ul>
-<li><a href="#org-60104506229992251433492060471045062">用户表</a></li>
-<li><a href="#org-601045062299922514320449246873492060471045062">用户信息表</a></li>
-<li><a href="#org-601045062299922514335774326223492060471045062">用户设置表</a></li>
-<li><a href="#org-60104506229992251431161111071011103492060471045062">用户token表</a></li>
+<li><a href="#org-9802246">用户表</a></li>
+<li><a href="#org-12192719">用户信息表</a></li>
+<li><a href="#org-41425252">用户设置表</a></li>
+<li><a href="#org-29320948">用户token表</a></li>
 </ul></li>
-<li><a href="#org-601044962259682545424211234542961660471044962">数据库实现</a>
+<li><a href="#org-26658272">数据库实现</a>
 <ul>
-<li><a href="#org-60104506229992251433492060471045062">用户表</a></li>
-<li><a href="#org-601045062299922514320449246873492060471045062">用户信息表</a></li>
-<li><a href="#org-601045062299922514335774326223492060471045062">用户设置表</a></li>
-<li><a href="#org-60104506229992251431161111071011103492060471045062">用户token表</a></li>
+<li><a href="#org-9802246">用户表</a></li>
+<li><a href="#org-12192719">用户信息表</a></li>
+<li><a href="#org-41425252">用户设置表</a></li>
+<li><a href="#org-29320948">用户token表</a></li>
 </ul></li>
 </ul>
 </div></div>
 
 
 
-<h1 id="org-60104496230331384702788020876259682545424211357743574560471044962">登陆注册数据库设计</h1>
+<h1 id="org-58567696">登陆注册数据库设计</h1>
 <p>共同字段:</p>
 <ul>
 <li>id
 <p>主键,自增ID</p>
 </li>
 </ul>
-<h2 id="org-60104506229992251433492060471045062">用户表</h2>
+<h2 id="org-9802246">用户表</h2>
 <div class="highlight"><pre><span></span>   tablename: user
 </pre></div>
 
@@ -502,14 +502,14 @@
     </address>
   <p>In <a href="../category/linux/index.html">Linux</a>. </p>
 <p>tags: <a href="../tag/linux/index.html">linux</a><a href="../tag/emacs/index.html">emacs</a><a href="../tag/org-mode/index.html">org-mode</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-601044962386562771460471044962">需求</a></li>
-<li><a href="#org-601044962352992091560471044962">解决</a></li>
-<li><a href="#org-6010449627011111111611011111610111560471044962">Footnotes</a></li>
+<li><a href="#org-12591774">需求</a></li>
+<li><a href="#org-67454862">解决</a></li>
+<li><a href="#org-42511135">Footnotes</a></li>
 </ul>
 </div></div>
 
 
-<h1 id="org-601044962386562771460471044962">需求</h1>
+<h1 id="org-12591774">需求</h1>
 <p>在使用<b>org-mode</b> 写文档时，插入图片后默认不显示，想要直接在<b>org</b>文件中预览图片，可以使用
 <div class="highlight"><pre><span></span><span class="nv">org-toggle-inline-images</span>
 </pre></div>
@@ -520,7 +520,7 @@
 那么问题来了，如何只在开启<b>org-toggle-inline-images</b> 后关闭<b>smooth-scrooling</b>,
 关闭<b>org-toggle-inline-images</b> 后开启<b>smooth-scrooling</b></p>
 
-<h1 id="org-601044962352992091560471044962">解决</h1>
+<h1 id="org-67454862">解决</h1>
 <p>给出代码,使用<b>defadvice</b>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">defadvice</span> <span class="nv">org-toggle-inline-images</span> <span class="p">(</span><span class="nv">after</span> <span class="nv">org-open-at-point</span> <span class="nv">activate</span><span class="p">)</span>
       <span class="p">(</span><span class="k">if</span> <span class="nv">smooth-scrolling-mode</span> <span class="p">(</span><span class="nv">smooth-scrolling-mode</span> <span class="mi">-1</span><span class="p">)</span>
@@ -528,7 +528,7 @@
 </pre></div>
 </p>
 
-<h1 id="org-6010449627011111111611011111610111560471044962">Footnotes</h1>
+<h1 id="org-42511135">Footnotes</h1>
 
 <p><sup><a id="fnr:1" class="footref" href="#fn.1">1</a></sup> <a href="https://github.com/syl20bnr/spacemacs/issues/3824">https://github.com/syl20bnr/spacemacs/issues/3824</a></p>
             <a class="readmore" href="../articles/2016/12/emacs预览图片时禁止smooth-scrolling.html">read more</a>
@@ -553,13 +553,13 @@
     </address>
   <p>In <a href="../category/python/index.html">Python</a>. </p>
 <p>tags: <a href="../tag/python/index.html">python</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-601045062959510997105110959560471045062">__main__</a></li>
-<li><a href="#org-601045062246353246719968199796530660471045062">总结一下：</a></li>
+<li><a href="#org-5410716">__main__</a></li>
+<li><a href="#org-16527837">总结一下：</a></li>
 </ul>
 </div></div>
 
 
-<h2 id="org-601045062959510997105110959560471045062">__main__</h2>
+<h2 id="org-5410716">__main__</h2>
 
 <p>转自 <a href="http://www.jb51.net/article/51892.html">这里</a></p>
 
