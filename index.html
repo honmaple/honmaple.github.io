@@ -21,6 +21,7 @@
                   <dl>
                       <dd><a href="./category/dai-ma-fen-xiang/index.html">代码分享</a></dd>
                       <dd><a href="./category/hui-yi/index.html">回忆</a></dd>
+                      <dd><a href="./category/lian/index.html">恋</a></dd>
                   </dl>
                 </li>
             <li class="dropdown">
@@ -211,6 +212,14 @@ redis-server redis/9006/redis.conf
     </address>
   <p>In <a href="./category/dai-ma-fen-xiang/index.html">代码分享</a>. </p>
 <p>tags: <a href="./tag/python/index.html">python</a><a href="./tag/tornado/index.html">tornado</a></p></footer><!-- /.post-info -->            
+<p>tornado中默认没有session的实现,虽然默认的<b>set_secure_cookie</b> 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息</p>
+
+<p>注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行</p>
+
+
+<p>给出源码:</p>
+
+
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
 <span class="kn">from</span> <span class="nn">redis</span> <span class="kn">import</span> <span class="n">StrictRedis</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
@@ -231,66 +240,9 @@ redis-server redis/9006/redis.conf
 
 
 <span class="k">def</span> <span class="nf">current_time</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">tz</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">tz</span> <span class="o">=</span> <span class="s1">&#39;UTC&#39;</span>
-    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="p">(</span><span class="n">tz</span><span class="p">))</span>
-
-
-<span class="k">class</span> <span class="nc">CoreSession</span><span class="p">(</span><span class="nb">object …</span></pre></div>
+    <span class="k">if</span> <span class="n">tz</span> <span class="ow">is</span> <span class="bp">None …</span></pre></div>
             <a class="readmore" href="./articles/2017/08/tornado中session实现.html">read more</a>
 <p>There are <a href="./articles/2017/08/tornado中session实现.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
-        </article></li>
-        
-
- 
-        <li><article class="hentry">    
-          <header>
-            <h1><a href="./articles/2017/07/猜猜数(python版).html" rel="bookmark" title="Permalink to 猜猜数(python版)">猜猜数(python版)</a></h1>
-          </header>
-          
-          <div class="entry-content">
-<footer class="post-info">
-  <abbr class="published" title="2017-07-31T00:00:00+08:00">
-    一 31 七月 2017
-  </abbr>
-
-    <address class="vcard author">
-      By <a class="url fn" href="./author/honmaple.html">honmaple</a>
-    </address>
-  <p>In <a href="./category/dai-ma-fen-xiang/index.html">代码分享</a>. </p>
-<p>tags: <a href="./tag/python/index.html">python</a><a href="./tag/dai-ma-fen-xiang/index.html">代码分享</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-69151741">函数版</a></li>
-<li><a href="#org-81337132">类版</a></li>
-<li><a href="#org-52864305">调用</a></li>
-</ul>
-</div></div>
-
-
-<h1 id="org-69151741">函数版</h1>
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
-
-    <span class="n">min_num</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">max_num</span> <span class="o">=</span> <span class="mi">1000</span>
-    <span class="n">selected</span> <span class="o">=</span> <span class="p">[]</span>
-
-
-    <span class="k">def</span> <span class="nf">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">):</span>
-        <span class="n">go</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">min_num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_num</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">go</span> <span class="ow">in</span> <span class="n">selected</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">)</span>
-        <span class="n">selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">go</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">go</span>
-
-
-    <span class="k">def</span> <span class="nf">guess</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">):</span>
-        <span class="k">global</span> <span class="n">min_num</span><span class="p">,</span> <span class="n">max_num</span>
-        <span class="k">if</span> <span class="n">origin</span> <span class="o">&gt;</span> <span class="n">go</span><span class="p">:</span>
-            <span class="k">print</span><span class="p">(</span><span class="n">go</span><span class="p">,</span> <span class="s1">&#39;小了&#39;</span><span class="p">)</span>
-            <span class="n">min_num</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">go</span><span class="p">,</span> <span class="n">min_num</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">guess</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">random_go</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">go</span><span class="p">))</span>
-        <span class="k">elif</span> <span class="n">origin</span> <span class="o">&lt;</span> <span class="n">go …</span></pre></div>
-            <a class="readmore" href="./articles/2017/07/猜猜数(python版).html">read more</a>
-<p>There are <a href="./articles/2017/07/猜猜数(python版).html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
         
 
@@ -588,6 +540,60 @@ debain系,包括ubuntu,mint,kali等,使用包管理器apt-get、aptitude、dpkg;
       <span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index …</span></pre></div></p>
             <a class="readmore" href="./articles/2017/05/方便的切换emacs主题.html">read more</a>
 <p>There are <a href="./articles/2017/05/方便的切换emacs主题.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
+        </article></li>
+        
+
+ 
+        <li><article class="hentry">    
+          <header>
+            <h1><a href="./articles/2017/05/那些年我们一起写的诗.html" rel="bookmark" title="Permalink to 那些年我们一起写的诗">那些年我们一起写的诗</a></h1>
+          </header>
+          
+          <div class="entry-content">
+<footer class="post-info">
+  <abbr class="published" title="2017-05-17T00:00:00+08:00">
+    三 17 五月 2017
+  </abbr>
+
+    <address class="vcard author">
+      By <a class="url fn" href="./author/honmaple.html">honmaple</a>
+    </address>
+  <p>In <a href="./category/hui-yi/index.html">回忆</a>. </p>
+<p>tags: <a href="./tag/sheng-huo-sui-bi/index.html">生活随笔</a><a href="./tag/shi/index.html">诗</a></p></footer><!-- /.post-info -->            
+<ul>
+<li>其实世界上本没有试，考得人多了，也便成了试
+</li>
+<li>喝自己的水，让别人喝酒去吧！
+</li>
+<li>春游只是一场旅行，不在乎目的地（呈贡新校区）在乎的只是周末的作业和做作业的心情，让作业去旅行…
+</li>
+<li>忘记或是失忆…都是一场美丽
+</li>
+<li>黑夜如此短暂，仅在闭眼睁眼之间，却不知黑暗之中，已有人迷失方向，正在苦苦寻觅黎明前的光亮
+</li>
+<li>人生总有欢乐，亦有痛苦，我们本是为了活着而活着，活着，才有希望，死亡，或许能够躲避痛苦，但也将永远长眠于墓地，无法品味人生的酸甜苦辣
+</li>
+<li>问君能有几多愁，恰似一江春水向东流；问君能有几多愁，恰似一群太监上青楼；问君能有几多愁，恰似一代天骄热泪流 ；问君能有几多愁，恰似三中作业多如牛。作业多，愁啊！
+</li>
+<li>对内宣传实力如虎，对外抗议胆小如鼠
+</li>
+<li>天朗、气清、月明、人中：夜迹…血月
+</li>
+<li>众人皆白，唯我独黑
+</li>
+<li>众人皆醉，唯我独醒
+</li>
+<li>战争中出英雄，和平中出贪官，不在战争中爆发，就在和平中灭亡
+</li>
+<li>人生就像是在走一条很长很长的路，两只脚唯有不断超越对方，才能前进；两只脚不断躲避对方，只能后退
+</li>
+<li>生命如鸡肋，食之无味，弃之可惜
+</li>
+<li>拎起屠刀，让佛祖说去吧
+</li>
+<li>山脚有雨山无雨，眼中有泪眼无泪 …</li></ul>
+            <a class="readmore" href="./articles/2017/05/那些年我们一起写的诗.html">read more</a>
+<p>There are <a href="./articles/2017/05/那些年我们一起写的诗.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
 <p class="paginator">
     Page 1 / 13

@@ -41,6 +41,14 @@ mkdir &lt;span class="m"&gt;9006&lt;/span&gt;
 
 &lt;p&gt;然后就可以启动redis实例了
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;redis-server redis/9001/redis.conf …&lt;/pre&gt;&lt;/div&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 13 Aug 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-08-13:/articles/2017/08/redis集群搭建.html</guid><category>linux</category><category>redis</category></item><item><title>tornado中session实现</title><link>http://honmaple.org/articles/2017/08/tornado%E4%B8%ADsession%E5%AE%9E%E7%8E%B0.html</link><description>
+&lt;p&gt;tornado中默认没有session的实现,虽然默认的&lt;b&gt;set_secure_cookie&lt;/b&gt; 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息&lt;/p&gt;
+
+&lt;p&gt;注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行&lt;/p&gt;
+
+
+&lt;p&gt;给出源码:&lt;/p&gt;
+
+
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;uuid&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;uuid4&lt;/span&gt;
 &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;redis&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;StrictRedis&lt;/span&gt;
 &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;functools&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;wraps&lt;/span&gt;
@@ -61,42 +69,19 @@ mkdir &lt;span class="m"&gt;9006&lt;/span&gt;
 
 
 &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;current_time&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tz&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;tz&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;tz&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;UTC&amp;#39;&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;now&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;timezone&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tz&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;tz&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="bp"&gt;None …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 06 Aug 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-08-06:/articles/2017/08/tornado中session实现.html</guid><category>python</category><category>tornado</category></item><item><title>明明你也很爱我</title><link>http://honmaple.org/articles/2017/08/%E6%98%8E%E6%98%8E%E4%BD%A0%E4%B9%9F%E5%BE%88%E7%88%B1%E6%88%91.html</link><description>
+&lt;blockquote&gt;
+&lt;p&gt;你怎么那么冷漠
+你怎么就不怕错过我
+明明你也很爱我
+为什么爱不到结果&lt;/p&gt;
+&lt;/blockquote&gt;
 
-
-&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;CoreSession&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 06 Aug 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-08-06:/articles/2017/08/tornado中session实现.html</guid><category>python</category><category>tornado</category></item><item><title>猜猜数(python版)</title><link>http://honmaple.org/articles/2017/07/%E7%8C%9C%E7%8C%9C%E6%95%B0(python%E7%89%88).html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-69151741"&gt;函数版&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-81337132"&gt;类版&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-52864305"&gt;调用&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-
-
-&lt;h1 id="org-69151741"&gt;函数版&lt;/h1&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;random&lt;/span&gt;
-
-    &lt;span class="n"&gt;min_num&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
-    &lt;span class="n"&gt;max_num&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;
-    &lt;span class="n"&gt;selected&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
-
-
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;random_go&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;origin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="n"&gt;go&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;randint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;min_num&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;max_num&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;selected&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;random_go&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;origin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="n"&gt;selected&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;
-
-
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;guess&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;origin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;min_num&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;max_num&lt;/span&gt;
-        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;origin&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-            &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;小了&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="n"&gt;min_num&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;max&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;min_num&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;guess&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;origin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;random_go&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;origin&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;go&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-        &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;origin&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;go …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Mon, 31 Jul 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-07-31:/articles/2017/07/猜猜数(python版).html</guid><category>python</category><category>代码分享</category></item><item><title>手机与Linux桌面文件共享</title><link>http://honmaple.org/articles/2017/07/%E6%89%8B%E6%9C%BA%E4%B8%8ELinux%E6%A1%8C%E9%9D%A2%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;咫尺层城留不住，
+久相忘，
+到此偏相忆&lt;/p&gt;
+&lt;/blockquote&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Wed, 02 Aug 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-08-02:/articles/2017/08/明明你也很爱我.html</guid><category>love</category></item><item><title>手机与Linux桌面文件共享</title><link>http://honmaple.org/articles/2017/07/%E6%89%8B%E6%9C%BA%E4%B8%8ELinux%E6%A1%8C%E9%9D%A2%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-11027712"&gt;手机共享文件到电脑&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-8609298"&gt;电脑共享文件到手机&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
