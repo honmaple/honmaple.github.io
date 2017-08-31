@@ -45,18 +45,47 @@
 
         <aside id="featured" class="body">
           <article>
-            <h1 class="entry-title"><a href="./articles/2017/08/redis集群搭建.html">redis集群搭建</a></h1> 
+            <h1 class="entry-title"><a href="./articles/2017/08/七夕.html">七夕</a></h1> 
 <footer style="color:#bbb;margin:0 auto;font-size:12px;">
-  <span class="published" title="2017-08-13T00:00:00+08:00">
-    Posted on 日 13 八月 2017
+  <span class="published" title="2017-08-30T00:00:00+08:00">
+    Posted on 三 30 八月 2017
   </span>
 
     <span class="vcard author">
       By <a class="url fn" href="./author/honmaple.html">honmaple</a>
     </span>
-  <span>In <a href="./category/linux/index.html">Linux</a>. </span>
-<span class="tag">tags: <a href="./tag/linux/index.html">linux</a><a href="./tag/redis/index.html">redis</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+  <span>In <a href="./category/lian/index.html">恋</a>. </span>
+<span class="tag">tags: <a href="./tag/lian/index.html">恋</a></span></footer>            <hr style="margin-top: 10px;margin-bottom: 10px;border: 0;border-top: 1px solid #eee;" />
+            
+<p>14.6 = 13.14 / 0.9</p>
+
+<p>13.14 = 14.6 * 0.9</p>
+
+<p><b>终究是无缘</b></p><p>There are <a href="./articles/2017/08/七夕.html#disqus_thread">comments</a>.</p>          </article>
+        </aside><!-- /#featured -->
+          <section id="content" class="body">
+            <h1 class="other-article">Other articles</h1>
+            <hr style="border: 0;border-top: 1px solid #eee;" />
+            <ol id="posts-list" class="hfeed">
+        
+
+ 
+        <li><article class="hentry">    
+          <header>
+            <h1><a href="./articles/2017/08/redis集群搭建.html" rel="bookmark" title="Permalink to redis集群搭建">redis集群搭建</a></h1>
+          </header>
+          
+          <div class="entry-content">
+<footer class="post-info">
+  <abbr class="published" title="2017-08-13T00:00:00+08:00">
+    日 13 八月 2017
+  </abbr>
+
+    <address class="vcard author">
+      By <a class="url fn" href="./author/honmaple.html">honmaple</a>
+    </address>
+  <p>In <a href="./category/linux/index.html">Linux</a>. </p>
+<p>tags: <a href="./tag/linux/index.html">linux</a><a href="./tag/redis/index.html">redis</a></p></footer><!-- /.post-info -->            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
 <li><a href="#org-68386377">准备</a></li>
 <li><a href="#org-64453092">创建集群</a></li>
 <li><a href="#org-98343183">测试集群</a></li>
@@ -97,102 +126,10 @@ mkdir <span class="m">9006</span>
 </blockquote>
 
 <p>然后就可以启动redis实例了
-<div class="highlight"><pre><span></span>redis-server redis/9001/redis.conf
-redis-server redis/9002/redis.conf
-redis-server redis/9003/redis.conf
-redis-server redis/9004/redis.conf
-redis-server redis/9005/redis.conf
-redis-server redis/9006/redis.conf
-</pre></div>
-</p>
-
-<p>由于这个过程很简单而且重复,所以我写了一个脚本进行创建:
-<div class="highlight"><pre><span></span><span class="nd">@cli.command</span><span class="p">()</span>
-<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--dirs&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PATH</span><span class="p">)</span>
-<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">9001</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="n">conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;redis.conf&#39;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;port {0}</span>
-<span class="s1">cluster-enabled yes</span>
-<span class="s1">cluster-config-file nodes{0}.conf</span>
-<span class="s1">cluster-node-timeout 5000</span>
-<span class="s1">appendonly yes</span>
-<span class="s1">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-        <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;redis-server {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf</span><span class="p">))</span>
-</pre></div>
-</p>
-
-<h1 id="org-64453092">创建集群</h1>
-<p>使用redis的官方脚本<a href="https://github.com/antirez/redis/blob/unstable/src/redis-trib.rb">redis-trib</a>进行创建
-<div class="highlight"><pre><span></span>ruby redis-trib.rb create --replicas <span class="m">1</span> <span class="m">127</span>.0.0.1:9001 <span class="m">127</span>.0.0.1:9002 <span class="m">127</span>.0.0.1:9003 <span class="m">127</span>.0.0.1:9004 <span class="m">127</span>.0.0.1:9005 <span class="m">127</span>.0.0.1:9006
-</pre></div>
-
-或者接上面的脚本
-<div class="highlight"><pre><span></span><span class="n">ports</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;127.0.0.1:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;ruby redis-trib.rb create --replicas 1 {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-        <span class="n">ports</span><span class="p">)))</span>
-</pre></div>
-</p>
-
-<p>*–replicas 1*:表示为集群中的每个主节点创建一个从节点</p>
-
-<p>结果如图所示:
-<img src="https://images.honmaple.com/images/admin/show/2017/08/150264027839037.png"/></p>
-
-<p>输入*yes*
-最后查看集群是否启动成功
-<img src="https://images.honmaple.com/images/admin/show/2017/08/150264059108046.png"/></p>
-
-<h1 id="org-98343183">测试集群</h1>
-<p><b>-c</b> 选项以集群方式启动
-<div class="highlight"><pre><span></span>  $ redis-cli -c -p 7000
-    127.0.0.1:9001&gt; keys *
-    (empty list or set)
-    127.0.0.1:9001&gt; set hello world
-    OK
-    127.0.0.1:9001&gt; get hello
-    &quot;world&quot;
-    127.0.0.1:9001&gt; set hello1 world1
-    -&gt; Redirected to slot [11613] located at 127.0.0.1:9003
-    OK
-    127.0.0.1:9003&gt; get hello1
-    &quot;world1&quot;
-    127.0.0.1:9003&gt; set hello2 world2
-    -&gt; Redirected to slot [7486] located at 127.0.0.1:9002
-    OK
-    127.0.0.1:9002&gt; get hello2
-    &quot;world2&quot;
-</pre></div>
-</p>
-
-<p>进入另一个实例</p>
-
-<div class="highlight"><pre><span></span>  $ redis-cli -c -p 9002
-    127.0.0.1:9002&gt; get hello
-    -&gt; Redirected to slot [866] located at 127.0.0.1:9001
-    &quot;world&quot;
-    127.0.0.1:9001&gt; get hello1
-    -&gt; Redirected to slot [11613] located at 127.0.0.1:9003
-    &quot;world1&quot;
-    127.0.0.1:9003&gt; get hello2
-    -&gt; Redirected to slot [7486] located at 127.0.0.1:9002
-    &quot;world2&quot;
-</pre></div>
-
-
-<p>ok,先这样</p><p>There are <a href="./articles/2017/08/redis集群搭建.html#disqus_thread">comments</a>.</p>          </article>
-        </aside><!-- /#featured -->
-          <section id="content" class="body">
-            <h1>Other articles</h1>
-            <hr />
-            <ol id="posts-list" class="hfeed">
+<div class="highlight"><pre><span></span>redis-server redis/9001/redis.conf …</pre></div></p>
+            <a class="readmore" href="./articles/2017/08/redis集群搭建.html">read more</a>
+<p>There are <a href="./articles/2017/08/redis集群搭建.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
+        </article></li>
         
 
  
@@ -243,6 +180,40 @@ redis-server redis/9006/redis.conf
     <span class="k">if</span> <span class="n">tz</span> <span class="ow">is</span> <span class="bp">None …</span></pre></div>
             <a class="readmore" href="./articles/2017/08/tornado中session实现.html">read more</a>
 <p>There are <a href="./articles/2017/08/tornado中session实现.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
+        </article></li>
+        
+
+ 
+        <li><article class="hentry">    
+          <header>
+            <h1><a href="./articles/2017/08/明明你也很爱我.html" rel="bookmark" title="Permalink to 明明你也很爱我">明明你也很爱我</a></h1>
+          </header>
+          
+          <div class="entry-content">
+<footer class="post-info">
+  <abbr class="published" title="2017-08-02T00:00:00+08:00">
+    三 02 八月 2017
+  </abbr>
+
+    <address class="vcard author">
+      By <a class="url fn" href="./author/honmaple.html">honmaple</a>
+    </address>
+  <p>In <a href="./category/lian/index.html">恋</a>. </p>
+<p>tags: <a href="./tag/love/index.html">love</a></p></footer><!-- /.post-info -->            
+<blockquote>
+<p>你怎么那么冷漠
+你怎么就不怕错过我
+明明你也很爱我
+为什么爱不到结果</p>
+</blockquote>
+
+<blockquote>
+<p>咫尺层城留不住，
+久相忘，
+到此偏相忆</p>
+</blockquote>
+            <a class="readmore" href="./articles/2017/08/明明你也很爱我.html">read more</a>
+<p>There are <a href="./articles/2017/08/明明你也很爱我.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
         
 
@@ -485,120 +456,22 @@ debain系,包括ubuntu,mint,kali等,使用包管理器apt-get、aptitude、dpkg;
             <a class="readmore" href="./articles/2017/06/关于网易云音乐个性推荐无法显示的问题.html">read more</a>
 <p>There are <a href="./articles/2017/06/关于网易云音乐个性推荐无法显示的问题.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
         </article></li>
-        
-
- 
-        <li><article class="hentry">    
-          <header>
-            <h1><a href="./articles/2017/05/方便的切换emacs主题.html" rel="bookmark" title="Permalink to 方便的切换emacs主题">方便的切换emacs主题</a></h1>
-          </header>
-          
-          <div class="entry-content">
-<footer class="post-info">
-  <abbr class="published" title="2017-05-23T00:00:00+08:00">
-    二 23 五月 2017
-  </abbr>
-
-    <address class="vcard author">
-      By <a class="url fn" href="./author/honmaple.html">honmaple</a>
-    </address>
-  <p>In <a href="./category/linux/index.html">Linux</a>. </p>
-<p>tags: <a href="./tag/linux/index.html">linux</a><a href="./tag/emacs/index.html">emacs</a><a href="./tag/elisp/index.html">elisp</a></p></footer><!-- /.post-info -->            
-
-<p>作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，*M-x*,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了*hydra*这个插件,也想实践一下</p>
-
-<p>获取主题列表
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">maple-cycle-themes</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="p">(</span><span class="nv">custom-available-themes</span><span class="p">)))</span>
-</pre></div>
-</p>
-
-<p>获取当前主题索引
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">cl-position</span> <span class="p">(</span><span class="nf">car</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="nv">custom-enabled-themes</span><span class="p">))</span> <span class="nv">maple-cycle-themes</span> <span class="nb">:test</span> <span class="ss">&#39;equal</span><span class="p">)</span>
-</pre></div>
-</p>
-
-<p>获取下一个主题
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index</span>
-        <span class="p">(</span><span class="nf">+</span> <span class="mi">1</span> <span class="nv">maple-current-theme-index</span><span class="p">))</span>
-  <span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme</span> <span class="p">(</span><span class="nf">nth</span> <span class="nv">maple-current-theme-index</span> <span class="nv">maple-cycle-themes</span><span class="p">))</span>
-</pre></div>
-</p>
-
-<p>加载主题
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">load-theme</span> <span class="p">(</span><span class="nf">intern</span> <span class="nv">maple-current-theme</span><span class="p">)</span> <span class="no">t</span><span class="p">)</span>
-</pre></div>
-</p>
-
-<p>最后得到这样的函数
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/cycle-theme</span> <span class="p">(</span><span class="nv">num</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index</span>
-          <span class="p">(</span><span class="nf">+</span> <span class="nv">num</span>
-             <span class="p">(</span><span class="nv">cl-position</span>
-              <span class="p">(</span><span class="nf">car</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="nv">custom-enabled-themes</span><span class="p">))</span> <span class="nv">maple-cycle-themes</span> <span class="nb">:test</span> <span class="ss">&#39;equal</span><span class="p">)))</span>
-    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nf">&gt;=</span> <span class="nv">maple-current-theme-index</span> <span class="p">(</span><span class="nf">length</span> <span class="nv">maple-cycle-themes</span><span class="p">))</span>
-      <span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index …</span></pre></div></p>
-            <a class="readmore" href="./articles/2017/05/方便的切换emacs主题.html">read more</a>
-<p>There are <a href="./articles/2017/05/方便的切换emacs主题.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
-        </article></li>
-        
-
- 
-        <li><article class="hentry">    
-          <header>
-            <h1><a href="./articles/2017/05/那些年我们一起写的诗.html" rel="bookmark" title="Permalink to 那些年我们一起写的诗">那些年我们一起写的诗</a></h1>
-          </header>
-          
-          <div class="entry-content">
-<footer class="post-info">
-  <abbr class="published" title="2017-05-17T00:00:00+08:00">
-    三 17 五月 2017
-  </abbr>
-
-    <address class="vcard author">
-      By <a class="url fn" href="./author/honmaple.html">honmaple</a>
-    </address>
-  <p>In <a href="./category/hui-yi/index.html">回忆</a>. </p>
-<p>tags: <a href="./tag/sheng-huo-sui-bi/index.html">生活随笔</a><a href="./tag/shi/index.html">诗</a></p></footer><!-- /.post-info -->            
-<ul>
-<li>其实世界上本没有试，考得人多了，也便成了试
-</li>
-<li>喝自己的水，让别人喝酒去吧！
-</li>
-<li>春游只是一场旅行，不在乎目的地（呈贡新校区）在乎的只是周末的作业和做作业的心情，让作业去旅行…
-</li>
-<li>忘记或是失忆…都是一场美丽
-</li>
-<li>黑夜如此短暂，仅在闭眼睁眼之间，却不知黑暗之中，已有人迷失方向，正在苦苦寻觅黎明前的光亮
-</li>
-<li>人生总有欢乐，亦有痛苦，我们本是为了活着而活着，活着，才有希望，死亡，或许能够躲避痛苦，但也将永远长眠于墓地，无法品味人生的酸甜苦辣
-</li>
-<li>问君能有几多愁，恰似一江春水向东流；问君能有几多愁，恰似一群太监上青楼；问君能有几多愁，恰似一代天骄热泪流 ；问君能有几多愁，恰似三中作业多如牛。作业多，愁啊！
-</li>
-<li>对内宣传实力如虎，对外抗议胆小如鼠
-</li>
-<li>天朗、气清、月明、人中：夜迹…血月
-</li>
-<li>众人皆白，唯我独黑
-</li>
-<li>众人皆醉，唯我独醒
-</li>
-<li>战争中出英雄，和平中出贪官，不在战争中爆发，就在和平中灭亡
-</li>
-<li>人生就像是在走一条很长很长的路，两只脚唯有不断超越对方，才能前进；两只脚不断躲避对方，只能后退
-</li>
-<li>生命如鸡肋，食之无味，弃之可惜
-</li>
-<li>拎起屠刀，让佛祖说去吧
-</li>
-<li>山脚有雨山无雨，眼中有泪眼无泪 …</li></ul>
-            <a class="readmore" href="./articles/2017/05/那些年我们一起写的诗.html">read more</a>
-<p>There are <a href="./articles/2017/05/那些年我们一起写的诗.html#disqus_thread">comments</a>.</p>          </div><!-- /.entry-content -->
-        </article></li>
-<p class="paginator">
-    Page 1 / 13
-        <a href="./index2.html">&raquo;</a>
-</p>
+  <ul class="pagination">
+      <li class="active"><a href="./index.html">1</a></li>
+      <li ><a href="./index2.html">2</a></li>
+      <li ><a href="./index3.html">3</a></li>
+      <li ><a href="./index4.html">4</a></li>
+      <li ><a href="./index5.html">5</a></li>
+      <li ><a href="./index6.html">6</a></li>
+      <li ><a href="./index7.html">7</a></li>
+      <li ><a href="./index8.html">8</a></li>
+      <li ><a href="./index9.html">9</a></li>
+      <li ><a href="./index10.html">10</a></li>
+      <li ><a href="./index11.html">11</a></li>
+      <li ><a href="./index12.html">12</a></li>
+      <li ><a href="./index13.html">13</a></li>
+      <li class="next"><a href="./index2.html">&raquo;</a></li>
+  </ul>
             </ol><!-- /#posts-list -->
           </section><!-- /#content -->
       </div>
@@ -613,8 +486,8 @@ debain系,包括ubuntu,mint,kali等,使用包管理器apt-get、aptitude、dpkg;
                 <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
                 <li><a href="https://honmaple.com">个人博客</a></li>
               <li style="width:625px;margin-top:10px;border:0px;color:#666;">
-                Copyright © 2015-2017 honmaple. All rights reserved.
-                <a href="https://github.com/honmaple" target="_blank" style="display:inline;border:0px;padding:0px;font-size:11px;color:#999;margin-left:60px;">关于我</a>
+                Copyright © 2015-2017 honmaple.
+                <a href="https://github.com/honmaple" target="_blank" style="display:inline;border:0px;padding:0px;font-size:11px;color:#999;margin-left:10px;">关于我</a>
                 <span> | </span>
                 <a href="https://github.com/honmaple" target="_blank" style="display:inline;border:0px;padding:0px;font-size:11px;color:#999;">GitHub</a>
                 <span> | </span>
