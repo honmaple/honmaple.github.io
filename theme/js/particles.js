@@ -1,3 +1,8 @@
+$(function() {
+  $('.navbar-toggle').click(function() {
+    $('nav').fadeToggle("slow");
+  });
+});
 function dispatch() {
   var q = document.getElementById("search");
   if (q.value !== "") {

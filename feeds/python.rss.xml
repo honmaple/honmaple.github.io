@@ -1,5 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Python</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/python.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-04-16T00:00:00+08:00</updated><entry><title>基于whoosh实现的flask全文搜索插件</title><link href="http://honmaple.org/articles/2017/04/%E5%9F%BA%E4%BA%8Ewhoosh%E5%AE%9E%E7%8E%B0%E7%9A%84flask%E5%85%A8%E6%96%87%E6%90%9C%E7%B4%A2%E6%8F%92%E4%BB%B6.html" rel="alternate"></link><published>2017-04-16T00:00:00+08:00</published><updated>2017-04-16T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-04-16:/articles/2017/04/基于whoosh实现的flask全文搜索插件.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Python</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/python.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-07-26T00:00:00+08:00</updated><entry><title>一个简单的数据分组算法</title><link href="http://honmaple.org/articles/2017/07/%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E6%95%B0%E6%8D%AE%E5%88%86%E7%BB%84%E7%AE%97%E6%B3%95.html" rel="alternate"></link><published>2017-07-26T00:00:00+08:00</published><updated>2017-07-26T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-07-26:/articles/2017/07/一个简单的数据分组算法.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-14416345"&gt;获取开始时间&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-23531211"&gt;时间分组&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+&lt;p&gt;之前有这么一个需求
+&lt;blockquote&gt;
+&lt;p&gt;将数据按照时间分组，比如说每5分钟为一组，或者每30分钟为一组，开始时间如果分钟数大于等于30分钟，则设置为30,如果小于30,则设置为0（也可以设置为更复杂的逻辑）&lt;/p&gt;
+
+&lt;p&gt;当然中间还有一些数据的统计，分析和计算暂时不管&lt;/p&gt;
+&lt;/blockquote&gt;&lt;/p&gt;
+
+&lt;h1 id="org-14416345"&gt;获取开始时间&lt;/h1&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_start_date&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start_date&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;time&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fromtimestamp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start_date&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;minute&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="mi"&gt;30&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;minute&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;30&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;minute&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;year&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;month&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;day&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;hour&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;minute&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                          &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mktime …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-14416345"&gt;获取开始时间&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-23531211"&gt;时间分组&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+&lt;p&gt;之前有这么一个需求
+&lt;blockquote&gt;
+&lt;p&gt;将数据按照时间分组，比如说每5分钟为一组，或者每30分钟为一组，开始时间如果分钟数大于等于30分钟，则设置为30,如果小于30,则设置为0（也可以设置为更复杂的逻辑）&lt;/p&gt;
+
+&lt;p&gt;当然中间还有一些数据的统计，分析和计算暂时不管&lt;/p&gt;
+&lt;/blockquote&gt;&lt;/p&gt;
+
+&lt;h1 id="org-14416345"&gt;获取开始时间&lt;/h1&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_start_date&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start_date&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;time&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fromtimestamp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start_date&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;minute&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="mi"&gt;30&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;minute&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;30&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;minute&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;year&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;month&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;day&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;hour&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;minute&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                          &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mktime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start_date&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;timetuple&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;start_date&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;开始时间很简单，需要注意的是设置分钟，需要将时间戳转换为datetime，设置分钟数后再将datetime转为时间戳
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fromtimestamp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start_date&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;year&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;month&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;day&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;hour&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;minute&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mktime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start_date&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;timetuple&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/p&gt;
+
+&lt;h1 id="org-23531211"&gt;时间分组&lt;/h1&gt;
+&lt;p&gt;直接给出源码
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;gen_date_group&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start_date&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;datas&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;interval&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="c1"&gt;# datas是一组含时间戳的数据&lt;/span&gt;
+        &lt;span class="n"&gt;interval&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;interval&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="c1"&gt;# 获取开始时间&lt;/span&gt;
+        &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;get_start_date&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start_date&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;end_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;interval&lt;/span&gt;
+
+        &lt;span class="n"&gt;count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+        &lt;span class="n"&gt;type_count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;datas&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;date&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="n"&gt;end_date&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start_date&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;get_count_average&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;type_count&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;count&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+                &lt;span class="c1"&gt;# 一些数据统计与计算&lt;/span&gt;
+                &lt;span class="n"&gt;type_count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;type_count&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+                &lt;span class="n"&gt;count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;count&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+                &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;end_date&lt;/span&gt;
+                &lt;span class="n"&gt;end_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;interval&lt;/span&gt;
+                &lt;span class="c1"&gt;# 注意这里，即使dates里没有某个时间区间的数据，也要不断循环分组&lt;/span&gt;
+                &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;date&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="n"&gt;end_date&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                    &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start_date&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                    &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;end_date&lt;/span&gt;
+                    &lt;span class="n"&gt;end_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;interval&lt;/span&gt;
+            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;type_count&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;type_count&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+                &lt;span class="n"&gt;count&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;count&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/p&gt;</content><category term="python"></category></entry><entry><title>基于whoosh实现的flask全文搜索插件</title><link href="http://honmaple.org/articles/2017/04/%E5%9F%BA%E4%BA%8Ewhoosh%E5%AE%9E%E7%8E%B0%E7%9A%84flask%E5%85%A8%E6%96%87%E6%90%9C%E7%B4%A2%E6%8F%92%E4%BB%B6.html" rel="alternate"></link><published>2017-04-16T00:00:00+08:00</published><updated>2017-04-16T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-04-16:/articles/2017/04/基于whoosh实现的flask全文搜索插件.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-91606835"&gt;Quickstart&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-75050517"&gt;Usage&lt;/a&gt;
 &lt;ul&gt;
@@ -1262,382 +1348,4 @@
 :  "[00:12.98]\u600e\u4e48\u9690\u85cf\u6211\u7684\u60b2\u4f24\n[00:19.10]\u5931\u53bb\u4f60\u7684\u5730\u65b9\n[00:25.61]\u4f60\u7684\u53d1\u9999\u6563\u7684\u5306\u5fd9\n[00:32.06]\u6211\u5df2\u7ecf\u8ddf\u4e0d\u4e0a\n[00:38.49]\u95ed\u4e0a\u773c\u775b\u8fd8\u80fd\u770b\u89c1\n[00:44.90]\u4f60\u79bb\u53bb\u7684\u75d5\u8ff9\n[00:51.21]\u5728\u6708\u5149\u4e0b\u4e00\u76f4\u627e\u5bfb\u90a3\u60f3\u5ff5\u7684\u8eab\u5f71\n[01:04.48]\u5982\u679c\u8bf4\u5206\u624b\u662f\u82e6\u75db\u7684\u8d77\u70b9\n[01:09.98]\u90a3\u5728\u7ec8\u70b9\u4e4b\u524d\n[01:13.25]\u6211\u613f\u610f\u518d\u7231\u4e00\u904d\n[01:17.25]\u60f3\u8981\u5bf9\u4f60\u8bf4\u7684\n[01:19.89]\u4e0d\u6562\u8bf4\u7684\u7231\n[01:23.52]\u4f1a\u4e0d\u4f1a\u6709\u4eba\u53ef\u4ee5\u660e\u767d\n[01:29.54]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fd8\u8bb0\u4f60\n[01:35.83]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[01:42.27]\u60f3\u7740\u90a3\u4e00\u5929\u4f1a\u6709\u4eba\u4ee3\u66ff\n[01:49.10]\u8ba9\u6211\u4e0d\u518d\u60f3\u5ff5\u4f60\n[01:55.10]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fae\u5fae\u7b11\n[02:01.51]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[02:07.81]\u53c8\u60f3\u4e86\u4e00\u904d\u4f60\u6e29\u67d4\u7684\u8138\n[02:14.54]\u5728\u6211\u5fd8\u8bb0\u4e4b\u524d\n[02:30.42]\u600e\u4e48\u9690\u85cf\u6211\u7684\u60b2\u4f24\n[02:36.77]\u5931\u53bb\u4f60\u7684\u5730\u65b9\n[02:43.17]\u4f60\u7684\u53d1\u9999\u6563\u7684\u5306\u5fd9\n[02:49.56]\u6211\u5df2\u7ecf\u8ddf\u4e0d\u4e0a\n[02:56.09]\u95ed\u4e0a\u773c\u775b\u8fd8\u80fd\u770b\u89c1\n[03:02.20]\u4f60\u79bb\u53bb\u7684\u75d5\u8ff9\n[03:08.81]\u5728\u6708\u5149\u4e0b\u4e00\u76f4\u627e\u5bfb\u90a3\u60f3\u5ff5\u7684\u8eab\u5f71\n[03:21.81]\u5982\u679c\u8bf4\u5206\u624b\u662f\u82e6\u75db\u7684\u8d77\u70b9\n[03:27.53]\u90a3\u5728\u7ec8\u70b9\u4e4b\u524d\n[03:34.82]\u6211\u613f\u610f\u518d\u7231\u4e00\u904d\n[03:34.68]\u60f3\u8981\u5bf9\u4f60\u8bf4\u7684\n[03:37.69]\u4e0d\u6562\u8bf4\u7684\u7231\n[03:41.11]\u4f1a\u4e0d\u4f1a\u6709\u4eba\u53ef\u4ee5\u660e\u767d\n[03:47.07]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fd8\u8bb0\u4f60\n[03:53.54]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[03:59.73]\u60f3\u7740\u90a3\u4e00\u5929\u4f1a\u6709\u4eba\u4ee3\u66ff\n[04:06.86]\u8ba9\u6211\u4e0d\u518d\u60f3\u5ff5\u4f60\n[04:12.96]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fae\u5fae\u7b11\n[04:19.08]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[04:25.53]\u53c8\u60f3\u4e86\u4e00\u904d\u4f60\u6e29\u67d4\u7684\u8138\n[04:32.24]\u5728\u6211\u5fd8\u8bb0\u4e4b\u524d\n\n[04:38.34]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fd8\u8bb0\u4f60\n[04:45.05]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[04:51.10]\u60f3\u7740\u90a3\u4e00\u5929\u4f1a\u6709\u4eba\u4ee3\u66ff\n[04:58.01]\u8ba9\u6211\u4e0d\u518d\u60f3\u5ff5\u4f60\n[05:03.89]\u6211\u4f1a\u53d1\u7740\u5446\u7136\u540e\u5fae\u5fae\u7b11\n[05:10.25]\u63a5\u7740\u7d27\u7d27\u95ed\u4e0a\u773c\n[05:16.70]\u53c8\u60f3\u4e86\u4e00\u904d\u4f60\u6e29\u67d4\u7684\u8138\n[05:23.50]\u5728\u6211\u5fd8\u8bb0\u4e4b\u524d\n\n[05:29.62]\u5fc3\u91cc\u7684\u773c\u6cea\n[05:32.81]\u6a21\u7cca\u4e86\u89c6\u7ebf\n[05:36.57]\u4f60\u5df2\u5feb\u770b\u4e0d\u89c1"&lt;/p&gt;
 
 &lt;p&gt;结果格式化什么的看着格式吧，这些信息对我来说足够了&lt;/p&gt;
-</content><category term="python"></category><category term="netease"></category></entry><entry><title>常用正则表达式</title><link href="http://honmaple.org/articles/2016/11/%E5%B8%B8%E7%94%A8%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F.html" rel="alternate"></link><published>2016-11-26T00:00:00+08:00</published><updated>2016-11-26T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2016-11-26:/articles/2016/11/常用正则表达式.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-24810084"&gt;校验数字的表达式&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-68614621"&gt;数字:&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-88082123"&gt;n位的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-23245767"&gt;至少n位的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-32875722"&gt;m-n位的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-84452173"&gt;零和非零开头的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-67581997"&gt;非零开头的最多带两位小数的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-227405"&gt;带1-2位小数的正数或负数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-17872313"&gt;正数、负数、和小数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-77595871"&gt;有两位小数的正实数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-44089792"&gt;有1~3位小数的正实数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-39384599"&gt;非零的正整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-48937156"&gt;非零的负整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15417260"&gt;非负整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-81637266"&gt;非正整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-92862782"&gt;非负浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-66010335"&gt;非正浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-90247340"&gt;正浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-91044861"&gt;负浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-56655652"&gt;浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-49927097"&gt;校验字符的表达式&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-29466235"&gt;汉字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-96235257"&gt;英文和数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-23152451"&gt;长度为3-20的所有字符：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-88736945"&gt;由26个英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-36607030"&gt;由26个大写英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-75571908"&gt;由26个小写英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-48354600"&gt;由数字和26个英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-98754743"&gt;由数字、26个英文字母或者下划线组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-14980670"&gt;中文、英文、数字包括下划线：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-12520378"&gt;中文、英文、数字但不包括下划线等符号：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-61613364"&gt;可以输入含有^%&amp;',;=?$\"等字符：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-29164127"&gt;禁止输入含有~的字符：&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-17767699"&gt;特殊需求表达式&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-23773970"&gt;Email地址：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-27470271"&gt;域名 …&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-24810084"&gt;校验数字的表达式&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-68614621"&gt;数字:&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-88082123"&gt;n位的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-23245767"&gt;至少n位的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-32875722"&gt;m-n位的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-84452173"&gt;零和非零开头的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-67581997"&gt;非零开头的最多带两位小数的数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-227405"&gt;带1-2位小数的正数或负数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-17872313"&gt;正数、负数、和小数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-77595871"&gt;有两位小数的正实数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-44089792"&gt;有1~3位小数的正实数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-39384599"&gt;非零的正整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-48937156"&gt;非零的负整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-15417260"&gt;非负整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-81637266"&gt;非正整数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-92862782"&gt;非负浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-66010335"&gt;非正浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-90247340"&gt;正浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-91044861"&gt;负浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-56655652"&gt;浮点数：&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-49927097"&gt;校验字符的表达式&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-29466235"&gt;汉字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-96235257"&gt;英文和数字：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-23152451"&gt;长度为3-20的所有字符：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-88736945"&gt;由26个英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-36607030"&gt;由26个大写英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-75571908"&gt;由26个小写英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-48354600"&gt;由数字和26个英文字母组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-98754743"&gt;由数字、26个英文字母或者下划线组成的字符串：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-14980670"&gt;中文、英文、数字包括下划线：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-12520378"&gt;中文、英文、数字但不包括下划线等符号：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-61613364"&gt;可以输入含有^%&amp;',;=?$\"等字符：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-29164127"&gt;禁止输入含有~的字符：&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-17767699"&gt;特殊需求表达式&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-23773970"&gt;Email地址：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-27470271"&gt;域名：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-67169624"&gt;InternetURL：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-39449637"&gt;手机号码：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-36164857"&gt;电话号码("XXX-XXXXXXX"、"XXXX-XXXXXXXX"、"XXX-XXXXXXX"、"XXX-XXXXXXXX"、"XXXXXXX"和"XXXXXXXX)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-73780072"&gt;国内电话号码(0511-4405222、021-87888822)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-82279761"&gt;身份证号(15位、18位数字)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-94075075"&gt;短身份证号码(数字、字母x结尾)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-80279310"&gt;帐号是否合法(字母开头，允许5-16字节，允许字母数字下划线)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-58335079"&gt;密码(以字母开头，长度在6~18之间，只能包含字母、数字和下划线)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-6232617"&gt;强密码(必须包含大小写字母和数字的组合，不能使用特殊字符，长度在8-10之间)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-7478858"&gt;日期格式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-36311415"&gt;一年的12个月(01～09和1～12)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-12896869"&gt;一个月的31天(01～09和1～31)：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-47059185"&gt;钱的输入格式：&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-79480570"&gt;有四种钱的表示形式我们可以接受:"10000.00" 和 "10,000.00", 和没有 "分" 的 "10000" 和 "10,000"：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-3541350"&gt;这表示任意一个不以0开头的数字,但是,这也意味着一个字符"0"不通过,所以我们采用下面的形式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-22800531"&gt;一个0或者一个不以0开头的数字.我们还可以允许开头有一个负号：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-48706425"&gt;这表示一个0或者一个可能为负的开头不为0的数字.让用户以0开头好了.把负号的也去掉,因为钱总不能是负的吧.下面我们要加的是说明可能的小数部分：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-7477349"&gt;必须说明的是,小数点后面至少应该有1位数,所以"10."是不通过的,但是 "10" 和 "10.2" 是通过的：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-45679000"&gt;这样我们规定小数点后面必须有两位,如果你认为太苛刻了,可以这样：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-93262392"&gt;这样就允许用户只写一位小数.下面我们该考虑数字中的逗号了,我们可以这样：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-59008161"&gt;1到3个数字,后面跟着任意个 逗号+3个数字,逗号成为可选,而不是必须：&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-36312679"&gt;xml文件：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-41139879"&gt;中文字符的正则表达式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-18001785"&gt;双字节字符：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-95426405"&gt;空白行的正则表达式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-10726984"&gt;HTML标记的正则表达式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-90538463"&gt;首尾空白字符的正则表达式：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-88441006"&gt;腾讯QQ号：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-1999714"&gt;中国邮政编码：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-57176613"&gt;IP地址：&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-57176613"&gt;IP地址：&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-
-
-&lt;h2 id="org-24810084"&gt;校验数字的表达式&lt;/h2&gt;
-&lt;h3 id="org-68614621"&gt;数字:&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[0-9]*$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-88082123"&gt;n位的数字：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^\d{n}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-23245767"&gt;至少n位的数字：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^\d{n,}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-32875722"&gt;m-n位的数字：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^\d{m,n}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-84452173"&gt;零和非零开头的数字：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^(0|[1-9][0-9]*)$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-67581997"&gt;非零开头的最多带两位小数的数字：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^([1-9][0-9]*)+(.[0-9]{1,2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-227405"&gt;带1-2位小数的正数或负数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^(\-)?\d+(\.\d{1,2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-17872313"&gt;正数、负数、和小数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^(\-|\+)?\d+(\.\d+)?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-77595871"&gt;有两位小数的正实数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[0-9]+(.[0-9]{2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-44089792"&gt;有1~3位小数的正实数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[0-9]+(.[0-9]{1,3})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-39384599"&gt;非零的正整数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[1-9]\d*$ 或 ^([1-9][0-9]*){1,3}$ 或 ^\+?[1-9][0-9]*$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-48937156"&gt;非零的负整数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^\-[1-9][]0-9&amp;quot;*$ 或 ^-[1-9]\d*$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-15417260"&gt;非负整数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^\d+$ 或 ^[1-9]\d*|0$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-81637266"&gt;非正整数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^-[1-9]\d*|0$ 或 ^((-\d+)|(0+))$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-92862782"&gt;非负浮点数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^\d+(\.\d+)?$ 或 ^[1-9]\d*\.\d*|0\.\d*[1-9]\d*|0?\.0+|0$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-66010335"&gt;非正浮点数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^((-\d+(\.\d+)?)|(0+(\.0+)?))$ 或 ^(-([1-9]\d*\.\d*|0\.\d*[1-9]\d*))|0?\.0+|0$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-90247340"&gt;正浮点数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[1-9]\d*\.\d*|0\.\d*[1-9]\d*$ 或 ^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-91044861"&gt;负浮点数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^-([1-9]\d*\.\d*|0\.\d*[1-9]\d*)$ 或 ^(-(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*)))$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-56655652"&gt;浮点数：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^(-?\d+)(\.\d+)?$ 或 ^-?([1-9]\d*\.\d*|0\.\d*[1-9]\d*|0?\.0+|0)$
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2 id="org-49927097"&gt;校验字符的表达式&lt;/h2&gt;
-&lt;h3 id="org-29466235"&gt;汉字：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[\u4e00-\u9fa5]{0,}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-96235257"&gt;英文和数字：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[A-Za-z0-9]+$ 或 ^[A-Za-z0-9]{4,40}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-23152451"&gt;长度为3-20的所有字符：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^.{3,20}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-88736945"&gt;由26个英文字母组成的字符串：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[A-Za-z]+$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-36607030"&gt;由26个大写英文字母组成的字符串：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[A-Z]+$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-75571908"&gt;由26个小写英文字母组成的字符串：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[a-z]+$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-48354600"&gt;由数字和26个英文字母组成的字符串：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[A-Za-z0-9]+$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-98754743"&gt;由数字、26个英文字母或者下划线组成的字符串：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^\w+$ 或 ^\w{3,20}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-14980670"&gt;中文、英文、数字包括下划线：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[\u4E00-\u9FA5A-Za-z0-9_]+$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-12520378"&gt;中文、英文、数字但不包括下划线等符号：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[\u4E00-\u9FA5A-Za-z0-9]+$ 或 ^[\u4E00-\u9FA5A-Za-z0-9]{2,20}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-61613364"&gt;可以输入含有^%&amp;',;=?$\"等字符：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    [^%&amp;amp;&amp;#39;,;=?$\x22]+
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-29164127"&gt;禁止输入含有~的字符：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    [^~\x22]+
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;h2 id="org-17767699"&gt;特殊需求表达式&lt;/h2&gt;
-&lt;h3 id="org-23773970"&gt;Email地址：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-27470271"&gt;域名：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    [a-zA-Z0-9][-a-zA-Z0-9]{0,62}(/.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+/.?
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-67169624"&gt;InternetURL：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    [a-zA-z]+://[^\s]* 或 ^http://([\w-]+\.)+[\w-]+(/[\w-./?%&amp;amp;=]*)?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-39449637"&gt;手机号码：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-36164857"&gt;电话号码("XXX-XXXXXXX"、"XXXX-XXXXXXXX"、"XXX-XXXXXXX"、"XXX-XXXXXXXX"、"XXXXXXX"和"XXXXXXXX)：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^(\(\d{3,4}-)|\d{3.4}-)?\d{7,8}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-73780072"&gt;国内电话号码(0511-4405222、021-87888822)：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    \d{3}-\d{8}|\d{4}-\d{7}
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-82279761"&gt;身份证号(15位、18位数字)：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^\d{15}|\d{18}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-94075075"&gt;短身份证号码(数字、字母x结尾)：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^([0-9]){7,18}(x|X)?$ 或 ^\d{8,18}|[0-9x]{8,18}|[0-9X]{8,18}?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-80279310"&gt;帐号是否合法(字母开头，允许5-16字节，允许字母数字下划线)：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[a-zA-Z][a-zA-Z0-9_]{4,15}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-58335079"&gt;密码(以字母开头，长度在6~18之间，只能包含字母、数字和下划线)：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[a-zA-Z]\w{5,17}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-6232617"&gt;强密码(必须包含大小写字母和数字的组合，不能使用特殊字符，长度在8-10之间)：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,10}$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-7478858"&gt;日期格式：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^\d{4}-\d{1,2}-\d{1,2}
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-36311415"&gt;一年的12个月(01～09和1～12)：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^(0?[1-9]|1[0-2])$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-12896869"&gt;一个月的31天(01～09和1～31)：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^((0?[1-9])|((1|2)[0-9])|30|31)$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-47059185"&gt;钱的输入格式：&lt;/h3&gt;
-&lt;h4 id="org-79480570"&gt;有四种钱的表示形式我们可以接受:"10000.00" 和 "10,000.00", 和没有 "分" 的 "10000" 和 "10,000"：&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[1-9][0-9]*$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h4 id="org-3541350"&gt;这表示任意一个不以0开头的数字,但是,这也意味着一个字符"0"不通过,所以我们采用下面的形式：&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^(0|[1-9][0-9]*)$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h4 id="org-22800531"&gt;一个0或者一个不以0开头的数字.我们还可以允许开头有一个负号：&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^(0|-?[1-9][0-9]*)$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h4 id="org-48706425"&gt;这表示一个0或者一个可能为负的开头不为0的数字.让用户以0开头好了.把负号的也去掉,因为钱总不能是负的吧.下面我们要加的是说明可能的小数部分：&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[0-9]+(.[0-9]+)?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h4 id="org-7477349"&gt;必须说明的是,小数点后面至少应该有1位数,所以"10."是不通过的,但是 "10" 和 "10.2" 是通过的：&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[0-9]+(.[0-9]{2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h4 id="org-45679000"&gt;这样我们规定小数点后面必须有两位,如果你认为太苛刻了,可以这样：&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[0-9]+(.[0-9]{1,2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h4 id="org-93262392"&gt;这样就允许用户只写一位小数.下面我们该考虑数字中的逗号了,我们可以这样：&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^[0-9]{1,3}(,[0-9]{3})*(.[0-9]{1,2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h4 id="org-59008161"&gt;1到3个数字,后面跟着任意个 逗号+3个数字,逗号成为可选,而不是必须：&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^([0-9]+|[0-9]{1,3}(,[0-9]{3})*)(.[0-9]{1,2})?$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-36312679"&gt;xml文件：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^([a-zA-Z]+-?)+[a-zA-Z0-9]+\\.[x|X][m|M][l|L]$
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-41139879"&gt;中文字符的正则表达式：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    [\u4e00-\u9fa5]
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-18001785"&gt;双字节字符：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    [^\x00-\xff] (包括汉字在内，可以用来计算字符串的长度(一个双字节字符长度计2，ASCII字符计1))
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-95426405"&gt;空白行的正则表达式：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    \n\s*\r (可以用来删除空白行)
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-10726984"&gt;HTML标记的正则表达式：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="err"&gt;&amp;lt;&lt;/span&gt;(\S*?)[^&amp;gt;]*&amp;gt;.*?&lt;span class="err"&gt;&amp;lt;&lt;/span&gt;/\1&amp;gt;|&lt;span class="nt"&gt;&amp;lt;.&lt;/span&gt;&lt;span class="err"&gt;*?&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-90538463"&gt;首尾空白字符的正则表达式：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ^\s*|\s*$或(^\s*)|(\s*$) (可以用来删除行首行尾的空白字符(包括空格、制表符、换页符等等)，非常有用的表达式)
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-88441006"&gt;腾讯QQ号：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    [1-9][0-9]{4,} (腾讯QQ号从10000开始)
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-1999714"&gt;中国邮政编码：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    [1-9]\d{5}(?!\d) (中国邮政编码为6位数字)
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-57176613"&gt;IP地址：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    \d+\.\d+\.\d+\.\d+ (提取IP地址时有用)
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h3 id="org-57176613"&gt;IP地址：&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ((?:(?:25[0-5]|2[0-4]\\d|[01]?\\d?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d?\\d))
-&lt;/pre&gt;&lt;/div&gt;
-</content><category term="python"></category><category term="regex"></category></entry></feed>
+</content><category term="python"></category><category term="netease"></category></entry></feed>
