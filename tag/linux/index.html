@@ -65,6 +65,89 @@
         <div class="col-md-offset-2 col-md-8" style="padding:0;">
           <div class="col-md-offset-1 col-md-10" style="padding:0;">
             <article>
+                <h1 class="entry-title"><a href="../../articles/2017/10/ansible快速部署加速方案.html" rel="bookmark" title="Permalink to ansible快速部署加速方案">ansible快速部署加速方案</a></h1>
+                <div class="entry-content">
+<header class="entry-info">
+  <span class="entry-info-date" title="2017-10-08T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    日 08 十月 2017
+  </span>
+  <span class="entry-info-sep hidden-xs">|</span>
+  <span class="entry-info-author hidden-xs">
+    <i class="fa fa-user-o"></i>
+    By <a href="../../author/honmaple.html">honmaple</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-category">
+    <i class="fa fa-folder-o"></i>
+    In <a href="../../category/linux/index.html">Linux</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-tag">
+    <i class="fa fa-bookmark-o"></i>
+    tags:
+    <a href="../../tag/linux/index.html">linux</a>
+    <a href="../../tag/ansible/index.html">ansible</a>
+  </span>
+</header>                    <hr class="entry-hr" />
+                    <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-67004882">加速</a>
+<ul>
+<li><a href="#org-47177503">问题</a></li>
+<li><a href="#org-5633837">方案</a></li>
+</ul></li>
+<li><a href="#org-65126650">目标</a>
+<ul>
+<li><a href="#org-89630061">web界面</a></li>
+<li><a href="#org-9953268">任务队列</a></li>
+</ul></li>
+</ul>
+</div></div>
+
+
+<p>ansible是基于Python的<b>自动化部署</b> 方案,但是目前只是通过命令行
+<div class="highlight"><pre><span></span>ansible -i hosts all -a &#39;uptime&#39;
+# or
+ansible-playbook -i hosts playbook.yml -e &#39;args&#39; -t deploy
+</pre></div>
+
+实现自动化部署.</p>
+
+<p>长此以往，虽然可以实现所谓的自动化，但产品业务线多且杂的情况下，项目很难维护，更不用说以文件为存储的表现形式很差,针对目前使用ansible的经验以及使用中的困难,可以针对性的提出一些解决方案</p>
+
+<h1 id="org-67004882">加速</h1>
+
+<h2 id="org-47177503">问题</h2>
+<p>自动化部署其中最大的障碍就是<b>网络</b> 的原因</p>
+
+<p>其中需要通过网络上传一些模板文件,有的甚至还需要上传一些压缩包,虽然说几MB的东西很快就能上传成功，但如果把这上传文件所需要的2秒乘以上百，上千台主机呢,更不用说ansible的表现形式就是一个任务一个任务的往下执行,假如在上传模板这一步卡住(等待所有服务器上传成功),这时某台未模板化的服务器的某服务需要重启，是不是会出问题呢</p>
+
+<h2 id="org-5633837">方案</h2>
+<p>针对这一问题,目前想到的解决方案如下:</p>
+<ul>
+<li><b>适当增加fork数</b>
+<p>目前fork数默认为50，可以适当增加</p></li>
+<li><b>大文件使用内网(外网)下载</b>
+<p>从部署机上上传文件可能会出现这样那样的问题，尤其是上传到国外服务器时经常会出现ansible playbook的任务卡住问题(其实是正在以几KB/s的龟速运行)，所以其中大于xxMB的文件(压缩包)全部使用从远程服务器上下载方式,并且全部进行加密处理</p></li>
+<li><b>把超过几百台服务器的节点分组多进程运行</b>
+<p>服务器一旦多了，对应任务的等待时间也就多了，所以将500台的节点分为十组，每组50台,使用多进程分别同时运行，这样可以有效减少任务等待时间,需要注意每组运行失败的服务器。</p></li>
+<li><b>把经常出问题或者网络不太好的节点放到最后运行</b>
+<p>像中国移动以及香港，国外的某些节点在运行ansible playbook的时候总会或多或少的出些问题,这些节点可以考虑放到最后,并且需要找出问题原因进行优化</p>
+</li>
+</ul>
+<h1 id="org-65126650">目标</h1>
+
+<h2 id="org-89630061">web界面</h2>
+<p>使用过ansible的同学一定知道ansible-tower，它是ansible的web方式部署，通过web界面就可以添加删除任务,并且运行ansible playbook,可惜，它是收费的 /捂脸</p>
+
+<h2 id="org-9953268">任务队列</h2>
+<p>把ansible playbook放到任务队列里，由消费者去消费对应的任务</p>
+
+<p>未完待续...</p>
+<p>There are <a href="../../articles/2017/10/ansible快速部署加速方案.html#disqus_thread">comments</a>.</p>                </div>
+            </article>
+                <ul class="entry-list">
+            <li><article>
                 <h1 class="entry-title"><a href="../../articles/2017/08/redis集群搭建.html" rel="bookmark" title="Permalink to redis集群搭建">redis集群搭建</a></h1>
                 <div class="entry-content">
 <header class="entry-info">
@@ -89,8 +172,8 @@
     <a href="../../tag/linux/index.html">linux</a>
     <a href="../../tag/redis/index.html">redis</a>
   </span>
-</header>                    <hr class="entry-hr" />
-                    <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+</header>                <hr class="entry-hr" />
+                <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
 <li><a href="#org-68386377">准备</a></li>
 <li><a href="#org-64453092">创建集群</a></li>
 <li><a href="#org-98343183">测试集群</a></li>
@@ -122,109 +205,12 @@ mkdir <span class="m">9006</span>
 <blockquote>
 <p>最小配置选项:
 <pre class="example">
-  port 9001
-  cluster-enabled yes
-  cluster-config-file node9001.conf
-  cluster-node-timeout 5000
-  appendonly yes
-</pre></p>
-</blockquote>
-
-<p>然后就可以启动redis实例了
-<div class="highlight"><pre><span></span>redis-server redis/9001/redis.conf
-redis-server redis/9002/redis.conf
-redis-server redis/9003/redis.conf
-redis-server redis/9004/redis.conf
-redis-server redis/9005/redis.conf
-redis-server redis/9006/redis.conf
-</pre></div>
-</p>
-
-<p>由于这个过程很简单而且重复,所以我写了一个脚本进行创建:
-<div class="highlight"><pre><span></span><span class="nd">@cli.command</span><span class="p">()</span>
-<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--dirs&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PATH</span><span class="p">)</span>
-<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">9001</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="n">conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;redis.conf&#39;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;port {0}</span>
-<span class="s1">cluster-enabled yes</span>
-<span class="s1">cluster-config-file nodes{0}.conf</span>
-<span class="s1">cluster-node-timeout 5000</span>
-<span class="s1">appendonly yes</span>
-<span class="s1">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-        <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;redis-server {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf</span><span class="p">))</span>
-</pre></div>
-</p>
-
-<h1 id="org-64453092">创建集群</h1>
-<p>使用redis的官方脚本<a href="https://github.com/antirez/redis/blob/unstable/src/redis-trib.rb">redis-trib</a>进行创建
-<div class="highlight"><pre><span></span>ruby redis-trib.rb create --replicas <span class="m">1</span> <span class="m">127</span>.0.0.1:9001 <span class="m">127</span>.0.0.1:9002 <span class="m">127</span>.0.0.1:9003 <span class="m">127</span>.0.0.1:9004 <span class="m">127</span>.0.0.1:9005 <span class="m">127</span>.0.0.1:9006
-</pre></div>
-
-或者接上面的脚本
-<div class="highlight"><pre><span></span><span class="n">ports</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;127.0.0.1:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;ruby redis-trib.rb create --replicas 1 {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-        <span class="n">ports</span><span class="p">)))</span>
-</pre></div>
-</p>
-
-<p>*–replicas 1*:表示为集群中的每个主节点创建一个从节点</p>
-
-<p>结果如图所示:
-<img src="https://images.honmaple.com/images/admin/show/2017/08/150264027839037.png"/></p>
-
-<p>输入*yes*
-最后查看集群是否启动成功
-<img src="https://images.honmaple.com/images/admin/show/2017/08/150264059108046.png"/></p>
-
-<h1 id="org-98343183">测试集群</h1>
-<p><b>-c</b> 选项以集群方式启动
-<div class="highlight"><pre><span></span>  $ redis-cli -c -p 7000
-    127.0.0.1:9001&gt; keys *
-    (empty list or set)
-    127.0.0.1:9001&gt; set hello world
-    OK
-    127.0.0.1:9001&gt; get hello
-    &quot;world&quot;
-    127.0.0.1:9001&gt; set hello1 world1
-    -&gt; Redirected to slot [11613] located at 127.0.0.1:9003
-    OK
-    127.0.0.1:9003&gt; get hello1
-    &quot;world1&quot;
-    127.0.0.1:9003&gt; set hello2 world2
-    -&gt; Redirected to slot [7486] located at 127.0.0.1:9002
-    OK
-    127.0.0.1:9002&gt; get hello2
-    &quot;world2&quot;
-</pre></div>
-</p>
-
-<p>进入另一个实例</p>
-
-<div class="highlight"><pre><span></span>  $ redis-cli -c -p 9002
-    127.0.0.1:9002&gt; get hello
-    -&gt; Redirected to slot [866] located at 127.0.0.1:9001
-    &quot;world&quot;
-    127.0.0.1:9001&gt; get hello1
-    -&gt; Redirected to slot [11613] located at 127.0.0.1:9003
-    &quot;world1&quot;
-    127.0.0.1:9003&gt; get hello2
-    -&gt; Redirected to slot [7486] located at 127.0.0.1:9002
-    &quot;world2&quot;
-</pre></div>
-
-
-<p>ok,先这样</p>
+  port 9001 …</pre></p></blockquote>
+                  <div class="text-center">
+                    <a class="btn entry-read-more" href="../../articles/2017/08/redis集群搭建.html">阅读全文 »</a>
+                  </div>
 <p>There are <a href="../../articles/2017/08/redis集群搭建.html#disqus_thread">comments</a>.</p>                </div>
-            </article>
-                <ul class="entry-list">
+            </article></li>
             <li><article>
                 <h1 class="entry-title"><a href="../../articles/2017/07/手机与Linux桌面文件共享.html" rel="bookmark" title="Permalink to 手机与Linux桌面文件共享">手机与Linux桌面文件共享</a></h1>
                 <div class="entry-content">
@@ -596,65 +582,6 @@ debain系,包括ubuntu …</p>
                     <a class="btn entry-read-more" href="../../articles/2017/05/晒晒我的Linux及桌面.html">阅读全文 »</a>
                   </div>
 <p>There are <a href="../../articles/2017/05/晒晒我的Linux及桌面.html#disqus_thread">comments</a>.</p>                </div>
-            </article></li>
-            <li><article>
-                <h1 class="entry-title"><a href="../../articles/2017/04/emacs实现智能注释.html" rel="bookmark" title="Permalink to emacs实现智能注释">emacs实现智能注释</a></h1>
-                <div class="entry-content">
-<header class="entry-info">
-  <span class="entry-info-date" title="2017-04-21T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    五 21 四月 2017
-  </span>
-  <span class="entry-info-sep hidden-xs">|</span>
-  <span class="entry-info-author hidden-xs">
-    <i class="fa fa-user-o"></i>
-    By <a href="../../author/honmaple.html">honmaple</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-category">
-    <i class="fa fa-folder-o"></i>
-    In <a href="../../category/linux/index.html">Linux</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-tag">
-    <i class="fa fa-bookmark-o"></i>
-    tags:
-    <a href="../../tag/emacs/index.html">emacs</a>
-    <a href="../../tag/elisp/index.html">elisp</a>
-    <a href="../../tag/linux/index.html">linux</a>
-  </span>
-</header>                <hr class="entry-hr" />
-                
-<p>之前使用emacs时遇到这么一个问题
-<blockquote>
-<p>当前行存在代码折叠时,如果想要注释,必须先选中当前行,否则只能注释代码折叠块的第一行</p>
-</blockquote></p>
-
-<p>就像这样</p>
-
-<p><img src="https://images.honmaple.com/images/admin/photo/2017/04/149274346737550.png"/></p>
-
-<p><img src="https://images.honmaple.com/images/admin/photo/2017/04/149274352705945.png"/></p>
-
-<p>基础注释函数来源于<b>stackoverflow</b>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">comment-or-uncomment-region-or-line</span> <span class="p">()</span>
-  <span class="s">&quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;</span>
-  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
-  <span class="p">(</span><span class="k">let</span> <span class="p">(</span><span class="nv">beg</span> <span class="nv">end</span><span class="p">)</span>
-    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">region-active-p</span><span class="p">)</span>
-        <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">region-beginning</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">region-end</span><span class="p">))</span>
-      <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">line-beginning-position</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">line-end-position</span><span class="p">)))</span>
-    <span class="p">(</span><span class="nv">comment-or-uncomment-region</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)))</span>
-</pre></div>
-</p>
-
-<p>在此函数的位置上进行修改,刚开始使用
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">hs-already-hidden-p</span><span class="p">)</span>
-      <span class="p">(</span><span class="nv">evil-visual-line …</span></pre></div></p>
-                  <div class="text-center">
-                    <a class="btn entry-read-more" href="../../articles/2017/04/emacs实现智能注释.html">阅读全文 »</a>
-                  </div>
-<p>There are <a href="../../articles/2017/04/emacs实现智能注释.html#disqus_thread">comments</a>.</p>                </div>
             </article></li>
   <ul class="entry-pagination">
       <li class="active"><a href="../../tag/linux/index.html">1</a></li>

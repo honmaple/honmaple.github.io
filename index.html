@@ -65,6 +65,89 @@
         <div class="col-md-offset-2 col-md-8" style="padding:0;">
           <div class="col-md-offset-1 col-md-10" style="padding:0;">
             <article>
+                <h1 class="entry-title"><a href="./articles/2017/10/ansible快速部署加速方案.html" rel="bookmark" title="Permalink to ansible快速部署加速方案">ansible快速部署加速方案</a></h1>
+                <div class="entry-content">
+<header class="entry-info">
+  <span class="entry-info-date" title="2017-10-08T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    日 08 十月 2017
+  </span>
+  <span class="entry-info-sep hidden-xs">|</span>
+  <span class="entry-info-author hidden-xs">
+    <i class="fa fa-user-o"></i>
+    By <a href="./author/honmaple.html">honmaple</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-category">
+    <i class="fa fa-folder-o"></i>
+    In <a href="./category/linux/index.html">Linux</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-tag">
+    <i class="fa fa-bookmark-o"></i>
+    tags:
+    <a href="./tag/linux/index.html">linux</a>
+    <a href="./tag/ansible/index.html">ansible</a>
+  </span>
+</header>                    <hr class="entry-hr" />
+                    <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-67004882">加速</a>
+<ul>
+<li><a href="#org-47177503">问题</a></li>
+<li><a href="#org-5633837">方案</a></li>
+</ul></li>
+<li><a href="#org-65126650">目标</a>
+<ul>
+<li><a href="#org-89630061">web界面</a></li>
+<li><a href="#org-9953268">任务队列</a></li>
+</ul></li>
+</ul>
+</div></div>
+
+
+<p>ansible是基于Python的<b>自动化部署</b> 方案,但是目前只是通过命令行
+<div class="highlight"><pre><span></span>ansible -i hosts all -a &#39;uptime&#39;
+# or
+ansible-playbook -i hosts playbook.yml -e &#39;args&#39; -t deploy
+</pre></div>
+
+实现自动化部署.</p>
+
+<p>长此以往，虽然可以实现所谓的自动化，但产品业务线多且杂的情况下，项目很难维护，更不用说以文件为存储的表现形式很差,针对目前使用ansible的经验以及使用中的困难,可以针对性的提出一些解决方案</p>
+
+<h1 id="org-67004882">加速</h1>
+
+<h2 id="org-47177503">问题</h2>
+<p>自动化部署其中最大的障碍就是<b>网络</b> 的原因</p>
+
+<p>其中需要通过网络上传一些模板文件,有的甚至还需要上传一些压缩包,虽然说几MB的东西很快就能上传成功，但如果把这上传文件所需要的2秒乘以上百，上千台主机呢,更不用说ansible的表现形式就是一个任务一个任务的往下执行,假如在上传模板这一步卡住(等待所有服务器上传成功),这时某台未模板化的服务器的某服务需要重启，是不是会出问题呢</p>
+
+<h2 id="org-5633837">方案</h2>
+<p>针对这一问题,目前想到的解决方案如下:</p>
+<ul>
+<li><b>适当增加fork数</b>
+<p>目前fork数默认为50，可以适当增加</p></li>
+<li><b>大文件使用内网(外网)下载</b>
+<p>从部署机上上传文件可能会出现这样那样的问题，尤其是上传到国外服务器时经常会出现ansible playbook的任务卡住问题(其实是正在以几KB/s的龟速运行)，所以其中大于xxMB的文件(压缩包)全部使用从远程服务器上下载方式,并且全部进行加密处理</p></li>
+<li><b>把超过几百台服务器的节点分组多进程运行</b>
+<p>服务器一旦多了，对应任务的等待时间也就多了，所以将500台的节点分为十组，每组50台,使用多进程分别同时运行，这样可以有效减少任务等待时间,需要注意每组运行失败的服务器。</p></li>
+<li><b>把经常出问题或者网络不太好的节点放到最后运行</b>
+<p>像中国移动以及香港，国外的某些节点在运行ansible playbook的时候总会或多或少的出些问题,这些节点可以考虑放到最后,并且需要找出问题原因进行优化</p>
+</li>
+</ul>
+<h1 id="org-65126650">目标</h1>
+
+<h2 id="org-89630061">web界面</h2>
+<p>使用过ansible的同学一定知道ansible-tower，它是ansible的web方式部署，通过web界面就可以添加删除任务,并且运行ansible playbook,可惜，它是收费的 /捂脸</p>
+
+<h2 id="org-9953268">任务队列</h2>
+<p>把ansible playbook放到任务队列里，由消费者去消费对应的任务</p>
+
+<p>未完待续...</p>
+<p>There are <a href="./articles/2017/10/ansible快速部署加速方案.html#disqus_thread">comments</a>.</p>                </div>
+            </article>
+                <ul class="entry-list">
+            <li><article>
                 <h1 class="entry-title"><a href="./articles/2017/09/那里有座山.html" rel="bookmark" title="Permalink to 那里有座山">那里有座山</a></h1>
                 <div class="entry-content">
 <header class="entry-info">
@@ -89,8 +172,8 @@
     <a href="./tag/life/index.html">life</a>
     <a href="./tag/love/index.html">love</a>
   </span>
-</header>                    <hr class="entry-hr" />
-                    
+</header>                <hr class="entry-hr" />
+                
 <div class="org-center">
 <blockquote>
 <p class="org-verse">
@@ -120,9 +203,11 @@
 一直都在这里
 </p>
 </div>
+                  <div class="text-center">
+                    <a class="btn entry-read-more" href="./articles/2017/09/那里有座山.html">阅读全文 »</a>
+                  </div>
 <p>There are <a href="./articles/2017/09/那里有座山.html#disqus_thread">comments</a>.</p>                </div>
-            </article>
-                <ul class="entry-list">
+            </article></li>
             <li><article>
                 <h1 class="entry-title"><a href="./articles/2017/08/七夕.html" rel="bookmark" title="Permalink to 七夕">七夕</a></h1>
                 <div class="entry-content">
@@ -505,58 +590,6 @@ UNIX与BSD之间发生冲突与法律纠纷,直到1998年,在此期间,芬兰大
                     <a class="btn entry-read-more" href="./articles/2017/07/Linux伪总结.html">阅读全文 »</a>
                   </div>
 <p>There are <a href="./articles/2017/07/Linux伪总结.html#disqus_thread">comments</a>.</p>                </div>
-            </article></li>
-            <li><article>
-                <h1 class="entry-title"><a href="./articles/2017/07/celery动态添加任务.html" rel="bookmark" title="Permalink to celery动态添加任务">celery动态添加任务</a></h1>
-                <div class="entry-content">
-<header class="entry-info">
-  <span class="entry-info-date" title="2017-07-09T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    日 09 七月 2017
-  </span>
-  <span class="entry-info-sep hidden-xs">|</span>
-  <span class="entry-info-author hidden-xs">
-    <i class="fa fa-user-o"></i>
-    By <a href="./author/honmaple.html">honmaple</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-category">
-    <i class="fa fa-folder-o"></i>
-    In <a href="./category/linux/index.html">Linux</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-tag">
-    <i class="fa fa-bookmark-o"></i>
-    tags:
-    <a href="./tag/linux/index.html">linux</a>
-    <a href="./tag/celery/index.html">celery</a>
-    <a href="./tag/python/index.html">python</a>
-  </span>
-</header>                <hr class="entry-hr" />
-                
-
-<p>celery是一个基于Python的分布式调度系统，<a href="http://docs.celeryproject.org/en/latest/">文档在这</a> ,最近有个需求,想要动态的添加任务而不用重启celery服务,找了一圈没找到什么好办法(也有可能是文档没看仔细)，所以只能自己实现囉</p>
-
-<p>为celery动态添加任务，首先我想到的是传递一个函数进去，让某个特定任务去执行这个传递过去的函数，就像这样
-<div class="highlight"><pre><span></span><span class="nd">@app.task</span>
-<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</pre></div>
-</p>
-
-<p>很可惜，会出现这样的错误
-<div class="highlight"><pre><span></span>kombu.exceptions.EncodeError: Object of type &#39;function&#39; is not JSON serializable
-</pre></div>
-</p>
-
-<p>换一种序列化方式
-<div class="highlight"><pre><span></span><span class="nd">@app.task</span><span class="p">(</span><span class="n">serializer</span><span class="o">=</span><span class="s1">&#39;pickle&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs …</span></pre></div></p>
-                  <div class="text-center">
-                    <a class="btn entry-read-more" href="./articles/2017/07/celery动态添加任务.html">阅读全文 »</a>
-                  </div>
-<p>There are <a href="./articles/2017/07/celery动态添加任务.html#disqus_thread">comments</a>.</p>                </div>
             </article></li>
   <ul class="entry-pagination">
       <li class="active"><a href="./index.html">1</a></li>

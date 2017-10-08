@@ -1,5 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Linux</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/linux.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-08-13T00:00:00+08:00</updated><entry><title>redis集群搭建</title><link href="http://honmaple.org/articles/2017/08/redis%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA.html" rel="alternate"></link><published>2017-08-13T00:00:00+08:00</published><updated>2017-08-13T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-08-13:/articles/2017/08/redis集群搭建.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Linux</title><link href="http://honmaple.org/" rel="alternate"></link><link href="http://honmaple.org/feeds/linux.rss.xml" rel="self"></link><id>http://honmaple.org/</id><updated>2017-10-08T00:00:00+08:00</updated><entry><title>ansible快速部署加速方案</title><link href="http://honmaple.org/articles/2017/10/ansible%E5%BF%AB%E9%80%9F%E9%83%A8%E7%BD%B2%E5%8A%A0%E9%80%9F%E6%96%B9%E6%A1%88.html" rel="alternate"></link><published>2017-10-08T00:00:00+08:00</published><updated>2017-10-08T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-10-08:/articles/2017/10/ansible快速部署加速方案.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-67004882"&gt;加速&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-47177503"&gt;问题&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-5633837"&gt;方案&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-65126650"&gt;目标&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-89630061"&gt;web界面&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-9953268"&gt;任务队列&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ansible是基于Python的&lt;b&gt;自动化部署&lt;/b&gt; 方案,但是目前只是通过命令行
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ansible -i hosts all -a &amp;#39;uptime&amp;#39;
+# or
+ansible-playbook -i hosts playbook.yml -e &amp;#39;args&amp;#39; -t deploy
+&lt;/pre&gt;&lt;/div&gt;
+
+实现自动化部署.&lt;/p&gt;
+
+&lt;p&gt;长此以往，虽然可以实现所谓的自动化，但产品业务线多且杂的情况下，项目很难维护，更不用说以文件为存储的表现形式很差,针对目前使用ansible的经验以及使用中的困难,可以针对性的提出一些解决方案&lt;/p&gt;
+
+&lt;h1 id="org-67004882"&gt;加速&lt;/h1&gt;
+
+&lt;h2 id="org-47177503"&gt;问题&lt;/h2&gt;
+&lt;p&gt;自动化部署其中最大的障碍就是&lt;b&gt;网络&lt;/b&gt; 的原因&lt;/p&gt;
+
+&lt;p&gt;其中需要通过网络上传一些模板文件,有的甚至还需要上传一些压缩包,虽然说几MB的东西很快就能上传成功，但如果把这上传文件所需要的2秒乘以上百，上千台主机呢,更不用说ansible的表现形式就是一个任务一个任务的往下执行,假如在上传模板这一步卡住 …&lt;/p&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-67004882"&gt;加速&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-47177503"&gt;问题&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-5633837"&gt;方案&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-65126650"&gt;目标&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-89630061"&gt;web界面&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-9953268"&gt;任务队列&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ansible是基于Python的&lt;b&gt;自动化部署&lt;/b&gt; 方案,但是目前只是通过命令行
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ansible -i hosts all -a &amp;#39;uptime&amp;#39;
+# or
+ansible-playbook -i hosts playbook.yml -e &amp;#39;args&amp;#39; -t deploy
+&lt;/pre&gt;&lt;/div&gt;
+
+实现自动化部署.&lt;/p&gt;
+
+&lt;p&gt;长此以往，虽然可以实现所谓的自动化，但产品业务线多且杂的情况下，项目很难维护，更不用说以文件为存储的表现形式很差,针对目前使用ansible的经验以及使用中的困难,可以针对性的提出一些解决方案&lt;/p&gt;
+
+&lt;h1 id="org-67004882"&gt;加速&lt;/h1&gt;
+
+&lt;h2 id="org-47177503"&gt;问题&lt;/h2&gt;
+&lt;p&gt;自动化部署其中最大的障碍就是&lt;b&gt;网络&lt;/b&gt; 的原因&lt;/p&gt;
+
+&lt;p&gt;其中需要通过网络上传一些模板文件,有的甚至还需要上传一些压缩包,虽然说几MB的东西很快就能上传成功，但如果把这上传文件所需要的2秒乘以上百，上千台主机呢,更不用说ansible的表现形式就是一个任务一个任务的往下执行,假如在上传模板这一步卡住(等待所有服务器上传成功),这时某台未模板化的服务器的某服务需要重启，是不是会出问题呢&lt;/p&gt;
+
+&lt;h2 id="org-5633837"&gt;方案&lt;/h2&gt;
+&lt;p&gt;针对这一问题,目前想到的解决方案如下:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;适当增加fork数&lt;/b&gt;
+&lt;p&gt;目前fork数默认为50，可以适当增加&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;大文件使用内网(外网)下载&lt;/b&gt;
+&lt;p&gt;从部署机上上传文件可能会出现这样那样的问题，尤其是上传到国外服务器时经常会出现ansible playbook的任务卡住问题(其实是正在以几KB/s的龟速运行)，所以其中大于xxMB的文件(压缩包)全部使用从远程服务器上下载方式,并且全部进行加密处理&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;把超过几百台服务器的节点分组多进程运行&lt;/b&gt;
+&lt;p&gt;服务器一旦多了，对应任务的等待时间也就多了，所以将500台的节点分为十组，每组50台,使用多进程分别同时运行，这样可以有效减少任务等待时间,需要注意每组运行失败的服务器。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;把经常出问题或者网络不太好的节点放到最后运行&lt;/b&gt;
+&lt;p&gt;像中国移动以及香港，国外的某些节点在运行ansible playbook的时候总会或多或少的出些问题,这些节点可以考虑放到最后,并且需要找出问题原因进行优化&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id="org-65126650"&gt;目标&lt;/h1&gt;
+
+&lt;h2 id="org-89630061"&gt;web界面&lt;/h2&gt;
+&lt;p&gt;使用过ansible的同学一定知道ansible-tower，它是ansible的web方式部署，通过web界面就可以添加删除任务,并且运行ansible playbook,可惜，它是收费的 /捂脸&lt;/p&gt;
+
+&lt;h2 id="org-9953268"&gt;任务队列&lt;/h2&gt;
+&lt;p&gt;把ansible playbook放到任务队列里，由消费者去消费对应的任务&lt;/p&gt;
+
+&lt;p&gt;未完待续...&lt;/p&gt;</content><category term="linux"></category><category term="ansible"></category></entry><entry><title>redis集群搭建</title><link href="http://honmaple.org/articles/2017/08/redis%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA.html" rel="alternate"></link><published>2017-08-13T00:00:00+08:00</published><updated>2017-08-13T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-08-13:/articles/2017/08/redis集群搭建.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-68386377"&gt;准备&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-64453092"&gt;创建集群&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-98343183"&gt;测试集群&lt;/a&gt;&lt;/li&gt;
@@ -756,70 +839,4 @@ debain系,包括ubuntu,mint,kali等,使用包管理器apt-get、aptitude、dpkg;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;/p&gt;
 
-&lt;p&gt;ok,就这样&lt;/p&gt;</content><category term="emacs"></category><category term="elisp"></category><category term="linux"></category></entry><entry><title>修改agetty启动参数自动登陆linux</title><link href="http://honmaple.org/articles/2017/02/%E4%BF%AE%E6%94%B9agetty%E5%90%AF%E5%8A%A8%E5%8F%82%E6%95%B0%E8%87%AA%E5%8A%A8%E7%99%BB%E9%99%86linux.html" rel="alternate"></link><published>2017-02-26T00:00:00+08:00</published><updated>2017-02-26T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.org,2017-02-26:/articles/2017/02/修改agetty启动参数自动登陆linux.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-12591774"&gt;需求&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-35812122"&gt;实现&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-58090198"&gt;自动登陆系统(用户名密码都不用输)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-19124193"&gt;自动登陆系统(仅输入密码)&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-
-
-
-&lt;p&gt;环境: archlinux
-&lt;a href="https://bbs.archlinux.org/viewtopic.php?id=198097"&gt;参考&lt;/a&gt;&lt;/p&gt;
-
-&lt;h1 id="org-12591774"&gt;需求&lt;/h1&gt;
-&lt;p&gt;想要Linux启动后默认以指定用户登陆,不用输入用户名,可以直接输入密码进入系统&lt;/p&gt;
-
-&lt;h1 id="org-35812122"&gt;实现&lt;/h1&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;man agetty
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;修改以下文件
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  /sudo:root@localhost:/etc/systemd/system/getty.target.wants/getty@tty1.service
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;   ExecStart=-/sbin/agetty -a username --noclear %I $TERM
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/p&gt;
-&lt;h2 id="org-58090198"&gt;自动登陆系统(用户名密码都不用输)&lt;/h2&gt;
-
-&lt;h2 id="org-19124193"&gt;自动登陆系统(仅输入密码)&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;   ExecStart=-/sbin/agetty --skip-login --login-options …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-12591774"&gt;需求&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-35812122"&gt;实现&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-58090198"&gt;自动登陆系统(用户名密码都不用输)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-19124193"&gt;自动登陆系统(仅输入密码)&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-
-
-
-&lt;p&gt;环境: archlinux
-&lt;a href="https://bbs.archlinux.org/viewtopic.php?id=198097"&gt;参考&lt;/a&gt;&lt;/p&gt;
-
-&lt;h1 id="org-12591774"&gt;需求&lt;/h1&gt;
-&lt;p&gt;想要Linux启动后默认以指定用户登陆,不用输入用户名,可以直接输入密码进入系统&lt;/p&gt;
-
-&lt;h1 id="org-35812122"&gt;实现&lt;/h1&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;man agetty
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;修改以下文件
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  /sudo:root@localhost:/etc/systemd/system/getty.target.wants/getty@tty1.service
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;   ExecStart=-/sbin/agetty -a username --noclear %I $TERM
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/p&gt;
-&lt;h2 id="org-58090198"&gt;自动登陆系统(用户名密码都不用输)&lt;/h2&gt;
-
-&lt;h2 id="org-19124193"&gt;自动登陆系统(仅输入密码)&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;   ExecStart=-/sbin/agetty --skip-login --login-options &amp;quot;username&amp;quot; --noclear %I $TERM
-&lt;/pre&gt;&lt;/div&gt;
-</content><category term="linux"></category><category term="agetty"></category></entry></feed>
+&lt;p&gt;ok,就这样&lt;/p&gt;</content><category term="emacs"></category><category term="elisp"></category><category term="linux"></category></entry></feed>
