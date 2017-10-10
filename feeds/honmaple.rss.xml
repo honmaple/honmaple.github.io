@@ -29,7 +29,7 @@
 &lt;/div&gt;&lt;/div&gt;
 
 
-&lt;p&gt;ansible是基于Python的&lt;b&gt;自动化部署&lt;/b&gt; 方案,但是目前只是通过命令行
+&lt;p&gt;ansible是基于Python的 &lt;b&gt;自动化部署&lt;/b&gt;  方案,但是目前只是通过命令行
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ansible -i hosts all -a &amp;#39;uptime&amp;#39;
 # or
 ansible-playbook -i hosts playbook.yml -e &amp;#39;args&amp;#39; -t deploy
@@ -42,9 +42,19 @@ ansible-playbook -i hosts playbook.yml -e &amp;#39;args&amp;#39; -t deploy
 &lt;h1 id="org-67004882"&gt;加速&lt;/h1&gt;
 
 &lt;h2 id="org-47177503"&gt;问题&lt;/h2&gt;
-&lt;p&gt;自动化部署其中最大的障碍就是&lt;b&gt;网络&lt;/b&gt; 的原因&lt;/p&gt;
+&lt;p&gt;自动化部署其中最大的障碍就是 &lt;b&gt;网络&lt;/b&gt;  的原因&lt;/p&gt;
 
-&lt;p&gt;其中需要通过网络上传一些模板文件,有的甚至还需要上传一些压缩包,虽然说几MB的东西很快就能上传成功，但如果把这上传文件所需要的2秒乘以上百，上千台主机呢,更不用说ansible的表现形式就是一个任务一个任务的往下执行,假如在上传模板这一步卡住 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 08 Oct 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-10-08:/articles/2017/10/ansible快速部署加速方案.html</guid><category>linux</category><category>ansible</category></item><item><title>那里有座山</title><link>http://honmaple.org/articles/2017/09/%E9%82%A3%E9%87%8C%E6%9C%89%E5%BA%A7%E5%B1%B1.html</link><description>
+&lt;p&gt;其中需要通过网络上传一些模板文件,有的甚至还需要上传一些压缩包,虽然说几MB的东西很快就能上传成功，但如果把这上传文件所需要的2秒乘以上百，上千台主机呢,更不用说ansible的表现形式就是一个任务一个任务的往下执行,假如在上传模板这一步卡住 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 08 Oct 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-10-08:/articles/2017/10/ansible快速部署加速方案.html</guid><category>linux</category><category>ansible</category></item><item><title>ansible-playbook中tasks单进程</title><link>http://honmaple.org/articles/2017/09/ansible-playbook%E4%B8%ADtasks%E5%8D%95%E8%BF%9B%E7%A8%8B.html</link><description>
+&lt;p&gt;之前有一个需求,ansible-playbook中需要某一步单步执行,也就是说在有多台服务器时,某个任务只能一台服务器执行完后,另一台服务器才能执行,否者对应集群的服务会出问题&lt;/p&gt;
+
+&lt;p&gt;这是一个很简单的需求,ansible中也有对应的实现, &lt;code&gt;--fork 1&lt;/code&gt; 或者 使用 &lt;code&gt;serial&lt;/code&gt; &lt;/p&gt;
+
+&lt;p&gt;但是如果有人忘记加 &lt;code&gt;--fork 1&lt;/code&gt; 了呢，而且该任务是在子任务中，使用 &lt;b&gt;include&lt;/b&gt;  加载, &lt;code&gt;serial&lt;/code&gt; 关键字无法在某一特定任务中使用,只能与 &lt;b&gt;hosts&lt;/b&gt;  同级&lt;/p&gt;
+
+&lt;p&gt;所幸，在这里 &lt;a href="https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task"&gt;https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task&lt;/a&gt; 找到了解决办法,使用 &lt;b&gt;delegate_to&lt;/b&gt; &lt;/p&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;service&lt;/span&gt; &lt;span class="n"&gt;restart&lt;/span&gt;
+  &lt;span class="c1"&gt;# serial: 1 would be the proper solution here, but …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Tue, 19 Sep 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-09-19:/articles/2017/09/ansible-playbook中tasks单进程.html</guid><category>linux</category><category>ansible</category></item><item><title>那里有座山</title><link>http://honmaple.org/articles/2017/09/%E9%82%A3%E9%87%8C%E6%9C%89%E5%BA%A7%E5%B1%B1.html</link><description>
 &lt;div class="org-center"&gt;
 &lt;blockquote&gt;
 &lt;p class="org-verse"&gt;
@@ -78,7 +88,7 @@ ansible-playbook -i hosts playbook.yml -e &amp;#39;args&amp;#39; -t deploy
 
 &lt;p&gt;13.14 = 14.6 * 0.9&lt;/p&gt;
 
-&lt;p&gt;&lt;b&gt;终究是无缘&lt;/b&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Wed, 30 Aug 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-08-30:/articles/2017/08/七夕.html</guid><category>恋</category></item><item><title>redis集群搭建</title><link>http://honmaple.org/articles/2017/08/redis%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;p&gt; &lt;b&gt;终究是无缘&lt;/b&gt; &lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Wed, 30 Aug 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-08-30:/articles/2017/08/七夕.html</guid><category>恋</category></item><item><title>redis集群搭建</title><link>http://honmaple.org/articles/2017/08/redis%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-68386377"&gt;准备&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-64453092"&gt;创建集群&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-98343183"&gt;测试集群&lt;/a&gt;&lt;/li&gt;
@@ -111,7 +121,7 @@ mkdir &lt;span class="m"&gt;9006&lt;/span&gt;
 &lt;p&gt;最小配置选项:
 &lt;pre class="example"&gt;
   port 9001 …&lt;/pre&gt;&lt;/p&gt;&lt;/blockquote&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 13 Aug 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-08-13:/articles/2017/08/redis集群搭建.html</guid><category>linux</category><category>redis</category></item><item><title>tornado中session实现</title><link>http://honmaple.org/articles/2017/08/tornado%E4%B8%ADsession%E5%AE%9E%E7%8E%B0.html</link><description>
-&lt;p&gt;tornado中默认没有session的实现,虽然默认的&lt;b&gt;set_secure_cookie&lt;/b&gt; 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息&lt;/p&gt;
+&lt;p&gt;tornado中默认没有session的实现,虽然默认的 &lt;b&gt;set_secure_cookie&lt;/b&gt;  已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息&lt;/p&gt;
 
 &lt;p&gt;注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行&lt;/p&gt;
 
@@ -170,7 +180,7 @@ mkdir &lt;span class="m"&gt;9006&lt;/span&gt;
 
 进行连接&lt;/p&gt;
 
-&lt;p&gt;注：&lt;b&gt;get&lt;/b&gt; 下载&lt;b&gt;put&lt;/b&gt; 上传&lt;/p&gt;
+&lt;p&gt;注： &lt;b&gt;get&lt;/b&gt;  下载 &lt;b&gt;put&lt;/b&gt;  上传&lt;/p&gt;
 
 
 &lt;h1 id="org-8609298"&gt;电脑共享文件到手机&lt;/h1&gt;
@@ -187,7 +197,7 @@ mkdir &lt;span class="m"&gt;9006&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;/p&gt;
 
-&lt;p&gt;&lt;b&gt;重要&lt;/b&gt;: 请确保关闭防火墙,否则手机无法连接
+&lt;p&gt; &lt;b&gt;重要&lt;/b&gt; : 请确保关闭防火墙,否则手机无法连接
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  sudo systemctl …&lt;/pre&gt;&lt;/div&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Sun, 30 Jul 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-07-30:/articles/2017/07/手机与Linux桌面文件共享.html</guid><category>linux</category><category>ftp</category></item><item><title>一个简单的数据分组算法</title><link>http://honmaple.org/articles/2017/07/%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E6%95%B0%E6%8D%AE%E5%88%86%E7%BB%84%E7%AE%97%E6%B3%95.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-14416345"&gt;获取开始时间&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-23531211"&gt;时间分组&lt;/a&gt;&lt;/li&gt;
@@ -211,29 +221,4 @@ mkdir &lt;span class="m"&gt;9006&lt;/span&gt;
         &lt;span class="n"&gt;minute&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
     &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;year&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;month&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;day&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;hour&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;minute&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
                           &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mktime …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Wed, 26 Jul 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-07-26:/articles/2017/07/一个简单的数据分组算法.html</guid><category>python</category></item><item><title>Linux总结(草稿)</title><link>http://honmaple.org/articles/2017/07/Linux%E4%BC%AA%E6%80%BB%E7%BB%93.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-77665972"&gt;Linux发展历史&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-14090808"&gt;Linux的最小组成&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-37060325"&gt;Linux的安装与启动&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-
-
-
-&lt;h1 id="org-77665972"&gt;Linux发展历史&lt;/h1&gt;
-&lt;p&gt;Linux是由BSD发展而来，BSD又起源于UNIX。UNIX由贝尔实验室开发，
-后来开放给各大学教学使用,其中伯克利大学通过对UNIX源码的研究以及不断的改进与扩展,
-推出BSD,并于BSD 4.3版本加入网络模块,极大推进UNIX的发展。但后面由于版权等原因,
-UNIX与BSD之间发生冲突与法律纠纷,直到1998年,在此期间,芬兰大学生Linus Torvalds
-于1991年发布首个Linux版本,linux也趁UNIX与BSD纠纷之际,得到非常快速的发展&lt;/p&gt;
-
-&lt;h1 id="org-14090808"&gt;Linux的最小组成&lt;/h1&gt;
-&lt;p&gt;Linux最小由内核kernel,文件层次结构FHS,系统启动器bootloader组成,其中内存调度，
-进程调度等由内核管理,内核可单独运行，但需要与其它组成相配合。&lt;/p&gt;
-
-&lt;p&gt;语言:一般有头文件与库文件,头文件为实现,库文件为声明&lt;/p&gt;
-
-
-&lt;h1 id="org-37060325"&gt;Linux的安装与启动&lt;/h1&gt;
-&lt;p&gt;当linux启动时，首先启动内核，内核调用init来完成引导进程，init启动时，它会在/etc/inittab内查找默认的运行级别,
-然后运行/etc/rc …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Wed, 12 Jul 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-07-12:/articles/2017/07/Linux伪总结.html</guid><category>linux</category></item></channel></rss>
+    &lt;span class="n"&gt;start_date&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mktime …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Wed, 26 Jul 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:honmaple.org,2017-07-26:/articles/2017/07/一个简单的数据分组算法.html</guid><category>python</category></item></channel></rss>
