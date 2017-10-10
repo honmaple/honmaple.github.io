@@ -66,6 +66,53 @@
           <div class="col-md-offset-1 col-md-10" style="padding:0;">
                 <ul class="entry-list" style="margin-top:0;">
             <li><article>
+                <h1 class="entry-title"><a href="../../articles/2016/05/ssh连接virtualbox中的虚拟机.html" rel="bookmark" title="Permalink to ssh连接virtualbox中的虚拟机">ssh连接virtualbox中的虚拟机</a></h1>
+                <div class="entry-content">
+<header class="entry-info">
+  <span class="entry-info-date" title="2016-05-08T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    日 08 五月 2016
+  </span>
+  <span class="entry-info-sep hidden-xs">|</span>
+  <span class="entry-info-author hidden-xs">
+    <i class="fa fa-user-o"></i>
+    By <a href="../../author/honmaple.html">honmaple</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-category">
+    <i class="fa fa-folder-o"></i>
+    In <a href="../../category/linux/index.html">Linux</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-tag">
+    <i class="fa fa-bookmark-o"></i>
+    tags:
+    <a href="../../tag/linux/index.html">linux</a>
+  </span>
+</header>                <hr class="entry-hr" />
+                <p><a href="http://my.oschina.net/dmdgeeker/blog/229044">参考文档</a></p>
+<h3>虚拟机设置<a id="orgheadline1"></a></h3>
+<ol>
+<li>
+<p>从机设置</p>
+<p>$ sudo pacman -S openssh
+$ sudo systemctl start sshd # 可能还需要一些其他的安全设置，这里不再多说</p>
+</li>
+<li>
+<p>虚拟机设置  </p>
+<p>设置里，选择网络,端口转发，主机端口9022,从机端口22</p>
+</li>
+</ol>
+<h3>连接虚拟机<a id="orgheadline2"></a></h3>
+<p>主机</p>
+<div class="highlight"><pre><span></span><span class="err">$</span> <span class="n">ssh</span> <span class="o">-</span><span class="n">p</span> <span class="mi">9022</span> <span class="n">username</span><span class="mf">@127.0.0.1</span>
+</pre></div>
+                  <div class="text-center">
+                    <a class="btn entry-read-more" href="../../articles/2016/05/ssh连接virtualbox中的虚拟机.html">阅读全文 »</a>
+                  </div>
+<p>There are <a href="../../articles/2016/05/ssh连接virtualbox中的虚拟机.html#disqus_thread">comments</a>.</p>                </div>
+            </article></li>
+            <li><article>
                 <h1 class="entry-title"><a href="../../articles/2016/05/Linux下的一些使用.html" rel="bookmark" title="Permalink to Linux下的一些使用">Linux下的一些使用</a></h1>
                 <div class="entry-content">
 <header class="entry-info">
@@ -476,53 +523,6 @@ python2-pip: 文件系统中已存在 /usr/lib/python2.7/site-packages/pip/_vend
                     <a class="btn entry-read-more" href="../../articles/2016/02/使用jquery实现markdown预览.html">阅读全文 »</a>
                   </div>
 <p>There are <a href="../../articles/2016/02/使用jquery实现markdown预览.html#disqus_thread">comments</a>.</p>                </div>
-            </article></li>
-            <li><article>
-                <h1 class="entry-title"><a href="../../articles/2016/01/redis记录用户操作.html" rel="bookmark" title="Permalink to redis记录用户操作">redis记录用户操作</a></h1>
-                <div class="entry-content">
-<header class="entry-info">
-  <span class="entry-info-date" title="2016-01-10T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    日 10 一月 2016
-  </span>
-  <span class="entry-info-sep hidden-xs">|</span>
-  <span class="entry-info-author hidden-xs">
-    <i class="fa fa-user-o"></i>
-    By <a href="../../author/honmaple.html">honmaple</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-category">
-    <i class="fa fa-folder-o"></i>
-    In <a href="../../category/linux/index.html">linux</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-tag">
-    <i class="fa fa-bookmark-o"></i>
-    tags:
-    <a href="../../tag/redis/index.html">redis</a>
-    <a href="../../tag/linux/index.html">linux</a>
-  </span>
-</header>                <hr class="entry-hr" />
-                <p>必须得记下来，否则等那天看到又要浪费时间了,主要记录访问时间这里</p>
-<div class="highlight"><pre><span></span>    &#39;&#39;&#39;记录访问的时间&#39;&#39;&#39;
-    now_time = int(time()) #首先得到当前时间戳 
-    &#39;&#39;&#39;查询上次访问的时间和最近访问的时间&#39;&#39;&#39;
-    query_last_time = redis_data.zscore(visited_users,&#39;last_time&#39;)
-    query_now_time = redis_data.zscore(visited_users,&#39;time&#39;)
-    &#39;&#39;&#39;判断查询是否为空,一般是第一次访问还未记录的IP&#39;&#39;&#39;
-    if query_last_time is None:
-        query_last_time = now_time
-        pipe.zadd(visited_users,query_last_time,&#39;last_time&#39;)
-    if query_now_time is None:
-        query_now_time = now_time
-    &#39;&#39;&#39;将当前时间与last_time进行对比,十分钟之内不记录&#39;&#39;&#39;
-    if now_time - query_last_time &gt;= 600:
-        &#39;&#39;&#39;这里类似交换更新数据,把query_now_time变成last_time,把now_time更新&#39;&#39;&#39;
-        pipe.zadd …</pre></div>
-                  <div class="text-center">
-                    <a class="btn entry-read-more" href="../../articles/2016/01/redis记录用户操作.html">阅读全文 »</a>
-                  </div>
-<p>There are <a href="../../articles/2016/01/redis记录用户操作.html#disqus_thread">comments</a>.</p>                </div>
             </article></li>
   <ul class="entry-pagination">
       <li class="prev"><a href="../../category/linux/index3.html">&laquo;</a>
