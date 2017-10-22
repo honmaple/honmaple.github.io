@@ -65,6 +65,91 @@
         <div class="col-md-offset-2 col-md-8" style="padding:0;">
           <div class="col-md-offset-1 col-md-10" style="padding:0;">
             <article>
+                <h1 class="entry-title"><a href="../../articles/2017/10/为pelican增加上一篇下一篇功能.html" rel="bookmark" title="Permalink to 为pelican增加上一篇下一篇功能">为pelican增加上一篇下一篇功能</a></h1>
+                <div class="entry-content">
+<header class="entry-info">
+  <span class="entry-info-date" title="2017-10-22T22:40:28+08:00">
+    <i class="fa fa-calendar-o"></i>
+    日 22 十月 2017
+  </span>
+  <span class="entry-info-sep hidden-xs">|</span>
+  <span class="entry-info-author hidden-xs">
+    <i class="fa fa-user-o"></i>
+    By <a href="../../author/honmaple.html">honmaple</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-category">
+    <i class="fa fa-folder-o"></i>
+    In <a href="../../category/python/index.html">Python</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-tag">
+    <i class="fa fa-bookmark-o"></i>
+    tags:
+    <a href="../../tag/python/index.html">python</a>
+    <a href="../../tag/pelican/index.html">pelican</a>
+  </span>
+</header>                    <hr class="entry-hr" />
+                    
+
+<p>功能实现很简单, <b>pelican</b>也有类似的插件实现 <a href="https://github.com/getpelican/pelican-plugins/tree/master/neighbors">https://github.com/getpelican/pelican-plugins/tree/master/neighbors</a></p>
+
+<p>不过自己实现起来更爽不是吗? 而且类似<b>prev_article_in_category</b>和<b>prev_article_in_subcategory</b>的功能我并不需要</p>
+
+<p>首先参考<b>pelican</b>的文档,基础实现
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_neighbors</span><span class="p">(</span><span class="n">generator</span><span class="p">):</span>
+      <span class="o">....</span>
+
+  <span class="k">def</span> <span class="nf">register</span><span class="p">():</span>
+      <span class="n">signals</span><span class="o">.</span><span class="n">article_generator_finalized</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">add_neighbors</span><span class="p">)</span>
+</pre></div>
+</p>
+
+<p>然后在<b>generator.articles</b>列表上进行操作,为article增加<b>previous_article</b>和<b>next_article</b>对象</p>
+
+<p>先进行排序(按时间)
+<div class="highlight"><pre><span></span><span class="n">articles</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">articles</span>
+  <span class="n">articles</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">date</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</p>
+
+<p>然后可以使用<b>iter</b>关键字,把列表变成生成器,使用next()( <code>python2用a.next(),python3用a.__next__()</code>)获取下一个可迭代对象</p>
+
+<div class="highlight"><pre><span></span><span class="n">pre_article</span> <span class="o">=</span> <span class="bp">None</span>
+  <span class="n">articles_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">articles</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+  <span class="k">for</span> <span class="n">article</span> <span class="ow">in</span> <span class="n">articles</span><span class="p">:</span>
+      <span class="n">next_article</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">articles_iter</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+      <span class="nb">setattr</span><span class="p">(</span><span class="n">article</span><span class="p">,</span> <span class="s1">&#39;previous_article&#39;</span><span class="p">,</span> <span class="n">pre_article</span><span class="p">)</span>
+      <span class="nb">setattr</span><span class="p">(</span><span class="n">article</span><span class="p">,</span> <span class="s1">&#39;next_article&#39;</span><span class="p">,</span> <span class="n">next_article</span><span class="p">)</span>
+      <span class="n">pre_article</span> <span class="o">=</span> <span class="n">article</span>
+</pre></div>
+
+
+<p>最后，在模板template中增加相关html代码，示例:
+<div class="highlight"><pre><span></span>{% if article.previous_article %}
+  <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;previous&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{ SITEURL }}/{{ article.previous_article.url }}&quot;</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Previous article: {{ article.previous_article.title }}&quot;</span><span class="p">&gt;</span>
+      <span class="p">&lt;</span><span class="nt">i</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;fa fa-chevron-left&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">i</span><span class="p">&gt;</span>
+      {{ article.previous_article.title }}
+    <span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+  {% endif %}
+  {% if article.next_article %}
+  <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;next&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{ SITEURL }}/{{ article.next_article.url }}&quot;</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Next article: {{ article.previous_article.title }}&quot;</span><span class="p">&gt;</span>
+      {{ article.next_article.title }}
+      <span class="p">&lt;</span><span class="nt">i</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;fa fa-chevron-right&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">i</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+  {% endif %}
+</pre></div>
+</p>
+
+<p>ok,就这样</p>
+<p>There are <a href="../../articles/2017/10/为pelican增加上一篇下一篇功能.html#disqus_thread">comments</a>.</p>                </div>
+            </article>
+                <ul class="entry-list">
+            <li><article>
                 <h1 class="entry-title"><a href="../../articles/2017/08/tornado中session实现.html" rel="bookmark" title="Permalink to tornado中session实现">tornado中session实现</a></h1>
                 <div class="entry-content">
 <header class="entry-info">
@@ -89,8 +174,8 @@
     <a href="../../tag/python/index.html">python</a>
     <a href="../../tag/tornado/index.html">tornado</a>
   </span>
-</header>                    <hr class="entry-hr" />
-                    
+</header>                <hr class="entry-hr" />
+                
 <p>tornado中默认没有session的实现,虽然默认的 <b>set_secure_cookie</b> 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息</p>
 
 <p>注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行</p>
@@ -112,130 +197,12 @@
     <span class="nd">@wraps</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">getinstance</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">cls</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">:</span>
-            <span class="n">instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">getinstance</span>
-
-
-<span class="k">def</span> <span class="nf">current_time</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">tz</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">tz</span> <span class="o">=</span> <span class="s1">&#39;UTC&#39;</span>
-    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="p">(</span><span class="n">tz</span><span class="p">))</span>
-
-
-<span class="k">class</span> <span class="nc">CoreSession</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        session[&#39;username&#39;] = &#39;hello&#39;</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">get_or_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-
-
-<span class="nd">@singleton</span>
-<span class="k">class</span> <span class="nc">MemorySession</span><span class="p">(</span><span class="n">CoreSession</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        self._client = {&#39;session_id1&#39;:{key:value},</span>
-<span class="sd">                        &#39;session_id2&#39;:{key:value}}</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">expires_days</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">=</span> <span class="n">expires_days</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s1">&#39;is_authenticated&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
-                <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="n">current_time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span><span class="p">)</span>
-            <span class="p">}</span>
-        <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">remove_expires</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">expire_sessions</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">current_time</span><span class="p">():</span>
-                <span class="n">expire_sessions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span>
-
-
-<span class="nd">@singleton</span>
-<span class="k">class</span> <span class="nc">RedisSession</span><span class="p">(</span><span class="n">CoreSession</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">StrictRedis</span><span class="p">(</span>
-            <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
-            <span class="n">port</span><span class="o">=</span><span class="mi">6379</span><span class="p">,</span>
-            <span class="n">db</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-            <span class="n">password</span><span class="o">=</span><span class="s1">&#39;redis&#39;</span><span class="p">,</span>
-            <span class="n">decode_responses</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">expires_days</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">=</span> <span class="n">expires_days</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="s1">&#39;is_authenticated&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">expire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hdel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request_handler</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span> <span class="o">=</span> <span class="n">request_handler</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">get_secure_cookie</span><span class="p">(</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid4</span><span class="p">())</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">set_secure_cookie</span><span class="p">(</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
-        <span class="c1"># get cookies is bytes</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">RedisSession</span><span class="p">()</span>
-        <span class="c1"># self._session = MemorySession()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">request_handler</span><span class="o">.</span><span class="n">clear_cookie</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-</pre></div>
-
+            <span class="n">instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls …</span></pre></div>
+                  <div class="text-center">
+                    <a class="btn entry-read-more" href="../../articles/2017/08/tornado中session实现.html">阅读全文 »</a>
+                  </div>
 <p>There are <a href="../../articles/2017/08/tornado中session实现.html#disqus_thread">comments</a>.</p>                </div>
-            </article>
-                <ul class="entry-list">
+            </article></li>
             <li><article>
                 <h1 class="entry-title"><a href="../../articles/2017/07/一个简单的数据分组算法.html" rel="bookmark" title="Permalink to 一个简单的数据分组算法">一个简单的数据分组算法</a></h1>
                 <div class="entry-content">
@@ -652,66 +619,6 @@
                     <a class="btn entry-read-more" href="../../articles/2017/03/使用flask实现一个简单的图片上传存储服务.html">阅读全文 »</a>
                   </div>
 <p>There are <a href="../../articles/2017/03/使用flask实现一个简单的图片上传存储服务.html#disqus_thread">comments</a>.</p>                </div>
-            </article></li>
-            <li><article>
-                <h1 class="entry-title"><a href="../../articles/2017/01/升级至python3.6导致环境出错解决.html" rel="bookmark" title="Permalink to 升级至python3.6导致环境出错解决">升级至python3.6导致环境出错解决</a></h1>
-                <div class="entry-content">
-<header class="entry-info">
-  <span class="entry-info-date" title="2017-01-09T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    一 09 一月 2017
-  </span>
-  <span class="entry-info-sep hidden-xs">|</span>
-  <span class="entry-info-author hidden-xs">
-    <i class="fa fa-user-o"></i>
-    By <a href="../../author/honmaple.html">honmaple</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-category">
-    <i class="fa fa-folder-o"></i>
-    In <a href="../../category/linux/index.html">Linux</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-tag">
-    <i class="fa fa-bookmark-o"></i>
-    tags:
-    <a href="../../tag/linux/index.html">linux</a>
-    <a href="../../tag/i3wm/index.html">i3wm</a>
-    <a href="../../tag/python/index.html">python</a>
-    <a href="../../tag/py3status/index.html">py3status</a>
-  </span>
-</header>                <hr class="entry-hr" />
-                <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-48082281">事故（一）</a></li>
-<li><a href="#org-4622753">事故（二）</a></li>
-</ul>
-</div></div>
-
-
-<p>最近archlinux升级至了 <b>python3.6</b> ，直接导致了我的开发环境失效,唉</p>
-
-<blockquote>
-<p>archlinux 果然不适合开发</p>
-</blockquote>
-
-<p>虽然后面都已经解决了</p>
-
-<h2 id="org-48082281">事故（一）</h2>
-<p><b>virtualenv不可用</b>,原先使用python3.5创建的环境直接不能用了,只好删了原有了东西,重新使用python3.6创建</p>
-
-<div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">freeze</span> <span class="o">&gt;</span> <span class="n">requestments</span><span class="o">.</span><span class="n">txt</span>
-   <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requestments</span><span class="o">.</span><span class="n">txt</span>
-</pre></div>
-
-
-<h2 id="org-4622753">事故（二）</h2>
-<p><b>py3status</b> 报错
-<div class="highlight"><pre><span></span>   <span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s2">&quot;/usr/bin/py3status&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module …</span></pre></div></p>
-                  <div class="text-center">
-                    <a class="btn entry-read-more" href="../../articles/2017/01/升级至python3.6导致环境出错解决.html">阅读全文 »</a>
-                  </div>
-<p>There are <a href="../../articles/2017/01/升级至python3.6导致环境出错解决.html#disqus_thread">comments</a>.</p>                </div>
             </article></li>
   <ul class="entry-pagination">
       <li class="active"><a href="../../tag/python/index.html">1</a></li>
