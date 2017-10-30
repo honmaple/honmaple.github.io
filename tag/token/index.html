@@ -126,37 +126,37 @@
 <h2 id="org-4635607">生成token</h2>
 <p>使用<b>itsdangerous</b>对token进行加密
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-         <span class="o">......</span>
+    <span class="o">......</span>
 
-         <span class="nd">@property</span>
-         <span class="k">def</span> <span class="nf">token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-             <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
-             <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
-             <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
-             <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
-             <span class="c1"># column = self.(需要加密的字段)</span>
-             <span class="n">token</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">)</span>
-             <span class="k">return</span> <span class="n">token</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
+        <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+        <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
+        <span class="c1"># column = self.(需要加密的字段)</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">token</span>
 </pre></div>
 
 请保管好<b>SECRET_KEY</b> 和 <b>SECURITY_PASSWORD_SALT</b>,不要泄露</p>
 
 <h2 id="org-33965793">验证token</h2>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-         <span class="o">......</span>
+    <span class="o">......</span>
 
-         <span class="nd">@staticmethod</span>
-         <span class="k">def</span> <span class="nf">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="mi">86400</span><span class="p">):</span>
-             <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
-             <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
-             <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
-             <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
-             <span class="k">try</span><span class="p">:</span>
-                 <span class="n">column</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
-             <span class="k">except</span> <span class="n">BadSignature</span><span class="p">:</span>
-                 <span class="k">return</span> <span class="bp">False</span>
-             <span class="k">except</span> <span class="n">SignatureExpired</span><span class="p">:</span>
-                 <span class="k">return</span> <span class="bp">False</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="mi">86400</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
+        <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+        <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">column</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">BadSignature</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">except</span> <span class="n">SignatureExpired</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
 </pre></div>
 
 <ul>
@@ -166,29 +166,29 @@
 </ul>
 <p>如果验证成功查找<b>该用户</b>是否存在
 <div class="highlight"><pre><span></span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="n">column</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-     <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-         <span class="k">return</span> <span class="bp">False</span>
-     <span class="k">return</span> <span class="n">user</span>
+<span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">return</span> <span class="bp">False</span>
+<span class="k">return</span> <span class="n">user</span>
 </pre></div>
 </p>
 
 <p>示例:
 <div class="highlight"><pre><span></span><span class="nd">@staticmethod</span>
-     <span class="k">def</span> <span class="nf">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="mi">86400</span><span class="p">):</span>
-         <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
-         <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
-         <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
-         <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
-         <span class="k">try</span><span class="p">:</span>
-             <span class="n">username</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
-         <span class="k">except</span> <span class="n">BadSignature</span><span class="p">:</span>
-             <span class="k">return</span> <span class="bp">False</span>
-         <span class="k">except</span> <span class="n">SignatureExpired</span><span class="p">:</span>
-             <span class="k">return</span> <span class="bp">False</span>
-         <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-         <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-             <span class="k">return</span> <span class="bp">False</span>
-         <span class="k">return</span> <span class="n">user</span>
+<span class="k">def</span> <span class="nf">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="mi">86400</span><span class="p">):</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
+    <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+    <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
+    <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer</span><span class="p">(</span><span class="n">secret_key</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">BadSignature</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">except</span> <span class="n">SignatureExpired</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="n">user</span>
 </pre></div>
 </p>
 
@@ -201,14 +201,14 @@
 
 <p>然后设置 <b>request_loader</b>
 <div class="highlight"><pre><span></span><span class="nd">@login_manager.request_loader</span>
-    <span class="k">def</span> <span class="nf">user_loader_from_request</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-        <span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;your_token&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">token</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">user</span>
+<span class="k">def</span> <span class="nf">user_loader_from_request</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;your_token&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">token</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">user</span>
 
-    <span class="k">return</span> <span class="n">login_manager</span>
+<span class="k">return</span> <span class="n">login_manager</span>
 </pre></div>
 
 这是简单的从<b>url</b>中获取<b>token</b>进行验证,也可以从 <b>header</b>中获取(更安全)
@@ -224,29 +224,29 @@
 <h1 id="org-86277327">使用脚本发表</h1>
 <p>直接给出代码
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">request</span>
-    <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
-    <span class="n">content</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
-<span class="s1">        ,* adssad</span>
-<span class="s1">        ,** adasd</span>
-<span class="s1">        ,*** adsad</span>
-<span class="s1">        &#39;&#39;&#39;</span>
+<span class="n">content</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">    ,* adssad</span>
+<span class="s1">    ,** adasd</span>
+<span class="s1">    ,*** adsad</span>
+<span class="s1">    &#39;&#39;&#39;</span>
 
-    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;hello world&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;content&#39;</span><span class="p">:</span><span class="n">content</span>
-    <span class="p">}</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;xxxxx&#39;</span> <span class="o">+</span> <span class="s1">&#39;?your_token=&#39;</span>
-    <span class="n">req</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
-    <span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span>
-        <span class="s1">&#39;User-Agent&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.107 Safari/537.36&#39;</span>
-    <span class="p">)</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;hello world&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;content&#39;</span><span class="p">:</span><span class="n">content</span>
+<span class="p">}</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;xxxxx&#39;</span> <span class="o">+</span> <span class="s1">&#39;?your_token=&#39;</span>
+<span class="n">req</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+<span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+<span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span>
+    <span class="s1">&#39;User-Agent&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.107 Safari/537.36&#39;</span>
+<span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </pre></div>
 </p>
 

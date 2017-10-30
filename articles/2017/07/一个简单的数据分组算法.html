@@ -127,30 +127,30 @@
 <h1 id="org-23531211">时间分组</h1>
 <p>直接给出源码
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">gen_date_group</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">datas</span><span class="p">,</span> <span class="n">interval</span><span class="p">):</span>
-        <span class="c1"># datas是一组含时间戳的数据</span>
-        <span class="n">interval</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span>
-        <span class="c1"># 获取开始时间</span>
-        <span class="n">start_date</span> <span class="o">=</span> <span class="n">get_start_date</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
-        <span class="n">end_date</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="n">interval</span>
+    <span class="c1"># datas是一组含时间戳的数据</span>
+    <span class="n">interval</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span>
+    <span class="c1"># 获取开始时间</span>
+    <span class="n">start_date</span> <span class="o">=</span> <span class="n">get_start_date</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
+    <span class="n">end_date</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="n">interval</span>
 
-        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">type_count</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">datas</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">end_date</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">get_count_average</span><span class="p">(</span><span class="n">type_count</span><span class="p">,</span> <span class="n">count</span><span class="p">))</span>
-                <span class="c1"># 一些数据统计与计算</span>
-                <span class="n">type_count</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type_count&#39;</span><span class="p">]</span>
-                <span class="n">count</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">type_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">datas</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">end_date</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">get_count_average</span><span class="p">(</span><span class="n">type_count</span><span class="p">,</span> <span class="n">count</span><span class="p">))</span>
+            <span class="c1"># 一些数据统计与计算</span>
+            <span class="n">type_count</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type_count&#39;</span><span class="p">]</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
+            <span class="n">start_date</span> <span class="o">=</span> <span class="n">end_date</span>
+            <span class="n">end_date</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="n">interval</span>
+            <span class="c1"># 注意这里，即使dates里没有某个时间区间的数据，也要不断循环分组</span>
+            <span class="k">while</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">end_date</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
                 <span class="n">start_date</span> <span class="o">=</span> <span class="n">end_date</span>
                 <span class="n">end_date</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="n">interval</span>
-                <span class="c1"># 注意这里，即使dates里没有某个时间区间的数据，也要不断循环分组</span>
-                <span class="k">while</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">end_date</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-                    <span class="n">start_date</span> <span class="o">=</span> <span class="n">end_date</span>
-                    <span class="n">end_date</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="n">interval</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">type_count</span> <span class="o">+=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type_count&#39;</span><span class="p">]</span>
-                <span class="n">count</span> <span class="o">+=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">type_count</span> <span class="o">+=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type_count&#39;</span><span class="p">]</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
 </pre></div>
 </p>
   </div>
