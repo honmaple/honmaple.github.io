@@ -5,7 +5,7 @@ var ap = new APlayer({
     showlrc: 1,
     mutex: true,
     theme: '#444',
-    listmaxheight: '128px',
+    listmaxheight: '100%',
     music: [{
         title: "等风也等你",
         author: "XIXE",
