@@ -20,6 +20,10 @@ $(document).ready(function(){
   e.click(function() {
     window.scrollTo(0, 0);
   });
+  $('[data-fancybox]').fancybox({
+    protect: true
+  });
+
 
   particlesJS("particles-js", {
     "particles": {
