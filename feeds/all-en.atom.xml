@@ -1,5 +1,268 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog</title><link href="http://honmaple.me/" rel="alternate"></link><link href="http://honmaple.me/feeds/all-en.atom.xml" rel="self"></link><id>http://honmaple.me/</id><updated>2017-11-08T16:43:26+08:00</updated><entry><title>python运行超时设置</title><link href="http://honmaple.me/articles/2017/11/python%E8%BF%90%E8%A1%8C%E8%B6%85%E6%97%B6%E8%AE%BE%E7%BD%AE.html" rel="alternate"></link><published>2017-11-08T16:43:26+08:00</published><updated>2017-11-08T16:43:26+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2017-11-08:/articles/2017/11/python运行超时设置.html</id><summary type="html">
+<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog</title><link href="http://honmaple.me/" rel="alternate"></link><link href="http://honmaple.me/feeds/all-en.atom.xml" rel="self"></link><id>http://honmaple.me/</id><updated>2017-11-19T21:39:43+08:00</updated><entry><title>使用tornado实时输出日志</title><link href="http://honmaple.me/articles/2017/11/%E4%BD%BF%E7%94%A8tornado%E5%AE%9E%E6%97%B6%E8%BE%93%E5%87%BA%E6%97%A5%E5%BF%97.html" rel="alternate"></link><published>2017-11-19T21:39:43+08:00</published><updated>2017-11-19T21:39:43+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2017-11-19:/articles/2017/11/使用tornado实时输出日志.html</id><summary type="html">
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;tornado&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tornado.web&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Application&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tornado.web&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;RequestHandler&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tornado.websocket&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;WebSocketHandler&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;os&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;json&lt;/span&gt;
+
+&lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;#39;&amp;#39;&amp;lt;!doctype html&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;&amp;lt;html lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;  &amp;lt;head&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;meta charset=&amp;quot;UTF-8&amp;quot;/&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;title&amp;gt;Document&amp;lt;/title&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;meta name=&amp;quot;viewport&amp;quot; content=&amp;quot;width=device-width, initial-scale=1&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;script src=&amp;quot;https://cdn.bootcss.com/jquery …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;tornado&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tornado.web&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Application&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tornado.web&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;RequestHandler&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tornado.websocket&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;WebSocketHandler&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;os&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;json&lt;/span&gt;
+
+&lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;#39;&amp;#39;&amp;lt;!doctype html&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;&amp;lt;html lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;  &amp;lt;head&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;meta charset=&amp;quot;UTF-8&amp;quot;/&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;title&amp;gt;Document&amp;lt;/title&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;meta name=&amp;quot;viewport&amp;quot; content=&amp;quot;width=device-width, initial-scale=1&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;script src=&amp;quot;https://cdn.bootcss.com/jquery/2.1.4/jquery.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;script src=&amp;quot;https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;link rel=&amp;quot;stylesheet&amp;quot; href=&amp;quot;https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;script type=&amp;quot;text/javascript&amp;quot; charset=&amp;quot;utf-8&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;     $(function() {&lt;/span&gt;
+&lt;span class="s1"&gt;         if (typeof String.prototype.startsWith != &amp;#39;function&amp;#39;) {&lt;/span&gt;
+&lt;span class="s1"&gt;             String.prototype.startsWith = function (prefix){&lt;/span&gt;
+&lt;span class="s1"&gt;                 return this.slice(0, prefix.length) === prefix;&lt;/span&gt;
+&lt;span class="s1"&gt;             };&lt;/span&gt;
+&lt;span class="s1"&gt;         }&lt;/span&gt;
+&lt;span class="s1"&gt;         var output = $(&amp;quot;#stdout-output&amp;quot;).html();&lt;/span&gt;
+&lt;span class="s1"&gt;         function addToOutput(msg) {&lt;/span&gt;
+&lt;span class="s1"&gt;             /* output = $(&amp;quot;#output&amp;quot;).html() + &amp;#39;&amp;lt;br/&amp;gt;&amp;#39; + msg;*/&lt;/span&gt;
+&lt;span class="s1"&gt;             if (msg.startsWith(&amp;#39;stderr:&amp;#39;)) {&lt;/span&gt;
+&lt;span class="s1"&gt;                 if (!$(&amp;#39;a[href=&amp;quot;#stderr&amp;quot;]&amp;#39;).hasClass(&amp;quot;alarm-report&amp;quot;) &amp;amp;&amp;amp; $(&amp;#39;ul[role=&amp;quot;tablist&amp;quot;] li.active a&amp;#39;).attr(&amp;#39;href&amp;#39;) != &amp;#39;#stderr&amp;#39;) {&lt;/span&gt;
+&lt;span class="s1"&gt;                     $(&amp;#39;a[href=&amp;quot;#stderr&amp;quot;]&amp;#39;).addClass(&amp;quot;alarm-report&amp;quot;)&lt;/span&gt;
+&lt;span class="s1"&gt;                 }&lt;/span&gt;
+&lt;span class="s1"&gt;                 output = $(&amp;quot;#stderr-output&amp;quot;).html() + msg.replace(/^stderr:/,&amp;#39;&amp;#39;);&lt;/span&gt;
+&lt;span class="s1"&gt;                 $(&amp;quot;#stderr-output&amp;quot;).html(output);&lt;/span&gt;
+&lt;span class="s1"&gt;                 $(&amp;#39;#stderr-output&amp;#39;).scrollTop($(&amp;#39;#stderr-output&amp;#39;)[0].scrollHeight);&lt;/span&gt;
+&lt;span class="s1"&gt;             }else {&lt;/span&gt;
+&lt;span class="s1"&gt;                 if (!$(&amp;#39;a[href=&amp;quot;#stdout&amp;quot;]&amp;#39;).hasClass(&amp;quot;alarm-report&amp;quot;) &amp;amp;&amp;amp; $(&amp;#39;ul[role=&amp;quot;tablist&amp;quot;] li.active a&amp;#39;).attr(&amp;#39;href&amp;#39;) != &amp;#39;#stdout&amp;#39;) {&lt;/span&gt;
+&lt;span class="s1"&gt;                     $(&amp;#39;a[href=&amp;quot;#stdout&amp;quot;]&amp;#39;).addClass(&amp;quot;alarm-report&amp;quot;)&lt;/span&gt;
+&lt;span class="s1"&gt;                 }&lt;/span&gt;
+&lt;span class="s1"&gt;                 output = $(&amp;quot;#stdout-output&amp;quot;).html() + msg.replace(/^stdout:/,&amp;#39;&amp;#39;);&lt;/span&gt;
+&lt;span class="s1"&gt;                 $(&amp;quot;#stdout-output&amp;quot;).html(output);&lt;/span&gt;
+&lt;span class="s1"&gt;                 $(&amp;#39;#stdout-output&amp;#39;).scrollTop($(&amp;#39;#stdout-output&amp;#39;)[0].scrollHeight);&lt;/span&gt;
+&lt;span class="s1"&gt;             }&lt;/span&gt;
+&lt;span class="s1"&gt;         }&lt;/span&gt;
+&lt;span class="s1"&gt;         $(&amp;#39;a#clear&amp;#39;).click(function() {&lt;/span&gt;
+&lt;span class="s1"&gt;             var active_tab = $(&amp;#39;ul[role=&amp;quot;tablist&amp;quot;] li.active a&amp;#39;).attr(&amp;#39;href&amp;#39;);&lt;/span&gt;
+&lt;span class="s1"&gt;             $(active_tab + &amp;#39;-output&amp;#39;).html(&amp;#39;&amp;#39;);&lt;/span&gt;
+&lt;span class="s1"&gt;         })&lt;/span&gt;
+&lt;span class="s1"&gt;         $(&amp;#39;a#load&amp;#39;).click(function() {&lt;/span&gt;
+&lt;span class="s1"&gt;             var active_tab = $(&amp;#39;ul[role=&amp;quot;tablist&amp;quot;] li.active a&amp;#39;).attr(&amp;#39;href&amp;#39;);&lt;/span&gt;
+&lt;span class="s1"&gt;             ws.send(JSON.stringify({room:&amp;#39;load&amp;#39;,msg:active_tab.replace(/^#/,&amp;#39;&amp;#39;)}));&lt;/span&gt;
+&lt;span class="s1"&gt;         })&lt;/span&gt;
+&lt;span class="s1"&gt;        $(&amp;#39;a[data-toggle=&amp;quot;tab&amp;quot;]&amp;#39;).on(&amp;#39;shown.bs.tab&amp;#39;, function (e) {&lt;/span&gt;
+&lt;span class="s1"&gt;            if ($(e.target).hasClass(&amp;quot;alarm-report&amp;quot;)) {&lt;/span&gt;
+&lt;span class="s1"&gt;                $(e.target).removeClass(&amp;quot;alarm-report&amp;quot;)&lt;/span&gt;
+&lt;span class="s1"&gt;            }&lt;/span&gt;
+&lt;span class="s1"&gt;        })&lt;/span&gt;
+&lt;span class="s1"&gt;         if (&amp;quot;MozWebSocket&amp;quot; in window) {&lt;/span&gt;
+&lt;span class="s1"&gt;             WebSocket = MozWebSocket;&lt;/span&gt;
+&lt;span class="s1"&gt;         }&lt;/span&gt;
+&lt;span class="s1"&gt;         if (WebSocket) {&lt;/span&gt;
+&lt;span class="s1"&gt;             var ws = new WebSocket(&amp;quot;ws://&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s1"&gt;/show&amp;quot;);&lt;/span&gt;
+&lt;span class="s1"&gt;             ws.onopen = function() {};&lt;/span&gt;
+&lt;span class="s1"&gt;             ws.onmessage = function (evt) {&lt;/span&gt;
+&lt;span class="s1"&gt;                 addToOutput(evt.data);&lt;/span&gt;
+&lt;span class="s1"&gt;             };&lt;/span&gt;
+&lt;span class="s1"&gt;             ws.onclose = function() {};&lt;/span&gt;
+&lt;span class="s1"&gt;         } else {&lt;/span&gt;
+&lt;span class="s1"&gt;             alert(&amp;quot;WebSocket not supported&amp;quot;);&lt;/span&gt;
+&lt;span class="s1"&gt;         }&lt;/span&gt;
+&lt;span class="s1"&gt;     })&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;style type=&amp;quot;text/css&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;     .input-group {&lt;/span&gt;
+&lt;span class="s1"&gt;         margin-bottom: 5px;&lt;/span&gt;
+&lt;span class="s1"&gt;     }&lt;/span&gt;
+&lt;span class="s1"&gt;     .input-group-addon {&lt;/span&gt;
+&lt;span class="s1"&gt;         background-color:#337ab7;&lt;/span&gt;
+&lt;span class="s1"&gt;         color:#fff;&lt;/span&gt;
+&lt;span class="s1"&gt;         border-color:#337ab7;&lt;/span&gt;
+&lt;span class="s1"&gt;     }&lt;/span&gt;
+&lt;span class="s1"&gt;     li[aria-selected=&amp;quot;true&amp;quot;] {&lt;/span&gt;
+&lt;span class="s1"&gt;         display:none;&lt;/span&gt;
+&lt;span class="s1"&gt;     }&lt;/span&gt;
+&lt;span class="s1"&gt;     li[role=&amp;quot;presentation&amp;quot;] a{&lt;/span&gt;
+&lt;span class="s1"&gt;         border-bottom-left-radius:0;&lt;/span&gt;
+&lt;span class="s1"&gt;         border-bottom-right-radius:0;&lt;/span&gt;
+&lt;span class="s1"&gt;     }&lt;/span&gt;
+&lt;span class="s1"&gt;     .well {&lt;/span&gt;
+&lt;span class="s1"&gt;         color:#eee;&lt;/span&gt;
+&lt;span class="s1"&gt;         border-top:0;&lt;/span&gt;
+&lt;span class="s1"&gt;         border-top-left-radius:0;&lt;/span&gt;
+&lt;span class="s1"&gt;         border-top-right-radius:0;&lt;/span&gt;
+&lt;span class="s1"&gt;     }&lt;/span&gt;
+&lt;span class="s1"&gt;     #stdout-output,#stderr-output {&lt;/span&gt;
+&lt;span class="s1"&gt;         background-color:#333;&lt;/span&gt;
+&lt;span class="s1"&gt;         height:600px;&lt;/span&gt;
+&lt;span class="s1"&gt;         overflow-y:auto;&lt;/span&gt;
+&lt;span class="s1"&gt;         padding:10px;&lt;/span&gt;
+&lt;span class="s1"&gt;     }&lt;/span&gt;
+&lt;span class="s1"&gt;     .alarm-report {&lt;/span&gt;
+&lt;span class="s1"&gt;         border:2px solid #333;&lt;/span&gt;
+&lt;span class="s1"&gt;         border-bottom:none;&lt;/span&gt;
+&lt;span class="s1"&gt;         animation: flash 1s linear infinite;&lt;/span&gt;
+&lt;span class="s1"&gt;     }&lt;/span&gt;
+
+&lt;span class="s1"&gt;     @keyframes flash{&lt;/span&gt;
+&lt;span class="s1"&gt;         from {&lt;/span&gt;
+&lt;span class="s1"&gt;             border-color: #333;&lt;/span&gt;
+&lt;span class="s1"&gt;         }&lt;/span&gt;
+&lt;span class="s1"&gt;         to {&lt;/span&gt;
+&lt;span class="s1"&gt;             border-color: red;&lt;/span&gt;
+&lt;span class="s1"&gt;         }&lt;/span&gt;
+&lt;span class="s1"&gt;     }&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;  &amp;lt;/head&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;  &amp;lt;body&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;div class=&amp;quot;row&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;      &amp;lt;div class=&amp;quot;col-md-offset-2 col-md-8&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;        &amp;lt;!-- Nav tabs --&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;        &amp;lt;ul class=&amp;quot;nav nav-pills nav-justified&amp;quot; role=&amp;quot;tablist&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;li role=&amp;quot;presentation&amp;quot; class=&amp;quot;active&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;            &amp;lt;a href=&amp;quot;#stdout&amp;quot; aria-controls=&amp;quot;stdout&amp;quot; role=&amp;quot;tab&amp;quot; data-toggle=&amp;quot;tab&amp;quot;&amp;gt;标准输出&amp;lt;/a&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;/li&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;li role=&amp;quot;presentation&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;            &amp;lt;a href=&amp;quot;#stderr&amp;quot; aria-controls=&amp;quot;stderr&amp;quot; role=&amp;quot;tab&amp;quot; data-toggle=&amp;quot;tab&amp;quot;&amp;gt;错误输出&amp;lt;/a&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;/li&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;li role=&amp;quot;presentation&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;            &amp;lt;a href=&amp;quot;javascript:void(0);&amp;quot; id=&amp;quot;load&amp;quot;&amp;gt;载入历史&amp;lt;/a&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;/li&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;li role=&amp;quot;presentation&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;            &amp;lt;a href=&amp;quot;javascript:void(0);&amp;quot; id=&amp;quot;clear&amp;quot;&amp;gt;清空&amp;lt;/a&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;/li&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;        &amp;lt;/ul&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;        &amp;lt;!-- Tab panes --&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;        &amp;lt;div class=&amp;quot;tab-content&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;div role=&amp;quot;tabpanel&amp;quot; class=&amp;quot;tab-pane active&amp;quot; id=&amp;quot;stdout&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;            &amp;lt;pre contentEditable=&amp;quot;false&amp;quot; class=&amp;quot;well&amp;quot; id=&amp;quot;stdout-output&amp;quot;&amp;gt;&amp;lt;/pre&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;/div&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;div role=&amp;quot;tabpanel&amp;quot; class=&amp;quot;tab-pane&amp;quot; id=&amp;quot;stderr&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;            &amp;lt;pre contentEditable=&amp;quot;false&amp;quot; class=&amp;quot;well&amp;quot; id=&amp;quot;stderr-output&amp;quot;&amp;gt;&amp;lt;/pre&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;          &amp;lt;/div&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;        &amp;lt;/div&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;      &amp;lt;/div&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;    &amp;lt;/div&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;  &amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+&lt;span class="s1"&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;create_app&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;handlers&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[(&lt;/span&gt;&lt;span class="sa"&gt;r&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;/&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AnsibleHandler&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="sa"&gt;r&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/show&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;CommandHandler&lt;/span&gt;&lt;span class="p"&gt;)]&lt;/span&gt;
+    &lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Application&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="n"&gt;handlers&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;handlers&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;cookie_secret&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;asdadasdadasdasdasda&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt;
+
+
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;cd&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;newPath&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;newPath&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;expanduser&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;newPath&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__enter__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;savedPath&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getcwd&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;chdir&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;newPath&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="fm"&gt;__exit__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;etype&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;traceback&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;chdir&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;savedPath&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;AnsibleHandler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;RequestHandler&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;host&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;CommandHandler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;WebSocketHandler&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;WebSocket opened&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;LISTENERS&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;on_message&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;message&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;json&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;loads&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="c1"&gt;# self.write_message(u&amp;quot;You said: &amp;quot; + message[&amp;#39;msg&amp;#39;])&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;room&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;load&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;out_file&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;STDOUT_FILENAME&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;
+                &lt;span class="s1"&gt;&amp;#39;msg&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;stdout&amp;#39;&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="n"&gt;STDERR_FILENAME&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getsize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;out_file&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;10240000&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write_message&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;file is too large!&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;out_file&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;r&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;seek&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SEEK_END&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                    &lt;span class="n"&gt;fsize&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tell&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+                    &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;seek&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;max&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fsize&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;1024&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;readlines&lt;/span&gt;&lt;span class="p"&gt;()[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;800&lt;/span&gt;&lt;span class="p"&gt;:]:&lt;/span&gt;
+                        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write_message&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;{}:{}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;msg&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+                                                          &lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;on_close&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;WebSocket closed&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;LISTENERS&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;remove&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;except&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;pass&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;tail_file&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;where&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;stdout_file&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tell&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;line&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;stdout_file&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;readline&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;stdout_file&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;seek&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;where&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;element&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;LISTENERS&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;element&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write_message&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;stdout:{}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;where&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;stderr_file&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tell&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;line&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;stderr_file&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;readline&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;stderr_file&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;seek&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;where&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;element&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;LISTENERS&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;element&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write_message&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;stderr:{}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;line&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vm"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;STDOUT_FILENAME&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;logs/tail.log&amp;#39;&lt;/span&gt;
+    &lt;span class="n"&gt;STDERR_FILENAME&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;logs/tail_err.log&amp;#39;&lt;/span&gt;
+    &lt;span class="n"&gt;STDOUT_FILENAME&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;abspath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;STDOUT_FILENAME&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;STDERR_FILENAME&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;abspath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;STDERR_FILENAME&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;LISTENERS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+    &lt;span class="n"&gt;stdout_file&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;STDOUT_FILENAME&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;stderr_file&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;STDERR_FILENAME&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;stdout_file&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;seek&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getsize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;STDOUT_FILENAME&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;stderr_file&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;seek&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getsize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;STDERR_FILENAME&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+    &lt;span class="n"&gt;app&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;create_app&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="n"&gt;http_server&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tornado&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;httpserver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;HTTPServer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;http_server&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;listen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;8000&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;0.0.0.0&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;tailed_callback&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tornado&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ioloop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;PeriodicCallback&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tail_file&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;tailed_callback&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="n"&gt;io_loop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tornado&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ioloop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;IOLoop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;instance&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;io_loop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="ne"&gt;SystemExit&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="ne"&gt;KeyboardInterrupt&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;io_loop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;stop&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="n"&gt;stdout_file&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="n"&gt;stderr_file&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+</content><category term="python"></category><category term="tornado"></category><category term="log"></category></entry><entry><title>python运行超时设置</title><link href="http://honmaple.me/articles/2017/11/python%E8%BF%90%E8%A1%8C%E8%B6%85%E6%97%B6%E8%AE%BE%E7%BD%AE.html" rel="alternate"></link><published>2017-11-08T16:43:26+08:00</published><updated>2017-11-08T16:43:26+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2017-11-08:/articles/2017/11/python运行超时设置.html</id><summary type="html">
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;signal&lt;/span&gt;
 
 &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;TimeoutError&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ne"&gt;Exception&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
@@ -723,14 +986,4 @@ ansible-playbook -i hosts playbook.yml -e &amp;#39;args&amp;#39; -t deploy
 &lt;br/&gt;
 一直都在这里
 &lt;/p&gt;
-&lt;/div&gt;</content><category term="life"></category><category term="love"></category></entry><entry><title>七夕</title><link href="http://honmaple.me/articles/2017/08/%E4%B8%83%E5%A4%95.html" rel="alternate"></link><published>2017-08-30T00:00:00+08:00</published><updated>2017-08-30T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2017-08-30:/articles/2017/08/七夕.html</id><summary type="html">
-&lt;p&gt;14.6 = 13.14 / 0.9&lt;/p&gt;
-
-&lt;p&gt;13.14 = 14.6 * 0.9&lt;/p&gt;
-
-&lt;p&gt;&lt;b&gt;终究是无缘&lt;/b&gt;&lt;/p&gt;</summary><content type="html">
-&lt;p&gt;14.6 = 13.14 / 0.9&lt;/p&gt;
-
-&lt;p&gt;13.14 = 14.6 * 0.9&lt;/p&gt;
-
-&lt;p&gt;&lt;b&gt;终究是无缘&lt;/b&gt;&lt;/p&gt;</content><category term="恋"></category></entry></feed>
+&lt;/div&gt;</content><category term="life"></category><category term="love"></category></entry></feed>
