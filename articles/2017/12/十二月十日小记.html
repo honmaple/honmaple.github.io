@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>python尾递归优化 · honmaple's blog ·  爱情诚可贵，自由价更高.</title>
+    <title>十二月十日小记 · honmaple's blog ·  爱情诚可贵，自由价更高.</title>
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet">
@@ -31,7 +31,7 @@
                 <ul class="nav navbar-nav">
                   <li><a href="http://honmaple.me">home</a></li>
                   <li class="dropdown">
-                    <a href="../../../category/life/index.html" >Life</a>
+                    <a href="../../../category/life/index.html" class="active">Life</a>
                     <ul class="dropdown-menu">
                       <li><a href="../../../category/coding/index.html">coding</a></li>
                       <li><a href="../../../category/love/index.html">love</a></li>
@@ -63,12 +63,12 @@
         <div class="col-md-offset-2 col-md-8" style="padding:0;">
           <div class="col-md-offset-1 col-md-10" style="padding:0;">
 <article>
-  <h1 class="entry-title"><a href="../../../articles/2017/12/python尾递归优化.html">python尾递归优化</a></h1>
+  <h1 class="entry-title"><a href="../../../articles/2017/12/十二月十日小记.html">十二月十日小记</a></h1>
   <div class="entry-content entry-article">
 <header class="entry-info">
-  <span class="entry-info-date" title="2017-12-04T10:23:56+08:00">
+  <span class="entry-info-date" title="2017-12-10T23:10:26+08:00">
     <i class="fa fa-calendar-o"></i>
-    一 04 十二月 2017
+    日 10 十二月 2017
   </span>
   <span class="entry-info-sep hidden-xs">|</span>
   <span class="entry-info-author hidden-xs">
@@ -78,84 +78,48 @@
   <span class="entry-info-sep">|</span>
   <span class="entry-info-category">
     <i class="fa fa-folder-o"></i>
-    In <a href="../../../category/coding/index.html">coding</a>
+    In <a href="../../../category/life/index.html">Life</a>
   </span>
   <span class="entry-info-sep">|</span>
   <span class="entry-info-tag">
     <i class="fa fa-bookmark-o"></i>
     tags:
-    <a href="../../../tag/python/index.html">python</a>
+    <a href="../../../tag/life/index.html">life</a>
   </span>
 </header>    <hr class="entry-hr" />
     
+<p>今天真是不错的一天</p>
 
-<p>参考 <a href="https://segmentfault.com/a/1190000007641519">这里</a></p>
+<blockquote>
+<p>今天出门，在电梯遇到一人，“小伙子，你有二十了吧”，“我今年二十X了”，“我看你不到二十的样子”，“我以为我看一的挺老的”，“怎么会。。。”</p>
+</blockquote>
 
-<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TailRecurseException</span><span class="p">(</span><span class="ne">BaseException</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+<blockquote>
+<p>以前只是在电视新闻上看到有人直接撞到玻璃门上，其实真不怪他们，有时候玻璃门真看起来没有一样。我今天就这样直接撞上去了，说实话，还真疼</p>
+</blockquote>
 
+<blockquote>
+<p>附几张今天用手机拍的照片，昨天用相机拍的raw格式暂时打不开/捂脸</p>
+</blockquote>
 
-<span class="k">def</span> <span class="nf">tail_call_optimized</span><span class="p">(</span><span class="n">g</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function decorates a function with tail call</span>
-<span class="sd">    optimization. It does this by throwing an exception</span>
-<span class="sd">    if it is it&#39;s own grandparent, and catching such</span>
-<span class="sd">    exceptions to fake the tail call optimization.</span>
-
-<span class="sd">    This function fails if the decorated</span>
-<span class="sd">    function recurses in a non-tail context.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">f</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span>
-        <span class="c1"># 为什么是grandparent, 函数默认的第一层递归是父调用,</span>
-        <span class="c1"># 对于尾递归, 不希望产生新的函数调用(即:祖父调用),</span>
-        <span class="c1"># 所以这里抛出异常, 拿到参数, 退出被修饰函数的递归调用栈!(后面有动图分析)</span>
-        <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">f_back</span> <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">f_back</span><span class="o">.</span><span class="n">f_back</span> \
-            <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">f_back</span><span class="o">.</span><span class="n">f_back</span><span class="o">.</span><span class="n">f_code</span> <span class="o">==</span> <span class="n">f</span><span class="o">.</span><span class="n">f_code</span><span class="p">:</span>
-            <span class="c1"># 抛出异常</span>
-            <span class="k">raise</span> <span class="n">TailRecurseException</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">g</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="k">except</span> <span class="n">TailRecurseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="c1"># 捕获异常, 拿到参数, 退出被修饰函数的递归调用栈</span>
-                    <span class="n">args</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span>
-                    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">kwargs</span>
-
-    <span class="n">func</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="vm">__doc__</span>
-    <span class="k">return</span> <span class="n">func</span>
-</pre></div>
-
-
-<p>测试
-<div class="highlight"><pre><span></span><span class="nd">@tail_call_optimized</span>
-<span class="k">def</span> <span class="nf">factorial</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">acc</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="s2">&quot;calculate a factorial&quot;</span>
-    <span class="kn">from</span> <span class="nn">pudb</span> <span class="kn">import</span> <span class="n">set_trace</span>
-    <span class="n">set_trace</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">acc</span>
-    <span class="k">return</span> <span class="n">factorial</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="n">acc</span><span class="p">)</span>
-
-<span class="k">print</span> <span class="n">factorial</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
-</pre></div>
-</p>
+<div class="row">
+  <div class="col-md-6">
+    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_153834.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_153834.jpg-thumb" class="lazyload" /></a>
+    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154518.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154518.jpg-thumb" class="lazyload" /></a>
+    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154530.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154530.jpg-thumb" class="lazyload" /></a>
+  </div>
+  <div class="col-md-6">
+    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/PANO_20171210_154546.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/PANO_20171210_154546.jpg-thumb" class="lazyload" /></a>
+    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154137.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154137.jpg-thumb" class="lazyload" /></a>
+    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154951.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154951.jpg-thumb" class="lazyload" /></a>
+  </div>
+</div>
   </div>
   <hr class="entry-hr" />
   <ul class="entry-pager">
-    <li class="previous">
-      <a href="../../../articles/2017/12/十二月十日小记.html" title="Previous article: 十二月十日小记">
-        <i class="fa fa-chevron-left"></i>
-        十二月十日小记
-      </a>
-    </li>
     <li class="next">
-      <a href="../../../articles/2017/11/使用tornado实时输出日志.html" title="Next article: 十二月十日小记">
-        使用tornado实时输出日志
+      <a href="../../../articles/2017/12/python尾递归优化.html" title="Next article: ">
+        python尾递归优化
         <i class="fa fa-chevron-right"></i>
       </a>
     </li>
@@ -164,7 +128,7 @@
     <h2>Comments !</h2>
     <div id="disqus_thread"></div>
     <script type="text/javascript">
-     var disqus_identifier = "articles/2017/12/python尾递归优化.html";
+     var disqus_identifier = "articles/2017/12/十二月十日小记.html";
      (function() {
          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
          dsq.src = 'https://honmaple.disqus.com/embed.js';
