@@ -1,7 +1,7 @@
 function dispatch() {
   var q = document.getElementById("search");
   if (q.value !== "") {
-    var url = 'https://www.google.com/search?q=site:honmaple.org%20' + q.value;
+    var url = 'https://www.google.com/search?q=site:honmaple.me%20' + q.value;
     if (navigator.userAgent.indexOf('iPad') > -1 || navigator.userAgent.indexOf('iPod') > -1 || navigator.userAgent.indexOf('iPhone') > -1) {
       location.href = url;
     } else {
