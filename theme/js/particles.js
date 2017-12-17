@@ -16,6 +16,7 @@ $(document).ready(function(){
   var e = $(".back-to-top");
   $(window).on("scroll", function() {
     e.toggleClass("back-to-top-on", window.pageYOffset > 100);
+      $(".navbar").toggleClass("navbar-fixed", window.pageYOffset > 120);
   }),
   e.click(function() {
     window.scrollTo(0, 0);
