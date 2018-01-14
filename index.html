@@ -62,6 +62,229 @@
         </div>
         <div class="col-md-offset-2 col-md-7 col-center">
             <article>
+                <h1 class="entry-title"><a href="./articles/2018/01/emacs自动更新文件头.html" rel="bookmark" title="Permalink to emacs自动更新文件头">emacs自动更新文件头</a></h1>
+                <div class="entry-content">
+<header class="entry-info">
+  <span class="entry-info-date" title="Updated at 2018-01-14">
+    <i class="fa fa-calendar-o"></i>
+    二 09 一月 2018
+  </span>
+  <span class="entry-info-sep hidden-xs">|</span>
+  <span class="entry-info-author hidden-xs">
+    <i class="fa fa-user-o"></i>
+    By <a href="./author/honmaple.html">honmaple</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-category">
+    <i class="fa fa-folder-o"></i>
+    In <a href="./category/linux/index.html">Linux</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-tag">
+    <i class="fa fa-bookmark-o"></i>
+    tags:
+    <a href="./tag/linux/index.html">linux</a>
+    <a href="./tag/emacs/index.html">emacs</a>
+  </span>
+</header>                    <hr class="entry-hr" />
+                    <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-50921028">自动更新Last Updated</a></li>
+<li><a href="#org-61602970">自动更新Filename</a></li>
+<li><a href="#org-9870572">自动更新Email</a></li>
+</ul>
+</div></div>
+
+
+
+<p>前面已经说过，可以使用<b>auto-insert</b>自动添加文件头，今天来说一说自动更新文件头，比如说每次保存时自动更新<b>last updated</b>字段</p>
+
+
+<h4 id="org-50921028">自动更新Last Updated</h4>
+<p>如果使用的是header2,直接设置相关的变量就可，假如使用的是<b>auto-insert</b>，同样也可以使用emacs内置的<b>time-stamp</b>对Last Updated进行自动更新</p>
+
+<p>time-stamp默认使用<code>Time-stamp:</code>,如果要对<code>Last Updated</code>进行自动更新，只需要简单的设置
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">time-stamp-active</span> <span class="no">t</span><span class="p">)</span>
+<span class="p">(</span><span class="k">setq</span> <span class="nv">time-stamp-line-limit</span> <span class="mi">11</span><span class="p">)</span>
+<span class="p">(</span><span class="k">setq</span> <span class="nv">time-stamp-start</span> <span class="s">&quot;[lL]ast[ -][uU]pdate[ \t]*:?&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="k">setq</span> <span class="nv">time-stamp-end</span> <span class="s">&quot;\n&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="k">setq</span> <span class="nv">time-stamp-format</span> <span class="s">&quot; %#A %Y-%02m-%02d %02H:%02M:%02S (%Z)&quot;</span><span class="p">)</span>
+</pre></div>
+</p>
+
+<p>然后添加
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">add-hook</span> <span class="ss">&#39;before-save-hook</span> <span class="ss">&#39;time-stamp</span><span class="p">)</span>
+</pre></div>
+</p>
+
+<p>这样就能在每次保存时自动更新相应的字段了</p>
+
+<h4 id="org-61602970">自动更新Filename</h4>
+<p>之前遇到过，使用<b>auto-insert</b>在每次创建新文件时自动添加了文件头，但后面文件名被修改了，文件头里的文件名却不会自动更改，基于这个原因需要自己实现一个函数(我没有找到可以使用的已经存在的package)</p>
+
+<p>先理一理逻辑: 只需要查找当前文件前几行信息，如果找到<code>File Name:</code>字段，获取字段信息，与当前文件名进行对比，如果不一致则替换为当前文件名,直接给出代码吧</p>
+
+<ul>
+<li>查找当前文件前几行
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">save-excursion</span>
+    <span class="p">(</span><span class="nf">goto-char</span> <span class="p">(</span><span class="nf">point-min</span><span class="p">))</span> <span class="c1">;;跳转到开头</span>
+    <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">lines</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="nf">&lt;</span> <span class="nv">lines</span> <span class="nv">line-limit</span><span class="p">)</span>
+        <span class="c1">;; 查找</span>
+        <span class="p">(</span><span class="k">setq</span> <span class="nv">lines</span> <span class="p">(</span><span class="nf">1+</span> <span class="nv">lines</span><span class="p">))</span>
+        <span class="p">(</span><span class="nf">forward-line</span> <span class="mi">1</span><span class="p">))))</span>
+</pre></div>
+
+</li>
+<li>获取当前文件名
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nf">file-name-nondirectory</span> <span class="p">(</span><span class="nf">buffer-file-name</span><span class="p">))</span>
+</pre></div>
+
+</li>
+<li>查找File Name
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nf">looking-at</span> <span class="s">&quot;.*\\(File Name:\\)\\(.*\\)&quot;</span><span class="p">)</span>
+</pre></div>
+
+</li>
+<li>对文件名进行比对与替换
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">beg</span> <span class="p">(</span><span class="nf">match-beginning</span> <span class="mi">2</span><span class="p">))</span>
+      <span class="p">(</span><span class="nv">end</span> <span class="p">(</span><span class="nf">match-end</span> <span class="mi">2</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">not</span> <span class="p">(</span><span class="nv">string=</span> <span class="nv">文件名</span> <span class="p">(</span><span class="nv">string-trim-left</span> <span class="p">(</span><span class="nv">match-string</span> <span class="mi">2</span><span class="p">))))</span>
+    <span class="p">(</span><span class="nf">goto-char</span> <span class="nv">beg</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">delete-region</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">insert</span> <span class="s">&quot; &quot;</span> <span class="nv">name</span><span class="p">)))</span>
+</pre></div>
+
+
+<p>即可得到相关的完整函数(完整函数后面再讲)</p>
+</li>
+</ul>
+<h4 id="org-9870572">自动更新Email</h4>
+<p>工作和平时使用的邮箱不一样，我虽然设置了<i>at_home</i>变量区分工作与平时的邮箱,但不是每次我都记得要更新这个变量，所以有了这个需要，自动将文件头里的email信息更改为平时所用的邮箱，大致逻辑与自动更新Filename相同，所以我写了一个<b>macro</b>来自动生成相关的代码</p>
+
+<p>直接给出代码
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/header-update-action</span><span class="p">(</span><span class="nv">name</span><span class="p">)</span>
+  <span class="s">&quot;A.&quot;</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">beg</span> <span class="p">(</span><span class="nf">match-beginning</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="p">(</span><span class="nv">end</span> <span class="p">(</span><span class="nf">match-end</span> <span class="mi">2</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">not</span> <span class="p">(</span><span class="nv">string=</span> <span class="nv">name</span> <span class="p">(</span><span class="nv">string-trim-left</span> <span class="p">(</span><span class="nv">match-string</span> <span class="mi">2</span><span class="p">))))</span>
+      <span class="p">(</span><span class="nf">goto-char</span> <span class="nv">beg</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">delete-region</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">insert</span> <span class="s">&quot; &quot;</span> <span class="nv">name</span><span class="p">))))</span>
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/header-update</span><span class="p">(</span><span class="nv">regex</span> <span class="nv">default</span> <span class="nv">line-limit</span><span class="p">)</span>
+  <span class="s">&quot;B.&quot;</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">save-excursion</span>
+    <span class="p">(</span><span class="nf">goto-char</span> <span class="p">(</span><span class="nf">point-min</span><span class="p">))</span>
+    <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">lines</span> <span class="mi">0</span><span class="p">))</span>
+      <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="nf">&lt;</span> <span class="nv">lines</span> <span class="nv">line-limit</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">regex</span><span class="p">))</span>
+          <span class="p">(</span><span class="nv">maple/header-update-action</span> <span class="nv">default</span><span class="p">))</span>
+        <span class="p">(</span><span class="k">setq</span> <span class="nv">lines</span> <span class="p">(</span><span class="nf">1+</span> <span class="nv">lines</span><span class="p">))</span>
+        <span class="p">(</span><span class="nf">forward-line</span> <span class="mi">1</span><span class="p">)))))</span>
+<span class="p">(</span><span class="nb">defmacro</span> <span class="nv">maple/header-update-engine</span> <span class="p">(</span><span class="nv">name</span> <span class="nv">regex</span> <span class="nv">default</span> <span class="kp">&amp;optional</span> <span class="nv">line-limit</span><span class="p">)</span>
+  <span class="s">&quot;C.&quot;</span>
+  <span class="o">`</span><span class="p">(</span><span class="nb">defun</span> <span class="o">,</span><span class="p">(</span><span class="nf">intern</span> <span class="p">(</span><span class="nf">format</span> <span class="s">&quot;maple/header-update-%s&quot;</span> <span class="nv">name</span><span class="p">))</span> <span class="p">()</span>
+     <span class="o">,</span><span class="p">(</span><span class="nf">format</span> <span class="s">&quot;Update %s with regex.&quot;</span> <span class="nv">name</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+     <span class="p">(</span><span class="nv">maple/header-update</span> <span class="o">,</span><span class="nv">regex</span> <span class="o">,</span><span class="nv">default</span> <span class="o">,</span><span class="p">(</span><span class="k">or</span> <span class="nv">line-limit</span> <span class="mi">7</span><span class="p">))))</span>
+</pre></div>
+</p>
+
+<p>这样，我就可以调用<b>macro</b>来生成代码</p>
+<ul>
+<li>自动更新Filename
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">maple/header-update-engine</span> <span class="s">&quot;filename&quot;</span>
+                            <span class="s">&quot;.*\\(File Name:\\)\\(.*\\)&quot;</span>
+                            <span class="p">(</span><span class="nf">file-name-nondirectory</span> <span class="p">(</span><span class="nf">buffer-file-name</span><span class="p">))</span> <span class="mi">7</span><span class="p">)</span>
+</pre></div>
+
+
+<p>生成一个<code>maple/header-update-filename</code>的函数,只要调用它即可更新文件名信息</p>
+</li>
+<li>自动更新email
+<p>同样的
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">maple/header-update-engine</span> <span class="s">&quot;email&quot;</span>
+                            <span class="s">&quot;.*\\(Email:\\)\\(.*\\)&quot;</span>
+                            <span class="s">&quot;youemail@gmail.com&quot;</span> <span class="mi">7</span><span class="p">)</span>
+</pre></div>
+
+生成一个可供调用的<code>maple/header-update-email</code></p>
+</li>
+</ul>
+<p>如果想要添加其它功能，只要使用<code>maple/header-update-engine</code>即可</p>
+
+<p>相关的配置可以在我的<a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/site-lisp/header/header.el">github</a>上找到</p>
+<p>There are <a href="./articles/2018/01/emacs自动更新文件头.html#disqus_thread">comments</a>.</p>
+                </div>
+            </article>
+                <ul class="entry-list">
+            <li><article>
+                <h1 class="entry-title"><a href="./articles/2018/01/emacs自动添加文件头.html" rel="bookmark" title="Permalink to emacs自动添加文件头">emacs自动添加文件头</a></h1>
+                <div class="entry-content">
+<header class="entry-info">
+  <span class="entry-info-date" title="Updated at 2018-01-14">
+    <i class="fa fa-calendar-o"></i>
+    一 08 一月 2018
+  </span>
+  <span class="entry-info-sep hidden-xs">|</span>
+  <span class="entry-info-author hidden-xs">
+    <i class="fa fa-user-o"></i>
+    By <a href="./author/honmaple.html">honmaple</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-category">
+    <i class="fa fa-folder-o"></i>
+    In <a href="./category/linux/index.html">Linux</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-tag">
+    <i class="fa fa-bookmark-o"></i>
+    tags:
+    <a href="./tag/linux/index.html">linux</a>
+    <a href="./tag/emacs/index.html">emacs</a>
+  </span>
+</header>                <hr class="entry-hr" />
+                <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-51703537">基础使用</a></li>
+<li><a href="#org-5207131">自定义文件头</a></li>
+<li><a href="#org-74786389">提取文件头公共信息</a></li>
+</ul>
+</div></div>
+
+
+
+<p>想要在emacs中添加文件头有好几种方法:</p>
+<ul>
+<li>直接手打</li>
+<li>使用模板yasnippet</li>
+<li>使用header2</li>
+<li>使用内置的package <b>auto-insert</b>
+</li>
+</ul>
+<p>header2可能是最方便的一种自动添加文件头的方式，但我之前使用过，想要自定义自己想要的内容很难，而且白白浪费header2的功能</p>
+
+<p>今天主要说一说emacs内置里<b>auto-insert</b>,使用它在创建文件时自动添加文件头信息</p>
+
+<h4 id="org-51703537">基础使用</h4>
+<p>直接<code>(auto-insert-mode)</code>
+并且设置
+<div class="highlight"><pre><span></span>(setq auto-insert-query nil) ;; 不提醒
+</pre></div>
+</p>
+
+<h4 id="org-5207131">自定义文件头</h4>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">auto-insert-alist</span>
+      <span class="o">&#39;</span><span class="p">(((</span><span class="nv">python-mode</span> <span class="o">.</span> <span class="s">&quot;Python program&quot;</span><span class="p">)</span> <span class="no">nil</span>
+         <span class="s">&quot;#!/usr/bin/env python\n&quot;</span>
+         <span class="s">&quot;# -*- coding: utf-8 -*-\n&quot;</span>
+         <span class="s">&quot;# **************************************************************************\n&quot;</span>
+         <span class="s">&quot;# Copyright © &quot;</span> <span class="p">(</span><span class="nf">substring</span> <span class="p">(</span><span class="nf">current-time-string</span><span class="p">)</span> <span class="mi">-4</span><span class="p">)</span> <span class="s">&quot; &quot;</span> <span class="p">(</span><span class="nf">user-full-name</span><span class="p">)</span> <span class="s">&quot;\n …</span></pre></div>
+                  <div class="text-center">
+                    <a class="btn entry-read-more" href="./articles/2018/01/emacs自动添加文件头.html">阅读全文 »</a>
+                  </div>
+                </div>
+            </article></li>
+            <li><article>
                 <h1 class="entry-title"><a href="./articles/2018/01/关于时间与空间的猜想.html" rel="bookmark" title="Permalink to 关于时间与空间的猜想">关于时间与空间的猜想</a></h1>
                 <div class="entry-content">
 <header class="entry-info">
@@ -85,8 +308,8 @@
     tags:
     <a href="./tag/life/index.html">life</a>
   </span>
-</header>                    <hr class="entry-hr" />
-                    
+</header>                <hr class="entry-hr" />
+                
 <ul>
 <li>背景
 <p>不知道从何时开始，就听过这样一个说法: 如果人类所达到的速度超越光速,那么人类将穿越时空。前些年网文电视剧可谓穿越盛行，今天我也来胡言乱语一番!</p>
@@ -100,11 +323,12 @@
 
 </li>
 </ul>
-<p>当然，z空间也可以看作是一个y空间里的一个介质，光速不能通过简单的线性公式算出，反正我是在胡言乱语而已</p>
-<p>There are <a href="./articles/2018/01/关于时间与空间的猜想.html#disqus_thread">comments</a>.</p>
+<p>当然 …</p>
+                  <div class="text-center">
+                    <a class="btn entry-read-more" href="./articles/2018/01/关于时间与空间的猜想.html">阅读全文 »</a>
+                  </div>
                 </div>
-            </article>
-                <ul class="entry-list">
+            </article></li>
             <li><article>
                 <h1 class="entry-title"><a href="./articles/2017/12/linux tips.html" rel="bookmark" title="Permalink to linux tips">linux tips</a></h1>
                 <div class="entry-content">
@@ -408,105 +632,6 @@
 <p>嗯，好想法，就等谁实现了</p>
                   <div class="text-center">
                     <a class="btn entry-read-more" href="./articles/2017/11/一个很好的想法.html">阅读全文 »</a>
-                  </div>
-                </div>
-            </article></li>
-            <li><article>
-                <h1 class="entry-title"><a href="./articles/2017/10/我走过的地方，每一处都是风景.html" rel="bookmark" title="Permalink to 我走过的地方，每一处都是风景">我走过的地方，每一处都是风景</a></h1>
-                <div class="entry-content">
-<header class="entry-info">
-  <span class="entry-info-date" title="2017-10-22T23:57:07+08:00">
-    <i class="fa fa-calendar-o"></i>
-    日 22 十月 2017
-  </span>
-  <span class="entry-info-sep hidden-xs">|</span>
-  <span class="entry-info-author hidden-xs">
-    <i class="fa fa-user-o"></i>
-    By <a href="./author/honmaple.html">honmaple</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-category">
-    <i class="fa fa-folder-o"></i>
-    In <a href="./category/life/index.html">Life</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-tag">
-    <i class="fa fa-bookmark-o"></i>
-    tags:
-    <a href="./tag/life/index.html">life</a>
-    <a href="./tag/travel/index.html">travel</a>
-  </span>
-</header>                <hr class="entry-hr" />
-                
-
-<p>杭州还是挺美的,不过有些拍不出那种感觉
-<div class="row">
-  <div class="col-md-6">
-    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171105_180212.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171105_180212.jpg-thumb" class="lazyload" /></a>
-    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_153403.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_153403.jpg-thumb" class="lazyload" /></a>
-    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_153442.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_153442.jpg-thumb" class="lazyload" /></a>
-    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_153330.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_153330.jpg-thumb" class="lazyload" /></a>
-  </div>
-  <div class="col-md-6">
-    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_153435.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_153435.jpg-thumb" class="lazyload" /></a>
-    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_152826.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_152826.jpg-thumb" class="lazyload" /></a>
-    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_154506.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_154506.jpg-thumb" class="lazyload" /></a>
-    <a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_135804.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/10/IMG_20171021_135804.jpg-thumb" class="lazyload" /></a>
-  </div>
-</div></p>
-                  <div class="text-center">
-                    <a class="btn entry-read-more" href="./articles/2017/10/我走过的地方，每一处都是风景.html">阅读全文 »</a>
-                  </div>
-                </div>
-            </article></li>
-            <li><article>
-                <h1 class="entry-title"><a href="./articles/2017/10/为pelican增加上一篇下一篇功能.html" rel="bookmark" title="Permalink to 为pelican增加上一篇下一篇功能">为pelican增加上一篇下一篇功能</a></h1>
-                <div class="entry-content">
-<header class="entry-info">
-  <span class="entry-info-date" title="2017-10-22T22:40:28+08:00">
-    <i class="fa fa-calendar-o"></i>
-    日 22 十月 2017
-  </span>
-  <span class="entry-info-sep hidden-xs">|</span>
-  <span class="entry-info-author hidden-xs">
-    <i class="fa fa-user-o"></i>
-    By <a href="./author/honmaple.html">honmaple</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-category">
-    <i class="fa fa-folder-o"></i>
-    In <a href="./category/python/index.html">Python</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-tag">
-    <i class="fa fa-bookmark-o"></i>
-    tags:
-    <a href="./tag/python/index.html">python</a>
-    <a href="./tag/pelican/index.html">pelican</a>
-  </span>
-</header>                <hr class="entry-hr" />
-                
-
-<p>功能实现很简单, <b>pelican</b>也有类似的插件实现 <a href="https://github.com/getpelican/pelican-plugins/tree/master/neighbors">https://github.com/getpelican/pelican-plugins/tree/master/neighbors</a></p>
-
-<p>不过自己实现起来更爽不是吗? 而且类似<b>prev_article_in_category</b>和<b>prev_article_in_subcategory</b>的功能我并不需要</p>
-
-<p>首先参考<b>pelican</b>的文档,基础实现
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_neighbors</span><span class="p">(</span><span class="n">generator</span><span class="p">):</span>
-    <span class="o">....</span>
-
-<span class="k">def</span> <span class="nf">register</span><span class="p">():</span>
-    <span class="n">signals</span><span class="o">.</span><span class="n">article_generator_finalized</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">add_neighbors</span><span class="p">)</span>
-</pre></div>
-</p>
-
-<p>然后在<b>generator.articles</b>列表上进行操作,为article增加<b>previous_article</b>和<b>next_article</b>对象</p>
-
-<p>先进行排序(按时间)
-<div class="highlight"><pre><span></span><span class="n">articles</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">articles</span>
-<span class="n">articles</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x …</span></pre></div></p>
-                  <div class="text-center">
-                    <a class="btn entry-read-more" href="./articles/2017/10/为pelican增加上一篇下一篇功能.html">阅读全文 »</a>
                   </div>
                 </div>
             </article></li>
