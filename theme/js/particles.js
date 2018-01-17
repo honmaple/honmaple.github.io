@@ -31,6 +31,15 @@ $(document).ready(function(){
         protect: true
     });
 
+    $(".entry-comment").click(function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'https://honmaple.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        $(".entry-comment").parent().fadeToggle(800);
+    });
+    $(".entry-theme").click(function() {
+        toggleTheme();
+    });
 
     particlesJS("particles-js", {
         "particles": {
@@ -88,7 +97,7 @@ $(document).ready(function(){
             },
             "move": {
                 "enable": true,
-                "speed": 12,
+                "speed": 15,
                 "direction": "none",
                 "random": false,
                 "straight": false,
