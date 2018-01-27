@@ -40,6 +40,10 @@ $(document).ready(function(){
     $(".entry-theme").click(function() {
         toggleTheme();
     });
+     $(".navbar-logo").error(function() {
+         var content = '<span class="navbar-title">' + $(".navbar-logo").attr("alt") + '</span>';
+         $(".navbar-logo").parent().html(content);
+     });
 
     particlesJS("particles-js", {
         "particles": {
