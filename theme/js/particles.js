@@ -14,7 +14,12 @@ function dispatch() {
 }
 $(document).ready(function(){
     var e = $(".back-to-top");
+    var offsetHeight = document.body.offsetHeight;
+    var scrollHeight = document.body.scrollHeight;
     $(window).on("scroll", function() {
+        if (scrollHeight - 243 < offsetHeight) {
+            $(".footer").css("margin-top",-36 + (offsetHeight - scrollHeight + 243) + "px");
+        }
         e.toggleClass("back-to-top-on", window.pageYOffset > 120);
         $(".navbar").toggleClass("navbar-fixed", window.pageYOffset > 120);
         if (!$("#navbar-title").length && window.pageYOffset > 120 && window.innerWidth > 1280 && $(".entry-title").length == 1) {

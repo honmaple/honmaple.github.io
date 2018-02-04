@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ansible-playbook中tasks单进程 · honmaple's blog ·  爱情诚可贵，自由价更高.</title>
+    <title>python gist · honmaple's blog ·  爱情诚可贵，自由价更高.</title>
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/fancybox/3.1.25/jquery.fancybox.min.css" rel="stylesheet">
@@ -38,7 +38,7 @@
                     <li><a href="../../../category/recall/index.html">我不怪你</a></li>
                   </ul>
                 </li>
-                <li class="active"><a href="../../../category/linux/index.html">字符艺术</a></li>
+                <li ><a href="../../../category/linux/index.html">字符艺术</a></li>
                 <li ><a href="../../../category/python/index.html">人生苦短</a></li>
                 <li ><a href="../../../category/security/index.html">极客安全</a></li>
                 <li class="dropdown">
@@ -62,12 +62,12 @@
         </div>
         <div class="col-md-offset-2 col-md-7 col-center">
 <article>
-  <h1 class="entry-title"><a href="../../../articles/2017/09/ansible-playbook中tasks单进程.html">ansible-playbook中tasks单进程</a></h1>
+  <h1 class="entry-title"><a href="../../../articles/2017/01/python gist.html">python gist</a></h1>
   <div class="entry-content entry-article">
 <header class="entry-info">
-  <span class="entry-info-date" title="2017-09-19T00:00:00+08:00">
+  <span class="entry-info-date" title="Updated at 2018-02-04">
     <i class="fa fa-calendar-o"></i>
-    二 19 九月 2017
+    日 29 一月 2017
   </span>
   <span class="entry-info-sep hidden-xs">|</span>
   <span class="entry-info-author hidden-xs">
@@ -77,46 +77,65 @@
   <span class="entry-info-sep">|</span>
   <span class="entry-info-category">
     <i class="fa fa-folder-o"></i>
-    In <a href="../../../category/linux/index.html">Linux</a>
+    In <a href="../../../category/coding/index.html">coding</a>
   </span>
   <span class="entry-info-sep">|</span>
   <span class="entry-info-tag">
     <i class="fa fa-bookmark-o"></i>
     tags:
-    <a href="../../../tag/linux/index.html">linux</a>
-    <a href="../../../tag/ansible/index.html">ansible</a>
+    <a href="../../../tag/python/index.html">python</a>
+    <a href="../../../tag/gist/index.html">gist</a>
+    <a href="../../../tag/coding/index.html">coding</a>
   </span>
 </header>    <hr class="entry-hr" />
-    
-<p>之前有一个需求,ansible-playbook中需要某一步单步执行,也就是说在有多台服务器时,某个任务只能一台服务器执行完后,另一台服务器才能执行,否者对应集群的服务会出问题</p>
+    <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-69717446">Tool</a>
+<ul>
+<li><a href="#org-50596461">python运行超时设置</a></li>
+</ul></li>
+</ul>
+</div></div>
 
-<p>这是一个很简单的需求,ansible中也有对应的实现, <code>--fork 1</code> 或者 使用 <code>serial</code></p>
 
-<p>但是如果有人忘记加 <code>--fork 1</code> 了呢，而且该任务是在子任务中，使用 <b>include</b> 加载, <code>serial</code> 关键字无法在某一特定任务中使用,只能与 <b>hosts</b> 同级</p>
+<h3 id="org-69717446">Tool</h3>
+<h4 id="org-50596461">python运行超时设置</h4>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">signal</span>
 
-<p>所幸，在这里 <a href="https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task">https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task</a> 找到了解决办法,使用 <b>delegate_to</b></p>
+<span class="k">class</span> <span class="nc">TimeoutError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
 
-<div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">service</span> <span class="n">restart</span>
-  <span class="c1"># serial: 1 would be the proper solution here, but that can only be set on play level</span>
-  <span class="c1"># upstream issue: https://github.com/ansible/ansible/issues/12170</span>
-  <span class="n">run_once</span><span class="p">:</span> <span class="n">true</span>
-  <span class="n">with_items</span><span class="p">:</span> <span class="s1">&#39;{{play_hosts}}&#39;</span>
-  <span class="n">delegate_to</span><span class="p">:</span> <span class="s2">&quot;{{ item }}&quot;</span>
-  <span class="n">command</span><span class="p">:</span> <span class="s2">&quot;/bin/service restart&quot;</span>
+<span class="k">def</span> <span class="nf">timeout</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">error_message</span><span class="o">=</span><span class="s2">&quot;Timer expired&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_timeout</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">_handle_timeout</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">TimeoutError</span><span class="p">(</span><span class="n">error_message</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGALRM</span><span class="p">,</span> <span class="n">_handle_timeout</span><span class="p">)</span>
+            <span class="n">signal</span><span class="o">.</span><span class="n">alarm</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">signal</span><span class="o">.</span><span class="n">alarm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">return</span> <span class="n">wrapper</span>
+
+    <span class="k">return</span> <span class="n">_timeout</span>
 </pre></div>
+
 
   </div>
   <hr class="entry-hr" />
   <ul class="entry-pager">
     <li class="previous">
-      <a href="../../../articles/2017/10/ansible快速部署加速方案.html" title="Previous article: ansible快速部署加速方案">
+      <a href="../../../articles/2017/02/linux终端常用快捷键.html" title="Previous article: linux终端常用快捷键">
         <i class="fa fa-chevron-left"></i>
-        ansible快速部署加速方案
+        linux终端常用快捷键
       </a>
     </li>
     <li class="next">
-      <a href="../../../articles/2017/09/那里有座山.html" title="Next article: ansible快速部署加速方案">
-        那里有座山
+      <a href="../../../articles/2017/01/升级至python3.6导致环境出错解决.html" title="Next article: linux终端常用快捷键">
+        升级至python3.6导致环境出错解决
         <i class="fa fa-chevron-right"></i>
       </a>
     </li>
@@ -127,7 +146,7 @@
     </div>
     <div id="disqus_thread"></div>
     <script type="text/javascript">
-     var disqus_identifier = "articles/2017/09/ansible-playbook中tasks单进程.html";
+     var disqus_identifier = "articles/2017/01/python gist.html";
     </script>
   </div>
 </article>
