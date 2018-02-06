@@ -88,59 +88,59 @@
   </span>
 </header>                    <hr class="entry-hr" />
                     <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-55577715">sqlalchemy object序列化为json</a>
+<li><a href="#org-5717395">sqlalchemy object序列化为json</a>
 <ul>
-<li><a href="#org-72072610">多个实例</a></li>
-<li><a href="#org-28764416">单个实例</a></li>
-<li><a href="#org-79026735">排除字段</a></li>
-<li><a href="#org-94957480">仅包括字段</a></li>
-<li><a href="#org-13966352">关系查询深度</a></li>
-<li><a href="#org-18973504">增加一些自定义的函数</a></li>
-<li><a href="#org-1033127">可传递参数的函数</a></li>
+<li><a href="#org-79343213">多个实例</a></li>
+<li><a href="#org-87324763">单个实例</a></li>
+<li><a href="#org-89913205">排除字段</a></li>
+<li><a href="#org-1119626">仅包括字段</a></li>
+<li><a href="#org-16335653">关系查询深度</a></li>
+<li><a href="#org-99427186">增加一些自定义的函数</a></li>
+<li><a href="#org-83364645">可传递参数的函数</a></li>
 </ul></li>
-<li><a href="#org-9071706">像django orm一样使用sqlalchemy</a>
+<li><a href="#org-14643949">像django orm一样使用sqlalchemy</a>
 <ul>
-<li><a href="#org-2016436">基本查询(已实现)</a></li>
-<li><a href="#org-73452045">关系查询</a></li>
-<li><a href="#org-85553284">其它</a></li>
+<li><a href="#org-13861232">基本查询(已实现)</a></li>
+<li><a href="#org-82218644">关系查询</a></li>
+<li><a href="#org-50256049">其它</a></li>
 </ul></li>
-<li><a href="#org-8551622">去掉一些sqlalchemy的重复工作</a>
+<li><a href="#org-77178184">去掉一些sqlalchemy的重复工作</a>
 <ul>
-<li><a href="#org-46862306">ModelMixin</a></li>
-<li><a href="#org-58438027">ModelTimeMixin</a></li>
-<li><a href="#org-6425918">ModelUserMixin</a></li>
+<li><a href="#org-19487556">ModelMixin</a></li>
+<li><a href="#org-59203328">ModelTimeMixin</a></li>
+<li><a href="#org-77506691">ModelUserMixin</a></li>
 </ul></li>
 </ul>
 </div></div>
 
 
-<h3 id="org-55577715">sqlalchemy object序列化为json</h3>
+<h2 id="org-5717395">sqlalchemy object序列化为json</h2>
 <p>灵感来源于 <b>Django REST framework</b>
 <div class="highlight"><pre><span></span><span class="n">posts</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">posts</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </p>
-<h4 id="org-72072610">多个实例</h4>
+<h3 id="org-79343213">多个实例</h3>
 
-<h4 id="org-28764416">单个实例</h4>
+<h3 id="org-87324763">单个实例</h3>
 <div class="highlight"><pre><span></span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
 <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 
 
-<h4 id="org-79026735">排除字段</h4>
+<h3 id="org-89913205">排除字段</h3>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
 </pre></div>
 
 
-<h4 id="org-94957480">仅包括字段</h4>
+<h3 id="org-1119626">仅包括字段</h3>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
 </pre></div>
 
 
-<h4 id="org-13966352">关系查询深度</h4>
+<h3 id="org-16335653">关系查询深度</h3>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">depth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 
@@ -149,7 +149,7 @@
 <p>默认为2</p>
 </li>
 </ul>
-<h4 id="org-18973504">增加一些自定义的函数</h4>
+<h3 id="org-99427186">增加一些自定义的函数</h3>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Serializer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">extra</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;get_post_count&#39;</span><span class="p">])</span>
 </pre></div>
 
@@ -161,7 +161,7 @@
 </pre></div>
 </p>
 
-<h4 id="org-1033127">可传递参数的函数</h4>
+<h3 id="org-83364645">可传递参数的函数</h3>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PostSerializer</span><span class="p">(</span><span class="n">Serializer</span><span class="p">):</span>
     <span class="n">count</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">source</span> <span class="o">=</span> <span class="s1">&#39;get_post_count&#39;</span><span class="p">,</span><span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="s1">&#39;hello&#39;</span><span class="p">},</span><span class="n">default</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
     <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
@@ -172,10 +172,10 @@
         <span class="n">extra</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
 </pre></div>
 
-<h3 id="org-9071706">像django orm一样使用sqlalchemy</h3>
+<h2 id="org-14643949">像django orm一样使用sqlalchemy</h2>
 <p><b>djang orm</b>与sqlalchemy相比,为什么很多人都认为django orm更好用,大概就是因为django orm更方便</p>
 
-<h4 id="org-2016436">基本查询(已实现)</h4>
+<h3 id="org-13861232">基本查询(已实现)</h3>
 <ul>
 <li>gt</li>
 <li>lt</li>
@@ -202,12 +202,12 @@
 </pre></div>
 </p>
 
-<h4 id="org-73452045">关系查询</h4>
+<h3 id="org-82218644">关系查询</h3>
 <div class="highlight"><pre><span></span><span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">tags__name__contains</span> <span class="o">=</span> <span class="s1">&#39;sql&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 </pre></div>
 
 
-<h4 id="org-85553284">其它</h4>
+<h3 id="org-50256049">其它</h3>
 <div class="highlight"><pre><span></span><span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">tags__name__contains</span> <span class="o">=</span> <span class="s1">&#39;sql&#39;</span><span class="p">)</span><span class="o">.</span><span class="ow">or</span><span class="p">(</span><span class="n">Post</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span><span class="n">Post</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">tags__name__contains</span> <span class="o">=</span> <span class="s1">&#39;sql&#39;</span><span class="p">)</span><span class="o">.</span><span class="ow">and</span><span class="p">(</span><span class="n">Post</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span><span class="n">Post</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">tags__name__contains</span> <span class="o">=</span> <span class="s1">&#39;sql&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
@@ -215,10 +215,10 @@
 </pre></div>
 
 
-<h3 id="org-8551622">去掉一些sqlalchemy的重复工作</h3>
+<h2 id="org-77178184">去掉一些sqlalchemy的重复工作</h2>
 <p>以<b>flask-sqlalchemy</b>为例,通过继承 <b>models.py</b> 中的<b>Mixin</b>,就可以去除部分重复工作</p>
 
-<h4 id="org-46862306">ModelMixin</h4>
+<h3 id="org-19487556">ModelMixin</h3>
 <p>自增ID -- id</p>
 
 <div class="highlight"><pre><span></span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="p">(</span><span class="err">·····</span><span class="p">)</span>
@@ -234,7 +234,7 @@
 <li>bulk_save
 </li>
 </ul>
-<h4 id="org-58438027">ModelTimeMixin</h4>
+<h3 id="org-59203328">ModelTimeMixin</h3>
 <p>增加两字段</p>
 <ul>
 <li>created_at
@@ -243,7 +243,7 @@
 <p>数据更新时间</p>
 </li>
 </ul>
-<h4 id="org-6425918">ModelUserMixin</h4>
+<h3 id="org-77506691">ModelUserMixin</h3>
 <p>关联用户表,与<b>User</b>表现为<b>多对一</b>关系(即一个用户有多个post)
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Post</span><span class="p">(</span><span class="n">ModelUserMixin</span><span class="p">,</span> <span class="n">Model</span><span class="p">):</span>
 
@@ -283,26 +283,26 @@
   </span>
 </header>                <hr class="entry-hr" />
                 <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-41604553">为什么需要这个需求?</a></li>
-<li><a href="#org-3514857">如何实现?</a></li>
-<li><a href="#org-19169430">具体使用</a>
+<li><a href="#org-41818270">为什么需要这个需求?</a></li>
+<li><a href="#org-99635378">如何实现?</a></li>
+<li><a href="#org-22767738">具体使用</a>
 <ul>
-<li><a href="#org-72072610">多个实例</a></li>
-<li><a href="#org-28764416">单个实例</a></li>
-<li><a href="#org-79026735">排除字段</a></li>
-<li><a href="#org-94957480">仅包括字段</a></li>
-<li><a href="#org-13966352">关系查询深度</a></li>
+<li><a href="#org-79343213">多个实例</a></li>
+<li><a href="#org-87324763">单个实例</a></li>
+<li><a href="#org-89913205">排除字段</a></li>
+<li><a href="#org-1119626">仅包括字段</a></li>
+<li><a href="#org-16335653">关系查询深度</a></li>
 </ul></li>
 </ul>
 </div></div>
 
 
-<h3 id="org-41604553">为什么需要这个需求?</h3>
+<h2 id="org-41818270">为什么需要这个需求?</h2>
 <p><b>sqlalchemy</b> 是个好东西,虽然其文档犹如/老太婆的裹脚布--又臭又长/,饱受诟病</p>
 
 <p>使用 <b>restful</b> 时sqlalchemy返回的是一个 <b>object</b> 类，假设前后端分离,前端无法处理</p>
 
-<h3 id="org-3514857">如何实现?</h3>
+<h2 id="org-99635378">如何实现?</h2>
 <p>直接给出代码
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Serializer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
