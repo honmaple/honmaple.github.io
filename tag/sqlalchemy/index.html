@@ -115,13 +115,13 @@
 
 
 <h2 id="org-5717395">sqlalchemy object序列化为json</h2>
-<p>灵感来源于 <b>Django REST framework</b>
+<p>灵感来源于 <b>Django REST framework</b></p>
+<h3 id="org-79343213">多个实例</h3>
 <div class="highlight"><pre><span></span><span class="n">posts</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">posts</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-</p>
-<h3 id="org-79343213">多个实例</h3>
+
 
 <h3 id="org-87324763">单个实例</h3>
 <div class="highlight"><pre><span></span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
@@ -153,13 +153,13 @@
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Serializer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">extra</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;get_post_count&#39;</span><span class="p">])</span>
 </pre></div>
 
-<p>Post
+<p>Post</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Post</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
     <span class="o">......</span>
     <span class="k">def</span> <span class="nf">get_post_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="mi">11</span>
 </pre></div>
-</p>
+
 
 <h3 id="org-83364645">可传递参数的函数</h3>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PostSerializer</span><span class="p">(</span><span class="n">Serializer</span><span class="p">):</span>
@@ -196,11 +196,11 @@
 <li>day
 </li>
 </ul>
-<p>示例:
+<p>示例:</p>
 <div class="highlight"><pre><span></span><span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">title__contains</span> <span class="o">=</span> <span class="s1">&#39;sql&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">exclude_by</span><span class="p">(</span><span class="n">title__contains</span> <span class="o">=</span> <span class="s1">&#39;sql&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 </pre></div>
-</p>
+
 
 <h3 id="org-82218644">关系查询</h3>
 <div class="highlight"><pre><span></span><span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">tags__name__contains</span> <span class="o">=</span> <span class="s1">&#39;sql&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
@@ -244,13 +244,13 @@
 </li>
 </ul>
 <h3 id="org-77506691">ModelUserMixin</h3>
-<p>关联用户表,与<b>User</b>表现为<b>多对一</b>关系(即一个用户有多个post)
+<p>关联用户表,与<b>User</b>表现为<b>多对一</b>关系(即一个用户有多个post)</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Post</span><span class="p">(</span><span class="n">ModelUserMixin</span><span class="p">,</span> <span class="n">Model</span><span class="p">):</span>
 
     <span class="n">user_related_name</span> <span class="o">=</span> <span class="s1">&#39;posts&#39;</span>
     <span class="n">titile</span> <span class="o">=</span> <span class="o">...</span>
 </pre></div>
-</p>
+
 
 <p>There are <a href="../../articles/2017/03/sqlalchemy使用上的小tips.html#disqus_thread">comments</a>.</p>
                 </div>
@@ -304,14 +304,14 @@
 <p>使用 <b>restful</b> 时sqlalchemy返回的是一个 <b>object</b> 类，假设前后端分离,前端无法处理</p>
 
 <h2 id="org-99635378">如何实现?</h2>
-<p>直接给出代码
+<p>直接给出代码</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Serializer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="p">[],</span> <span class="n">exclude</span><span class="o">=</span><span class="p">[],</span> <span class="n">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">instance</span> <span class="o">=</span> <span class="n">instance</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">many</span> <span class="o">=</span> <span class="n">many</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">include</span> <span class="o">=</span> <span class="n">include</span>
-        <span class="bp">self …</span></pre></div></p>
+        <span class="bp">self …</span></pre></div>
                   <div class="text-center">
                     <a class="btn entry-read-more" href="../../articles/2016/12/sqlalchemy序列化为json.html">阅读全文 »</a>
                   </div>

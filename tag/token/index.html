@@ -121,7 +121,7 @@
 <h2 id="org-80471915">如何使用token?</h2>
 
 <h3 id="org-40172894">生成token</h3>
-<p>使用<b>itsdangerous</b>对token进行加密
+<p>使用<b>itsdangerous</b>对token进行加密</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
     <span class="o">......</span>
 
@@ -136,7 +136,7 @@
         <span class="k">return</span> <span class="n">token</span>
 </pre></div>
 
-请保管好<b>SECRET_KEY</b> 和 <b>SECURITY_PASSWORD_SALT</b>,不要泄露</p>
+<p>请保管好<b>SECRET_KEY</b> 和 <b>SECURITY_PASSWORD_SALT</b>,不要泄露</p>
 
 <h3 id="org-20314654">验证token</h3>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
@@ -161,15 +161,15 @@
 <p>最大过期时间</p>
 </li>
 </ul>
-<p>如果验证成功查找<b>该用户</b>是否存在
+<p>如果验证成功查找<b>该用户</b>是否存在</p>
 <div class="highlight"><pre><span></span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="n">column</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
 <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
     <span class="k">return</span> <span class="bp">False</span>
 <span class="k">return</span> <span class="n">user</span>
 </pre></div>
-</p>
 
-<p>示例:
+
+<p>示例:</p>
 <div class="highlight"><pre><span></span><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="mi">86400</span><span class="p">):</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
@@ -187,16 +187,16 @@
         <span class="k">return</span> <span class="bp">False</span>
     <span class="k">return</span> <span class="n">user</span>
 </pre></div>
-</p>
+
 
 <h3 id="org-21162485">使用flask-login</h3>
-<p>flask-login是flask的一个登陆扩展,自带token验证, <b>但是请一定要设</b>
+<p>flask-login是flask的一个登陆扩展,自带token验证, <b>但是请一定要设</b></p>
 <div class="highlight"><pre><span></span><span class="n">login_manager</span><span class="o">.</span><span class="n">session_protection</span> <span class="o">=</span> <span class="s2">&quot;basic&quot;</span>
 </pre></div>
 
-这是我在试验了n次后,读了flask-login的源码后才发现的（其实后面发现文档有写☹）</p>
+<p>这是我在试验了n次后,读了flask-login的源码后才发现的（其实后面发现文档有写☹）</p>
 
-<p>然后设置 <b>request_loader</b>
+<p>然后设置 <b>request_loader</b></p>
 <div class="highlight"><pre><span></span><span class="nd">@login_manager.request_loader</span>
 <span class="k">def</span> <span class="nf">user_loader_from_request</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;your_token&#39;</span><span class="p">)</span>
@@ -208,18 +208,18 @@
 <span class="k">return</span> <span class="n">login_manager</span>
 </pre></div>
 
-这是简单的从<b>url</b>中获取<b>token</b>进行验证,也可以从 <b>header</b>中获取(更安全)
+<p>这是简单的从<b>url</b>中获取<b>token</b>进行验证,也可以从 <b>header</b>中获取(更安全)</p>
 <div class="highlight"><pre><span></span><span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;your_token&#39;</span><span class="p">)</span>
 </pre></div>
 
-非常不幸的是，假设你开启了<b>csrf</b>保护,本地使用脚本验证时会报<b>400</b>错误,设置<b>csrf</b>白名单
+<h3 id="org-78850629">设置csrf白名单</h3>
+<p>非常不幸的是，假设你开启了<b>csrf</b>保护,本地使用脚本验证时会报<b>400</b>错误,设置<b>csrf</b>白名单</p>
 <div class="highlight"><pre><span></span><span class="n">csrf</span><span class="o">.</span><span class="n">exempt</span>
 </pre></div>
-</p>
-<h3 id="org-78850629">设置csrf白名单</h3>
+
 
 <h2 id="org-35754107">使用脚本发表</h2>
-<p>直接给出代码
+<p>直接给出代码</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">request</span>
 <span class="kn">import</span> <span class="nn">json</span>
 
@@ -245,7 +245,7 @@
 <span class="n">result</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
 <span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </pre></div>
-</p>
+
 
 <p>现在的步骤是:</p>
 <ul>
