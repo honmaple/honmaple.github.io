@@ -63,6 +63,48 @@
         <div class="col-md-offset-2 col-md-7 col-center">
                 <ul class="entry-list" style="margin-top:0;">
             <li><article>
+                <h1 class="entry-title"><a href="../articles/2017/09/ansible-playbook中tasks单进程.html" rel="bookmark" title="Permalink to ansible-playbook中tasks单进程">ansible-playbook中tasks单进程</a></h1>
+                <div class="entry-content">
+<header class="entry-info">
+  <span class="entry-info-date" title="2017-09-19T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    二 19 九月 2017
+  </span>
+  <span class="entry-info-sep hidden-xs">|</span>
+  <span class="entry-info-author hidden-xs">
+    <i class="fa fa-user-o"></i>
+    By <a href="../author/honmaple.html">honmaple</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-category">
+    <i class="fa fa-folder-o"></i>
+    In <a href="../category/linux/index.html">Linux</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-tag">
+    <i class="fa fa-bookmark-o"></i>
+    tags:
+    <a href="../tag/linux/index.html">linux</a>
+    <a href="../tag/ansible/index.html">ansible</a>
+  </span>
+</header>                <hr class="entry-hr" />
+                
+<p>之前有一个需求,ansible-playbook中需要某一步单步执行,也就是说在有多台服务器时,某个任务只能一台服务器执行完后,另一台服务器才能执行,否者对应集群的服务会出问题</p>
+
+<p>这是一个很简单的需求,ansible中也有对应的实现, <code>--fork 1</code> 或者 使用 <code>serial</code></p>
+
+<p>但是如果有人忘记加 <code>--fork 1</code> 了呢，而且该任务是在子任务中，使用 <b>include</b> 加载, <code>serial</code> 关键字无法在某一特定任务中使用,只能与 <b>hosts</b> 同级</p>
+
+<p>所幸，在这里 <a href="https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task">https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task</a> 找到了解决办法,使用 <b>delegate_to</b></p>
+
+<div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">service</span> <span class="n">restart</span>
+  <span class="c1"># serial: 1 would be the proper solution here, but …</span></pre></div>
+                  <div class="text-center">
+                    <a class="btn entry-read-more" href="../articles/2017/09/ansible-playbook中tasks单进程.html">阅读全文 »</a>
+                  </div>
+                </div>
+            </article></li>
+            <li><article>
                 <h1 class="entry-title"><a href="../articles/2017/09/那里有座山.html" rel="bookmark" title="Permalink to 那里有座山">那里有座山</a></h1>
                 <div class="entry-content">
 <header class="entry-info">
@@ -485,58 +527,6 @@ UNIX与BSD之间发生冲突与法律纠纷,直到1998年,在此期间,芬兰大
                   </div>
                 </div>
             </article></li>
-            <li><article>
-                <h1 class="entry-title"><a href="../articles/2017/07/celery动态添加任务.html" rel="bookmark" title="Permalink to celery动态添加任务">celery动态添加任务</a></h1>
-                <div class="entry-content">
-<header class="entry-info">
-  <span class="entry-info-date" title="2017-07-09T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    日 09 七月 2017
-  </span>
-  <span class="entry-info-sep hidden-xs">|</span>
-  <span class="entry-info-author hidden-xs">
-    <i class="fa fa-user-o"></i>
-    By <a href="../author/honmaple.html">honmaple</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-category">
-    <i class="fa fa-folder-o"></i>
-    In <a href="../category/linux/index.html">Linux</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-tag">
-    <i class="fa fa-bookmark-o"></i>
-    tags:
-    <a href="../tag/linux/index.html">linux</a>
-    <a href="../tag/celery/index.html">celery</a>
-    <a href="../tag/python/index.html">python</a>
-  </span>
-</header>                <hr class="entry-hr" />
-                
-
-<p>celery是一个基于Python的分布式调度系统，<a href="http://docs.celeryproject.org/en/latest/">文档在这</a> ,最近有个需求,想要动态的添加任务而不用重启celery服务,找了一圈没找到什么好办法(也有可能是文档没看仔细)，所以只能自己实现囉</p>
-
-<p>为celery动态添加任务，首先我想到的是传递一个函数进去，让某个特定任务去执行这个传递过去的函数，就像这样</p>
-<div class="highlight"><pre><span></span><span class="nd">@app.task</span>
-<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</pre></div>
-
-
-<p>很可惜，会出现这样的错误</p>
-<div class="highlight"><pre><span></span>kombu.exceptions.EncodeError: Object of type &#39;function&#39; is not JSON serializable
-</pre></div>
-
-
-<p>换一种序列化方式</p>
-<div class="highlight"><pre><span></span><span class="nd">@app.task</span><span class="p">(</span><span class="n">serializer</span><span class="o">=</span><span class="s1">&#39;pickle&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs …</span></pre></div>
-                  <div class="text-center">
-                    <a class="btn entry-read-more" href="../articles/2017/07/celery动态添加任务.html">阅读全文 »</a>
-                  </div>
-                </div>
-            </article></li>
   <ul class="entry-pagination">
       <li class="prev"><a href="../author/honmaple2.html">&laquo;</a></li>
          <li ><a href="../author/honmaple.html">1</a></li>
@@ -544,9 +534,9 @@ UNIX与BSD之间发生冲突与法律纠纷,直到1998年,在此期间,芬兰大
          <li class="active"><a href="../author/honmaple3.html">3</a></li>
          <li ><a href="../author/honmaple4.html">4</a></li>
          <li>......</li>
-         <li ><a href="../author/honmaple13.html">13</a></li>
          <li ><a href="../author/honmaple14.html">14</a></li>
          <li ><a href="../author/honmaple15.html">15</a></li>
+         <li ><a href="../author/honmaple16.html">16</a></li>
       <li class="next"><a href="../author/honmaple4.html">&raquo;</a></li>
   </ul>
                 </ul>
