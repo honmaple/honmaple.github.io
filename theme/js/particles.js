@@ -45,10 +45,28 @@ $(document).ready(function(){
     $(".entry-theme").click(function() {
         toggleTheme();
     });
-     $(".navbar-logo").error(function() {
-         var content = '<span class="navbar-title">' + $(".navbar-logo").attr("alt") + '</span>';
-         $(".navbar-logo").parent().html(content);
-     });
+    $(".navbar-logo").error(function() {
+        var content = '<span class="navbar-title">' + $(".navbar-logo").attr("alt") + '</span>';
+        $(".navbar-logo").parent().html(content);
+    });
+
+    $(".entry-decrypt").click(function(e) {
+        var _this = $(this);
+        $.post("https://honmaple.com/api/encrypt", {
+            password:_this.prev().val(),
+            content:_this.parent().next().text()
+        }, function(response){
+            if(response.status == 200) {
+                var _parent = _this.parent().parent();
+                _parent.hide();
+                _parent.after(response.data);
+            }else {
+                var _next = _this.next();
+                _next.css("color","#C74451");
+                _next.text("密码错误");
+            }
+        }, 'json');
+    });
 
     particlesJS("particles-js", {
         "particles": {

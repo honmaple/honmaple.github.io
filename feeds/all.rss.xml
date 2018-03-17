@@ -1,5 +1,180 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog</title><link href="http://honmaple.me/" rel="alternate"></link><link href="http://honmaple.me/feeds/all.rss.xml" rel="self"></link><id>http://honmaple.me/</id><updated>2018-03-10T23:24:13+08:00</updated><entry><title>git笔记</title><link href="http://honmaple.me/articles/2018/03/git%E7%AC%94%E8%AE%B0.html" rel="alternate"></link><published>2018-03-01T16:25:38+08:00</published><updated>2018-03-10T23:24:13+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-03-01:/articles/2018/03/git笔记.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog</title><link href="http://honmaple.me/" rel="alternate"></link><link href="http://honmaple.me/feeds/all.rss.xml" rel="self"></link><id>http://honmaple.me/</id><updated>2018-03-17T23:22:38+08:00</updated><entry><title>为pelican添加文章加密功能</title><link href="http://honmaple.me/articles/2018/03/%E4%B8%BApelican%E6%B7%BB%E5%8A%A0%E6%96%87%E7%AB%A0%E5%8A%A0%E5%AF%86%E5%8A%9F%E8%83%BD.html" rel="alternate"></link><published>2018-03-17T21:20:06+08:00</published><updated>2018-03-17T23:22:38+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-03-17:/articles/2018/03/为pelican添加文章加密功能.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-17162685"&gt;前言&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-2208407"&gt;自定义pelican插件&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-76329900"&gt;加密算法&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-63208748"&gt;注册插件&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-70593929"&gt;自定义主题&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-52685082"&gt;显示模板&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-70583725"&gt;客户端验证&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+
+&lt;p&gt;&lt;b&gt;pelican&lt;/b&gt;是一个静态博客系统，很早之前就想要实现一个加密&lt;b&gt;pelican&lt;/b&gt;文章的功能，但一直没什么时间，这次总算静下心花两天时间搞定了&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;为什么不用现有的插件&lt;b&gt;encript-content&lt;/b&gt;&lt;/p&gt;
+
+&lt;p&gt;因为自己实现更有成就感啊!!!&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id="org-17162685"&gt;前言&lt;/h2&gt;
+&lt;p&gt;因为我不仅有静态博客&lt;code&gt;honmaple.com&lt;/code&gt;，还有一个动态博客&lt;code&gt;honmaple.com&lt;/code&gt;，所以此次加密功能我会在动态博客那边添加一个验证密码的接口，来对密码进行验证以及对加密文章进行解密，虽然验证也可以使用&lt;b&gt;crypto-js.js&lt;/b&gt;进行双向解密，但还是觉得自定义的接口更安全一些。&lt;/p&gt;
+
+&lt;h2 id="org-2208407"&gt;自定义pelican插件&lt;/h2&gt;
+&lt;h3 id="org-76329900"&gt;加密算法&lt;/h3&gt;
+&lt;p&gt;加密算法我使用&lt;b&gt;cryptography&lt;/b&gt;,使用起来很简单&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;cryptography.fernet&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Fernet&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="c1"&gt;# Put this somewhere safe!&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;key …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-17162685"&gt;前言&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-2208407"&gt;自定义pelican插件&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-76329900"&gt;加密算法&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-63208748"&gt;注册插件&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-70593929"&gt;自定义主题&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-52685082"&gt;显示模板&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-70583725"&gt;客户端验证&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+
+&lt;p&gt;&lt;b&gt;pelican&lt;/b&gt;是一个静态博客系统，很早之前就想要实现一个加密&lt;b&gt;pelican&lt;/b&gt;文章的功能，但一直没什么时间，这次总算静下心花两天时间搞定了&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;为什么不用现有的插件&lt;b&gt;encript-content&lt;/b&gt;&lt;/p&gt;
+
+&lt;p&gt;因为自己实现更有成就感啊!!!&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id="org-17162685"&gt;前言&lt;/h2&gt;
+&lt;p&gt;因为我不仅有静态博客&lt;code&gt;honmaple.com&lt;/code&gt;，还有一个动态博客&lt;code&gt;honmaple.com&lt;/code&gt;，所以此次加密功能我会在动态博客那边添加一个验证密码的接口，来对密码进行验证以及对加密文章进行解密，虽然验证也可以使用&lt;b&gt;crypto-js.js&lt;/b&gt;进行双向解密，但还是觉得自定义的接口更安全一些。&lt;/p&gt;
+
+&lt;h2 id="org-2208407"&gt;自定义pelican插件&lt;/h2&gt;
+&lt;h3 id="org-76329900"&gt;加密算法&lt;/h3&gt;
+&lt;p&gt;加密算法我使用&lt;b&gt;cryptography&lt;/b&gt;,使用起来很简单&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;cryptography.fernet&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Fernet&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="c1"&gt;# Put this somewhere safe!&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Fernet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;generate_key&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Fernet&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;token&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;encrypt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="sa"&gt;b&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;A really secret message. Not for prying eyes.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;token&lt;/span&gt;
+&lt;span class="s1"&gt;&amp;#39;...&amp;#39;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;decrypt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;token&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="s1"&gt;&amp;#39;A really secret message. Not for prying eyes.&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;但如果要使用自定义密码，需要更多设置 ,&lt;a href="https://xin053.github.io/2016/12/20/cryptography%E5%8A%A0%E5%AF%86%E5%BA%93%E4%BD%BF%E7%94%A8%E8%AF%A6%E8%A7%A3/"&gt;参考这里&lt;/a&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;base64&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;urlsafe_b64encode&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;cryptography.hazmat.backends&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;default_backend&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;cryptography.hazmat.primitives&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;hashes&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;cryptography.hazmat.primitives.kdf.pbkdf2&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;PBKDF2HMAC&lt;/span&gt;
+
+&lt;span class="n"&gt;salt&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="sa"&gt;b&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;不要让人知道&amp;#39;&lt;/span&gt;
+&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;PBKDF2HMAC&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+    &lt;span class="n"&gt;algorithm&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;hashes&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SHA256&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+    &lt;span class="n"&gt;length&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;32&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="n"&gt;salt&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;salt&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="n"&gt;iterations&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;100000&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="n"&gt;backend&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;default_backend&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;urlsafe_b64encode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;derive&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;password&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;encode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;utf-8&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+
+&lt;span class="c1"&gt;# 使用&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Fernet&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;encript_content&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;encrypt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="sa"&gt;b&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;A really secret message. Not for prying eyes.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3 id="org-63208748"&gt;注册插件&lt;/h3&gt;
+&lt;p&gt;参考于&lt;b&gt;encript-content&lt;/b&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;encrypt_article&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
+&lt;span class="sd"&gt;    custom help text with password&lt;/span&gt;
+&lt;span class="sd"&gt;    &amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
+    &lt;span class="c1"&gt;# 对整篇文章和简介进行加密&lt;/span&gt;
+    &lt;span class="n"&gt;ec_summary&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;encrypt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;summary&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;ec_content&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;encrypt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;content&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="c1"&gt;# 设置显示模板&lt;/span&gt;
+    &lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_summary&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;TEMPLATE&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;help_text&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ec_summary&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_content&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;TEMPLATE&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;help_text&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ec_content&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;pelican_generators_finalized&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;content_generators&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;generator&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;content_generators&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;isinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;generators&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ArticlesGenerator&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;article&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;articles&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;translations&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;hasattr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;password&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                    &lt;span class="n"&gt;encrypt_article&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;draft&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;drafts&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;drafts_translations&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;hasattr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;draft&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;password&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                    &lt;span class="n"&gt;encrypt_article&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;isinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;generators&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;PagesGenerator&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pages&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;password&amp;#39;&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;metadata&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;encrypt_article&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;article&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;register&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;signals&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;all_generators_finalized&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;pelican_generators_finalized&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2 id="org-70593929"&gt;自定义主题&lt;/h2&gt;
+
+&lt;h3 id="org-52685082"&gt;显示模板&lt;/h3&gt;
+&lt;p&gt;显示模板很简单，一个表单，一个点击按钮，一个默认隐藏的加密内容&lt;/p&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;TEMPLATE = &amp;#39;&amp;#39;&amp;#39;
+&lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;entry-encrypt&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;form-group has-feedback&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;input&lt;/span&gt; &lt;span class="na"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;password&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;form-control input-sm&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;placeholder&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;请输入文章密码&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;i&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;fa fa-key form-control-feedback entry-decrypt&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;i&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;span&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;help-block&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;{0}&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;span&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;entry-encrypt-content&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+{1}
+&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&amp;#39;&amp;#39;&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;其中&lt;code&gt;{0}&lt;/code&gt;是提示信息，={1}= 是加密后的内容，具体样式可以自定义css&lt;/p&gt;
+
+&lt;h3 id="org-70583725"&gt;客户端验证&lt;/h3&gt;
+&lt;p&gt;将密码和加密后的内容发送到服务端，由服务端进行验证后解析&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;.entry-decrypt&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;click&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;e&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;_this&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;your decrypt api&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nx"&gt;password&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="nx"&gt;_this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;prev&lt;/span&gt;&lt;span class="p"&gt;().&lt;/span&gt;&lt;span class="nx"&gt;val&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+        &lt;span class="nx"&gt;content&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="nx"&gt;_this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;parent&lt;/span&gt;&lt;span class="p"&gt;().&lt;/span&gt;&lt;span class="nx"&gt;next&lt;/span&gt;&lt;span class="p"&gt;().&lt;/span&gt;&lt;span class="nx"&gt;text&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;response&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;status&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;200&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;_parent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;_this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;parent&lt;/span&gt;&lt;span class="p"&gt;().&lt;/span&gt;&lt;span class="nx"&gt;parent&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+            &lt;span class="nx"&gt;_parent&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;hide&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+            &lt;span class="nx"&gt;_parent&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;after&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;_next&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;_this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;next&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+            &lt;span class="nx"&gt;_next&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;css&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;color&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;#C74451&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="nx"&gt;_next&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;text&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;密码错误&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;json&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;});&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+
+</content><category term="python"></category><category term="pelican"></category></entry><entry><title>git笔记</title><link href="http://honmaple.me/articles/2018/03/git%E7%AC%94%E8%AE%B0.html" rel="alternate"></link><published>2018-03-01T16:25:38+08:00</published><updated>2018-03-10T23:24:13+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-03-01:/articles/2018/03/git笔记.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-75068376"&gt;git修改提交作者和邮箱&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
@@ -895,7 +1070,7 @@ MAIL_DEFAULT_SENDER
 &lt;/ul&gt;
 &lt;p&gt;如果想要添加其它功能，只要使用&lt;code&gt;maple/header-update-engine&lt;/code&gt;即可&lt;/p&gt;
 
-&lt;p&gt;相关的配置可以在我的&lt;a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/site-lisp/header/header.el"&gt;github&lt;/a&gt;上找到&lt;/p&gt;</content><category term="linux"></category><category term="emacs"></category></entry><entry><title>emacs自动添加文件头</title><link href="http://honmaple.me/articles/2018/01/emacs%E8%87%AA%E5%8A%A8%E6%B7%BB%E5%8A%A0%E6%96%87%E4%BB%B6%E5%A4%B4.html" rel="alternate"></link><published>2018-01-08T15:08:51+08:00</published><updated>2018-01-14T16:42:15+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-01-08:/articles/2018/01/emacs自动添加文件头.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;p&gt;相关的配置可以在我的&lt;a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/site-lisp/header/header.el"&gt;github&lt;/a&gt;上找到&lt;/p&gt;</content><category term="linux"></category><category term="emacs"></category></entry><entry><title>emacs自动添加文件头</title><link href="http://honmaple.me/articles/2018/01/emacs%E8%87%AA%E5%8A%A8%E6%B7%BB%E5%8A%A0%E6%96%87%E4%BB%B6%E5%A4%B4.html" rel="alternate"></link><published>2018-01-08T15:08:51+08:00</published><updated>2018-03-16T13:50:32+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-01-08:/articles/2018/01/emacs自动添加文件头.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-93067416"&gt;基础使用&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-20215040"&gt;自定义文件头&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-1181271"&gt;提取文件头公共信息&lt;/a&gt;&lt;/li&gt;
@@ -1022,6 +1197,15 @@ MAIL_DEFAULT_SENDER
 
 &lt;/li&gt;
 &lt;li&gt;插入注释信息
+&lt;p&gt;&amp;lt;2018-03-16 五&amp;gt;更新:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/insert-string&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kp"&gt;&amp;amp;optional&lt;/span&gt; &lt;span class="nv"&gt;prefix&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;replace-regexp-in-string&lt;/span&gt;
+   &lt;span class="s"&gt;&amp;quot;^&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;or&lt;/span&gt; &lt;span class="nv"&gt;prefix&lt;/span&gt; &lt;span class="nv"&gt;comment-start&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple//insert-string&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;原代码:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/insert-string&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kp"&gt;&amp;amp;optional&lt;/span&gt; &lt;span class="nv"&gt;prefix&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;or&lt;/span&gt; &lt;span class="nv"&gt;prefix&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;prefix&lt;/span&gt; &lt;span class="nv"&gt;comment-start&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;mapconcat&lt;/span&gt;
@@ -1257,56 +1441,4 @@ MAIL_DEFAULT_SENDER
 &lt;p&gt;&lt;b&gt;feh&lt;/b&gt;只支持静态文件,可用&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;animate output.gif
 &lt;/pre&gt;&lt;/div&gt;
-</content><category term="linux"></category></entry><entry><title>十二月十日小记</title><link href="http://honmaple.me/articles/2017/12/%E5%8D%81%E4%BA%8C%E6%9C%88%E5%8D%81%E6%97%A5%E5%B0%8F%E8%AE%B0.html" rel="alternate"></link><published>2017-12-10T23:10:26+08:00</published><updated>2017-12-10T23:10:26+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2017-12-10:/articles/2017/12/十二月十日小记.html</id><summary type="html">
-&lt;p&gt;今天真是不错的一天&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;今天出门，在电梯遇到一人，“小伙子，你有二十了吧”，“我今年二十X了”，“我看你不到二十的样子”，“我以为我看起来挺老的”，“怎么会。。。”&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;以前只是在电视新闻上看到有人直接撞到玻璃门上，其实真不怪他们，有时候玻璃门真看起来没有一样。我今天就这样直接撞上去了，说实话，还真疼&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;附几张今天用手机拍的照片，昨天用相机拍的raw格式暂时打不开/捂脸&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;div class="row"&gt;
-  &lt;div class="col-md-6"&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_153834.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_153834.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154518.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154518.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154530.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154530.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-  &lt;/div&gt;
-  &lt;div class="col-md-6"&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/PANO_20171210_154546.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/PANO_20171210_154546.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154137.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154137.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154951.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154951.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</summary><content type="html">
-&lt;p&gt;今天真是不错的一天&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;今天出门，在电梯遇到一人，“小伙子，你有二十了吧”，“我今年二十X了”，“我看你不到二十的样子”，“我以为我看起来挺老的”，“怎么会。。。”&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;以前只是在电视新闻上看到有人直接撞到玻璃门上，其实真不怪他们，有时候玻璃门真看起来没有一样。我今天就这样直接撞上去了，说实话，还真疼&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;附几张今天用手机拍的照片，昨天用相机拍的raw格式暂时打不开/捂脸&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;div class="row"&gt;
-  &lt;div class="col-md-6"&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_153834.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_153834.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154518.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154518.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154530.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154530.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-  &lt;/div&gt;
-  &lt;div class="col-md-6"&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/PANO_20171210_154546.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/PANO_20171210_154546.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154137.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154137.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-    &lt;a href="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154951.jpg-show" data-fancybox="image"&gt;&lt;img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2017/12/IMG_20171210_154951.jpg-thumb" class="lazyload" /&gt;&lt;/a&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</content><category term="life"></category></entry></feed>
+</content><category term="linux"></category></entry></feed>
