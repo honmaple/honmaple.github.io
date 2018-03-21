@@ -28,6 +28,13 @@ $(document).ready(function(){
         if ($("#navbar-title").length && window.pageYOffset < 120) {
             $("#navbar-title").remove();
         }
+        // scrollbar
+        if ($(".scrollbar").length) {
+            var a = $(window).scrollTop();
+            var b = $(window).height();
+            var c = $(document).height();
+            $(".scrollbar").width(a / (c - b) * 100 + "%");
+        }
     });
     e.click(function() {
         window.scrollTo(0, 0);
