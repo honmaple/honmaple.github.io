@@ -33,7 +33,7 @@ $(document).ready(function(){
             var a = $(window).scrollTop();
             var b = $(window).height();
             var c = $(document).height();
-            $(".scrollbar").width(a / (c - b) * 100 + "%");
+            $(".scrollbar").width(a / (Math.round(c * 0.9) - b) * 100 + "%");
         }
     });
     e.click(function() {
