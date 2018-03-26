@@ -59,6 +59,203 @@
     </form>
   </div>
 </nav>            <article>
+                <h1 class="entry-title"><a href="../../articles/2018/03/golang笔记.html" rel="bookmark" title="Permalink to golang笔记">golang笔记</a></h1>
+<header class="entry-info">
+  <span class="entry-info-date" title="Updated at 2018-03-26">
+    <i class="fa fa-calendar-o"></i>
+    一 26 三月 2018
+  </span>
+  <span class="entry-info-sep hidden-xs">|</span>
+  <span class="entry-info-author hidden-xs">
+    <i class="fa fa-user-o"></i>
+    By <a href="../../author/honmaple.html">honmaple</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-category">
+    <i class="fa fa-folder-o"></i>
+    In <a href="../../category/life/index.html">Life</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-tag">
+    <i class="fa fa-bookmark-o"></i>
+    tags:
+    <a href="../../tag/golang/index.html">golang</a>
+    <a href="../../tag/coding/index.html">coding</a>
+  </span>
+</header>                <hr class="entry-hr" />
+                <div class="entry-content">
+                    <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-20549055">读取配置文件</a></li>
+<li><a href="#org-76847424">判断文件是否存在</a></li>
+<li><a href="#org-77850160">随机睡眠</a></li>
+<li><a href="#org-22076259">字符串连接</a></li>
+<li><a href="#org-69045982">检查元素是否在map中</a></li>
+<li><a href="#org-50435339">检查元素是否在list中</a></li>
+<li><a href="#org-72355056">执行Linux命令</a></li>
+<li><a href="#org-82930855">迭代文件目录</a></li>
+</ul>
+</div></div>
+
+
+<h2 id="org-20549055">读取配置文件</h2>
+<p>注: <b>Configuration</b> 里元素(Path)必须<b>大写</b>开头</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&quot;encoding/json&quot;</span>
+    <span class="s">&quot;flag&quot;</span>
+    <span class="s">&quot;fmt&quot;</span>
+    <span class="s">&quot;io/ioutil&quot;</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">Configuration</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Path</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">const</span> <span class="nx">VETSION</span> <span class="p">=</span> <span class="s">&quot;0.1.0&quot;</span>
+
+<span class="kd">var</span> <span class="p">(</span>
+    <span class="nx">config</span> <span class="nx">Configuration</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nx">init</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="p">(</span>
+        <span class="nx">conf_file</span> <span class="kt">string</span>
+        <span class="nx">print_ver</span> <span class="kt">bool</span>
+    <span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nx">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">conf_file</span><span class="p">,</span> <span class="s">&quot;c&quot;</span><span class="p">,</span> <span class="s">&quot;etc/config.json&quot;</span><span class="p">,</span> <span class="s">&quot;config file&quot;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nx">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">print_ver</span><span class="p">,</span> <span class="s">&quot;v&quot;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s">&quot;config file&quot;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nx">Parse</span><span class="p">()</span>
+
+    <span class="nx">raw</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ioutil</span><span class="p">.</span><span class="nx">ReadFile</span><span class="p">(</span><span class="nx">conf_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="s">&quot;config parse fail!&quot;</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nx">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">json</span><span class="p">.</span><span class="nx">Unmarshal</span><span class="p">(</span><span class="nx">raw</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">config</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="s">&quot;config unmarshal fail!&quot;</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nx">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="nx">print_ver</span> <span class="p">{</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&quot;version:&quot;</span><span class="p">,</span> <span class="nx">VERSION</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nx">Exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<h2 id="org-76847424">判断文件是否存在</h2>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&quot;os&quot;</span>
+<span class="p">)</span>
+<span class="kd">func</span> <span class="nx">file_is_exists</span><span class="p">(</span><span class="nx">f</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stat</span><span class="p">(</span><span class="nx">f</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">os</span><span class="p">.</span><span class="nx">IsNotExist</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">false</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-77850160">随机睡眠</h2>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&quot;math/rand&quot;</span>
+    <span class="s">&quot;time&quot;</span>
+<span class="p">)</span>
+<span class="kd">func</span> <span class="nx">random_sleep</span><span class="p">(</span><span class="nx">t</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">rand</span><span class="p">.</span><span class="nx">Seed</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Now</span><span class="p">().</span><span class="nx">Unix</span><span class="p">())</span>
+    <span class="nx">time</span><span class="p">.</span><span class="nx">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">(</span><span class="nx">rand</span><span class="p">.</span><span class="nx">Intn</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Microsecond</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-22076259">字符串连接</h2>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&quot;bytes&quot;</span>
+<span class="p">)</span>
+<span class="kd">func</span> <span class="nx">string_concat</span><span class="p">(</span><span class="nx">s</span> <span class="o">...</span><span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">buffer</span> <span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s</span> <span class="p">{</span>
+        <span class="nx">buffer</span><span class="p">.</span><span class="nx">WriteString</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">buffer</span><span class="p">.</span><span class="nx">String</span><span class="p">()</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-69045982">检查元素是否在map中</h2>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">check_in_map</span><span class="p">(</span><span class="nx">f</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">,</span> <span class="nx">v</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">f</span><span class="p">[</span><span class="nx">v</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">true</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="kc">false</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-50435339">检查元素是否在list中</h2>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">check_in_list</span><span class="p">(</span><span class="nx">f</span> <span class="p">[]</span><span class="kt">string</span><span class="p">,</span> <span class="nx">v</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">f</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">f</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">==</span> <span class="nx">v</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">true</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="kc">false</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-72355056">执行Linux命令</h2>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&quot;os/exec&quot;</span>
+<span class="p">)</span>
+<span class="kd">func</span> <span class="nx">exec_command</span><span class="p">(</span><span class="nx">command</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">args</span> <span class="o">...</span><span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="kt">error</span><span class="p">,</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="p">(</span>
+        <span class="nx">err</span> <span class="kt">error</span>
+    <span class="p">)</span>
+    <span class="nx">cmd</span> <span class="o">:=</span> <span class="nx">exec</span><span class="p">.</span><span class="nx">Command</span><span class="p">(</span><span class="nx">command</span><span class="p">,</span> <span class="nx">args</span><span class="o">...</span><span class="p">)</span>
+    <span class="nx">cmd</span><span class="p">.</span><span class="nx">Start</span><span class="p">()</span>
+    <span class="nx">done</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">error</span><span class="p">)</span>
+    <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">done</span> <span class="o">&lt;-</span> <span class="nx">cmd</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+    <span class="p">}()</span>
+
+    <span class="k">select</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">time</span><span class="p">.</span><span class="nx">After</span><span class="p">(</span><span class="mi">600</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">cmd</span><span class="p">.</span><span class="nx">Process</span><span class="p">.</span><span class="nx">Kill</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="nx">log</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="s">&quot;failed to kill: %s, error: %s&quot;</span><span class="p">,</span> <span class="nx">cmd</span><span class="p">.</span><span class="nx">Path</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+            <span class="o">&lt;-</span><span class="nx">done</span> <span class="c1">// allow goroutine to exit</span>
+        <span class="p">}()</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Info</span><span class="p">(</span><span class="s">&quot;process:%s killed&quot;</span><span class="p">,</span> <span class="nx">cmd</span><span class="p">.</span><span class="nx">Path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">err</span><span class="p">,</span> <span class="kc">true</span>
+    <span class="k">case</span> <span class="nx">err</span> <span class="p">=</span> <span class="o">&lt;-</span><span class="nx">done</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nx">err</span><span class="p">,</span> <span class="kc">false</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-82930855">迭代文件目录</h2>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">file_iter</span><span class="p">(</span><span class="nx">path</span> <span class="kt">string</span><span class="p">)</span> <span class="p">[]</span><span class="kt">string</span> <span class="p">{</span>
+    <span class="c1">// path must be abs path</span>
+    <span class="kd">var</span> <span class="nx">files</span> <span class="p">[]</span><span class="kt">string</span>
+    <span class="nx">scripts</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">ioutil</span><span class="p">.</span><span class="nx">ReadDir</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">script</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">scripts</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">script</span><span class="p">.</span><span class="nx">IsDir</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">file_iter</span><span class="p">(</span><span class="nx">filepath</span><span class="p">.</span><span class="nx">Join</span><span class="p">(</span><span class="nx">path</span><span class="p">,</span> <span class="nx">script</span><span class="p">.</span><span class="nx">Name</span><span class="p">()))</span>
+        <span class="p">}</span>
+        <span class="nx">files</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">files</span><span class="p">,</span> <span class="nx">filepath</span><span class="p">.</span><span class="nx">Join</span><span class="p">(</span><span class="nx">path</span><span class="p">,</span> <span class="nx">script</span><span class="p">.</span><span class="nx">Name</span><span class="p">()))</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">files</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>There are <a href="../../articles/2018/03/golang笔记.html#disqus_thread">comments</a>.</p>
+                </div>
+            </article>
+                <ul class="entry-list">
+            <li><article>
                 <h1 class="entry-title"><a href="../../articles/2018/01/关于时间与空间的猜想.html" rel="bookmark" title="Permalink to 关于时间与空间的猜想">关于时间与空间的猜想</a></h1>
 <header class="entry-info">
   <span class="entry-info-date" title="Updated at 2018-01-14">
@@ -83,7 +280,7 @@
   </span>
 </header>                <hr class="entry-hr" />
                 <div class="entry-content">
-                    
+                
 <ul>
 <li>背景
 <p>不知道从何时开始，就听过这样一个说法: 如果人类所达到的速度超越光速,那么人类将穿越时空。前些年网文电视剧可谓穿越盛行，今天我也来胡言乱语一番!</p>
@@ -97,11 +294,12 @@
 
 </li>
 </ul>
-<p>当然，z空间也可以看作是一个y空间里的一个介质，光速不能通过简单的线性公式算出，反正我是在胡言乱语而已</p>
-<p>There are <a href="../../articles/2018/01/关于时间与空间的猜想.html#disqus_thread">comments</a>.</p>
+<p>当然 …</p>
+                  <div class="text-center">
+                    <a class="btn entry-read-more" href="../../articles/2018/01/关于时间与空间的猜想.html">阅读全文 »</a>
+                  </div>
                 </div>
-            </article>
-                <ul class="entry-list">
+            </article></li>
             <li><article>
                 <h1 class="entry-title"><a href="../../articles/2017/12/十二月十日小记.html" rel="bookmark" title="Permalink to 十二月十日小记">十二月十日小记</a></h1>
 <header class="entry-info">
@@ -504,41 +702,6 @@
 <td>is_superuser</td><td>bool</td><td>是否为超级管理员</td><td>False …</td></tr></table>
                   <div class="text-center">
                     <a class="btn entry-read-more" href="../../articles/2016/12/我的毕业设计--数据库设计之登陆注册.html">阅读全文 »</a>
-                  </div>
-                </div>
-            </article></li>
-            <li><article>
-                <h1 class="entry-title"><a href="../../articles/2016/10/世界这么大，我想去看看.html" rel="bookmark" title="Permalink to 世界这么大，我想去看看">世界这么大，我想去看看</a></h1>
-<header class="entry-info">
-  <span class="entry-info-date" title="2016-10-29T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    六 29 十月 2016
-  </span>
-  <span class="entry-info-sep hidden-xs">|</span>
-  <span class="entry-info-author hidden-xs">
-    <i class="fa fa-user-o"></i>
-    By <a href="../../author/honmaple.html">honmaple</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-category">
-    <i class="fa fa-folder-o"></i>
-    In <a href="../../category/life/index.html">Life</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-tag">
-    <i class="fa fa-bookmark-o"></i>
-    tags:
-    <a href="../../tag/life/index.html">Life</a>
-    <a href="../../tag/liu-lang/index.html">流浪</a>
-  </span>
-</header>                <hr class="entry-hr" />
-                <div class="entry-content">
-                
-<p>:世界那么大，我想去看看···</p>
-
-<p>:我得养家······</p>
-                  <div class="text-center">
-                    <a class="btn entry-read-more" href="../../articles/2016/10/世界这么大，我想去看看.html">阅读全文 »</a>
                   </div>
                 </div>
             </article></li>
