@@ -1,47 +1,50 @@
 function setCookie(name,value,expiredays)
 {
-  var exdate=new Date()
-  exdate.setDate(exdate.getDate()+expiredays)
-  document.cookie=name+ "=" +escape(value)+ ((expiredays==null) ? "" : ";expires="+exdate.toGMTString() + ";path=/")
+    var exdate=new Date();
+    exdate.setDate(exdate.getDate()+expiredays);
+    document.cookie=name+ "=" +escape(value)+ ((expiredays===null) ? "" : ";expires="+exdate.toGMTString() + ";path=/");
 }
-function getCookie(c_name)
+function getCookie(name)
 {
-  if (document.cookie.length>0) {
-    c_start=document.cookie.indexOf(c_name + "=")
-    if (c_start!=-1) {
-      c_start=c_start + c_name.length+1
-      c_end=document.cookie.indexOf(";",c_start)
-      if (c_end==-1) c_end=document.cookie.length
-      return unescape(document.cookie.substring(c_start,c_end))
+    if (document.cookie.length>0) {
+        start=document.cookie.indexOf(name + "=");
+        if (start!=-1) {
+            start=start + name.length+1;
+            end=document.cookie.indexOf(";",start);
+            if (end==-1) end=document.cookie.length;
+            return unescape(document.cookie.substring(start,end));
+        }
     }
-  }
-  return ""
+    return "";
 }
-function changeTheme() {
-  var element = document.createElement('link');
-  element.type = 'text/css';
-  element.id = "theme-black";
-  element.rel = 'stylesheet';
-  element.href = '/theme/css/main-black.css';
-  document.getElementsByTagName("head")[0].appendChild(element);
-  setCookie('theme',other_theme,3);
+function changeTheme(name, css) {
+    var element = document.createElement('link');
+    element.type = 'text/css';
+    element.id = name;
+    element.rel = 'stylesheet';
+    element.href = css;
+    document.getElementsByTagName("head")[0].appendChild(element);
+    setCookie('theme',name,3);
 }
-function removeTheme() {
-  var element = document.getElementById("theme-black");
-  if (element) {
-    document.getElementsByTagName("head")[0].removeChild(element);
-  }
-  setCookie('theme',default_theme,3);
+function removeTheme(name) {
+    var element = document.getElementById(name);
+    if (element) {
+        document.getElementsByTagName("head")[0].removeChild(element);
+    }
+    setCookie('theme','default',3);
 }
 function toggleTheme() {
-  if (getCookie('theme') == other_theme) {
-    removeTheme();
-  } else {
-    changeTheme();
-  }
+    var theme = getCookie('theme');
+    if (theme in themes) {
+        removeTheme(theme);
+    } else {
+        changeTheme();
+    }
 }
-var default_theme = 'snow';
-var other_theme = 'black';
-if (getCookie('theme') == other_theme) {
-  changeTheme();
+var themes = {
+    "theme-black":"/theme/css/main-black.css"
+};
+var theme = getCookie('theme');
+if (theme in themes) {
+    changeTheme(theme, themes[theme]);
 }
