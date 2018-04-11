@@ -12,6 +12,29 @@ function dispatch() {
         return false;
     }
 }
+
+function decrypt(_this) {
+    var _next = _this.next();
+    if (_this.prev().val() === "" ){
+        _next.css("color","#C74451");
+        _next.text("密码不能为空 !");
+    }else {
+        $.post("https://honmaple.com/api/encrypt", {
+            password:_this.prev().val(),
+            content:_this.parent().next().text()
+        }, function(response){
+            if(response.status == 200) {
+                var _parent = _this.parent().parent();
+                _parent.hide();
+                _parent.after(response.data);
+            }else {
+                _next.css("color","#C74451");
+                _next.text("密码错误 !");
+            }
+        }, 'json');
+    }
+}
+
 $(document).ready(function(){
     var e = $(".back-to-top");
     var offsetHeight = document.body.offsetHeight;
@@ -57,22 +80,15 @@ $(document).ready(function(){
         $(".navbar-logo").parent().html(content);
     });
 
+    $('#entry-decrypt-password').keyup(function(e){
+        if(e.keyCode == 13)
+        {
+            decrypt($(this).next());
+        }
+    });
+
     $(".entry-decrypt").click(function(e) {
-        var _this = $(this);
-        $.post("https://honmaple.com/api/encrypt", {
-            password:_this.prev().val(),
-            content:_this.parent().next().text()
-        }, function(response){
-            if(response.status == 200) {
-                var _parent = _this.parent().parent();
-                _parent.hide();
-                _parent.after(response.data);
-            }else {
-                var _next = _this.next();
-                _next.css("color","#C74451");
-                _next.text("密码错误");
-            }
-        }, 'json');
+        decrypt($(this));
     });
 
     particlesJS("particles-js", {

@@ -37,8 +37,8 @@ function toggleTheme() {
     var theme = getCookie('theme');
     if (theme in themes) {
         removeTheme(theme);
-    } else {
-        changeTheme();
+    }else {
+        changeTheme("theme-black",themes["theme-black"]);
     }
 }
 var themes = {
