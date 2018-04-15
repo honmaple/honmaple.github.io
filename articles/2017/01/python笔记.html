@@ -61,7 +61,7 @@
 </nav><article>
   <h1 class="entry-title"><a href="../../../articles/2017/01/python笔记.html">python笔记</a></h1>
 <header class="entry-info">
-  <span class="entry-info-date" title="Updated at 2018-04-11">
+  <span class="entry-info-date" title="Updated at 2018-04-15">
     <i class="fa fa-calendar-o"></i>
     日 29 一月 2017
   </span>
@@ -86,17 +86,265 @@
 </header>   <hr class="entry-hr" />
   <div class="entry-content entry-article">
     <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-95669352">Tool</a>
+<li><a href="#org-23376034">TIME</a>
 <ul>
-<li><a href="#org-13969114">python运行超时设置</a></li>
+<li><a href="#org-49624591">GMT时间格式</a></li>
 <li><a href="#org-55766103">获取某个时间的时间戳</a></li>
+<li><a href="#org-20792018">得到当天0点时间</a></li>
+<li><a href="#org-56255069">python时间或时间戳与字符串转换</a></li>
+<li><a href="#org-64412297">python秒转化为时分秒</a></li>
+<li><a href="#org-58819970">获取上个月开始与结束时间</a></li>
+<li><a href="#org-2750092">获取上周星期天与星期六</a></li>
+<li><a href="#org-31153379">获取上周时间(星期天零点到星期天零点)</a></li>
 </ul></li>
+<li><a href="#org-52849955">HTTP</a>
+<ul>
+<li><a href="#org-53064474">在网址中加入参数</a></li>
+<li><a href="#org-2578875">urllib2发送json数据 POST请求</a></li>
+<li><a href="#org-75677159">urllib2发送PUT或DELETE请求</a></li>
+</ul></li>
+<li><a href="#org-61762384">Syntax</a>
+<ul>
+<li><a href="#org-71982531">python字典使用dot</a></li>
+<li><a href="#org-91732803">python单例模式</a></li>
+</ul></li>
+<li><a href="#org-77028636">判斷是否激活virtualenv</a></li>
+<li><a href="#org-91515979">Django model得到所有field name</a></li>
+<li><a href="#org-30580729">python运行超时设置</a></li>
 </ul>
 </div></div>
 
 
-<h2 id="org-95669352">Tool</h2>
-<h3 id="org-13969114">python运行超时设置</h3>
+<h2 id="org-23376034">TIME</h2>
+<h3 id="org-49624591">GMT时间格式</h3>
+<div class="highlight"><pre><span></span><span class="n">GMT_FORMAT</span> <span class="o">=</span> <span class="s1">&#39;%a, </span><span class="si">%d</span><span class="s1"> %b %Y %H:%M:%S GMT&#39;</span>
+</pre></div>
+
+<h3 id="org-55766103">获取某个时间的时间戳</h3>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">string</span> <span class="o">=</span> <span class="s2">&quot;2018-03-31&quot;</span>
+<span class="n">date_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">time_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">mktime</span><span class="p">(</span><span class="n">date_time</span><span class="o">.</span><span class="n">timetuple</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="n">time_time</span><span class="p">)</span>
+</pre></div>
+
+<h3 id="org-20792018">得到当天0点时间</h3>
+<div class="highlight"><pre><span></span><span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">today</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">today</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">today</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+<span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">midnight</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="p">(</span><span class="n">now</span> <span class="o">%</span> <span class="mi">86400</span><span class="p">)</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">timezone</span>
+<span class="n">itime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">ctime</span><span class="p">(</span><span class="n">midnight</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">itime</span><span class="p">)</span>
+</pre></div>
+
+<h3 id="org-56255069">python时间或时间戳与字符串转换</h3>
+<div class="highlight"><pre><span></span><span class="c1">#把datetime转成字符串</span>
+<span class="k">def</span> <span class="nf">datetime_toString</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H&quot;</span><span class="p">)</span>
+
+<span class="c1">#把字符串转成datetime</span>
+<span class="k">def</span> <span class="nf">string_toDatetime</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H&quot;</span><span class="p">)</span>
+
+<span class="c1">#把字符串转成时间戳形式</span>
+<span class="k">def</span> <span class="nf">string_toTimestamp</span><span class="p">(</span><span class="n">strTime</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">mktime</span><span class="p">(</span><span class="n">string_toDatetime</span><span class="p">(</span><span class="n">strTime</span><span class="p">)</span><span class="o">.</span><span class="n">timetuple</span><span class="p">())</span>
+
+<span class="c1">#把时间戳转成字符串形式</span>
+<span class="k">def</span> <span class="nf">timestamp_toString</span><span class="p">(</span><span class="n">stamp</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">(</span><span class="n">stamp</span><span class="p">))</span>
+
+<span class="c1">#把时间戳转成datetime</span>
+<span class="k">def</span> <span class="nf">timestamp_toDatetime</span><span class="p">(</span><span class="n">stamp</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">stamp</span><span class="p">)</span>
+
+<span class="c1">#把datetime类型转外时间戳形式</span>
+<span class="k">def</span> <span class="nf">datetime_toTimestamp</span><span class="p">(</span><span class="n">dateTim</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">mktime</span><span class="p">(</span><span class="n">dateTim</span><span class="o">.</span><span class="n">timetuple</span><span class="p">())</span>
+</pre></div>
+
+
+<h3 id="org-64412297">python秒转化为时分秒</h3>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">time_string</span><span class="p">(</span><span class="n">seconds</span><span class="p">):</span>
+    <span class="n">hours</span><span class="p">,</span> <span class="n">_minutes</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">seconds</span><span class="p">,</span> <span class="mi">3600</span><span class="p">)</span>
+    <span class="n">minutes</span><span class="p">,</span> <span class="n">seconds</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">_minutes</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">hours</span><span class="p">,</span> <span class="n">minutes</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)</span>
+</pre></div>
+
+<h3 id="org-58819970">获取上个月开始与结束时间</h3>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+
+<span class="k">def</span> <span class="nf">gen_zero_time</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    生成当天零点时间</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">today</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">today</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">today</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">b</span>
+
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">gen_zero_time</span><span class="p">()</span>
+<span class="n">end_date</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">start_date</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">end_date</span><span class="p">)</span>
+</pre></div>
+
+<h3 id="org-2750092">获取上周星期天与星期六</h3>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">dateutil</span> <span class="kn">import</span> <span class="n">relativedelta</span>
+<span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">today</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">((</span><span class="n">today</span><span class="o">.</span><span class="n">weekday</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">sat</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">relativedelta</span><span class="o">.</span><span class="n">relativedelta</span><span class="p">(</span><span class="n">weekday</span><span class="o">=</span><span class="n">relativedelta</span><span class="o">.</span><span class="n">SA</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">sun</span> <span class="o">=</span> <span class="n">sat</span> <span class="o">+</span> <span class="n">relativedelta</span><span class="o">.</span><span class="n">relativedelta</span><span class="p">(</span><span class="n">weekday</span><span class="o">=</span><span class="n">relativedelta</span><span class="o">.</span><span class="n">SU</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">sat</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">sun</span><span class="p">)</span>
+</pre></div>
+
+<h3 id="org-31153379">获取上周时间(星期天零点到星期天零点)</h3>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+
+<span class="k">def</span> <span class="nf">gen_zero_time</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    生成当天零点时间</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">today</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">today</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">today</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">b</span>
+
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">gen_zero_time</span><span class="p">()</span>
+<span class="n">start_date</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=-</span><span class="n">a</span><span class="o">.</span><span class="n">weekday</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">weeks</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">end_date</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">end_date</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="org-52849955">HTTP</h2>
+<h3 id="org-53064474">在网址中加入参数</h3>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">urllib</span>
+<span class="kn">import</span> <span class="nn">urlparse</span>
+
+
+<span class="k">def</span> <span class="nf">url_add_params</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; 在网址中加入新参数 &quot;&quot;&quot;</span>
+    <span class="n">pr</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">urlparse</span><span class="o">.</span><span class="n">parse_qsl</span><span class="p">(</span><span class="n">pr</span><span class="o">.</span><span class="n">query</span><span class="p">))</span>
+    <span class="n">query</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">prlist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pr</span><span class="p">)</span>
+    <span class="n">prlist</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">ParseResult</span><span class="p">(</span><span class="o">*</span><span class="n">prlist</span><span class="p">)</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;http://bbs.163.com&#39;</span>
+    <span class="k">print</span> <span class="n">url_add_params</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s2">&quot;bbs&quot;</span><span class="p">)</span>
+</pre></div>
+
+<h3 id="org-2578875">urllib2发送json数据 POST请求</h3>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">urllib2</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;ids&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="s1">&#39;http://example.com/api/posts/create&#39;</span><span class="p">)</span>
+<span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+</pre></div>
+
+<h3 id="org-75677159">urllib2发送PUT或DELETE请求</h3>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">urllib2</span>
+<span class="n">opener</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">build_opener</span><span class="p">(</span><span class="n">urllib2</span><span class="o">.</span><span class="n">HTTPHandler</span><span class="p">)</span>
+<span class="n">request</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="s1">&#39;http://example.org&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s1">&#39;your_put_data&#39;</span><span class="p">)</span>
+<span class="n">request</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;your/contenttype&#39;</span><span class="p">)</span>
+<span class="n">request</span><span class="o">.</span><span class="n">get_method</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="s1">&#39;PUT&#39;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="n">opener</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+<span class="c1"># 或者使用httplib</span>
+<span class="kn">import</span> <span class="nn">httplib</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">httplib</span><span class="o">.</span><span class="n">HTTPConnection</span><span class="p">(</span><span class="s1">&#39;www.foo.com&#39;</span><span class="p">)</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s1">&#39;PUT&#39;</span><span class="p">,</span> <span class="s1">&#39;/myurl&#39;</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">getresponse</span><span class="p">()</span>
+<span class="n">content</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</pre></div>
+
+
+<h2 id="org-61762384">Syntax</h2>
+<h3 id="org-71982531">python字典使用dot</h3>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">dotdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+
+    <span class="fm">__setattr__</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="fm">__setitem__</span>
+    <span class="fm">__delattr__</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="fm">__delitem__</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">dotdict</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+
+<span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">dotdict</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">d</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+
+<h3 id="org-91732803">python单例模式</h3>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
+
+
+<span class="k">def</span> <span class="nf">singleton</span><span class="p">(</span><span class="n">class_</span><span class="p">):</span>
+    <span class="n">instances</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">_lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">class_</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_instance</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">class_</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">:</span>
+                <span class="n">instances</span><span class="p">[</span><span class="n">class_</span><span class="p">]</span> <span class="o">=</span> <span class="n">class_</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">instances</span><span class="p">[</span><span class="n">class_</span><span class="p">]</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instances</span><span class="p">[</span><span class="n">class_</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">_instance</span>
+
+<span class="nd">@singleton</span>
+<span class="k">class</span> <span class="nc">AA</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+
+    <span class="k">def</span> <span class="nf">aa</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
+
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">AA</span><span class="p">(</span><span class="s1">&#39;ccc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">aa</span><span class="p">()</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">AA</span><span class="p">(</span><span class="s1">&#39;baabb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">aa</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="nb">id</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+</pre></div>
+
+<h2 id="org-77028636">判斷是否激活virtualenv</h2>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="s1">&#39;real_prefix&#39;</span><span class="p">):</span>
+   <span class="k">return</span> <span class="bp">True</span>
+</pre></div>
+
+
+<h2 id="org-91515979">Django model得到所有field name</h2>
+<div class="highlight"><pre><span></span><span class="n">MyModel</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">get_all_field_names</span><span class="p">()</span>
+</pre></div>
+
+
+<h2 id="org-30580729">python运行超时设置</h2>
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">signal</span>
 
 <span class="k">class</span> <span class="nc">TimeoutError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
@@ -121,15 +369,6 @@
     <span class="k">return</span> <span class="n">_timeout</span>
 </pre></div>
 
-<h3 id="org-55766103">获取某个时间的时间戳</h3>
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">time</span>
-
-<span class="n">string</span> <span class="o">=</span> <span class="s2">&quot;2018-03-31&quot;</span>
-<span class="n">date_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
-<span class="n">time_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">mktime</span><span class="p">(</span><span class="n">date_time</span><span class="o">.</span><span class="n">timetuple</span><span class="p">())</span>
-<span class="k">print</span><span class="p">(</span><span class="n">time_time</span><span class="p">)</span>
-</pre></div>
 
   </div>
   <hr class="entry-hr" />
