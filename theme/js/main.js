@@ -39,17 +39,21 @@ $(document).ready(function(){
     var e = $(".back-to-top");
     var offsetHeight = document.body.offsetHeight;
     var scrollHeight = document.body.scrollHeight;
-    if (scrollHeight > offsetHeight && scrollHeight - offsetHeight < 243) {
-        $(".footer").css("margin-top", 3 + (offsetHeight - scrollHeight + 243) + "px");
-    }
+    var navbarFixed = scrollHeight > offsetHeight && scrollHeight - offsetHeight > 125;
+    // if (scrollHeight > offsetHeight && scrollHeight - offsetHeight < 243) {
+    //     $(".footer").css("margin-top", 3 + (offsetHeight - scrollHeight + 243) + "px");
+    // }
     $(window).on("scroll", function() {
         e.toggleClass("back-to-top-on", window.pageYOffset > 120);
-        $(".navbar").toggleClass("navbar-fixed", window.pageYOffset > 120);
-        if (!$("#navbar-title").length && window.pageYOffset > 120 && window.innerWidth > 1280 && $(".entry-title").length == 1) {
-            $(".navbar-header").after('<div class="navbar-text" id="navbar-title">' + $(".entry-title").text() + '</div>');
-        }
-        if ($("#navbar-title").length && window.pageYOffset < 120) {
-            $("#navbar-title").remove();
+        console.log(document.body.offsetHeight,document.body.scrollHeight);
+        if (navbarFixed) {
+            $(".navbar").toggleClass("navbar-fixed", window.pageYOffset > 120);
+            if (!$("#navbar-title").length && window.pageYOffset > 120 && window.innerWidth > 1280 && $(".entry-title").length == 1) {
+                $(".navbar-header").after('<div class="navbar-text" id="navbar-title">' + $(".entry-title").text() + '</div>');
+            }
+            if ($("#navbar-title").length && window.pageYOffset < 120) {
+                $("#navbar-title").remove();
+            }
         }
         // scrollbar
         if ($(".scrollbar").length) {
