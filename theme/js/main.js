@@ -39,13 +39,12 @@ $(document).ready(function(){
     var e = $(".back-to-top");
     var offsetHeight = document.body.offsetHeight;
     var scrollHeight = document.body.scrollHeight;
-    var navbarFixed = scrollHeight > offsetHeight && scrollHeight - offsetHeight > 125;
+    var navbarFixed = scrollHeight > offsetHeight && scrollHeight - offsetHeight > 243;
     // if (scrollHeight > offsetHeight && scrollHeight - offsetHeight < 243) {
     //     $(".footer").css("margin-top", 3 + (offsetHeight - scrollHeight + 243) + "px");
     // }
     $(window).on("scroll", function() {
         e.toggleClass("back-to-top-on", window.pageYOffset > 120);
-        console.log(document.body.offsetHeight,document.body.scrollHeight);
         if (navbarFixed) {
             $(".navbar").toggleClass("navbar-fixed", window.pageYOffset > 120);
             if (!$("#navbar-title").length && window.pageYOffset > 120 && window.innerWidth > 1280 && $(".entry-title").length == 1) {
