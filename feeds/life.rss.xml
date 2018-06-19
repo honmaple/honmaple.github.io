@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Life</title><link href="https://honmaple.me/" rel="alternate"></link><link href="https://honmaple.me/feeds/life.rss.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2018-04-11T10:49:47+08:00</updated><entry><title>golang笔记</title><link href="https://honmaple.me/articles/2018/03/golang%E7%AC%94%E8%AE%B0.html" rel="alternate"></link><published>2018-03-26T09:44:14+08:00</published><updated>2018-04-11T10:49:47+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-03-26:/articles/2018/03/golang笔记.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Life</title><link href="https://honmaple.me/" rel="alternate"></link><link href="https://honmaple.me/feeds/life.rss.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2018-06-19T18:14:14+08:00</updated><entry><title>golang笔记</title><link href="https://honmaple.me/articles/2018/03/golang%E7%AC%94%E8%AE%B0.html" rel="alternate"></link><published>2018-03-26T09:44:14+08:00</published><updated>2018-06-19T18:14:14+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-03-26:/articles/2018/03/golang笔记.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-20549055"&gt;读取配置文件&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-76847424"&gt;判断文件是否存在&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-77850160"&gt;随机睡眠&lt;/a&gt;&lt;/li&gt;
@@ -9,6 +9,12 @@
 &lt;li&gt;&lt;a href="#org-72355056"&gt;执行Linux命令&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-82930855"&gt;迭代文件目录&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-21403833"&gt;求两列表的差集&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-96739902"&gt;删除列表中重复的数据&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-64662301"&gt;参数校验&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-58598015"&gt;是否是IP&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-87064949"&gt;是否是EMAIL&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
 
@@ -34,10 +40,7 @@
 
 &lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nx"&gt;init&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
     &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
-        &lt;span class="nx"&gt;conf_file&lt;/span&gt; &lt;span class="kt"&gt;string&lt;/span&gt;
-        &lt;span class="nx"&gt;print_ver&lt;/span&gt; &lt;span class="kt"&gt;bool&lt;/span&gt;
-    &lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="nx"&gt;flag&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;StringVar …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+        &lt;span class="nx"&gt;conf_file&lt;/span&gt; &lt;span class="kt"&gt;string …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-20549055"&gt;读取配置文件&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-76847424"&gt;判断文件是否存在&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-77850160"&gt;随机睡眠&lt;/a&gt;&lt;/li&gt;
@@ -47,6 +50,12 @@
 &lt;li&gt;&lt;a href="#org-72355056"&gt;执行Linux命令&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-82930855"&gt;迭代文件目录&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-21403833"&gt;求两列表的差集&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-96739902"&gt;删除列表中重复的数据&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-64662301"&gt;参数校验&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-58598015"&gt;是否是IP&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-87064949"&gt;是否是EMAIL&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
 
@@ -219,6 +228,48 @@
         &lt;span class="p"&gt;}&lt;/span&gt;
     &lt;span class="p"&gt;}&lt;/span&gt;
     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;diff&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id="org-96739902"&gt;删除列表中重复的数据&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nx"&gt;RemoveDuplicates&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;elements&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+   &lt;span class="nx"&gt;keys&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="kd"&gt;map&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="kt"&gt;bool&lt;/span&gt;&lt;span class="p"&gt;{}&lt;/span&gt;
+   &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="p"&gt;{}&lt;/span&gt;
+
+   &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;_&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;element&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="k"&gt;range&lt;/span&gt; &lt;span class="nx"&gt;elements&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+       &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;_&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;value&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="nx"&gt;keys&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;element&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt; &lt;span class="p"&gt;!&lt;/span&gt;&lt;span class="nx"&gt;value&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+           &lt;span class="nx"&gt;keys&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;element&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;
+           &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;result&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;element&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+       &lt;span class="p"&gt;}&lt;/span&gt;
+   &lt;span class="p"&gt;}&lt;/span&gt;
+   &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;result&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id="org-64662301"&gt;参数校验&lt;/h2&gt;
+&lt;h3 id="org-58598015"&gt;是否是IP&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nx"&gt;IsValidIP&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;key&lt;/span&gt; &lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="kt"&gt;bool&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nx"&gt;IP&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="nx"&gt;net&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;ParseIP&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;key&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;IP&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="kc"&gt;nil&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h3 id="org-87064949"&gt;是否是EMAIL&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;regexp&amp;quot;&lt;/span&gt;
+
+&lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nx"&gt;IsValidEmail&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;key&lt;/span&gt; &lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="kt"&gt;bool&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nx"&gt;re&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="nx"&gt;regexp&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;MustCompile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;^[a-zA-Z0-9.!#$%&amp;amp;&amp;#39;*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;!&lt;/span&gt;&lt;span class="nx"&gt;re&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;MatchString&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;key&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;strings&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;HasSuffix&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;@upai.com&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="nx"&gt;strings&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;HasSuffix&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;@huaban.com&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;
 &lt;span class="p"&gt;}&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 </content><category term="golang"></category><category term="coding"></category></entry><entry><title>关于时间与空间的猜想</title><link href="https://honmaple.me/articles/2018/01/%E5%85%B3%E4%BA%8E%E6%97%B6%E9%97%B4%E4%B8%8E%E7%A9%BA%E9%97%B4%E7%9A%84%E7%8C%9C%E6%83%B3.html" rel="alternate"></link><published>2018-01-01T14:22:02+08:00</published><updated>2018-01-14T15:02:25+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-01-01:/articles/2018/01/关于时间与空间的猜想.html</id><summary type="html">

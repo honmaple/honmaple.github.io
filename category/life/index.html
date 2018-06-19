@@ -62,7 +62,7 @@
           <div class="entry-header">
             <h1 class="entry-title"><a href="../../articles/2018/03/golang笔记.html" rel="bookmark" title="Permalink to golang笔记">golang笔记</a></h1>
 <header class="entry-info">
-  <span class="entry-info-date" title="Updated at 2018-04-11">
+  <span class="entry-info-date" title="Updated at 2018-06-19">
     <i class="fa fa-calendar-o"></i>
     一 26 三月 2018
   </span>
@@ -96,6 +96,12 @@
 <li><a href="#org-72355056">执行Linux命令</a></li>
 <li><a href="#org-82930855">迭代文件目录</a></li>
 <li><a href="#org-21403833">求两列表的差集</a></li>
+<li><a href="#org-96739902">删除列表中重复的数据</a></li>
+<li><a href="#org-64662301">参数校验</a>
+<ul>
+<li><a href="#org-58598015">是否是IP</a></li>
+<li><a href="#org-87064949">是否是EMAIL</a></li>
+</ul></li>
 </ul>
 </div></div>
 
@@ -268,6 +274,48 @@
         <span class="p">}</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="nx">diff</span>
+<span class="p">}</span>
+</pre></div>
+
+<h2 id="org-96739902">删除列表中重复的数据</h2>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">RemoveDuplicates</span><span class="p">(</span><span class="nx">elements</span> <span class="p">[]</span><span class="kt">string</span><span class="p">)</span> <span class="p">[]</span><span class="kt">string</span> <span class="p">{</span>
+   <span class="nx">keys</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">bool</span><span class="p">{}</span>
+   <span class="nx">result</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{}</span>
+
+   <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">element</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">elements</span> <span class="p">{</span>
+       <span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">value</span> <span class="o">:=</span> <span class="nx">keys</span><span class="p">[</span><span class="nx">element</span><span class="p">];</span> <span class="p">!</span><span class="nx">value</span> <span class="p">{</span>
+           <span class="nx">keys</span><span class="p">[</span><span class="nx">element</span><span class="p">]</span> <span class="p">=</span> <span class="kc">true</span>
+           <span class="nx">result</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">result</span><span class="p">,</span> <span class="nx">element</span><span class="p">)</span>
+       <span class="p">}</span>
+   <span class="p">}</span>
+   <span class="k">return</span> <span class="nx">result</span>
+<span class="p">}</span>
+</pre></div>
+
+<h2 id="org-64662301">参数校验</h2>
+<h3 id="org-58598015">是否是IP</h3>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">IsValidIP</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="nx">IP</span> <span class="o">:=</span> <span class="nx">net</span><span class="p">.</span><span class="nx">ParseIP</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">IP</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">false</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="kc">true</span>
+<span class="p">}</span>
+</pre></div>
+
+<h3 id="org-87064949">是否是EMAIL</h3>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="s">&quot;regexp&quot;</span>
+
+<span class="kd">func</span> <span class="nx">IsValidEmail</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="nx">re</span> <span class="o">:=</span> <span class="nx">regexp</span><span class="p">.</span><span class="nx">MustCompile</span><span class="p">(</span><span class="s">&quot;^[a-zA-Z0-9.!#$%&amp;&#39;*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">!</span><span class="nx">re</span><span class="p">.</span><span class="nx">MatchString</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">false</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">HasSuffix</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="s">&quot;@upai.com&quot;</span><span class="p">)</span> <span class="o">||</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">HasSuffix</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="s">&quot;@huaban.com&quot;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">true</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="kc">false</span>
 <span class="p">}</span>
 </pre></div>
 
