@@ -60,6 +60,213 @@
   </div>
 </nav>        <article>
           <div class="entry-header">
+            <h1 class="entry-title"><a href="../../articles/2018/06/自定义helm式的ivy.html" rel="bookmark" title="Permalink to 自定义helm式的ivy">自定义helm式的ivy</a></h1>
+<header class="entry-info">
+  <span class="entry-info-date" title="Updated at 2018-06-21">
+    <i class="fa fa-calendar-o"></i>
+    四 14 六月 2018
+  </span>
+  <span class="entry-info-sep hidden-xs">|</span>
+  <span class="entry-info-author hidden-xs">
+    <i class="fa fa-user-o"></i>
+    By <a href="../../author/honmaple.html">honmaple</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-category">
+    <i class="fa fa-folder-o"></i>
+    In <a href="../../category/linux/index.html">Linux</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-tag">
+    <i class="fa fa-bookmark-o"></i>
+    tags:
+    <a href="../../tag/linux/index.html">linux</a>
+    <a href="../../tag/emacs/index.html">emacs</a>
+  </span>
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-56827192">吐嘈一: counsel-find-file</a></li>
+<li><a href="#org-46223305">吐嘈二: tab 键</a></li>
+<li><a href="#org-77342320">吐嘈三: 记忆多个按键</a></li>
+<li><a href="#org-39855294">吐嘈四: 模糊搜索</a></li>
+<li><a href="#org-77747879">吐嘈五: 候选词按使用频率排序</a></li>
+<li><a href="#org-60253486">吐嘈六: minibuffer</a></li>
+<li><a href="#org-73104572">吐嘈七: dired 中复制或重命名文件</a></li>
+<li><a href="#org-22512558">吐嘈八: sudo edit</a></li>
+<li><a href="#org-31590745">吐嘈九: counsel-ag 默认不会使用已选的单词</a></li>
+<li><a href="#org-16912421">总结</a></li>
+</ul>
+</div></div>
+
+
+
+<blockquote>
+<p>在 <b>n</b> 个月前, 我曾写过 <a href="https://honmaple.me/articles/2018/01/helm 与 ivy 简单对比.html">helm 与 ivy 简单对比</a>, 并吐嘈了<code>ivy</code>细节打磨不够，以至于我切换到<code>ivy</code>不到几天后,
+又回到了<code>helm</code>的拥抱, 但在<b>n</b>个月后，本着<b>生命不止，折腾不息</b>的精神, “狠狠地”的折腾了一把<code>ivy</code>, 让<code>ivy</code>也能像<code>helm</code>一样“如丝般润滑”，适应我平时的操作</p>
+</blockquote>
+
+<h2 id="org-56827192">吐嘈一: counsel-find-file</h2>
+<blockquote>
+<p>我在<b>dired</b>中移动文件, 即使已经设置了</p>
+<div class="highlight"><pre><span></span><span class="nb">:map</span> <span class="nv">counsel-find-file-map</span>
+<span class="p">(</span><span class="s">&quot;C-h&quot;</span> <span class="o">.</span> <span class="nv">counsel-up-directory</span><span class="p">)</span>
+</pre></div>
+
+
+<p>但<code>C-h</code>返回上级目录还是无效</p>
+</blockquote>
+
+<p>无意中从<b>spacemacs</b>中找到了解决办法(我电脑上常备 spacemacs 的配置，当看到 spacemacs 有什么更新都会切换过去尝试一番, 遇到适合自己的配置会"参考"一下, 哈), spacemacs 并没有遇到上述问题，在经过查找后，发现有这个一行</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nf">define-key</span> <span class="nv">ivy-minibuffer-map</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;C-h&quot;</span><span class="p">)</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;DEL&quot;</span><span class="p">))</span>
+</pre></div>
+
+<p>转换成我自己的配置就是</p>
+<div class="highlight"><pre><span></span><span class="nb">:map</span> <span class="nv">ivy-minibuffer-map</span>
+<span class="p">(</span><span class="s">&quot;C-h&quot;</span> <span class="o">.</span> <span class="p">[</span><span class="nv">backspace</span><span class="p">])</span>
+</pre></div>
+
+
+<h2 id="org-46223305">吐嘈二: tab 键</h2>
+<blockquote>
+<p><b>tab</b> 键我只想要<b>complete</b>， 而不是<b>complete and done</b>, 虽然<code>ivy</code>提供了另外的选项<code>ivy-partial-or-done</code>,但不是我想要的效果,尤其是把<b>aaa.py</b>重命名为<b>aaa.py.bak</b>时</p>
+</blockquote>
+
+<p>关于这一条，真的是“狠狠”地折腾了一把, 最终以<b>胜利</b>告终</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-done</span><span class="p">()</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">ivy-partial-or-done</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">delete-minibuffer-contents</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">ivy-text</span> <span class="p">(</span><span class="nv">ivy-state-current</span> <span class="nv">ivy-last</span><span class="p">))</span> <span class="nv">dir</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">insert</span> <span class="nv">ivy-text</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">eq</span> <span class="p">(</span><span class="nv">ivy-state-collection</span> <span class="nv">ivy-last</span><span class="p">)</span> <span class="nf">#&#39;</span><span class="nv">read-file-name-internal</span><span class="p">)</span>
+               <span class="p">(</span><span class="k">setq</span> <span class="nv">dir</span> <span class="p">(</span><span class="nv">ivy-expand-file-if-directory</span> <span class="nv">ivy-text</span><span class="p">)))</span>
+      <span class="p">(</span><span class="nv">ivy--cd</span> <span class="nv">dir</span><span class="p">))))</span>
+</pre></div>
+
+<p>主要思路就是插入当前选中项, 如果是<code>read-file-name-internal</code>(文件操作), 并且选中项是一个目录，则列出这个目录的文件，避免选中<b>tab</b>两次才能列出文件, 这样一来，第一次<b>tab</b>就是<b>complete</b>, 第二次<b>tab</b>才是<b>done</b>, 最终效果超出预期(V 字手)</p>
+
+
+<h2 id="org-77342320">吐嘈三: 记忆多个按键</h2>
+<blockquote>
+<p>ivy 有这样一个问题,它不会像 helm 一样在第一行显示用户输入的字符，在 ivy 的很多 issue 中都有人提了这个问题，如果当前目录下有名为<b>aaa</b>的目录,这是我想要创建一个<b>aaa.py</b>的文件，ivy 会列出 aaa 这个目录，那是我该怎么创建 aaa.py 文件。方法是一个新的命令<code>ivy-immediate-done</code>,而不是<code>ivy-alt-done</code></p>
+</blockquote>
+
+<p>现在的<b>ivy</b>已经支持可选择用户输入</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">ivy-use-selectable-prompt</span> <span class="no">t</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="org-39855294">吐嘈四: 模糊搜索</h2>
+<blockquote>
+<p>在 helm 中我可以很容易的使用模糊搜索，ivy 中也一样，只要简单的设置</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">ivy-re-builders-alist</span>
+      <span class="o">&#39;</span><span class="p">((</span><span class="no">t</span> <span class="o">.</span> <span class="nv">ivy--regex-fuzzy</span><span class="p">)))</span>
+</pre></div>
+
+<p>但 ivy 中有这样一个问题，空格键不能在模糊匹配中使用，/汗，作为从 helm 转入 ivy 的人，经常会不经意间在输入时按下空格键，然后，What? ivy 中搜索变成空了</p>
+</blockquote>
+
+<p>其实我想要混合使用空格与非空格, 但最终还是没能找到解决办法, 因为我已经适应的使用空格分隔, 所以暂时使用</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">ivy-re-builders-alist</span>
+<span class="o">&#39;</span><span class="p">((</span><span class="no">t</span>   <span class="o">.</span> <span class="nv">ivy--regex-ignore-order</span><span class="p">))</span>
+</pre></div>
+
+
+<h2 id="org-77747879">吐嘈五: 候选词按使用频率排序</h2>
+<p>这个。。。</p>
+
+<h2 id="org-60253486">吐嘈六: minibuffer</h2>
+<blockquote>
+<p>helm 从当前 buffer 中弹出 helm-buffer 是多么明智的选择，视野不会移动到当前 buffer 以外的地方，尤其是在屏幕较大的时候, 而 ivy 使用 minibuffer 总是从屏幕左下方弹出</p>
+</blockquote>
+
+<p>经过多次试验， 最终也找到的解决办法</p>
+<div class="highlight"><pre><span></span><span class="c1">;; custom ivy display function</span>
+<span class="p">(</span><span class="k">defvar</span> <span class="nv">maple/ivy-format-padding</span> <span class="no">nil</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-read-around</span> <span class="p">(</span><span class="nv">-ivy-read</span> <span class="kp">&amp;rest</span> <span class="nv">args</span><span class="p">)</span>
+  <span class="s">&quot;Advice ivy-read `-IVY-READ` `ARGS`.&quot;</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">maple/ivy-format-padding</span> <span class="p">(</span><span class="nf">make-string</span> <span class="p">(</span><span class="nf">window-left-column</span><span class="p">)</span> <span class="sc">?\s</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nf">setcar</span> <span class="nv">args</span> <span class="p">(</span><span class="nf">concat</span> <span class="nv">maple/ivy-format-padding</span> <span class="p">(</span><span class="nf">car</span> <span class="nv">args</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nf">apply</span> <span class="nv">-ivy-read</span> <span class="nv">args</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-format-function</span> <span class="p">(</span><span class="nv">cands</span><span class="p">)</span>
+  <span class="s">&quot;Transform CANDS into a string for minibuffer.&quot;</span>
+  <span class="p">(</span><span class="nv">ivy--format-function-generic</span>
+   <span class="p">(</span><span class="nb">lambda</span> <span class="p">(</span><span class="nv">str</span><span class="p">)</span>
+     <span class="p">(</span><span class="nf">concat</span> <span class="nv">maple/ivy-format-padding</span> <span class="p">(</span><span class="nv">ivy--add-face</span> <span class="nv">str</span> <span class="ss">&#39;ivy-current-match</span><span class="p">)))</span>
+   <span class="p">(</span><span class="nb">lambda</span> <span class="p">(</span><span class="nv">str</span><span class="p">)</span>
+     <span class="p">(</span><span class="nf">concat</span> <span class="nv">maple/ivy-format-padding</span> <span class="nv">str</span><span class="p">))</span>
+   <span class="nv">cands</span> <span class="s">&quot;\n&quot;</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nv">advice-add</span> <span class="ss">&#39;ivy-read</span> <span class="nb">:around</span> <span class="nf">#&#39;</span><span class="nv">maple/ivy-read-around</span><span class="p">)</span>
+<span class="p">(</span><span class="k">setq</span> <span class="nv">ivy-count-format</span> <span class="s">&quot;&quot;</span>
+      <span class="nv">ivy-format-function</span> <span class="ss">&#39;maple/ivy-format-function</span><span class="p">)</span>
+</pre></div>
+
+
+<p>主要思路就是在各个<b>collections</b>前添加空格, 空格宽度为 <code>(window-left-column)</code>, <code>window-left-column</code> 按照 help 文档来说就是<b>Return left column of window WINDOW</b>, 与屏幕左边缘的距离; 然后自定义 <code>ivy-format-function</code>,即可, 需要注意的一点, 不仅<b>collections</b>前需要添加空格, <b>prompt</b>前也需要添加空格</p>
+
+<p>最终效果
+<a href="https://honmaple.b0.upaiyun.com/images/jpg/2018/06/ivy-minibuffer.png-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2018/06/ivy-minibuffer.png-thumb" class="lazyload" /></a></p>
+
+<h2 id="org-73104572">吐嘈七: dired 中复制或重命名文件</h2>
+<blockquote>
+<p>我之前想要复制或重命名一个文件，只要进入<b>dired</b>中按<code>C</code>或<code>R</code>，然后选择目标就行，但不知道为什么，使用 ivy 时复制重命名总是报错，不成功</p>
+</blockquote>
+<p>经过测试, 现在的<b>ivy</b>表现正常</p>
+
+<h2 id="org-22512558">吐嘈八: sudo edit</h2>
+<blockquote>
+<p>使用<b>ivy</b>时, <code>sudo edit</code> 不成功</p>
+</blockquote>
+<p>目前已正常</p>
+
+<h2 id="org-31590745">吐嘈九: counsel-ag 默认不会使用已选的单词</h2>
+<blockquote>
+<p><b>counsel-ag</b>, 默认不会使用已选的单词, 想要查找已选单词, 需要在激活<code>counsel-ag</code>后使用<code>M-n</code>, 很麻烦，不像<b>helm</b>默认就可以选择<b>region</b>里的单词, 另外<code>counsel-ag</code>默认会使用含<b>.git</b>目录的目录作为根目录进行查找, 这与<code>counsel-projectile-ag</code>功能上有些冲突了</p>
+</blockquote>
+
+<p>解决办法很简单, <code>defadvice counsel-ag</code> 即可</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/counsel-ag</span><span class="p">(</span><span class="nv">-counsel-ag</span> <span class="kp">&amp;optional</span> <span class="nv">initial-input</span> <span class="nv">initial-directory</span> <span class="nv">extra-ag-args</span> <span class="nv">ag-prompt</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nv">not</span> <span class="nv">initial-input</span><span class="p">)</span> <span class="p">(</span><span class="nv">region-active-p</span><span class="p">))</span>
+    <span class="p">(</span><span class="k">setq</span> <span class="nv">initial-input</span> <span class="p">(</span><span class="nf">buffer-substring-no-properties</span>
+                         <span class="p">(</span><span class="nf">region-beginning</span><span class="p">)</span> <span class="p">(</span><span class="nf">region-end</span><span class="p">))))</span>
+  <span class="p">(</span><span class="nb">unless</span> <span class="nv">initial-directory</span> <span class="p">(</span><span class="k">setq</span> <span class="nv">initial-directory</span> <span class="nv">default-directory</span><span class="p">))</span>
+  <span class="p">(</span><span class="nf">funcall</span> <span class="nv">-counsel-ag</span> <span class="nv">initial-input</span> <span class="nv">initial-directory</span> <span class="nv">extra-ag-args</span> <span class="nv">ag-prompt</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nv">advice-add</span> <span class="ss">&#39;counsel-ag</span> <span class="nb">:around</span> <span class="nf">#&#39;</span><span class="nv">maple/counsel-ag</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="org-16912421">总结</h2>
+<ul>
+<li>说一说为什么想要折腾<b>ivy</b>:
+<ol>
+<li>在使用<b>helm</b>时, 首次打开会很慢(我在打开 emacs 后,习惯使用<code>helm-recentf</code>打开最近文件, 但不知道为什么，第一次会非常慢)；另外, 打开 emacs 后， 必须先使用<code>helm-recentf</code>才能激活<b>helm</b>, 如果使用其它<b>helm</b>命令, 比如<code>helm-M-x</code>或者<code>helm-projectile</code>只会使用默认的<b>ido</b>， 并不能激活<b>helm</b>
+</li>
+<li><b>helm</b>真的为用户做出太多选择， 想要自定义非常难, 即使成功也不是从源头解决，而是用了取巧的办法
+</li>
+<li>速度，不知道是不是我的感觉错误，最新版本的<b>helm</b>速度慢了很多
+</li>
+</ol></li>
+<li>还得吐嘈<b>ivy</b>:
+<p><b>ivy</b> 细节上果然打磨不够, 不过经过调(折)教(腾), 大致上和我之前使用<b>helm</b>的习惯一样了</p>
+
+<p>最终吐嘈点: <b>ivy-occur</b>, <code>ivy-occur</code> 使用了<b>wgrep</b>作为多文件编辑, 但说实话, 我觉得很难用, 和<b>helm-ag</b>自己实现的<b>helm-ag-edit</b>比起来更是难受, 一会就要切换一下<code>ivy-wgrep-change-to-wgrep-mode</code>, 不切用不了, 这个等有时间再折腾吧!</p>
+</li>
+</ul>
+<p>ok,就这样</p>
+
+
+<p>There are <a href="../../articles/2018/06/自定义helm式的ivy.html#disqus_thread">comments</a>.</p>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
             <h1 class="entry-title"><a href="../../articles/2018/03/git笔记.html" rel="bookmark" title="Permalink to git笔记">git笔记</a></h1>
 <header class="entry-info">
   <span class="entry-info-date" title="Updated at 2018-04-15">
@@ -113,44 +320,12 @@ git config  user.email <span class="s2">&quot;Author Email&quot;</span>
 
 git filter-branch --env-filter <span class="s1">&#39;</span>
 <span class="s1">OLD_EMAIL=&quot;your-old-email@example.com&quot;</span>
-<span class="s1">CORRECT_NAME=&quot;Your Correct Name&quot;</span>
-<span class="s1">CORRECT_EMAIL=&quot;your-correct-email@example.com&quot;</span>
-<span class="s1">if [ &quot;$GIT_COMMITTER_EMAIL&quot; = &quot;$OLD_EMAIL&quot; ]</span>
-<span class="s1">then</span>
-<span class="s1">    export GIT_COMMITTER_NAME=&quot;$CORRECT_NAME&quot;</span>
-<span class="s1">    export GIT_COMMITTER_EMAIL=&quot;$CORRECT_EMAIL&quot;</span>
-<span class="s1">fi</span>
-<span class="s1">if [ &quot;$GIT_AUTHOR_EMAIL&quot; = &quot;$OLD_EMAIL&quot; ]</span>
-<span class="s1">then</span>
-<span class="s1">    export GIT_AUTHOR_NAME=&quot;$CORRECT_NAME&quot;</span>
-<span class="s1">    export GIT_AUTHOR_EMAIL=&quot;$CORRECT_EMAIL&quot;</span>
-<span class="s1">fi</span>
-<span class="s1">&#39;</span> --tag-name-filter cat -- --branches --tags
-</pre></div>
-
-
-<p>在<b>.git</b>同级目录下运行</p>
-<div class="highlight"><pre><span></span>sh git.sh
-</pre></div>
-
-<p>然后使用<code>--force</code> push到远程</p></li>
-</ul>
-<h2 id="org-52016602">合并多个commit历史</h2>
-<div class="highlight"><pre><span></span>git rebase -i commit_id
-</pre></div>
-
-
-<p>使用 <b>magit</b></p>
-<div class="highlight"><pre><span></span>magit-status
-ll
-# move to commit id
-r-ii
-</pre></div>
-
-<p>There are <a href="../../articles/2018/03/git笔记.html#disqus_thread">comments</a>.</p>
+<span class="s1">CORRECT_NAME=&quot;Your Correct …</span></pre></div></li></ul>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="../../articles/2018/03/git笔记.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="../../articles/2018/02/docker笔记.html" rel="bookmark" title="Permalink to docker笔记">docker笔记</a></h1>
@@ -572,50 +747,6 @@ ansible-playbook -i hosts playbook.yml -e &#39;args&#39; -t deploy
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="../../articles/2017/10/ansible快速部署加速方案.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="../../articles/2017/09/ansible-playbook中tasks单进程.html" rel="bookmark" title="Permalink to ansible-playbook中tasks单进程">ansible-playbook中tasks单进程</a></h1>
-<header class="entry-info">
-  <span class="entry-info-date" title="2017-09-19T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    二 19 九月 2017
-  </span>
-  <span class="entry-info-sep hidden-xs">|</span>
-  <span class="entry-info-author hidden-xs">
-    <i class="fa fa-user-o"></i>
-    By <a href="../../author/honmaple.html">honmaple</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-category">
-    <i class="fa fa-folder-o"></i>
-    In <a href="../../category/linux/index.html">Linux</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-tag">
-    <i class="fa fa-bookmark-o"></i>
-    tags:
-    <a href="../../tag/linux/index.html">linux</a>
-    <a href="../../tag/ansible/index.html">ansible</a>
-  </span>
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content">
-            
-<p>之前有一个需求,ansible-playbook中需要某一步单步执行,也就是说在有多台服务器时,某个任务只能一台服务器执行完后,另一台服务器才能执行,否者对应集群的服务会出问题</p>
-
-<p>这是一个很简单的需求,ansible中也有对应的实现, <code>--fork 1</code> 或者 使用 <code>serial</code></p>
-
-<p>但是如果有人忘记加 <code>--fork 1</code> 了呢，而且该任务是在子任务中，使用 <b>include</b> 加载, <code>serial</code> 关键字无法在某一特定任务中使用,只能与 <b>hosts</b> 同级</p>
-
-<p>所幸，在这里 <a href="https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task">https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task</a> 找到了解决办法,使用 <b>delegate_to</b></p>
-
-<div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">service</span> <span class="n">restart</span>
-  <span class="c1"># serial: 1 would be the proper solution here, but …</span></pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="../../articles/2017/09/ansible-playbook中tasks单进程.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">
