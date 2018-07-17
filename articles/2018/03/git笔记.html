@@ -62,7 +62,7 @@
     <div class="entry-header">
       <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/03/git笔记.html">git笔记</a></h1>
 <header class="entry-info">
-  <span class="entry-info-date" title="Updated at 2018-04-15">
+  <span class="entry-info-date" title="Updated at 2018-07-17">
     <i class="fa fa-calendar-o"></i>
     四 01 三月 2018
   </span>
@@ -89,6 +89,7 @@
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
 <li><a href="#org-50953256">git修改提交作者和邮箱</a></li>
 <li><a href="#org-52016602">合并多个commit历史</a></li>
+<li><a href="#org-8817443">git删除远程分支已经被删除的本地分支</a></li>
 </ul>
 </div></div>
 
@@ -147,6 +148,30 @@ ll
 r-ii
 </pre></div>
 
+<h2 id="org-8817443">git删除远程分支已经被删除的本地分支</h2>
+<p>也不知道为什么， google了很久也没找到答案，明明题目已经清楚的问</p>
+<blockquote>
+<p>如何删除远程分支已经被删除的本地分支?</p>
+</blockquote>
+
+<p>可下面一群人在答</p>
+<blockquote>
+<p>如何删除本地分支已经被删除的远程分支?</p>
+</blockquote>
+
+<p><b>瞎答</b></p>
+
+<p>最后还是只能靠自己</p>
+<div class="highlight"><pre><span></span><span class="c1"># 先清理远程分支, 即删除本地分支已经被删除的远程分支</span>
+git fetch -p
+<span class="c1"># 找到存在的远程分支</span>
+git branch -r <span class="p">|</span> grep -v HEAD <span class="p">|</span> awk -F <span class="s1">&#39;/&#39;</span> <span class="s1">&#39;{print $2}&#39;</span> &gt; /tmp/test.txt
+<span class="c1"># 清理本地分支</span>
+git branch -a <span class="p">|</span> grep -v <span class="s1">&#39;\*&#39;</span> <span class="p">|</span>  egrep -v -f /tmp/test.txt <span class="p">|</span> xargs git branch -d
+</pre></div>
+
+
+<p>注意: <b>不要使用</b> <code>xargs git branch -D</code></p>
     </div>
     <hr class="entry-hr" />
     <ul class="entry-pager">
