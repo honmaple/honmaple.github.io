@@ -60,6 +60,158 @@
   </div>
 </nav>        <article>
           <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/09/ansible笔记.html" rel="bookmark" title="Permalink to ansible笔记">ansible笔记</a></h1>
+<header class="entry-info">
+  <span class="entry-info-date" title="Updated at 2018-09-12">
+    <i class="fa fa-calendar-o"></i>
+    二 04 九月 2018
+  </span>
+  <span class="entry-info-sep hidden-xs">|</span>
+  <span class="entry-info-author hidden-xs">
+    <i class="fa fa-user-o"></i>
+    By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-category">
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-tag">
+    <i class="fa fa-bookmark-o"></i>
+    tags:
+    <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+    <a href="https://honmaple.me/tag/python/index.html">python</a>
+    <a href="https://honmaple.me/tag/ansible/index.html">ansible</a>
+    <a href="https://honmaple.me/tag/devops/index.html">devops</a>
+  </span>
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-17703971">ansible动态解析inventory</a></li>
+<li><a href="#org-98284113">ansible自定义模块传递list变量会变成字符串</a></li>
+</ul>
+</div></div>
+
+
+<h2 id="org-17703971">ansible动态解析inventory</h2>
+<p>ansible调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，但直接使用ansible接口会更方便一些）
+但ansible没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可</p>
+
+<p>查找源码, 根据 <code>InventoryManager</code> 传递的<b>source</b>变量找到<code>parse_sources</code>这个函数</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">InventoryManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">parse_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; iterate over inventory sources and parse each one to populate it&#39;&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_inventory_plugins</span><span class="p">()</span>
+        <span class="o">...</span>
+</pre></div>
+
+
+<p>然后再根据</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_setup_inventory_plugins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; sets up loaded inventory plugins for usage &#39;&#39;&#39;</span>
+
+    <span class="n">inventory_loader</span> <span class="o">=</span> <span class="n">PluginLoader</span><span class="p">(</span><span class="s1">&#39;InventoryModule&#39;</span><span class="p">,</span> <span class="s1">&#39;ansible.plugins.inventory&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">DEFAULT_INVENTORY_PLUGIN_PATH</span><span class="p">,</span> <span class="s1">&#39;inventory_plugins&#39;</span><span class="p">)</span>
+    <span class="o">...</span>
+</pre></div>
+
+<p>找到对应的解析<b>plugin</b>, 我使用的是<b>ini</b>格式的inventory, 所以自定义一下<code>ansible.plugins.inventory.ini.InventoryModule</code>这个模块即可</p>
+
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.plugins.inventory.ini</span> <span class="kn">import</span> <span class="n">InventoryModule</span>
+<span class="kn">from</span> <span class="nn">ansible.inventory.data</span> <span class="kn">import</span> <span class="n">InventoryData</span>
+<span class="kn">from</span> <span class="nn">ansible.parsing.dataloader</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">ansible.module_utils._text</span> <span class="kn">import</span> <span class="n">to_text</span>
+<span class="kn">from</span> <span class="nn">ansible.template</span> <span class="kn">import</span> <span class="n">Templar</span>
+
+
+<span class="k">class</span> <span class="nc">InventoryCustomModule</span><span class="p">(</span><span class="n">InventoryModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">mine_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b_data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span> <span class="o">=</span> <span class="n">InventoryData</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">templar</span> <span class="o">=</span> <span class="n">Templar</span><span class="p">(</span><span class="n">loader</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">to_text</span><span class="p">(</span><span class="n">b_data</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;surrogate_or_strict&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">UnicodeError</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">b_data</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">line</span> <span class="ow">and</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_COMMENT_MARKERS</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to_text</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;surrogate_or_strict&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+
+
+<ul>
+<li><b>如何使用</b>:
+<div class="highlight"><pre><span></span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span><span class="se">\</span>
+<span class="s1">[MY-HOST]</span>
+<span class="s1">MY_HOST-1 ansible_ssh_host=127.0.0.1</span>
+<span class="s1">MY_HOST-2 ansible_ssh_host=127.0.0.2</span>
+<span class="s1">MY_HOST-3 ansible_ssh_host=127.0.0.3</span>
+<span class="s1">MY_HOST-4 ansible_ssh_host=127.0.0.4</span>
+<span class="s1">&#39;&#39;&#39;</span>
+<span class="n">module</span> <span class="o">=</span> <span class="n">InventoryCustomModule</span><span class="p">()</span>
+<span class="n">module</span><span class="o">.</span><span class="n">mine_parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;ungrouped&quot;</span><span class="p">]:</span>
+        <span class="k">continue</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">hosts</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">hosts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
+</pre></div>
+
+<p><b>结果</b>:</p>
+<div class="highlight"><pre><span></span>(MY-HOST, [MY_HOST-1, MY_HOST-2, MY_HOST-3, MY_HOST-4])
+{u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.1&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None}
+</pre></div>
+
+
+<p>但有一个问题, <b>all</b>组下的groups列表为空, 可能是还需要一些其他的操作吧</p>
+</li>
+</ul>
+<h2 id="org-98284113">ansible自定义模块传递list变量会变成字符串</h2>
+<p>我自定义了一个模块，需要传入一个<b>list</b>变量<code>group_names</code></p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.module_utils.basic</span> <span class="kn">import</span> <span class="n">AnsibleModule</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">AnsibleModule</span><span class="p">(</span>
+        <span class="n">argument_spec</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">group_names</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="bp">True</span>
+        <span class="p">}))</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group_names&#39;</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;group_names&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">))}</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">changed</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+<p>但发现传入的变量最后变成的<code>str type</code></p>
+<div class="highlight"><pre><span></span>FAILED! =&gt; {&quot;changed&quot;: false, &quot;failed&quot;: true, &quot;msg&quot;: {&quot;group_names&quot;: &quot;[&#39;test&#39;]&quot;, &quot;type&quot;: &quot;&lt;type &#39;str&#39;&gt;&quot;}}
+</pre></div>
+
+<p>最后查找资料后才知道, 传递的变量需要增加<code>type</code>参数, 否则都是<b>str</b></p>
+<div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">AnsibleModule</span><span class="p">(</span>
+    <span class="n">argument_spec</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">group_names</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span>
+    <span class="p">}))</span>
+</pre></div>
+
+
+
+<p>There are <a href="https://honmaple.me/articles/2018/09/ansible笔记.html#disqus_thread">comments</a>.</p>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/07/花落.html" rel="bookmark" title="Permalink to 花落">花落</a></h1>
 <header class="entry-info">
   <span class="entry-info-date" title="Updated at 2018-07-13">
@@ -108,10 +260,11 @@
 
 <p>。。。。</p>
 
-<p>There are <a href="https://honmaple.me/articles/2018/07/花落.html#disqus_thread">comments</a>.</p>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/07/花落.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/06/自定义helm式的ivy.html" rel="bookmark" title="Permalink to 自定义helm式的ivy">自定义helm式的ivy</a></h1>
@@ -168,7 +321,7 @@
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/04/看,那是屋檐.html" rel="bookmark" title="Permalink to 看,那是屋檐">看,那是屋檐</a></h1>
 <header class="entry-info">
-  <span class="entry-info-date" title="Updated at 2018-04-24">
+  <span class="entry-info-date" title="Updated at 2018-09-09">
     <i class="fa fa-calendar-o"></i>
     二 24 四月 2018
   </span>
@@ -192,6 +345,7 @@
           <hr class="entry-hr" />
           <div class="entry-content">
             
+<p><a href="https://honmaple.b0.upaiyun.com/images/pic/eaves.jpg-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/pic/eaves.jpg-thumb" class="lazyload" /></a></p>
 
 <blockquote>
 <div class="org-center">
@@ -502,65 +656,6 @@ git filter-branch --env-filter <span class="s1">&#39;</span>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/03/git笔记.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/02/docker笔记.html" rel="bookmark" title="Permalink to docker笔记">docker笔记</a></h1>
-<header class="entry-info">
-  <span class="entry-info-date" title="Updated at 2018-02-23">
-    <i class="fa fa-calendar-o"></i>
-    五 23 二月 2018
-  </span>
-  <span class="entry-info-sep hidden-xs">|</span>
-  <span class="entry-info-author hidden-xs">
-    <i class="fa fa-user-o"></i>
-    By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-category">
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-tag">
-    <i class="fa fa-bookmark-o"></i>
-    tags:
-    <a href="https://honmaple.me/tag/linux/index.html">linux</a>
-    <a href="https://honmaple.me/tag/docker/index.html">docker</a>
-  </span>
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content">
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-73285490">docker删除硬盘残留的文件</a></li>
-<li><a href="#org-84340943">docker构建时禁用缓存</a></li>
-</ul>
-</div></div>
-
-
-<h3 id="org-73285490">docker删除硬盘残留的文件</h3>
-<p>使用 <code>docker rmi ...</code> 或者 <code>docker image rm ...</code> 并不能将镜像完全删除，还会一直占用硬盘空间</p>
-
-<div class="highlight"><pre><span></span>docker system prune
-</pre></div>
-
-
-<p>该命令不会删除已存在镜像(不管是否正在运行)</p>
-
-<p>(硬盘一下子多个好几个G, 心情不错)</p>
-
-<h3 id="org-84340943">docker构建时禁用缓存</h3>
-<p><b>dockerfile</b> 中有多个 RUN 或者 ADD .. 命令时, 每个 RUN 都会创建一个 image, 下一个 image 会以上一个为基础（缓存）继续构建,</p>
-
-<p>可以使用 <code>docker images -a</code> 看到很多 <b>&lt;none&gt;</b> 的 image</p>
-
-<p>不过作为一名有洁癖的coder, 这种情况不能忍</p>
-
-<div class="highlight"><pre><span></span>docker …</pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/02/docker笔记.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">

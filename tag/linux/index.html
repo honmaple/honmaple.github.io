@@ -60,6 +60,158 @@
   </div>
 </nav>        <article>
           <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/09/ansible笔记.html" rel="bookmark" title="Permalink to ansible笔记">ansible笔记</a></h1>
+<header class="entry-info">
+  <span class="entry-info-date" title="Updated at 2018-09-12">
+    <i class="fa fa-calendar-o"></i>
+    二 04 九月 2018
+  </span>
+  <span class="entry-info-sep hidden-xs">|</span>
+  <span class="entry-info-author hidden-xs">
+    <i class="fa fa-user-o"></i>
+    By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-category">
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+  <span class="entry-info-sep">|</span>
+  <span class="entry-info-tag">
+    <i class="fa fa-bookmark-o"></i>
+    tags:
+    <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+    <a href="https://honmaple.me/tag/python/index.html">python</a>
+    <a href="https://honmaple.me/tag/ansible/index.html">ansible</a>
+    <a href="https://honmaple.me/tag/devops/index.html">devops</a>
+  </span>
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-17703971">ansible动态解析inventory</a></li>
+<li><a href="#org-98284113">ansible自定义模块传递list变量会变成字符串</a></li>
+</ul>
+</div></div>
+
+
+<h2 id="org-17703971">ansible动态解析inventory</h2>
+<p>ansible调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，但直接使用ansible接口会更方便一些）
+但ansible没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可</p>
+
+<p>查找源码, 根据 <code>InventoryManager</code> 传递的<b>source</b>变量找到<code>parse_sources</code>这个函数</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">InventoryManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">parse_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; iterate over inventory sources and parse each one to populate it&#39;&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_inventory_plugins</span><span class="p">()</span>
+        <span class="o">...</span>
+</pre></div>
+
+
+<p>然后再根据</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_setup_inventory_plugins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; sets up loaded inventory plugins for usage &#39;&#39;&#39;</span>
+
+    <span class="n">inventory_loader</span> <span class="o">=</span> <span class="n">PluginLoader</span><span class="p">(</span><span class="s1">&#39;InventoryModule&#39;</span><span class="p">,</span> <span class="s1">&#39;ansible.plugins.inventory&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">DEFAULT_INVENTORY_PLUGIN_PATH</span><span class="p">,</span> <span class="s1">&#39;inventory_plugins&#39;</span><span class="p">)</span>
+    <span class="o">...</span>
+</pre></div>
+
+<p>找到对应的解析<b>plugin</b>, 我使用的是<b>ini</b>格式的inventory, 所以自定义一下<code>ansible.plugins.inventory.ini.InventoryModule</code>这个模块即可</p>
+
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.plugins.inventory.ini</span> <span class="kn">import</span> <span class="n">InventoryModule</span>
+<span class="kn">from</span> <span class="nn">ansible.inventory.data</span> <span class="kn">import</span> <span class="n">InventoryData</span>
+<span class="kn">from</span> <span class="nn">ansible.parsing.dataloader</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">ansible.module_utils._text</span> <span class="kn">import</span> <span class="n">to_text</span>
+<span class="kn">from</span> <span class="nn">ansible.template</span> <span class="kn">import</span> <span class="n">Templar</span>
+
+
+<span class="k">class</span> <span class="nc">InventoryCustomModule</span><span class="p">(</span><span class="n">InventoryModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">mine_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b_data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span> <span class="o">=</span> <span class="n">InventoryData</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">templar</span> <span class="o">=</span> <span class="n">Templar</span><span class="p">(</span><span class="n">loader</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">to_text</span><span class="p">(</span><span class="n">b_data</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;surrogate_or_strict&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">UnicodeError</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">b_data</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">line</span> <span class="ow">and</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_COMMENT_MARKERS</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to_text</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;surrogate_or_strict&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+
+
+<ul>
+<li><b>如何使用</b>:
+<div class="highlight"><pre><span></span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span><span class="se">\</span>
+<span class="s1">[MY-HOST]</span>
+<span class="s1">MY_HOST-1 ansible_ssh_host=127.0.0.1</span>
+<span class="s1">MY_HOST-2 ansible_ssh_host=127.0.0.2</span>
+<span class="s1">MY_HOST-3 ansible_ssh_host=127.0.0.3</span>
+<span class="s1">MY_HOST-4 ansible_ssh_host=127.0.0.4</span>
+<span class="s1">&#39;&#39;&#39;</span>
+<span class="n">module</span> <span class="o">=</span> <span class="n">InventoryCustomModule</span><span class="p">()</span>
+<span class="n">module</span><span class="o">.</span><span class="n">mine_parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;ungrouped&quot;</span><span class="p">]:</span>
+        <span class="k">continue</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">hosts</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">hosts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
+</pre></div>
+
+<p><b>结果</b>:</p>
+<div class="highlight"><pre><span></span>(MY-HOST, [MY_HOST-1, MY_HOST-2, MY_HOST-3, MY_HOST-4])
+{u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.1&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None}
+</pre></div>
+
+
+<p>但有一个问题, <b>all</b>组下的groups列表为空, 可能是还需要一些其他的操作吧</p>
+</li>
+</ul>
+<h2 id="org-98284113">ansible自定义模块传递list变量会变成字符串</h2>
+<p>我自定义了一个模块，需要传入一个<b>list</b>变量<code>group_names</code></p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.module_utils.basic</span> <span class="kn">import</span> <span class="n">AnsibleModule</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">AnsibleModule</span><span class="p">(</span>
+        <span class="n">argument_spec</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">group_names</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="bp">True</span>
+        <span class="p">}))</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group_names&#39;</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;group_names&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">))}</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">changed</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+<p>但发现传入的变量最后变成的<code>str type</code></p>
+<div class="highlight"><pre><span></span>FAILED! =&gt; {&quot;changed&quot;: false, &quot;failed&quot;: true, &quot;msg&quot;: {&quot;group_names&quot;: &quot;[&#39;test&#39;]&quot;, &quot;type&quot;: &quot;&lt;type &#39;str&#39;&gt;&quot;}}
+</pre></div>
+
+<p>最后查找资料后才知道, 传递的变量需要增加<code>type</code>参数, 否则都是<b>str</b></p>
+<div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">AnsibleModule</span><span class="p">(</span>
+    <span class="n">argument_spec</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">group_names</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span>
+    <span class="p">}))</span>
+</pre></div>
+
+
+
+<p>There are <a href="https://honmaple.me/articles/2018/09/ansible笔记.html#disqus_thread">comments</a>.</p>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/06/自定义helm式的ivy.html" rel="bookmark" title="Permalink to 自定义helm式的ivy">自定义helm式的ivy</a></h1>
 <header class="entry-info">
   <span class="entry-info-date" title="Updated at 2018-06-28">
@@ -104,166 +256,12 @@
 
 <blockquote>
 <p>在 <b>n</b> 个月前, 我曾写过 <a href="https://honmaple.me/articles/2018/01/helm与ivy简单对比.html">helm与ivy简单对比</a>, 并吐嘈了<code>ivy</code>细节打磨不够，以至于我切换到<code>ivy</code>不到几天后,
-又回到了<code>helm</code>的拥抱, 但在<b>n</b>个月后，本着<b>生命不止，折腾不息</b>的精神, “狠狠地”的折腾了一把<code>ivy</code>, 让<code>ivy</code>也能像<code>helm</code>一样“如丝般润滑”，适应我平时的操作</p>
-</blockquote>
-
-<h2 id="org-56827192">吐嘈一: counsel-find-file</h2>
-<blockquote>
-<p>我在<b>dired</b>中移动文件, 即使已经设置了</p>
-<div class="highlight"><pre><span></span><span class="nb">:map</span> <span class="nv">counsel-find-file-map</span>
-<span class="p">(</span><span class="s">&quot;C-h&quot;</span> <span class="o">.</span> <span class="nv">counsel-up-directory</span><span class="p">)</span>
-</pre></div>
-
-
-<p>但<code>C-h</code>返回上级目录还是无效</p>
-</blockquote>
-
-<p>无意中从<b>spacemacs</b>中找到了解决办法(我电脑上常备 spacemacs 的配置，当看到 spacemacs 有什么更新都会切换过去尝试一番, 遇到适合自己的配置会"参考"一下, 哈), spacemacs 并没有遇到上述问题，在经过查找后，发现有这个一行</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nf">define-key</span> <span class="nv">ivy-minibuffer-map</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;C-h&quot;</span><span class="p">)</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;DEL&quot;</span><span class="p">))</span>
-</pre></div>
-
-<p>转换成我自己的配置就是</p>
-<div class="highlight"><pre><span></span><span class="nb">:map</span> <span class="nv">ivy-minibuffer-map</span>
-<span class="p">(</span><span class="s">&quot;C-h&quot;</span> <span class="o">.</span> <span class="p">[</span><span class="nv">backspace</span><span class="p">])</span>
-</pre></div>
-
-
-<h2 id="org-46223305">吐嘈二: tab 键</h2>
-<blockquote>
-<p><b>tab</b> 键我只想要<b>complete</b>， 而不是<b>complete and done</b>, 虽然<code>ivy</code>提供了另外的选项<code>ivy-partial-or-done</code>,但不是我想要的效果,尤其是把<b>aaa.py</b>重命名为<b>aaa.py.bak</b>时</p>
-</blockquote>
-
-<p>关于这一条，真的是“狠狠”地折腾了一把, 最终以<b>胜利</b>告终</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-done</span><span class="p">()</span>
-  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
-  <span class="p">(</span><span class="nv">ivy-partial-or-done</span><span class="p">)</span>
-  <span class="p">(</span><span class="nv">delete-minibuffer-contents</span><span class="p">)</span>
-  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">ivy-text</span> <span class="p">(</span><span class="nv">ivy-state-current</span> <span class="nv">ivy-last</span><span class="p">))</span> <span class="nv">dir</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">insert</span> <span class="nv">ivy-text</span><span class="p">)</span>
-    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">eq</span> <span class="p">(</span><span class="nv">ivy-state-collection</span> <span class="nv">ivy-last</span><span class="p">)</span> <span class="nf">#&#39;</span><span class="nv">read-file-name-internal</span><span class="p">)</span>
-               <span class="p">(</span><span class="k">setq</span> <span class="nv">dir</span> <span class="p">(</span><span class="nv">ivy-expand-file-if-directory</span> <span class="nv">ivy-text</span><span class="p">)))</span>
-      <span class="p">(</span><span class="nv">ivy--cd</span> <span class="nv">dir</span><span class="p">))))</span>
-</pre></div>
-
-<p>主要思路就是插入当前选中项, 如果是<code>read-file-name-internal</code>(文件操作), 并且选中项是一个目录，则列出这个目录的文件，避免选中<b>tab</b>两次才能列出文件, 这样一来，第一次<b>tab</b>就是<b>complete</b>, 第二次<b>tab</b>才是<b>done</b>, 最终效果超出预期(V 字手)</p>
-
-<h2 id="org-77342320">吐嘈三: 记忆多个按键</h2>
-<blockquote>
-<p>ivy 有这样一个问题,它不会像 helm 一样在第一行显示用户输入的字符，在 ivy 的很多 issue 中都有人提了这个问题，如果当前目录下有名为<b>aaa</b>的目录,这是我想要创建一个<b>aaa.py</b>的文件，ivy 会列出 aaa 这个目录，那是我该怎么创建 aaa.py 文件。方法是一个新的命令<code>ivy-immediate-done</code>,而不是<code>ivy-alt-done</code></p>
-</blockquote>
-
-<p>现在的<b>ivy</b>已经支持可选择用户输入</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">ivy-use-selectable-prompt</span> <span class="no">t</span><span class="p">)</span>
-</pre></div>
-
-
-<h2 id="org-39855294">吐嘈四: 模糊搜索</h2>
-<blockquote>
-<p>在 helm 中我可以很容易的使用模糊搜索，ivy 中也一样，只要简单的设置</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">ivy-re-builders-alist</span>
-      <span class="o">&#39;</span><span class="p">((</span><span class="no">t</span> <span class="o">.</span> <span class="nv">ivy--regex-fuzzy</span><span class="p">)))</span>
-</pre></div>
-
-<p>但 ivy 中有这样一个问题，空格键不能在模糊匹配中使用，/汗，作为从 helm 转入 ivy 的人，经常会不经意间在输入时按下空格键，然后，What? ivy 中搜索变成空了</p>
-</blockquote>
-
-<p>其实我想要混合使用空格与非空格, 但最终还是没能找到解决办法, 因为我已经适应的使用空格分隔, 所以暂时使用</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">ivy-re-builders-alist</span>
-<span class="o">&#39;</span><span class="p">((</span><span class="no">t</span>   <span class="o">.</span> <span class="nv">ivy--regex-ignore-order</span><span class="p">))</span>
-</pre></div>
-
-
-<h2 id="org-77747879">吐嘈五: 候选词按使用频率排序</h2>
-<p>这个。。。</p>
-
-<h2 id="org-60253486">吐嘈六: minibuffer</h2>
-<blockquote>
-<p>helm 从当前 buffer 中弹出 helm-buffer 是多么明智的选择，视野不会移动到当前 buffer 以外的地方，尤其是在屏幕较大的时候, 而 ivy 使用 minibuffer 总是从屏幕左下方弹出</p>
-</blockquote>
-
-<p>经过多次试验， 最终也找到的解决办法</p>
-<div class="highlight"><pre><span></span><span class="c1">;; custom ivy display function</span>
-<span class="p">(</span><span class="k">defvar</span> <span class="nv">maple/ivy-format-padding</span> <span class="no">nil</span><span class="p">)</span>
-
-<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-read-around</span> <span class="p">(</span><span class="nv">-ivy-read</span> <span class="kp">&amp;rest</span> <span class="nv">args</span><span class="p">)</span>
-  <span class="s">&quot;Advice ivy-read `-IVY-READ` `ARGS`.&quot;</span>
-  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">maple/ivy-format-padding</span> <span class="p">(</span><span class="nf">make-string</span> <span class="p">(</span><span class="nf">window-left-column</span><span class="p">)</span> <span class="sc">?\s</span><span class="p">)))</span>
-    <span class="p">(</span><span class="nf">setcar</span> <span class="nv">args</span> <span class="p">(</span><span class="nf">concat</span> <span class="nv">maple/ivy-format-padding</span> <span class="p">(</span><span class="nf">car</span> <span class="nv">args</span><span class="p">)))</span>
-    <span class="p">(</span><span class="nf">apply</span> <span class="nv">-ivy-read</span> <span class="nv">args</span><span class="p">)))</span>
-
-<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-format-function</span> <span class="p">(</span><span class="nv">cands</span><span class="p">)</span>
-  <span class="s">&quot;Transform CANDS into a string for minibuffer.&quot;</span>
-  <span class="p">(</span><span class="nv">ivy--format-function-generic</span>
-   <span class="p">(</span><span class="nb">lambda</span> <span class="p">(</span><span class="nv">str</span><span class="p">)</span>
-     <span class="p">(</span><span class="nf">concat</span> <span class="nv">maple/ivy-format-padding</span> <span class="p">(</span><span class="nv">ivy--add-face</span> <span class="nv">str</span> <span class="ss">&#39;ivy-current-match</span><span class="p">)))</span>
-   <span class="p">(</span><span class="nb">lambda</span> <span class="p">(</span><span class="nv">str</span><span class="p">)</span>
-     <span class="p">(</span><span class="nf">concat</span> <span class="nv">maple/ivy-format-padding</span> <span class="nv">str</span><span class="p">))</span>
-   <span class="nv">cands</span> <span class="s">&quot;\n&quot;</span><span class="p">))</span>
-
-<span class="p">(</span><span class="nv">advice-add</span> <span class="ss">&#39;ivy-read</span> <span class="nb">:around</span> <span class="nf">#&#39;</span><span class="nv">maple/ivy-read-around</span><span class="p">)</span>
-<span class="p">(</span><span class="k">setq</span> <span class="nv">ivy-count-format</span> <span class="s">&quot;&quot;</span>
-      <span class="nv">ivy-format-function</span> <span class="ss">&#39;maple/ivy-format-function</span><span class="p">)</span>
-</pre></div>
-
-
-<p>主要思路就是在各个<b>collections</b>前添加空格, 空格宽度为 <code>(window-left-column)</code>, <code>window-left-column</code> 按照 help 文档来说就是<b>Return left column of window WINDOW</b>, 与屏幕左边缘的距离; 然后自定义 <code>ivy-format-function</code>,即可, 需要注意的一点, 不仅<b>collections</b>前需要添加空格, <b>prompt</b>前也需要添加空格</p>
-
-<p>最终效果
-<a href="https://honmaple.b0.upaiyun.com/images/jpg/2018/06/ivy-minibuffer.png-show" data-fancybox="image"><img data-src="https://honmaple.b0.upaiyun.com/images/jpg/2018/06/ivy-minibuffer.png-thumb" class="lazyload" /></a></p>
-
-<h2 id="org-73104572">吐嘈七: dired 中复制或重命名文件</h2>
-<blockquote>
-<p>我之前想要复制或重命名一个文件，只要进入<b>dired</b>中按<code>C</code>或<code>R</code>，然后选择目标就行，但不知道为什么，使用 ivy 时复制重命名总是报错，不成功</p>
-</blockquote>
-<p>经过测试, 现在的<b>ivy</b>表现正常</p>
-
-<h2 id="org-22512558">吐嘈八: sudo edit</h2>
-<blockquote>
-<p>使用<b>ivy</b>时, <code>sudo edit</code> 不成功</p>
-</blockquote>
-<p>目前已正常</p>
-
-<h2 id="org-31590745">吐嘈九: counsel-ag 默认不会使用已选的单词</h2>
-<blockquote>
-<p><b>counsel-ag</b>, 默认不会使用已选的单词, 想要查找已选单词, 需要在激活<code>counsel-ag</code>后使用<code>M-n</code>, 很麻烦，不像<b>helm</b>默认就可以选择<b>region</b>里的单词, 另外<code>counsel-ag</code>默认会使用含<b>.git</b>目录的目录作为根目录进行查找, 这与<code>counsel-projectile-ag</code>功能上有些冲突了</p>
-</blockquote>
-
-<p>解决办法很简单, <code>defadvice counsel-ag</code> 即可</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/counsel-ag</span><span class="p">(</span><span class="nv">-counsel-ag</span> <span class="kp">&amp;optional</span> <span class="nv">initial-input</span> <span class="nv">initial-directory</span> <span class="nv">extra-ag-args</span> <span class="nv">ag-prompt</span><span class="p">)</span>
-  <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nv">not</span> <span class="nv">initial-input</span><span class="p">)</span> <span class="p">(</span><span class="nv">region-active-p</span><span class="p">))</span>
-    <span class="p">(</span><span class="k">setq</span> <span class="nv">initial-input</span> <span class="p">(</span><span class="nf">buffer-substring-no-properties</span>
-                         <span class="p">(</span><span class="nf">region-beginning</span><span class="p">)</span> <span class="p">(</span><span class="nf">region-end</span><span class="p">))))</span>
-  <span class="p">(</span><span class="nb">unless</span> <span class="nv">initial-directory</span> <span class="p">(</span><span class="k">setq</span> <span class="nv">initial-directory</span> <span class="nv">default-directory</span><span class="p">))</span>
-  <span class="p">(</span><span class="nf">funcall</span> <span class="nv">-counsel-ag</span> <span class="nv">initial-input</span> <span class="nv">initial-directory</span> <span class="nv">extra-ag-args</span> <span class="nv">ag-prompt</span><span class="p">))</span>
-
-<span class="p">(</span><span class="nv">advice-add</span> <span class="ss">&#39;counsel-ag</span> <span class="nb">:around</span> <span class="nf">#&#39;</span><span class="nv">maple/counsel-ag</span><span class="p">)</span>
-</pre></div>
-
-
-<h2 id="org-16912421">总结</h2>
-<ul>
-<li>说一说为什么想要折腾<b>ivy</b>:
-<ol>
-<li>在使用<b>helm</b>时, 首次打开会很慢(我在打开 emacs 后,习惯使用<code>helm-recentf</code>打开最近文件, 但不知道为什么，第一次会非常慢)；另外, 打开 emacs 后， 必须先使用<code>helm-recentf</code>才能激活<b>helm</b>, 如果使用其它<b>helm</b>命令, 比如<code>helm-M-x</code>或者<code>helm-projectile</code>只会使用默认的<b>ido</b>， 并不能激活<b>helm</b>
-</li>
-<li><b>helm</b>真的为用户做出太多选择， 想要自定义非常难, 即使成功也不是从源头解决，而是用了取巧的办法
-</li>
-<li>速度，不知道是不是我的感觉错误，最新版本的<b>helm</b>速度慢了很多
-</li>
-</ol></li>
-<li>还得吐嘈<b>ivy</b>:
-<p><b>ivy</b> 细节上果然打磨不够, 不过经过调(折)教(腾), 大致上和我之前使用<b>helm</b>的习惯一样了</p>
-
-<p>最终吐嘈点: <b>ivy-occur</b>, <code>ivy-occur</code> 使用了<b>wgrep</b>作为多文件编辑, 但说实话, 我觉得很难用, 和<b>helm-ag</b>自己实现的<b>helm-ag-edit</b>比起来更是难受, 一会就要切换一下<code>ivy-wgrep-change-to-wgrep-mode</code>, 不切用不了, 这个等有时间再折腾吧!</p>
-</li>
-</ul>
-<p>ok,就这样</p>
-
-
-<p>There are <a href="https://honmaple.me/articles/2018/06/自定义helm式的ivy.html#disqus_thread">comments</a>.</p>
+又回到了<code>helm</code>的拥抱, 但在<b>n</b>个月后，本着<b>生命不止，折腾不息</b>的精神, “狠狠地”的折腾了一把 …</p></blockquote>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/06/自定义helm式的ivy.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/03/git笔记.html" rel="bookmark" title="Permalink to git笔记">git笔记</a></h1>
@@ -573,7 +571,7 @@ git filter-branch --env-filter <span class="s1">&#39;</span>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/12/linux笔记.html" rel="bookmark" title="Permalink to linux笔记">linux笔记</a></h1>
 <header class="entry-info">
-  <span class="entry-info-date" title="Updated at 2018-08-03">
+  <span class="entry-info-date" title="Updated at 2018-08-16">
     <i class="fa fa-calendar-o"></i>
     二 19 十二月 2017
   </span>
@@ -613,6 +611,7 @@ git filter-branch --env-filter <span class="s1">&#39;</span>
 <ul>
 <li><a href="#org-48797444">curl请求指定IP的http域名</a></li>
 <li><a href="#org-20364600">curl请求指定IP的https域名</a></li>
+<li><a href="#org-81394242">curl请求搭配grep查询</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#org-15752047">Disk</a>
@@ -634,7 +633,7 @@ git filter-branch --env-filter <span class="s1">&#39;</span>
 
 
 <h2 id="org-51704095">zip打包排除文件</h2>
-<div class="highlight"><pre><span></span>zip -r -x=.git/* -x …</pre></div>
+<div class="highlight"><pre><span></span>zip -r -x=.git …</pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/12/linux笔记.html">阅读全文 »</a>
@@ -702,50 +701,6 @@ ansible-playbook -i hosts playbook.yml -e &#39;args&#39; -t deploy
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/10/ansible快速部署加速方案.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/09/ansible-playbook中tasks单进程.html" rel="bookmark" title="Permalink to ansible-playbook中tasks单进程">ansible-playbook中tasks单进程</a></h1>
-<header class="entry-info">
-  <span class="entry-info-date" title="2017-09-19T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    二 19 九月 2017
-  </span>
-  <span class="entry-info-sep hidden-xs">|</span>
-  <span class="entry-info-author hidden-xs">
-    <i class="fa fa-user-o"></i>
-    By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-category">
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
-  </span>
-  <span class="entry-info-sep">|</span>
-  <span class="entry-info-tag">
-    <i class="fa fa-bookmark-o"></i>
-    tags:
-    <a href="https://honmaple.me/tag/linux/index.html">linux</a>
-    <a href="https://honmaple.me/tag/ansible/index.html">ansible</a>
-  </span>
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content">
-            
-<p>之前有一个需求,ansible-playbook中需要某一步单步执行,也就是说在有多台服务器时,某个任务只能一台服务器执行完后,另一台服务器才能执行,否者对应集群的服务会出问题</p>
-
-<p>这是一个很简单的需求,ansible中也有对应的实现, <code>--fork 1</code> 或者 使用 <code>serial</code></p>
-
-<p>但是如果有人忘记加 <code>--fork 1</code> 了呢，而且该任务是在子任务中，使用 <b>include</b> 加载, <code>serial</code> 关键字无法在某一特定任务中使用,只能与 <b>hosts</b> 同级</p>
-
-<p>所幸，在这里 <a href="https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task">https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task</a> 找到了解决办法,使用 <b>delegate_to</b></p>
-
-<div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">service</span> <span class="n">restart</span>
-  <span class="c1"># serial: 1 would be the proper solution here, but …</span></pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/09/ansible-playbook中tasks单进程.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">

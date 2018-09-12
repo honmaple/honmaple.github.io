@@ -62,7 +62,7 @@
     <div class="entry-header">
       <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/04/emacs笔记.html">emacs笔记</a></h1>
 <header class="entry-info">
-  <span class="entry-info-date" title="Updated at 2018-05-24">
+  <span class="entry-info-date" title="Updated at 2018-09-12">
     <i class="fa fa-calendar-o"></i>
     五 21 四月 2017
   </span>
@@ -93,7 +93,14 @@
 <li><a href="#org-37069734">自动搜索已选中的字符</a></li>
 <li><a href="#org-59166669">evil-mc不忽略大小写</a></li>
 </ul></li>
-<li><a href="#org-26370083">Emacs 设置字体</a></li>
+<li><a href="#org-24200485">Font</a>
+<ul>
+<li><a href="#org-28561319">设置中英文字体</a></li>
+</ul></li>
+<li><a href="#org-99765531">Program</a>
+<ul>
+<li><a href="#org-17571457">golang自动增加注释</a></li>
+</ul></li>
 </ul>
 </div></div>
 
@@ -132,7 +139,9 @@
 <span class="p">(</span><span class="nv">add-hook</span> <span class="ss">&#39;evil-mc-after-cursors-deleted</span> <span class="p">(</span><span class="k">lambda</span><span class="p">()</span> <span class="p">(</span><span class="k">setq</span> <span class="nv">evil-ex-search-case</span> <span class="ss">&#39;smart</span><span class="p">)))</span>
 </pre></div>
 
-<h2 id="org-26370083">Emacs 设置字体</h2>
+
+<h2 id="org-24200485">Font</h2>
+<h3 id="org-28561319">设置中英文字体</h3>
 <div class="highlight"><pre><span></span><span class="c1">;; 中英文表格对齐</span>
 <span class="p">(</span><span class="nb">defvar</span> <span class="nv">emacs-english-font</span> <span class="s">&quot;DejaVu Sans Mono&quot;</span>
   <span class="s">&quot;The font name of English.&quot;</span><span class="p">)</span>
@@ -167,6 +176,56 @@
 <span class="c1">;;           (maple/set-font emacs-english-font emacs-cjk-font emacs-font-size-pair))</span>
 </pre></div>
 
+<h2 id="org-99765531">Program</h2>
+<h3 id="org-17571457">golang自动增加注释</h3>
+<p>因为<b>flycheck</b>使用了<code>golint</code>, <b>flycheck</b>总是显示代码没有注释的警告</p>
+<div class="highlight"><pre><span></span>exported method Raw should have comment or be unexported (go-golint)
+</pre></div>
+
+<p>也没找到什么方法来禁止它, 作为强迫症受不了，总不能一个一个去注释, 所以写了一个函数来自动注释整个文件的所有未注释函数:</p>
+
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/go-auto-comment</span><span class="p">()</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">unless</span> <span class="p">(</span><span class="nb">featurep</span> <span class="ss">&#39;imenu</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">require</span> <span class="ss">&#39;imenu</span> <span class="no">nil</span> <span class="no">t</span><span class="p">))</span>
+  <span class="p">(</span><span class="k">let*</span> <span class="p">((</span><span class="nv">imenu-auto-rescan</span> <span class="no">t</span><span class="p">)</span>
+         <span class="p">(</span><span class="nv">imenu-auto-rescan-maxout</span> <span class="p">(</span><span class="k">if</span> <span class="nv">current-prefix-arg</span>
+                                       <span class="p">(</span><span class="nf">buffer-size</span><span class="p">)</span>
+                                     <span class="nv">imenu-auto-rescan-maxout</span><span class="p">))</span>
+         <span class="p">(</span><span class="nv">items</span> <span class="p">(</span><span class="nv">imenu--make-index-alist</span> <span class="no">t</span><span class="p">))</span>
+         <span class="p">(</span><span class="nv">items</span> <span class="p">(</span><span class="nf">delete</span> <span class="p">(</span><span class="nf">assoc</span> <span class="s">&quot;*Rescan*&quot;</span> <span class="nv">items</span><span class="p">)</span> <span class="nv">items</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nv">cl-mapcan</span>
+     <span class="p">(</span><span class="nb">lambda</span><span class="p">(</span><span class="nv">item</span><span class="p">)</span>
+       <span class="p">(</span><span class="nv">cl-mapcan</span>
+        <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">string=</span> <span class="p">(</span><span class="nf">car</span> <span class="nv">item</span><span class="p">)</span> <span class="s">&quot;func&quot;</span><span class="p">)</span>
+            <span class="ss">&#39;maple/go-func-comment</span>
+          <span class="ss">&#39;maple/go-type-comment</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">cdr</span> <span class="nv">item</span><span class="p">)))</span>
+     <span class="nv">items</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/go-add-comment</span><span class="p">(</span><span class="nv">func</span> <span class="nf">point</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">save-excursion</span>
+    <span class="p">(</span><span class="nf">goto-char</span> <span class="nf">point</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">forward-line</span> <span class="mi">-1</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">not</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="p">(</span><span class="nf">concat</span> <span class="s">&quot;// &quot;</span> <span class="nv">func</span><span class="p">)))</span>
+      <span class="p">(</span><span class="nf">end-of-line</span><span class="p">)</span> <span class="p">(</span><span class="nv">newline-and-indent</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">insert</span> <span class="p">(</span><span class="nf">concat</span> <span class="s">&quot;// &quot;</span> <span class="nv">func</span> <span class="s">&quot; ..&quot;</span><span class="p">)))))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/go-func-comment</span><span class="p">(</span><span class="nv">f</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">func</span> <span class="p">(</span><span class="nf">car</span> <span class="nv">f</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nv">string-prefix-p</span> <span class="s">&quot;(&quot;</span> <span class="nv">func</span><span class="p">)</span>
+             <span class="p">(</span><span class="nf">string-match</span> <span class="s">&quot;[)] \\(.*\\)[(]\\(.*\\)[)]\\(.*\\)$&quot;</span> <span class="nv">func</span><span class="p">))</span>
+        <span class="p">(</span><span class="nv">maple/go-add-comment</span> <span class="p">(</span><span class="nv">match-string</span> <span class="mi">1</span> <span class="nv">func</span><span class="p">)</span> <span class="p">(</span><span class="nf">cdr</span> <span class="nv">f</span><span class="p">))</span>
+      <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">string-match</span> <span class="s">&quot;\\(.*\\)[(]\\(.*\\)[)]\\(.*\\)$&quot;</span> <span class="nv">func</span><span class="p">)</span>
+          <span class="p">(</span><span class="nv">maple/go-add-comment</span> <span class="p">(</span><span class="nv">match-string</span> <span class="mi">1</span> <span class="nv">func</span><span class="p">)</span> <span class="p">(</span><span class="nf">cdr</span> <span class="nv">f</span><span class="p">))</span>
+        <span class="p">(</span><span class="nv">maple/go-add-comment</span> <span class="p">(</span><span class="nf">car</span> <span class="nv">f</span><span class="p">)</span> <span class="p">(</span><span class="nf">cdr</span> <span class="nv">f</span><span class="p">))))))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/go-type-comment</span><span class="p">(</span><span class="nv">f</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">maple/go-add-comment</span> <span class="p">(</span><span class="nf">car</span> <span class="nv">f</span><span class="p">)</span> <span class="p">(</span><span class="nf">cdr</span> <span class="nv">f</span><span class="p">)))</span>
+</pre></div>
+
+
+<p>相关配置将持续更新: <a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/lisp/init-go.el">init-go.el</a></p>
     </div>
     <hr class="entry-hr" />
     <ul class="entry-pager">

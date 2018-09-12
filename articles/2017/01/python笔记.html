@@ -62,7 +62,7 @@
     <div class="entry-header">
       <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/01/python笔记.html">python笔记</a></h1>
 <header class="entry-info">
-  <span class="entry-info-date" title="Updated at 2018-06-04">
+  <span class="entry-info-date" title="Updated at 2018-09-07">
     <i class="fa fa-calendar-o"></i>
     日 29 一月 2017
   </span>
@@ -117,6 +117,12 @@
 <li><a href="#org-77028636">判斷是否激活virtualenv</a></li>
 <li><a href="#org-91515979">Django model得到所有field name</a></li>
 <li><a href="#org-30580729">python运行超时设置</a></li>
+<li><a href="#org-99663867">库</a></li>
+<li><a href="#org-83349707">其它</a>
+<ul>
+<li><a href="#org-97602815">获取文件最后n行数据</a></li>
+<li><a href="#org-44204309">python列表中去除烦人的"u"</a></li>
+</ul></li>
 </ul>
 </div></div>
 
@@ -385,6 +391,61 @@
 </pre></div>
 
 
+<h2 id="org-99663867">库</h2>
+<p><a href="http://www.grokcode.com/864/snakefooding-python-code-for-complexity-visualization/">http://www.grokcode.com/864/snakefooding-python-code-for-complexity-visualization/</a></p>
+
+<h2 id="org-83349707">其它</h2>
+<h3 id="org-97602815">获取文件最后n行数据</h3>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">mmap</span>
+
+
+<span class="k">def</span> <span class="nf">getlastline</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">source</span><span class="p">:</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="n">mmap</span><span class="o">.</span><span class="n">mmap</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">prot</span><span class="o">=</span><span class="n">mmap</span><span class="o">.</span><span class="n">PROT_READ</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">while</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cursor</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mapping</span><span class="p">[</span><span class="n">cursor</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+
+<h3 id="org-44204309">python列表中去除烦人的"u"</h3>
+<div class="highlight"><pre><span></span><span class="c1"># !/usr/bin/env python2</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="sa">u</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;golang&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;lua&quot;</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+</pre></div>
+
+
+<p>#+RESULTS:
+: [u'python', u'golang', u'lua']</p>
+
+<ul>
+<li>python script
+<div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="sa">u</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;golang&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;lua&quot;</span><span class="p">]</span>
+<span class="k">print</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span><span class="p">])</span>
+</pre></div>
+
+
+<p>#+RESULTS:
+: ['python', 'golang', 'lua']</p>
+</li>
+<li>jinja2
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">jinja2</span> <span class="kn">import</span> <span class="n">Template</span>
+<span class="n">template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span>
+    <span class="s1">&#39;[{</span><span class="si">% f</span><span class="s1">or i in consul_join %}&quot;{{ i | string }}&quot;{</span><span class="si">% i</span><span class="s1">f not loop.last %},{</span><span class="si">% e</span><span class="s1">ndif %}{</span><span class="si">% e</span><span class="s1">ndfor %}]&#39;</span>
+<span class="p">)</span>
+<span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">consul_join</span><span class="o">=</span><span class="p">[</span><span class="sa">u</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;golang&quot;</span><span class="p">,</span> <span class="sa">u</span><span class="s2">&quot;lua&quot;</span><span class="p">])</span>
+</pre></div>
+
+
+<p>#+RESULTS:
+: u'["python"", "golang", "lua"]'</p>
+</li>
+</ul>
     </div>
     <hr class="entry-hr" />
     <ul class="entry-pager">
