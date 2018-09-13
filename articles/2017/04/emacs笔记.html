@@ -62,7 +62,7 @@
     <div class="entry-header">
       <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/04/emacs笔记.html">emacs笔记</a></h1>
 <header class="entry-info">
-  <span class="entry-info-date" title="Updated at 2018-09-12">
+  <span class="entry-info-date" title="Updated at 2018-09-13">
     <i class="fa fa-calendar-o"></i>
     五 21 四月 2017
   </span>
@@ -100,6 +100,12 @@
 <li><a href="#org-99765531">Program</a>
 <ul>
 <li><a href="#org-17571457">golang自动增加注释</a></li>
+</ul></li>
+<li><a href="#org-55159199">Ivy</a>
+<ul>
+<li><a href="#org-29787777">指定目录或文件进行搜索</a></li>
+<li><a href="#org-4933710">查找当前目录以及子目录的某个文件</a></li>
+<li><a href="#org-1774610">当选中单词时，swiper使用已选单词进行搜索</a></li>
 </ul></li>
 </ul>
 </div></div>
@@ -226,6 +232,49 @@
 
 
 <p>相关配置将持续更新: <a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/lisp/init-go.el">init-go.el</a></p>
+
+<h2 id="org-55159199">Ivy</h2>
+<h3 id="org-29787777">指定目录或文件进行搜索</h3>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/counsel-ag-file</span><span class="p">()</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">counsel-ag</span> <span class="no">nil</span> <span class="p">(</span><span class="nv">read-file-name</span> <span class="s">&quot;Search in file(s): &quot;</span><span class="p">)))</span>
+</pre></div>
+
+
+<h3 id="org-4933710">查找当前目录以及子目录的某个文件</h3>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/counsel-find-file</span><span class="p">()</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">ivy-read</span> <span class="s">&quot;Find file: &quot;</span>
+            <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;file-relative-name</span>
+                    <span class="p">(</span><span class="nv">directory-files-recursively</span> <span class="nv">default-directory</span> <span class="s">&quot;&quot;</span><span class="p">))</span>
+            <span class="nb">:matcher</span> <span class="nf">#&#39;</span><span class="nv">counsel--find-file-matcher</span>
+            <span class="nb">:action</span> <span class="nf">#&#39;</span><span class="nv">counsel-find-file-action</span>
+            <span class="nb">:preselect</span> <span class="p">(</span><span class="nv">counsel--preselect-file</span><span class="p">)</span>
+            <span class="nb">:require-match</span> <span class="ss">&#39;confirm-after-completion</span>
+            <span class="nb">:history</span> <span class="ss">&#39;file-name-history</span>
+            <span class="nb">:keymap</span> <span class="nv">counsel-find-file-map</span>
+            <span class="nb">:caller</span> <span class="ss">&#39;counsel-find-file</span><span class="p">))</span>
+</pre></div>
+
+
+<h3 id="org-1774610">当选中单词时，swiper使用已选单词进行搜索</h3>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-search-at-point</span> <span class="p">(</span><span class="nv">func</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let*</span> <span class="p">((</span><span class="nv">region</span> <span class="p">(</span><span class="nv">region-active-p</span><span class="p">))</span>
+         <span class="p">(</span><span class="nf">string</span> <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">not</span> <span class="nv">region</span><span class="p">)</span> <span class="s">&quot;&quot;</span>
+                   <span class="p">(</span><span class="nf">buffer-substring-no-properties</span>
+                    <span class="p">(</span><span class="nf">region-beginning</span><span class="p">)</span> <span class="p">(</span><span class="nf">region-end</span><span class="p">))))</span>
+         <span class="p">(</span><span class="nv">ivy-initial-inputs-alist</span>
+          <span class="p">(</span><span class="nf">list</span> <span class="p">(</span><span class="nf">cons</span> <span class="nv">func</span> <span class="nf">string</span><span class="p">))))</span>
+    <span class="p">(</span><span class="nb">when</span> <span class="nv">region</span> <span class="p">(</span><span class="nv">deactivate-mark</span><span class="p">))</span>
+    <span class="p">(</span><span class="nf">funcall</span> <span class="nv">func</span><span class="p">)))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/swiper</span><span class="p">()</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">maple/ivy-search-at-point</span> <span class="ss">&#39;swiper</span><span class="p">))</span>
+</pre></div>
+
     </div>
     <hr class="entry-hr" />
     <ul class="entry-pager">

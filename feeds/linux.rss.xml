@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Linux</title><link href="https://honmaple.me/" rel="alternate"></link><link href="https://honmaple.me/feeds/linux.rss.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2018-09-12T19:01:45+08:00</updated><entry><title>ansible笔记</title><link href="https://honmaple.me/articles/2018/09/ansible%E7%AC%94%E8%AE%B0.html" rel="alternate"></link><published>2018-09-04T10:53:51+08:00</published><updated>2018-09-12T19:01:45+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-09-04:/articles/2018/09/ansible笔记.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Linux</title><link href="https://honmaple.me/" rel="alternate"></link><link href="https://honmaple.me/feeds/linux.rss.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2018-09-13T15:28:35+08:00</updated><entry><title>ansible笔记</title><link href="https://honmaple.me/articles/2018/09/ansible%E7%AC%94%E8%AE%B0.html" rel="alternate"></link><published>2018-09-04T10:53:51+08:00</published><updated>2018-09-12T19:01:45+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-09-04:/articles/2018/09/ansible笔记.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-17703971"&gt;ansible动态解析inventory&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-98284113"&gt;ansible自定义模块传递list变量会变成字符串&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
@@ -138,7 +138,141 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-</content><category term="linux"></category><category term="python"></category><category term="ansible"></category><category term="devops"></category></entry><entry><title>自定义helm式的ivy</title><link href="https://honmaple.me/articles/2018/06/%E8%87%AA%E5%AE%9A%E4%B9%89helm%E5%BC%8F%E7%9A%84ivy.html" rel="alternate"></link><published>2018-06-14T15:46:18+08:00</published><updated>2018-06-28T19:44:24+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-06-14:/articles/2018/06/自定义helm式的ivy.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+</content><category term="linux"></category><category term="python"></category><category term="ansible"></category><category term="devops"></category></entry><entry><title>如何保持一个干净的系统</title><link href="https://honmaple.me/articles/2018/07/%E5%A6%82%E4%BD%95%E4%BF%9D%E6%8C%81%E4%B8%80%E4%B8%AA%E5%B9%B2%E5%87%80%E7%9A%84%E7%B3%BB%E7%BB%9F.html" rel="alternate"></link><published>2018-07-11T10:42:19+08:00</published><updated>2018-09-13T15:28:35+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-07-11:/articles/2018/07/如何保持一个干净的系统.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-12861548"&gt;python&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-37676032"&gt;golang&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-1819888"&gt;lua&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-30938782"&gt;javascript&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+&lt;p&gt;由于工作需要经常会使用多种语言, 比如 python, golang, lua, javascript等, 各种语言都有自己的包管理器，像python的包管理器&lt;b&gt;pip&lt;/b&gt;, lua的包管理器&lt;b&gt;luarocks&lt;/b&gt;。。。&lt;/p&gt;
+
+&lt;p&gt;每个包管理器安装package的方式，位置都不相同，对于一个有洁癖的人来说,&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ls ~/ -al
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;后各种各样的&lt;code&gt;.something&lt;/code&gt;简直是场灾难, 所以保持一个干净的系统是非常必要的, 比如把相关语言的package都放到一个目录(我选择放到&lt;code&gt;$HOME/repo/{language}&lt;/code&gt;)下&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;请不要使用root用户，或者sudo来安装非必要的软件包&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id="org-12861548"&gt;python&lt;/h3&gt;
+&lt;p&gt;我的&lt;b&gt;python&lt;/b&gt;环境是&lt;code&gt;pip+virtualenv+virtualenvwrapper&lt;/code&gt;, &lt;b&gt;pip&lt;/b&gt;可以有多种使用方式:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;sudo&lt;/b&gt;
+&lt;p&gt;&lt;b&gt;sudo&lt;/b&gt;安装的package放到&lt;code&gt;/usr/lib64 …&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-12861548"&gt;python&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-37676032"&gt;golang&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-1819888"&gt;lua&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-30938782"&gt;javascript&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+&lt;p&gt;由于工作需要经常会使用多种语言, 比如 python, golang, lua, javascript等, 各种语言都有自己的包管理器，像python的包管理器&lt;b&gt;pip&lt;/b&gt;, lua的包管理器&lt;b&gt;luarocks&lt;/b&gt;。。。&lt;/p&gt;
+
+&lt;p&gt;每个包管理器安装package的方式，位置都不相同，对于一个有洁癖的人来说,&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ls ~/ -al
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;后各种各样的&lt;code&gt;.something&lt;/code&gt;简直是场灾难, 所以保持一个干净的系统是非常必要的, 比如把相关语言的package都放到一个目录(我选择放到&lt;code&gt;$HOME/repo/{language}&lt;/code&gt;)下&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;请不要使用root用户，或者sudo来安装非必要的软件包&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id="org-12861548"&gt;python&lt;/h3&gt;
+&lt;p&gt;我的&lt;b&gt;python&lt;/b&gt;环境是&lt;code&gt;pip+virtualenv+virtualenvwrapper&lt;/code&gt;, &lt;b&gt;pip&lt;/b&gt;可以有多种使用方式:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;sudo&lt;/b&gt;
+&lt;p&gt;&lt;b&gt;sudo&lt;/b&gt;安装的package放到&lt;code&gt;/usr/lib64/python-{verison}&lt;/code&gt;目录下, 这可能会与系统的包管理器所安装的python package冲突, 比如&lt;b&gt;docker&lt;/b&gt;可以使用&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo pacman -S docker
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;也可以使用&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo pip install docker
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;但更新系统包时可能有冲突导致无法更新&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;--user&lt;/b&gt;(-U)
+&lt;p&gt;使用本地安装，不需要&lt;b&gt;sudo&lt;/b&gt;权限, 安装的package会放到&lt;code&gt;$HOME/.local&lt;/code&gt;目录下&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;virtualenv&lt;/b&gt;
+&lt;p&gt;python的各种依赖包环境分离靠的就是&lt;b&gt;virtualenv&lt;/b&gt;, 它会把安装的&lt;b&gt;package&lt;/b&gt;放到&lt;code&gt;$WORKON_HOME&lt;/code&gt;这个环境变量下, 我平时也主要使用这个，但一些常用的package, 像http,docker-compose,pelican等, 我不想在使用时还得&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;workon {virtualenv name}
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;然后才能使用, 太麻烦&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;最有效的方法是搭配&lt;code&gt;--user&lt;/code&gt;和&lt;code&gt;virtualenv&lt;/code&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;设置&lt;code&gt;--user&lt;/code&gt;的安装目录
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;PYTHONUSERBASE&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/python
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;设置&lt;code&gt;virtualenv&lt;/code&gt;的安装目录
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;WORKON_HOME&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/python/virtualenv
+&lt;span class="nb"&gt;source&lt;/span&gt; &lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/python/bin/virtualenvwrapper.sh
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;设置&lt;code&gt;PATH&lt;/code&gt;变量
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$PATH&lt;/span&gt;:&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/python/bin
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;然后无论是&lt;code&gt;pip install package --user&lt;/code&gt;还是&lt;b&gt;mkvirtualenv&lt;/b&gt;后&lt;code&gt;pip install package&lt;/code&gt;, 所安装的package都会放到&lt;code&gt;$HOME/repo/python&lt;/code&gt;目录下&lt;/p&gt;
+
+&lt;h3 id="org-37676032"&gt;golang&lt;/h3&gt;
+&lt;p&gt;与python同理&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;设置&lt;code&gt;GOPATH&lt;/code&gt;变量
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;GOPATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/golang
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/li&gt;
+&lt;li&gt;设置&lt;code&gt;PATH&lt;/code&gt;变量
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$PATH&lt;/span&gt;:&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/python/bin:&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/golang/bin
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="org-1819888"&gt;lua&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;设置&lt;b&gt;luarocks&lt;/b&gt;安装默认参数
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;alias&lt;/span&gt; &lt;span class="nv"&gt;luarocks&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;luarocks --tree=$HOME/repo/lua&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;设置&lt;code&gt;LUA_PATH&lt;/code&gt;与&lt;code&gt;LUA_CPATH&lt;/code&gt;变量
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;LUA_PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;&lt;span class="s2"&gt;/repo/lua/share/lua/5.3/?.lua;&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;&lt;span class="s2"&gt;/repo/lua/share/lua/5.3/?/init.lua;&lt;/span&gt;&lt;span class="nv"&gt;$LUA_PATH&lt;/span&gt;&lt;span class="s2"&gt;;&amp;quot;&lt;/span&gt;
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;LUA_CPATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;&lt;span class="s2"&gt;/repo/lua/lib/lua/5.3/?.so;&lt;/span&gt;&lt;span class="nv"&gt;$LUA_CPATH&lt;/span&gt;&lt;span class="s2"&gt;;&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;设置&lt;code&gt;PATH&lt;/code&gt;变量
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$PATH&lt;/span&gt;:&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/python/bin:&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/golang/bin:&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/lua/bin
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="org-30938782"&gt;javascript&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;设置&lt;code&gt;NODE_PATH&lt;/code&gt;变量
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;NODE_PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/npm
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;li&gt;设置&lt;code&gt;PATH&lt;/code&gt;变量
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$PATH&lt;/span&gt;:&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/python/bin:&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/golang/bin:&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/lua/bin:&lt;span class="nv"&gt;$HOME&lt;/span&gt;/repo/npm/.bin
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;最后, 把相关代码放到&lt;code&gt;$HOME/.bashrc&lt;/code&gt;中, 就可以享受一个相对干净的系统了&lt;/p&gt;</content><category term="linux"></category><category term="archlinux"></category></entry><entry><title>自定义helm式的ivy</title><link href="https://honmaple.me/articles/2018/06/%E8%87%AA%E5%AE%9A%E4%B9%89helm%E5%BC%8F%E7%9A%84ivy.html" rel="alternate"></link><published>2018-06-14T15:46:18+08:00</published><updated>2018-06-28T19:44:24+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-06-14:/articles/2018/06/自定义helm式的ivy.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-56827192"&gt;吐嘈一: counsel-find-file&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-46223305"&gt;吐嘈二: tab 键&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-77342320"&gt;吐嘈三: 记忆多个按键&lt;/a&gt;&lt;/li&gt;
@@ -1155,87 +1289,4 @@ find /tmp -cmin -10                     &lt;span class="c1"&gt;# 查询10分钟�
 &lt;p&gt;Lua 5.3.4&lt;/p&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;输出就是这么匪夷所思,所以, &lt;b&gt;不要在Lua的table中使用nil值，如果一个元素要删除，直接remove&lt;/b&gt;&lt;/p&gt;</content><category term="lua"></category></entry><entry><title>ansible快速部署加速方案</title><link href="https://honmaple.me/articles/2017/10/ansible%E5%BF%AB%E9%80%9F%E9%83%A8%E7%BD%B2%E5%8A%A0%E9%80%9F%E6%96%B9%E6%A1%88.html" rel="alternate"></link><published>2017-10-08T00:00:00+08:00</published><updated>2017-10-08T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2017-10-08:/articles/2017/10/ansible快速部署加速方案.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-78088089"&gt;加速&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-6607177"&gt;问题&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-6356647"&gt;方案&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-74917925"&gt;目标&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-17337917"&gt;web界面&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-28322063"&gt;任务队列&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-
-
-&lt;p&gt;ansible是基于Python的 &lt;b&gt;自动化部署&lt;/b&gt; 方案,但是目前只是通过命令行&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ansible -i hosts all -a &amp;#39;uptime&amp;#39;
-# or
-ansible-playbook -i hosts playbook.yml -e &amp;#39;args&amp;#39; -t deploy
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;实现自动化部署.&lt;/p&gt;
-
-&lt;p&gt;长此以往，虽然可以实现所谓的自动化，但产品业务线多且杂的情况下，项目很难维护，更不用说以文件为存储的表现形式很差,针对目前使用ansible的经验以及使用中的困难,可以针对性的提出一些解决方案&lt;/p&gt;
-
-&lt;h2 id="org-78088089"&gt;加速&lt;/h2&gt;
-
-&lt;h3 id="org-6607177"&gt;问题&lt;/h3&gt;
-&lt;p&gt;自动化部署其中最大的障碍就是 &lt;b&gt;网络&lt;/b&gt; 的原因&lt;/p&gt;
-
-&lt;p&gt;其中需要通过网络上传一些模板文件,有的甚至还需要上传一些压缩包,虽然说几MB的东西很快就能上传成功，但如果把这上传文件所需要的2秒乘以上百，上千台主机呢,更不用说ansible的表现形式就是一个任务一个任务的往下执行,假如在上传模板这一步卡住 …&lt;/p&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-78088089"&gt;加速&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-6607177"&gt;问题&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-6356647"&gt;方案&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-74917925"&gt;目标&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-17337917"&gt;web界面&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-28322063"&gt;任务队列&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-
-
-&lt;p&gt;ansible是基于Python的 &lt;b&gt;自动化部署&lt;/b&gt; 方案,但是目前只是通过命令行&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ansible -i hosts all -a &amp;#39;uptime&amp;#39;
-# or
-ansible-playbook -i hosts playbook.yml -e &amp;#39;args&amp;#39; -t deploy
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;实现自动化部署.&lt;/p&gt;
-
-&lt;p&gt;长此以往，虽然可以实现所谓的自动化，但产品业务线多且杂的情况下，项目很难维护，更不用说以文件为存储的表现形式很差,针对目前使用ansible的经验以及使用中的困难,可以针对性的提出一些解决方案&lt;/p&gt;
-
-&lt;h2 id="org-78088089"&gt;加速&lt;/h2&gt;
-
-&lt;h3 id="org-6607177"&gt;问题&lt;/h3&gt;
-&lt;p&gt;自动化部署其中最大的障碍就是 &lt;b&gt;网络&lt;/b&gt; 的原因&lt;/p&gt;
-
-&lt;p&gt;其中需要通过网络上传一些模板文件,有的甚至还需要上传一些压缩包,虽然说几MB的东西很快就能上传成功，但如果把这上传文件所需要的2秒乘以上百，上千台主机呢,更不用说ansible的表现形式就是一个任务一个任务的往下执行,假如在上传模板这一步卡住(等待所有服务器上传成功),这时某台未模板化的服务器的某服务需要重启，是不是会出问题呢&lt;/p&gt;
-
-&lt;h3 id="org-6356647"&gt;方案&lt;/h3&gt;
-&lt;p&gt;针对这一问题,目前想到的解决方案如下:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;b&gt;适当增加fork数&lt;/b&gt;
-&lt;p&gt;目前fork数默认为50，可以适当增加&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;大文件使用内网(外网)下载&lt;/b&gt;
-&lt;p&gt;从部署机上上传文件可能会出现这样那样的问题，尤其是上传到国外服务器时经常会出现ansible playbook的任务卡住问题(其实是正在以几KB/s的龟速运行)，所以其中大于xxMB的文件(压缩包)全部使用从远程服务器上下载方式,并且全部进行加密处理&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;把超过几百台服务器的节点分组多进程运行&lt;/b&gt;
-&lt;p&gt;服务器一旦多了，对应任务的等待时间也就多了，所以将500台的节点分为十组，每组50台,使用多进程分别同时运行，这样可以有效减少任务等待时间,需要注意每组运行失败的服务器。&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;把经常出问题或者网络不太好的节点放到最后运行&lt;/b&gt;
-&lt;p&gt;像中国移动以及香港，国外的某些节点在运行ansible playbook的时候总会或多或少的出些问题,这些节点可以考虑放到最后,并且需要找出问题原因进行优化&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="org-74917925"&gt;目标&lt;/h2&gt;
-
-&lt;h3 id="org-17337917"&gt;web界面&lt;/h3&gt;
-&lt;p&gt;使用过ansible的同学一定知道ansible-tower，它是ansible的web方式部署，通过web界面就可以添加删除任务,并且运行ansible playbook,可惜，它是收费的 /捂脸&lt;/p&gt;
-
-&lt;h3 id="org-28322063"&gt;任务队列&lt;/h3&gt;
-&lt;p&gt;把ansible playbook放到任务队列里，由消费者去消费对应的任务&lt;/p&gt;
-
-&lt;p&gt;未完待续...&lt;/p&gt;</content><category term="linux"></category><category term="ansible"></category></entry></feed>
+&lt;p&gt;输出就是这么匪夷所思,所以, &lt;b&gt;不要在Lua的table中使用nil值，如果一个元素要删除，直接remove&lt;/b&gt;&lt;/p&gt;</content><category term="lua"></category></entry></feed>
