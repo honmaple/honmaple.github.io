@@ -59,7 +59,11 @@ $(document).ready(function(){
             var a = $(window).scrollTop();
             var b = $(window).height();
             var c = $(document).height();
-            $(".scrollbar").width(a / (Math.round(c * 0.9) - b) * 100 + "%");
+            if (c === b) {
+                $(".scrollbar").width("100%");
+            }else {
+                $(".scrollbar").width(a / (c - b) * 100 + "%");
+            }
         }
     });
     e.click(function() {
