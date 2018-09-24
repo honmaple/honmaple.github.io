@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog</title><link href="https://honmaple.me/" rel="alternate"></link><link href="https://honmaple.me/feeds/rss.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2018-09-13T15:28:35+08:00</updated><entry><title>ansible笔记</title><link href="https://honmaple.me/articles/2018/09/ansible%E7%AC%94%E8%AE%B0.html" rel="alternate"></link><published>2018-09-04T10:53:51+08:00</published><updated>2018-09-12T19:01:45+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-09-04:/articles/2018/09/ansible笔记.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog</title><link href="https://honmaple.me/" rel="alternate"></link><link href="https://honmaple.me/feeds/rss.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2018-09-18T15:31:14+08:00</updated><entry><title>ansible笔记</title><link href="https://honmaple.me/articles/2018/09/ansible%E7%AC%94%E8%AE%B0.html" rel="alternate"></link><published>2018-09-04T10:53:51+08:00</published><updated>2018-09-18T15:31:14+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-09-04:/articles/2018/09/ansible笔记.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-17703971"&gt;ansible动态解析inventory&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-98284113"&gt;ansible自定义模块传递list变量会变成字符串&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
@@ -7,21 +7,16 @@
 
 
 &lt;h2 id="org-17703971"&gt;ansible动态解析inventory&lt;/h2&gt;
-&lt;p&gt;ansible调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，但直接使用ansible接口会更方便一些）
-但ansible没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可&lt;/p&gt;
+&lt;p&gt;&lt;b&gt;ansible&lt;/b&gt;调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）&lt;/p&gt;
+
+&lt;p&gt;但问题是&lt;b&gt;ansible&lt;/b&gt;没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可&lt;/p&gt;
 
 &lt;p&gt;查找源码, 根据 &lt;code&gt;InventoryManager&lt;/code&gt; 传递的&lt;b&gt;source&lt;/b&gt;变量找到&lt;code&gt;parse_sources&lt;/code&gt;这个函数&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;InventoryManager&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;parse_sources&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;cache&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
         &lt;span class="sd"&gt;&amp;#39;&amp;#39;&amp;#39; iterate over inventory sources and parse each one to populate it&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
 
-        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_setup_inventory_plugins&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-        &lt;span class="o"&gt;...&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;然后再根据&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;_setup_inventory_plugins …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_setup_inventory_plugins …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-17703971"&gt;ansible动态解析inventory&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-98284113"&gt;ansible自定义模块传递list变量会变成字符串&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
@@ -29,8 +24,9 @@
 
 
 &lt;h2 id="org-17703971"&gt;ansible动态解析inventory&lt;/h2&gt;
-&lt;p&gt;ansible调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，但直接使用ansible接口会更方便一些）
-但ansible没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可&lt;/p&gt;
+&lt;p&gt;&lt;b&gt;ansible&lt;/b&gt;调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）&lt;/p&gt;
+
+&lt;p&gt;但问题是&lt;b&gt;ansible&lt;/b&gt;没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可&lt;/p&gt;
 
 &lt;p&gt;查找源码, 根据 &lt;code&gt;InventoryManager&lt;/code&gt; 传递的&lt;b&gt;source&lt;/b&gt;变量找到&lt;code&gt;parse_sources&lt;/code&gt;这个函数&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;InventoryManager&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
