@@ -1,5 +1,5 @@
-Welcome to my [blog](http:/honmaple.github.io)
+Welcome to [honmaple's blog](http:/honmaple.github.io)
 
 ![index](https://github.com/honmaple/honmaple.github.io/blob/screenshot/index.png)
 
-![archinves](https://github.com/honmaple/honmaple.github.io/blob/screenshot/archinves.png)
+![archives](https://github.com/honmaple/honmaple.github.io/blob/screenshot/archives.png)
