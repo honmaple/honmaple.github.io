@@ -62,7 +62,7 @@
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/09/ansible笔记.html" rel="bookmark" title="Permalink to ansible笔记">ansible笔记</a></h1>
 <header class="entry-info">
-  <span class="entry-info-date" title="Updated at 2018-09-18">
+  <span class="entry-info-date" title="Updated at 2018-10-24">
     <i class="fa fa-calendar-o"></i>
     二 04 九月 2018
   </span>
@@ -153,24 +153,47 @@
 <span class="s1">MY_HOST-2 ansible_ssh_host=127.0.0.2</span>
 <span class="s1">MY_HOST-3 ansible_ssh_host=127.0.0.3</span>
 <span class="s1">MY_HOST-4 ansible_ssh_host=127.0.0.4</span>
+
+<span class="s1">[MY-HOST:vars]</span>
+<span class="s1">vip=127.0.0.10</span>
+<span class="s1">ppp=test</span>
+
+<span class="s1">[MY-HOST1]</span>
+<span class="s1">MY_HOST1-1 ansible_ssh_host=127.0.0.11</span>
+<span class="s1">MY_HOST1-2 ansible_ssh_host=127.0.0.12</span>
+
+<span class="s1">[MY-HOST:children]</span>
+<span class="s1">MY-HOST1</span>
 <span class="s1">&#39;&#39;&#39;</span>
 <span class="n">module</span> <span class="o">=</span> <span class="n">InventoryCustomModule</span><span class="p">()</span>
 <span class="n">module</span><span class="o">.</span><span class="n">mine_parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;ungrouped&quot;</span><span class="p">]:</span>
-        <span class="k">continue</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">hosts</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">hosts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">child_groups</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">hosts</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">host</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
 </pre></div>
 
 <p><b>结果</b>:</p>
-<div class="highlight"><pre><span></span>(MY-HOST, [MY_HOST-1, MY_HOST-2, MY_HOST-3, MY_HOST-4])
-{u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.1&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None}
+<div class="highlight"><pre><span></span>(ungrouped, [], {})
+(all, [ungrouped], {})
+(MY-HOST, [MY-HOST1], {u&#39;vip&#39;: u&#39;127.0.0.10&#39;, u&#39;ppp&#39;: u&#39;test&#39;})
+(MY_HOST-1, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.1&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
+(MY_HOST-2, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.2&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
+(MY_HOST-3, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.3&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
+(MY_HOST-4, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.4&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
+(MY-HOST1, [], {})
+(MY_HOST1-1, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.11&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
+(MY_HOST1-2, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.12&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
 </pre></div>
 
 
-<p>但有一个问题, <b>all</b>组下的groups列表为空, 可能是还需要一些其他的操作吧</p>
+<p>可以看出已经没什么大的问题了, 但有一个点, <b>all</b>组下的groups列表只有<code>ungrouped</code>, 正常情况下<code>MY-HOST</code>组也应该继承<code>all</code>组, <del>可能是还需要一些其他的操作吧</del>，继续翻源码，找到了<code>InventoryData</code>的<code>reconcile_inventory</code>方法, 修改一下即可</p>
+<div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">InventoryCustomModule</span><span class="p">()</span>
+<span class="n">module</span><span class="o">.</span><span class="n">mine_parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="n">module</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">reconcile_inventory</span><span class="p">()</span>
+</pre></div>
+
 </li>
 </ul>
 <h2 id="org-98284113">ansible自定义模块传递list变量会变成字符串</h2>
