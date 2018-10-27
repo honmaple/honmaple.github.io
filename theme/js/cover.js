@@ -43,4 +43,34 @@ function Cover() {
             scrollUp();
         }
     });
+    var startPos = {
+        Top:-1,
+        Y:0
+    };
+    $("body").on('touchstart', function(event) {
+        if (e.cancelable) {
+            if (!e.defaultPrevented) {
+                e.preventDefault();
+            }
+        }
+        startPos = {
+            Top: $(window).scrollTop(),
+            Y: e.originalEvent.changedTouches[0].pageY
+        };
+    });
+    $("body").on("touchend", function(e) {
+        if (e.cancelable) {
+            if (!e.defaultPrevented) {
+                e.preventDefault();
+            }
+        }
+        var pageY = e.originalEvent.changedTouches[0].pageY - startPos.Y;
+        if (pageY > 0) {
+            if (startPos.Top === 0 && $(".entry-cover").length && !$(".entry-cover").is(":hidden")) {
+                $(".entry-cover").fadeOut(500);
+            }
+        }else if (pageY  < 0) {
+            scrollUp();
+        }
+    });
 }
