@@ -1,3 +1,15 @@
+function IsPC() {
+    var userAgentInfo = navigator.userAgent;
+    var agents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
+    var flag = true;
+    for (var v = 0; v < agents.length; v++) {
+        if (userAgentInfo.indexOf(agents[v]) > -1) {
+            flag = false;
+            break;
+        }
+    }
+    return flag;
+}
 function Cover() {
     if (!String.prototype.format) {
         String.prototype.format = function() {
@@ -22,7 +34,7 @@ function Cover() {
     });
     function scrollUp() {
         if ($(window).scrollTop() < $(window).height() && $(".entry-cover").length && !$(".entry-cover").is(":hidden")) {
-            $("body").animate({
+            $("html, body").animate({
                 scrollTop: 0
             }, 500);
         }
@@ -43,7 +55,7 @@ function Cover() {
             scrollUp();
         }
     });
-    if ($(window).height() < 600) {
+    if (!IsPC()) {
         var startPos = {
             Top:-1,
             Y:0
