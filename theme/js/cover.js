@@ -19,19 +19,23 @@ function Cover() {
             });
         };
     }
-    $.ajax({
-        type: "GET",
-        url: "https://poem.honmaple.com/api/poem/random",
-        dataType: "json",
-        success: function (response) {
-            var title = '<h3>{0}</h3>'.format(response.data.title);
-            var author = '<p>{0}</p>'.format(response.data.author);
-            var paragraphs = '<div>{0}</div>'.format(response.data.paragraphs.map(function(item) {
-                return "<p>{0}</p>".format(item)
-            }).join(""));
-            $(".entry-cover > .entry-cover-right > .entry-center").html(title + author + paragraphs);
-        }
-    });
+    if ($(window).width() > 600) {
+        $.ajax({
+            type: "GET",
+            url: "https://poem.honmaple.com/api/poem/random",
+            dataType: "json",
+            success: function (response) {
+                var title = '<h3>{0}</h3>'.format(response.data.title);
+                var author = '<p>{0}</p>'.format(response.data.author);
+                var paragraphs = '<div>{0}</div>'.format(response.data.paragraphs.map(function(item) {
+                    return "<p>{0}</p>".format(item);
+                }).join(""));
+                $(".entry-cover > .entry-cover-right > .entry-center").fadeOut(500, function() {
+                    $(this).html(title + author + paragraphs).fadeIn(500);
+                });
+            }
+        });
+    }
     function scrollUp() {
         if ($(window).scrollTop() < $(window).height() && $(".entry-cover").length && !$(".entry-cover").is(":hidden")) {
             $("html, body").animate({
