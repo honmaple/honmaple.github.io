@@ -40,12 +40,16 @@ function Cover() {
         if ($(window).scrollTop() < $(window).height() && $(".entry-cover").length && !$(".entry-cover").is(":hidden")) {
             $("html, body").animate({
                 scrollTop: 0
-            }, 500);
+            }, 600);
         }
     }
     function scrollDown() {
         if ($(window).scrollTop() === 0 && $(".entry-cover").length && !$(".entry-cover").is(":hidden")) {
-            $(".entry-cover").fadeOut(500);
+            $("html, body").animate({
+                scrollTop: $(window).height()
+            }, 600, function() {
+                $(".entry-cover").hide();
+            });
         }
     }
     $(document).keydown(function(e) {

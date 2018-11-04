@@ -18,33 +18,37 @@ function getCookie(name)
     return "";
 }
 function changeTheme(name, css) {
+    removeTheme();
+
     var element = document.createElement('link');
-    element.type = 'text/css';
-    element.id = name;
-    element.rel = 'stylesheet';
+    element.type = "text/css";
+    element.id = "theme-css";
+    element.rel = "stylesheet";
     element.href = css;
     document.getElementsByTagName("head")[0].appendChild(element);
     setCookie('theme',name,3);
 }
-function removeTheme(name) {
-    var element = document.getElementById(name);
+function removeTheme() {
+    var element = document.getElementById("theme-css");
     if (element) {
         document.getElementsByTagName("head")[0].removeChild(element);
+        setCookie("theme","default",3);
     }
-    setCookie('theme','default',3);
 }
 function toggleTheme() {
-    var theme = getCookie('theme');
-    if (theme in themes) {
-        removeTheme(theme);
-    }else {
-        changeTheme("theme-black",themes["theme-black"]);
+    theme = getCookie('theme');
+    var index = themeList.indexOf(theme) + 1;
+    if (index > 0 && index === themeList.length) {
+        return removeTheme();
     }
+    return changeTheme(themeList[index],themeCSS[themeList[index]]);
 }
-var themes = {
-    "theme-black":"/theme/css/main-black.css"
+var themeList = ["black", "tree"];
+var themeCSS = {
+    black: "/theme/css/main-black.css",
+    tree: "/theme/css/main-tree.css",
 };
 var theme = getCookie('theme');
-if (theme in themes) {
-    changeTheme(theme, themes[theme]);
+if (themeList.indexOf(theme) > -1) {
+    changeTheme(theme, themeCSS[theme]);
 }
