@@ -23,26 +23,24 @@ $(document).ready(function(){
     $.get("https://honmaple.com/api/timeline",{
         number:17
     }, function(response){
-        if (response.status == 200) {
-            var template = $("#timeline-template").html();
-            var first_date = TimeFormat(response.data[0].created_at);
-            var first_title = first_date[0] + '年' + first_date[1] + '月';
-            var child_template = '';
-            var title = '';
-            var date = [];
-            response.data.forEach(function(item,index) {
-                date = TimeFormat(item.created_at);
-                title = date[0] + '年' + date[1] + '月';
-                if (first_title != title) {
-                    $("#timeline").append('<ul class="timeline"><h4>{0}</h4>{1}</ul>'.format(first_title,child_template));
-                    first_title = title;
-                    child_template = '';
-                }
-                child_template += template.format(date[1] + '月' + date[2] + '日',item.content);
-            });
-            if (child_template) {
+        var template = $("#timeline-template").html();
+        var first_date = TimeFormat(response.data[0].created_at);
+        var first_title = first_date[0] + '年' + first_date[1] + '月';
+        var child_template = '';
+        var title = '';
+        var date = [];
+        response.data.forEach(function(item,index) {
+            date = TimeFormat(item.created_at);
+            title = date[0] + '年' + date[1] + '月';
+            if (first_title != title) {
                 $("#timeline").append('<ul class="timeline"><h4>{0}</h4>{1}</ul>'.format(first_title,child_template));
+                first_title = title;
+                child_template = '';
             }
+            child_template += template.format(date[1] + '月' + date[2] + '日',item.content);
+        });
+        if (child_template) {
+            $("#timeline").append('<ul class="timeline"><h4>{0}</h4>{1}</ul>'.format(first_title,child_template));
         }
     }, 'json');
 });

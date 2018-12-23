@@ -59,6 +59,138 @@
 </nav>          <ul class="entry-list" style="margin-top:0;">
         <li><article>
           <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2016/01/supervisor使用.html" rel="bookmark" title="Permalink to supervisor使用">supervisor使用</a></h1>
+<header class="entry-info">
+  <span title="2016-01-06T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    三 06 一月 2016
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/supervisor/index.html">supervisor</a>
+        <a href="https://honmaple.me/tag/web/index.html">web</a>
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+    </span>
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <blockquote>
+<p>supervisor安装请参考<a href="https://honmaple.com/blog/pages/31">flask应用部署——安装环境</a></p>
+</blockquote>
+<h4>生成配置文件</h4>
+<div class="highlight"><pre><span></span># cd /etc
+# mkdir -p supervisord/conf.d
+# echo_supervisord_conf &gt; /etc/supervisord/supervisord.conf
+</pre></div>
+
+
+<h4>修改supervisord.conf</h4>
+<div class="highlight"><pre><span></span># vim supervisord.conf # G直接跳到最后一行
+</pre></div>
+
+
+<p>取消下面注释并修改</p>
+<div class="highlight"><pre><span></span><span class="k">[include]</span>
+<span class="na">files</span> <span class="o">=</span> <span class="s">/etc/supervisord/conf.d/*.ini</span>
+</pre></div>
+
+
+<p>ok，现在可以在/etc/supervisord/conf.d/目录下创建配置文件了  </p>
+<div class="highlight"><pre><span></span># vim honmaple.com.ini
+</pre></div>
+
+
+<p>输入以下内容  </p>
+<div class="highlight"><pre><span></span># 进程的名字
+[program:website]
+# 命令
+command=/home/www …</pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2016/01/supervisor使用.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2015/12/如何备份postgresql数据库.html" rel="bookmark" title="Permalink to 如何备份postgresql数据库">如何备份postgresql数据库</a></h1>
+<header class="entry-info">
+  <span title="2015-12-26T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    六 26 十二月 2015
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/postgresql/index.html">postgresql</a>
+        <a href="https://honmaple.me/tag/sql/index.html">sql</a>
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+    </span>
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <p>对于网站来说数据无疑是最重要的，而养成备份数据的习惯更加重要，
+忽然想到一句经典台词  </p>
+<blockquote>
+<p>曾经有一份数据摆在我的面前，<br>
+可我没有备份，<br>
+直到数据丢失后才后悔莫及,<br>
+人世间最痛苦的事莫过于此，<br>
+如果上天能给我一次再来一次的机会，<br>
+我会对那份数据说五个字：我要备份你，<br>
+如果非要在这份备份上加一个期限，我希望是每天！</p>
+</blockquote>
+<p>进入主题,这只是对数据进行简单的备份</p>
+<h3>怎么备份数据</h3>
+<p>shell脚本</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="nv">backup_time</span><span class="o">=</span><span class="sb">`</span>date +%Y%m%d<span class="sb">`</span>
+pg_dump articledb &gt; /home/xxx/backup/article_<span class="nv">$backup_time</span>.sql
+<span class="c1"># articledb是要备份的数据库名称</span>
+<span class="nb">echo</span> <span class="s2">&quot;backup finished&quot;</span>
+</pre></div>
+</td></tr></table>
+
+<p>保存为backup_db.sh<br>
+<strong>注意</strong><br>
+xxx是数据库用户,并且是super权限<br>
+可以这样  </p>
+<div class="highlight"><pre><span></span>$ sudo -i …</pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2015/12/如何备份postgresql数据库.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2015/12/centos搭建shadowsocks服务端.html" rel="bookmark" title="Permalink to centos搭建shadowsocks服务端">centos搭建shadowsocks服务端</a></h1>
 <header class="entry-info">
   <span title="2015-12-22T00:00:00+08:00">
@@ -448,127 +580,6 @@ $ scp path/filename 帐号@主机:path/  <span class="c1">#上传文件到服务
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2015/12/如何上传文件到服务器.html">阅读全文 »</a>
           </div>
         </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2015/10/linux下C51开发.html" rel="bookmark" title="Permalink to linux下C51开发">linux下C51开发</a></h1>
-<header class="entry-info">
-  <span title="2015-10-17T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    六 17 十月 2015
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/category/linux/index.html">linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tag/c51/index.html">C51</a>
-    </span>
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content">
-            <h2>开发工具mcu8051ide</h2>
-<p>下载地址<a href="http://sourceforge.net/projects/mcu8051ide/">http://sourceforge.net/projects/mcu8051ide/</a><br>
-安装sdcc  </p>
-<div class="highlight"><pre><span></span>$ sudo pacman -S sdcc
-</pre></div>
-
-
-<h3>根据README需要下载的依赖</h3>
-<p><strong><em>REQUIRED PACKAGES : 
-(Without these packages this program WILL NOT run)</em></strong></p>
-<table>
-<thead>
-<tr>
-<th>Package</th>
-<th align="center">min. Version</th>
-<th>Where it's available</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>tcl</td>
-<td align="center">8.5.9</td>
-<td>http://www.tcl.tk/software/tcltk/downloadnow84.html</td>
-</tr>
-<tr>
-<td>tk</td>
-<td align="center">8.5.9</td>
-<td>http://www.tcl.tk …</td></tr></tbody></table>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2015/10/linux下C51开发.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2015/08/git学习.html" rel="bookmark" title="Permalink to git学习">git学习</a></h1>
-<header class="entry-info">
-  <span title="2015-08-20T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    四 20 八月 2015
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/category/linux/index.html">linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tag/git/index.html">git</a>
-    </span>
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content">
-            <p>参考资料
-<a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000">廖雪峰Git教程</a><br>
-记忆一下主要内容：</p>
-<h3>安装git</h3>
-<div class="highlight"><pre><span></span>$ sudo dnf install git
-</pre></div>
-
-
-<h3>安装后配置</h3>
-<div class="highlight"><pre><span></span>$ git config --global user.name <span class="s2">&quot;Your Name&quot;</span>
-$ git config --global user.email <span class="s2">&quot;email@example.com&quot;</span>
-</pre></div>
-
-
-<h3>创建版本库</h3>
-<div class="highlight"><pre><span></span>$ mkdir git
-$ <span class="nb">cd</span> git
-$ mkdir <span class="s2">&quot;目录名&quot;</span>
-$ <span class="nb">cd</span> <span class="s2">&quot;目录名&quot;</span>
-$ git init <span class="c1">#将该目录变成可用于git管理的仓库</span>
-</pre></div>
-
-
-<h3>git操作指令</h3>
-<div class="highlight"><pre><span></span>$ git add filename <span class="c1">#将文件添加到仓库</span>
-$ git commit -m <span class="s2">&quot;注释内容&quot;</span>  <span class="c1">#将文件提交到仓库，-m后面是本次提交的内容说明</span>
-$ git add …</pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2015/08/git学习.html">阅读全文 »</a>
-          </div>
-        </article></li>
           <li>  <ul class="entry-pagination">
       <li class="prev"><a href="https://honmaple.me/category/linux/index6.html">&laquo;</a></li>
          <li ><a href="https://honmaple.me/category/linux/index.html">1</a></li>
@@ -591,6 +602,7 @@ $ git add …</pre></div>
       <li class="hidden-xs"><a href="https://honmaple.me/feeds/rss.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
       <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
       <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
   </ul>
   <ul class="list-inline copyright">
     <li class="hidden-xs">© 2015-2018 honmaple</li>

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>elasticsearch · honmaple's blog ·  风落花语风落天，花落风雨花落田.</title>
+    <link href="https://honmaple.b0.upaiyun.com/static/css/lib.min.css" rel="stylesheet">
+      <link href="https://honmaple.me/theme/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="particles-js" id="particles-js"></div>
+    <div class="scrollbar"></div>
+    <div class="wrap">
+      <div class="main">
+<nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://honmaple.b0.upaiyun.com/images/header/header-logo.png" alt="楓">
+    </a>
+    <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+      <li class="dropdown">
+        <a href="https://honmaple.me/category/life/index.html" >代码人生</a>
+        <ul class="dropdown-menu">
+          <li><a href="https://honmaple.me/category/coding/index.html">分享世界</a></li>
+          <li><a href="https://honmaple.me/category/love/index.html">你不懂我</a></li>
+          <li><a href="https://honmaple.me/category/recall/index.html">我不怪你</a></li>
+        </ul>
+      </li>
+      <li ><a href="https://honmaple.me/category/linux/index.html">字符艺术</a></li>
+      <li ><a href="https://honmaple.me/category/python/index.html">人生苦短</a></li>
+      <li ><a href="https://honmaple.me/category/security/index.html">极客安全</a></li>
+      <li class="dropdown">
+        <a href="https://honmaple.me/archives.html">文章归档</a>
+        <ul class="dropdown-menu">
+          <li><a href="https://honmaple.me/tags.html">标签</a></li>
+          <li><a href="https://honmaple.me/categories.html">分类</a></li>
+          <li><a href="https://honmaple.me/authors.html">作者</a></li>
+        </ul>
+      </li>
+      <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form onsubmit="return dispatch()" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="search" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>        <article>
+          <div class="entry-header">
+            <h1 class="entry-title">
+              <a href="https://honmaple.me/articles/2018/09/elasticsearch笔记.html" rel="bookmark" title="Permalink to elasticsearch笔记">elasticsearch笔记</a>
+            </h1>
+<header class="entry-info">
+  <span title="Updated at 2018-12-12">
+    <i class="fa fa-calendar-o"></i>
+    三 19 九月 2018
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tag/elasticsearch/index.html">elasticsearch</a>
+        <a href="https://honmaple.me/tag/devops/index.html">devops</a>
+    </span>
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-11244948">elasticsearch</a>
+<ul>
+<li><a href="#org-54291645">安装</a></li>
+<li><a href="#org-69210871">优化</a></li>
+<li><a href="#org-25545075">踩坑</a></li>
+</ul></li>
+<li><a href="#org-44144789">kibana</a>
+<ul>
+<li><a href="#org-54291645">安装</a></li>
+<li><a href="#org-69210871">优化</a></li>
+<li><a href="#org-25545075">踩坑</a></li>
+</ul></li>
+</ul>
+</div></div>
+
+
+<h2 id="org-11244948">elasticsearch</h2>
+<h3 id="org-54291645">安装</h3>
+<h3 id="org-69210871">优化</h3>
+<ul>
+<li>关闭swap</li>
+<li>unlimit调整</li>
+<li>使用ssd</li>
+</ul>
+<h3 id="org-25545075">踩坑</h3>
+<ul>
+<li>滚动重启
+<p>重启前</p>
+<div class="highlight"><pre><span></span>curl -XPUT http://192.168.67.14:9200/_cluster/settings -d <span class="s1">&#39;{</span>
+<span class="s1">    &quot;transient&quot; : {</span>
+<span class="s1">        &quot;cluster.routing.allocation.enable&quot; : &quot;none&quot;</span>
+<span class="s1">    }</span>
+<span class="s1">}&#39;</span>
+</pre></div>
+
+<p>重启后</p>
+<div class="highlight"><pre><span></span>curl -XPUT http://192.168.67.14:9200/_cluster/settings -d <span class="s1">&#39;{</span>
+<span class="s1">    &quot;transient&quot; : {</span>
+<span class="s1">        &quot;cluster.routing.allocation.enable&quot; : &quot;all&quot;</span>
+<span class="s1">    }</span>
+<span class="s1">}&#39;</span>
+</pre></div>
+</li>
+<li>修改index.number_of_shards</li>
+<li>磁盘损坏
+<div class="highlight"><pre><span></span>curl -XPOST <span class="s1">&#39;http://192.168.60.32:9200/_cluster/reroute&#39;</span> -d <span class="s1">&#39;{</span>
+<span class="s1">        &quot;commands&quot; : [ {</span>
+<span class="s1">              &quot;allocate&quot; : {</span>
+<span class="s1">                  &quot;index&quot; : &quot;.marvel-2018.10.10&quot;,</span>
+<span class="s1">                  &quot;shard&quot; : 0,</span>
+<span class="s1">                  &quot;node&quot; : &quot;1.7.5-192.168.67.14&quot;,</span>
+<span class="s1">                  &quot;allow_primary&quot; : true</span>
+<span class="s1">              }</span>
+<span class="s1">            }</span>
+<span class="s1">        ]</span>
+<span class="s1">    }&#39;</span>
+</pre></div>
+</li>
+<li>unassigned shards
+<div class="highlight"><pre><span></span>curl http://127.0.0.1:9200/_cat/shards?v <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="p">|</span> grep UNASSIGNED
+</pre></div>
+
+<div class="highlight"><pre><span></span>curl http://127.0.0.1:9200/_nodes/process?pretty
+</pre></div>
+
+<div class="highlight"><pre><span></span>curl -XPOST <span class="s1">&#39;http://192.168.60.32:9200/_cluster/reroute&#39;</span> -d <span class="s1">&#39;{</span>
+<span class="s1">        &quot;commands&quot; : [ {</span>
+<span class="s1">                &quot;allocate&quot; : {</span>
+<span class="s1">                    &quot;index&quot; : &quot;logstash-kkk-2018.11.07&quot;,</span>
+<span class="s1">                    &quot;shard&quot; : 3,</span>
+<span class="s1">                    &quot;node&quot; : &quot;RixLlAEkTUO7d35ijUfg&quot;,</span>
+<span class="s1">                    &quot;allow_primary&quot; : true</span>
+<span class="s1">                }</span>
+<span class="s1">            }</span>
+<span class="s1">        ]</span>
+<span class="s1">    }&#39;</span>
+</pre></div>
+</li>
+</ul>
+<h2 id="org-44144789">kibana</h2>
+<h3 id="org-54291645">安装</h3>
+<h3 id="org-69210871">优化</h3>
+<h3 id="org-25545075">踩坑</h3>
+<ul>
+<li>保存时kibana报错 <code>Visualization Editor: blocked by: [FORBIDDEN/12/index read-only</code>
+<p>参考 <a href="https://github.com/elastic/kibana/issues/13685">https://github.com/elastic/kibana/issues/13685</a></p>
+<div class="highlight"><pre><span></span>curl -XPUT -H <span class="s2">&quot;Content-Type: application/json&quot;</span> http://127.0.0.1:9200/.kibana/_settings -d <span class="s1">&#39;{&quot;index.blocks.read_only_allow_delete&quot;: null}&#39;</span>
+</pre></div>
+</li>
+</ul>
+<p>There are <a href="https://honmaple.me/articles/2018/09/elasticsearch笔记.html#disqus_thread">comments</a>.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+<div class="footer">
+  <ul class="list-inline entry-social">
+    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/feeds/rss.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+  <ul class="list-inline copyright">
+    <li class="hidden-xs">© 2015-2018 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+          <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+</div>    <div class="back-to-top back-to-top-on">
+      <i class="fa fa-hand-o-up" title="back to top"></i>
+    </div>
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-88401692-2');
+</script>
+    <script src="https://honmaple.b0.upaiyun.com/static/js/lib.min.js"></script>
+      <script src="https://honmaple.me/theme/js/script.min.js"></script>
+    <script src="https://honmaple.b0.upaiyun.com/static/js/instantclick.min.js" data-no-instant></script>
+    <script data-no-instant>
+     InstantClick.on('change', function() {
+         if (typeof ga !== 'undefined') {
+             ga('send', 'pageview', location.pathname + location.search);
+         }
+     });
+     InstantClick.init(60);
+    </script>
+  </body>
+</html>

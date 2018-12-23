@@ -58,6 +58,132 @@
   </div>
 </nav>        <article>
           <div class="entry-header">
+            <h1 class="entry-title">
+              <a href="https://honmaple.me/articles/2018/09/elasticsearch笔记.html" rel="bookmark" title="Permalink to elasticsearch笔记">elasticsearch笔记</a>
+            </h1>
+<header class="entry-info">
+  <span title="Updated at 2018-12-12">
+    <i class="fa fa-calendar-o"></i>
+    三 19 九月 2018
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tag/elasticsearch/index.html">elasticsearch</a>
+        <a href="https://honmaple.me/tag/devops/index.html">devops</a>
+    </span>
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-11244948">elasticsearch</a>
+<ul>
+<li><a href="#org-54291645">安装</a></li>
+<li><a href="#org-69210871">优化</a></li>
+<li><a href="#org-25545075">踩坑</a></li>
+</ul></li>
+<li><a href="#org-44144789">kibana</a>
+<ul>
+<li><a href="#org-54291645">安装</a></li>
+<li><a href="#org-69210871">优化</a></li>
+<li><a href="#org-25545075">踩坑</a></li>
+</ul></li>
+</ul>
+</div></div>
+
+
+<h2 id="org-11244948">elasticsearch</h2>
+<h3 id="org-54291645">安装</h3>
+<h3 id="org-69210871">优化</h3>
+<ul>
+<li>关闭swap</li>
+<li>unlimit调整</li>
+<li>使用ssd</li>
+</ul>
+<h3 id="org-25545075">踩坑</h3>
+<ul>
+<li>滚动重启
+<p>重启前</p>
+<div class="highlight"><pre><span></span>curl -XPUT http://192.168.67.14:9200/_cluster/settings -d <span class="s1">&#39;{</span>
+<span class="s1">    &quot;transient&quot; : {</span>
+<span class="s1">        &quot;cluster.routing.allocation.enable&quot; : &quot;none&quot;</span>
+<span class="s1">    }</span>
+<span class="s1">}&#39;</span>
+</pre></div>
+
+<p>重启后</p>
+<div class="highlight"><pre><span></span>curl -XPUT http://192.168.67.14:9200/_cluster/settings -d <span class="s1">&#39;{</span>
+<span class="s1">    &quot;transient&quot; : {</span>
+<span class="s1">        &quot;cluster.routing.allocation.enable&quot; : &quot;all&quot;</span>
+<span class="s1">    }</span>
+<span class="s1">}&#39;</span>
+</pre></div>
+</li>
+<li>修改index.number_of_shards</li>
+<li>磁盘损坏
+<div class="highlight"><pre><span></span>curl -XPOST <span class="s1">&#39;http://192.168.60.32:9200/_cluster/reroute&#39;</span> -d <span class="s1">&#39;{</span>
+<span class="s1">        &quot;commands&quot; : [ {</span>
+<span class="s1">              &quot;allocate&quot; : {</span>
+<span class="s1">                  &quot;index&quot; : &quot;.marvel-2018.10.10&quot;,</span>
+<span class="s1">                  &quot;shard&quot; : 0,</span>
+<span class="s1">                  &quot;node&quot; : &quot;1.7.5-192.168.67.14&quot;,</span>
+<span class="s1">                  &quot;allow_primary&quot; : true</span>
+<span class="s1">              }</span>
+<span class="s1">            }</span>
+<span class="s1">        ]</span>
+<span class="s1">    }&#39;</span>
+</pre></div>
+</li>
+<li>unassigned shards
+<div class="highlight"><pre><span></span>curl http://127.0.0.1:9200/_cat/shards?v <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="p">|</span> grep UNASSIGNED
+</pre></div>
+
+<div class="highlight"><pre><span></span>curl http://127.0.0.1:9200/_nodes/process?pretty
+</pre></div>
+
+<div class="highlight"><pre><span></span>curl -XPOST <span class="s1">&#39;http://192.168.60.32:9200/_cluster/reroute&#39;</span> -d <span class="s1">&#39;{</span>
+<span class="s1">        &quot;commands&quot; : [ {</span>
+<span class="s1">                &quot;allocate&quot; : {</span>
+<span class="s1">                    &quot;index&quot; : &quot;logstash-kkk-2018.11.07&quot;,</span>
+<span class="s1">                    &quot;shard&quot; : 3,</span>
+<span class="s1">                    &quot;node&quot; : &quot;RixLlAEkTUO7d35ijUfg&quot;,</span>
+<span class="s1">                    &quot;allow_primary&quot; : true</span>
+<span class="s1">                }</span>
+<span class="s1">            }</span>
+<span class="s1">        ]</span>
+<span class="s1">    }&#39;</span>
+</pre></div>
+</li>
+</ul>
+<h2 id="org-44144789">kibana</h2>
+<h3 id="org-54291645">安装</h3>
+<h3 id="org-69210871">优化</h3>
+<h3 id="org-25545075">踩坑</h3>
+<ul>
+<li>保存时kibana报错 <code>Visualization Editor: blocked by: [FORBIDDEN/12/index read-only</code>
+<p>参考 <a href="https://github.com/elastic/kibana/issues/13685">https://github.com/elastic/kibana/issues/13685</a></p>
+<div class="highlight"><pre><span></span>curl -XPUT -H <span class="s2">&quot;Content-Type: application/json&quot;</span> http://127.0.0.1:9200/.kibana/_settings -d <span class="s1">&#39;{&quot;index.blocks.read_only_allow_delete&quot;: null}&#39;</span>
+</pre></div>
+</li>
+</ul>
+<p>There are <a href="https://honmaple.me/articles/2018/09/elasticsearch笔记.html#disqus_thread">comments</a>.</p>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/09/ansible笔记.html" rel="bookmark" title="Permalink to ansible笔记">ansible笔记</a></h1>
 <header class="entry-info">
   <span title="Updated at 2018-10-24">
@@ -103,134 +229,13 @@
     <span class="k">def</span> <span class="nf">parse_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; iterate over inventory sources and parse each one to populate it&#39;&#39;&#39;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_inventory_plugins</span><span class="p">()</span>
-        <span class="o">...</span>
-</pre></div>
-
-
-<p>然后再根据</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_setup_inventory_plugins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39; sets up loaded inventory plugins for usage &#39;&#39;&#39;</span>
-
-    <span class="n">inventory_loader</span> <span class="o">=</span> <span class="n">PluginLoader</span><span class="p">(</span><span class="s1">&#39;InventoryModule&#39;</span><span class="p">,</span> <span class="s1">&#39;ansible.plugins.inventory&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">DEFAULT_INVENTORY_PLUGIN_PATH</span><span class="p">,</span> <span class="s1">&#39;inventory_plugins&#39;</span><span class="p">)</span>
-    <span class="o">...</span>
-</pre></div>
-
-<p>找到对应的解析<b>plugin</b>, 我使用的是<b>ini</b>格式的inventory, 所以自定义一下<code>ansible.plugins.inventory.ini.InventoryModule</code>这个模块即可</p>
-
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.plugins.inventory.ini</span> <span class="kn">import</span> <span class="n">InventoryModule</span>
-<span class="kn">from</span> <span class="nn">ansible.inventory.data</span> <span class="kn">import</span> <span class="n">InventoryData</span>
-<span class="kn">from</span> <span class="nn">ansible.parsing.dataloader</span> <span class="kn">import</span> <span class="n">DataLoader</span>
-<span class="kn">from</span> <span class="nn">ansible.module_utils._text</span> <span class="kn">import</span> <span class="n">to_text</span>
-<span class="kn">from</span> <span class="nn">ansible.template</span> <span class="kn">import</span> <span class="n">Templar</span>
-
-
-<span class="k">class</span> <span class="nc">InventoryCustomModule</span><span class="p">(</span><span class="n">InventoryModule</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">mine_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b_data</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span> <span class="o">=</span> <span class="n">InventoryData</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">templar</span> <span class="o">=</span> <span class="n">Templar</span><span class="p">(</span><span class="n">loader</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">to_text</span><span class="p">(</span><span class="n">b_data</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;surrogate_or_strict&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">UnicodeError</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">b_data</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">line</span> <span class="ow">and</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_COMMENT_MARKERS</span><span class="p">:</span>
-                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to_text</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;surrogate_or_strict&#39;</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-</pre></div>
-
-
-<ul>
-<li><b>如何使用</b>:
-<div class="highlight"><pre><span></span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span><span class="se">\</span>
-<span class="s1">[MY-HOST]</span>
-<span class="s1">MY_HOST-1 ansible_ssh_host=127.0.0.1</span>
-<span class="s1">MY_HOST-2 ansible_ssh_host=127.0.0.2</span>
-<span class="s1">MY_HOST-3 ansible_ssh_host=127.0.0.3</span>
-<span class="s1">MY_HOST-4 ansible_ssh_host=127.0.0.4</span>
-
-<span class="s1">[MY-HOST:vars]</span>
-<span class="s1">vip=127.0.0.10</span>
-<span class="s1">ppp=test</span>
-
-<span class="s1">[MY-HOST1]</span>
-<span class="s1">MY_HOST1-1 ansible_ssh_host=127.0.0.11</span>
-<span class="s1">MY_HOST1-2 ansible_ssh_host=127.0.0.12</span>
-
-<span class="s1">[MY-HOST:children]</span>
-<span class="s1">MY-HOST1</span>
-<span class="s1">&#39;&#39;&#39;</span>
-<span class="n">module</span> <span class="o">=</span> <span class="n">InventoryCustomModule</span><span class="p">()</span>
-<span class="n">module</span><span class="o">.</span><span class="n">mine_parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">child_groups</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">hosts</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">host</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
-</pre></div>
-
-<p><b>结果</b>:</p>
-<div class="highlight"><pre><span></span>(ungrouped, [], {})
-(all, [ungrouped], {})
-(MY-HOST, [MY-HOST1], {u&#39;vip&#39;: u&#39;127.0.0.10&#39;, u&#39;ppp&#39;: u&#39;test&#39;})
-(MY_HOST-1, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.1&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
-(MY_HOST-2, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.2&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
-(MY_HOST-3, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.3&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
-(MY_HOST-4, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.4&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
-(MY-HOST1, [], {})
-(MY_HOST1-1, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.11&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
-(MY_HOST1-2, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.12&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
-</pre></div>
-
-
-<p>可以看出已经没什么大的问题了, 但有一个点, <b>all</b>组下的groups列表只有<code>ungrouped</code>, 正常情况下<code>MY-HOST</code>组也应该继承<code>all</code>组, <del>可能是还需要一些其他的操作吧</del>，继续翻源码，找到了<code>InventoryData</code>的<code>reconcile_inventory</code>方法, 修改一下即可</p>
-<div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">InventoryCustomModule</span><span class="p">()</span>
-<span class="n">module</span><span class="o">.</span><span class="n">mine_parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-<span class="n">module</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">reconcile_inventory</span><span class="p">()</span>
-</pre></div>
-
-</li>
-</ul>
-<h2 id="org-98284113">ansible自定义模块传递list变量会变成字符串</h2>
-<p>我自定义了一个模块，需要传入一个<b>list</b>变量<code>group_names</code></p>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.module_utils.basic</span> <span class="kn">import</span> <span class="n">AnsibleModule</span>
-
-
-<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="n">module</span> <span class="o">=</span> <span class="n">AnsibleModule</span><span class="p">(</span>
-        <span class="n">argument_spec</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">group_names</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="bp">True</span>
-        <span class="p">}))</span>
-
-    <span class="n">i</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group_names&#39;</span><span class="p">)</span>
-    <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;group_names&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">))}</span>
-    <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">changed</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">main</span><span class="p">()</span>
-</pre></div>
-
-<p>但发现传入的变量最后变成的<code>str type</code></p>
-<div class="highlight"><pre><span></span>FAILED! =&gt; {&quot;changed&quot;: false, &quot;failed&quot;: true, &quot;msg&quot;: {&quot;group_names&quot;: &quot;[&#39;test&#39;]&quot;, &quot;type&quot;: &quot;&lt;type &#39;str&#39;&gt;&quot;}}
-</pre></div>
-
-<p>最后查找资料后才知道, 传递的变量需要增加<code>type</code>参数, 否则都是<b>str</b></p>
-<div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">AnsibleModule</span><span class="p">(</span>
-    <span class="n">argument_spec</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">group_names</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span>
-    <span class="p">}))</span>
-</pre></div>
-
-
-
-<p>There are <a href="https://honmaple.me/articles/2018/09/ansible笔记.html#disqus_thread">comments</a>.</p>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_inventory_plugins …</span></pre></div>
           </div>
-        </article>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/09/ansible笔记.html">阅读全文 »</a>
+          </div>
+        </article></li>
+          </ul>
       </div>
     </div>
 <div class="footer">
@@ -240,6 +245,7 @@
       <li class="hidden-xs"><a href="https://honmaple.me/feeds/rss.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
       <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
       <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
   </ul>
   <ul class="list-inline copyright">
     <li class="hidden-xs">© 2015-2018 honmaple</li>

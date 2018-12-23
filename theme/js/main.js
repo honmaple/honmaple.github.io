@@ -23,15 +23,13 @@ function decrypt(_this) {
             password:_this.prev().val(),
             content:_this.parent().next().text()
         }, function(response){
-            if(response.status == 200) {
-                var _parent = _this.parent().parent();
-                _parent.hide();
-                _parent.after(response.data);
-            }else {
-                _next.css("color","#C74451");
-                _next.text("密码错误 !");
-            }
-        }, 'json');
+            var _parent = _this.parent().parent();
+            _parent.hide();
+            _parent.after(response.data);
+        }, 'json').fail(function() {
+            _next.css("color","#C74451");
+            _next.text("密码错误 !");
+        });
     }
 }
 
