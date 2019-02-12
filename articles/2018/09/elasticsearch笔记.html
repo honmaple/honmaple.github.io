@@ -60,7 +60,7 @@
     <div class="entry-header">
       <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/09/elasticsearch笔记.html">elasticsearch笔记</a></h1>
 <header class="entry-info">
-  <span title="Updated at 2018-12-12">
+  <span title="Updated at 2019-02-12">
     <i class="fa fa-calendar-o"></i>
     三 19 九月 2018
   </span>
@@ -82,6 +82,7 @@
         <a href="https://honmaple.me/tag/elasticsearch/index.html">elasticsearch</a>
         <a href="https://honmaple.me/tag/devops/index.html">devops</a>
     </span>
+
 </header>    </div>
     <hr class="entry-hr" />
     <div class="entry-content entry-article">
@@ -90,6 +91,7 @@
 <ul>
 <li><a href="#org-54291645">安装</a></li>
 <li><a href="#org-69210871">优化</a></li>
+<li><a href="#org-80687756">重启</a></li>
 <li><a href="#org-25545075">踩坑</a></li>
 </ul></li>
 <li><a href="#org-44144789">kibana</a>
@@ -110,6 +112,26 @@
 <li>unlimit调整</li>
 <li>使用ssd</li>
 </ul>
+<h3 id="org-80687756">重启</h3>
+<div class="highlight"><pre><span></span>curl -X PUT <span class="s2">&quot;localhost:9200/_cluster/settings&quot;</span> -H <span class="s1">&#39;Content-Type: application/json&#39;</span> -d<span class="s1">&#39;</span>
+<span class="s1">{</span>
+<span class="s1">  &quot;persistent&quot;: {</span>
+<span class="s1">    &quot;cluster.routing.allocation.enable&quot;: &quot;none&quot;</span>
+<span class="s1">  }</span>
+<span class="s1">}</span>
+<span class="s1">&#39;</span>
+curl -X POST <span class="s2">&quot;localhost:9200/_flush/synced&quot;</span>
+supervisorctl restart elasticsearch
+curl -X GET <span class="s2">&quot;localhost:9200/_cat/health&quot;</span>
+curl -X PUT <span class="s2">&quot;localhost:9200/_cluster/settings&quot;</span> -H <span class="s1">&#39;Content-Type: application/json&#39;</span> -d<span class="s1">&#39;</span>
+<span class="s1">{</span>
+<span class="s1">  &quot;persistent&quot;: {</span>
+<span class="s1">    &quot;cluster.routing.allocation.enable&quot;: null</span>
+<span class="s1">  }</span>
+<span class="s1">}</span>
+<span class="s1">&#39;</span>
+</pre></div>
+
 <h3 id="org-25545075">踩坑</h3>
 <ul>
 <li>滚动重启
@@ -154,15 +176,36 @@
 <div class="highlight"><pre><span></span>curl -XPOST <span class="s1">&#39;http://192.168.60.32:9200/_cluster/reroute&#39;</span> -d <span class="s1">&#39;{</span>
 <span class="s1">        &quot;commands&quot; : [ {</span>
 <span class="s1">                &quot;allocate&quot; : {</span>
-<span class="s1">                    &quot;index&quot; : &quot;logstash-kkk-2018.11.07&quot;,</span>
-<span class="s1">                    &quot;shard&quot; : 3,</span>
-<span class="s1">                    &quot;node&quot; : &quot;RixLlAEkTUO7d35ijUfg&quot;,</span>
+<span class="s1">                    &quot;index&quot; : &quot;logstash-xxx-up-2019.01.29&quot;,</span>
+<span class="s1">                    &quot;shard&quot; : 9,</span>
+<span class="s1">                    &quot;node&quot; : &quot;kzI0751OSJBcx_wmLQ&quot;,</span>
 <span class="s1">                    &quot;allow_primary&quot; : true</span>
 <span class="s1">                }</span>
 <span class="s1">            }</span>
 <span class="s1">        ]</span>
 <span class="s1">    }&#39;</span>
 </pre></div>
+</li>
+<li>修改@timestamp类型
+<div class="highlight"><pre><span></span>curl -XPUT <span class="s2">&quot;http://127.0.0.1:9200/_template/uplog&quot;</span> -H <span class="s1">&#39;Content-Type: application/json&#39;</span> -H <span class="s1">&#39;Host: elasticsearch.morgans&#39;</span> -d<span class="s1">&#39;</span>
+<span class="s1">{</span>
+<span class="s1">  &quot;index_patterns&quot;: [&quot;uplog-*&quot;],</span>
+<span class="s1">  &quot;settings&quot;: {</span>
+<span class="s1">    &quot;index.number_of_replicas&quot;: 0</span>
+<span class="s1">  },</span>
+<span class="s1">  &quot;mappings&quot;: {</span>
+<span class="s1">    &quot;_default_&quot;: {</span>
+<span class="s1">        &quot;properties&quot;: {</span>
+<span class="s1">            &quot;@timestamp&quot;: {</span>
+<span class="s1">                &quot;type&quot;: &quot;date&quot;,</span>
+<span class="s1">                &quot;doc_values&quot;: true</span>
+<span class="s1">            }</span>
+<span class="s1">        }</span>
+<span class="s1">    }</span>
+<span class="s1">  }</span>
+<span class="s1">}&#39;</span>
+</pre></div>
+
 </li>
 </ul>
 <h2 id="org-44144789">kibana</h2>
@@ -174,6 +217,7 @@
 <p>参考 <a href="https://github.com/elastic/kibana/issues/13685">https://github.com/elastic/kibana/issues/13685</a></p>
 <div class="highlight"><pre><span></span>curl -XPUT -H <span class="s2">&quot;Content-Type: application/json&quot;</span> http://127.0.0.1:9200/.kibana/_settings -d <span class="s1">&#39;{&quot;index.blocks.read_only_allow_delete&quot;: null}&#39;</span>
 </pre></div>
+
 </li>
 </ul>
     </div>

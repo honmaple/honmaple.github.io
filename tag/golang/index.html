@@ -59,61 +59,10 @@
 </nav>        <article>
           <div class="entry-header">
             <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2018/12/golang读取http响应的gz package.html" rel="bookmark" title="Permalink to golang读取http响应的gz package">golang读取http响应的gz package</a>
+              <a href="https://honmaple.me/articles/2018/03/golang笔记.html" rel="bookmark" title="Permalink to golang笔记">golang笔记</a>
             </h1>
 <header class="entry-info">
-  <span title="Updated at 2018-12-23">
-    <i class="fa fa-calendar-o"></i>
-    四 20 十二月 2018
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tag/golang/index.html">golang</a>
-    </span>
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content">
-            
-<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nx">resp</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">HTTPRequest</span><span class="p">(</span><span class="s">&quot;GET&quot;</span><span class="p">,</span> <span class="s">&quot;http://some-gz-package/package-name&quot;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
-    <span class="k">defer</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nx">Close</span><span class="p">()</span>
-
-    <span class="nx">gz</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">gzip</span><span class="p">.</span><span class="nx">NewReader</span><span class="p">(</span><span class="nx">resp</span><span class="p">.</span><span class="nx">Body</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nx">Error</span><span class="p">())</span>
-        <span class="k">return</span>
-    <span class="p">}</span>
-    <span class="k">defer</span> <span class="nx">gz</span><span class="p">.</span><span class="nx">Close</span><span class="p">()</span>
-    <span class="nx">scanner</span> <span class="o">:=</span> <span class="nx">bufio</span><span class="p">.</span><span class="nx">NewScanner</span><span class="p">(</span><span class="nx">gz</span><span class="p">)</span>
-    <span class="k">for</span> <span class="nx">scanner</span><span class="p">.</span><span class="nx">Scan</span><span class="p">()</span> <span class="p">{</span>
-        <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">scanner</span><span class="p">.</span><span class="nx">Text</span><span class="p">())</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>There are <a href="https://honmaple.me/articles/2018/12/golang读取http响应的gz package.html#disqus_thread">comments</a>.</p>
-          </div>
-        </article>
-          <ul class="entry-list">
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/03/golang笔记.html" rel="bookmark" title="Permalink to golang笔记">golang笔记</a></h1>
-<header class="entry-info">
-  <span title="Updated at 2018-06-19">
+  <span title="Updated at 2019-02-12">
     <i class="fa fa-calendar-o"></i>
     一 26 三月 2018
   </span>
@@ -134,6 +83,7 @@
         <a href="https://honmaple.me/tag/golang/index.html">golang</a>
         <a href="https://honmaple.me/tag/coding/index.html">coding</a>
     </span>
+
 </header>          </div>
           <hr class="entry-hr" />
           <div class="entry-content">
@@ -153,6 +103,7 @@
 <li><a href="#org-58598015">是否是IP</a></li>
 <li><a href="#org-87064949">是否是EMAIL</a></li>
 </ul></li>
+<li><a href="#org-2746047">读取http响应的gz package</a></li>
 </ul>
 </div></div>
 
@@ -178,13 +129,220 @@
 
 <span class="kd">func</span> <span class="nx">init</span><span class="p">()</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="p">(</span>
-        <span class="nx">conf_file</span> <span class="kt">string …</span></pre></div>
+        <span class="nx">conf_file</span> <span class="kt">string</span>
+        <span class="nx">print_ver</span> <span class="kt">bool</span>
+    <span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nx">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">conf_file</span><span class="p">,</span> <span class="s">&quot;c&quot;</span><span class="p">,</span> <span class="s">&quot;etc/config.json&quot;</span><span class="p">,</span> <span class="s">&quot;config file&quot;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nx">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">print_ver</span><span class="p">,</span> <span class="s">&quot;v&quot;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s">&quot;config file&quot;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nx">Parse</span><span class="p">()</span>
+
+    <span class="nx">raw</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ioutil</span><span class="p">.</span><span class="nx">ReadFile</span><span class="p">(</span><span class="nx">conf_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="s">&quot;config parse fail!&quot;</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nx">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">json</span><span class="p">.</span><span class="nx">Unmarshal</span><span class="p">(</span><span class="nx">raw</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">config</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="s">&quot;config unmarshal fail!&quot;</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nx">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="nx">print_ver</span> <span class="p">{</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&quot;version:&quot;</span><span class="p">,</span> <span class="nx">VERSION</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nx">Exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<h2 id="org-76847424">判断文件是否存在</h2>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&quot;os&quot;</span>
+<span class="p">)</span>
+<span class="kd">func</span> <span class="nx">file_is_exists</span><span class="p">(</span><span class="nx">f</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stat</span><span class="p">(</span><span class="nx">f</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">os</span><span class="p">.</span><span class="nx">IsNotExist</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">false</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-77850160">随机睡眠</h2>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&quot;math/rand&quot;</span>
+    <span class="s">&quot;time&quot;</span>
+<span class="p">)</span>
+<span class="kd">func</span> <span class="nx">random_sleep</span><span class="p">(</span><span class="nx">t</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">rand</span><span class="p">.</span><span class="nx">Seed</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Now</span><span class="p">().</span><span class="nx">Unix</span><span class="p">())</span>
+    <span class="nx">time</span><span class="p">.</span><span class="nx">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">(</span><span class="nx">rand</span><span class="p">.</span><span class="nx">Intn</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Microsecond</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-22076259">字符串连接</h2>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&quot;bytes&quot;</span>
+<span class="p">)</span>
+<span class="kd">func</span> <span class="nx">string_concat</span><span class="p">(</span><span class="nx">s</span> <span class="o">...</span><span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">buffer</span> <span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s</span> <span class="p">{</span>
+        <span class="nx">buffer</span><span class="p">.</span><span class="nx">WriteString</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">buffer</span><span class="p">.</span><span class="nx">String</span><span class="p">()</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-69045982">检查元素是否在map中</h2>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">check_in_map</span><span class="p">(</span><span class="nx">f</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">,</span> <span class="nx">v</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">f</span><span class="p">[</span><span class="nx">v</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">true</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="kc">false</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-50435339">检查元素是否在list中</h2>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">check_in_list</span><span class="p">(</span><span class="nx">f</span> <span class="p">[]</span><span class="kt">string</span><span class="p">,</span> <span class="nx">v</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">f</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">f</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">==</span> <span class="nx">v</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">true</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="kc">false</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-72355056">执行Linux命令</h2>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&quot;os/exec&quot;</span>
+<span class="p">)</span>
+<span class="kd">func</span> <span class="nx">exec_command</span><span class="p">(</span><span class="nx">command</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">args</span> <span class="o">...</span><span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="kt">error</span><span class="p">,</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="p">(</span>
+        <span class="nx">err</span> <span class="kt">error</span>
+    <span class="p">)</span>
+    <span class="nx">cmd</span> <span class="o">:=</span> <span class="nx">exec</span><span class="p">.</span><span class="nx">Command</span><span class="p">(</span><span class="nx">command</span><span class="p">,</span> <span class="nx">args</span><span class="o">...</span><span class="p">)</span>
+    <span class="nx">cmd</span><span class="p">.</span><span class="nx">Start</span><span class="p">()</span>
+    <span class="nx">done</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">error</span><span class="p">)</span>
+    <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">done</span> <span class="o">&lt;-</span> <span class="nx">cmd</span><span class="p">.</span><span class="nx">Wait</span><span class="p">()</span>
+    <span class="p">}()</span>
+
+    <span class="k">select</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">time</span><span class="p">.</span><span class="nx">After</span><span class="p">(</span><span class="mi">600</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">cmd</span><span class="p">.</span><span class="nx">Process</span><span class="p">.</span><span class="nx">Kill</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="nx">log</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="s">&quot;failed to kill: %s, error: %s&quot;</span><span class="p">,</span> <span class="nx">cmd</span><span class="p">.</span><span class="nx">Path</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+            <span class="o">&lt;-</span><span class="nx">done</span> <span class="c1">// allow goroutine to exit</span>
+        <span class="p">}()</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Info</span><span class="p">(</span><span class="s">&quot;process:%s killed&quot;</span><span class="p">,</span> <span class="nx">cmd</span><span class="p">.</span><span class="nx">Path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">err</span><span class="p">,</span> <span class="kc">true</span>
+    <span class="k">case</span> <span class="nx">err</span> <span class="p">=</span> <span class="o">&lt;-</span><span class="nx">done</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nx">err</span><span class="p">,</span> <span class="kc">false</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="org-82930855">迭代文件目录</h2>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">file_iter</span><span class="p">(</span><span class="nx">path</span> <span class="kt">string</span><span class="p">)</span> <span class="p">[]</span><span class="kt">string</span> <span class="p">{</span>
+    <span class="c1">// path must be abs path</span>
+    <span class="kd">var</span> <span class="nx">files</span> <span class="p">[]</span><span class="kt">string</span>
+    <span class="nx">scripts</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">ioutil</span><span class="p">.</span><span class="nx">ReadDir</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">script</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">scripts</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">script</span><span class="p">.</span><span class="nx">IsDir</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">file_iter</span><span class="p">(</span><span class="nx">filepath</span><span class="p">.</span><span class="nx">Join</span><span class="p">(</span><span class="nx">path</span><span class="p">,</span> <span class="nx">script</span><span class="p">.</span><span class="nx">Name</span><span class="p">()))</span>
+        <span class="p">}</span>
+        <span class="nx">files</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">files</span><span class="p">,</span> <span class="nx">filepath</span><span class="p">.</span><span class="nx">Join</span><span class="p">(</span><span class="nx">path</span><span class="p">,</span> <span class="nx">script</span><span class="p">.</span><span class="nx">Name</span><span class="p">()))</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">files</span>
+<span class="p">}</span>
+</pre></div>
+
+<h2 id="org-21403833">求两列表的差集</h2>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">difference</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span><span class="nx">b</span> <span class="p">[]</span><span class="kt">string</span><span class="p">)</span> <span class="p">[]</span><span class="kt">string</span> <span class="p">{</span>
+    <span class="c1">// len(a) &lt; len(b), avoid all item of a belong to b</span>
+    <span class="nx">m</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">bool</span><span class="p">{}</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">x</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">a</span> <span class="p">{</span>
+        <span class="nx">m</span><span class="p">[</span><span class="nx">x</span><span class="p">]</span> <span class="p">=</span> <span class="kc">true</span>
+    <span class="p">}</span>
+    <span class="nx">diff</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{}</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">x</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">b</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">[</span><span class="nx">x</span><span class="p">];</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+            <span class="nx">diff</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">diff</span><span class="p">,</span> <span class="nx">x</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">diff</span>
+<span class="p">}</span>
+</pre></div>
+
+<h2 id="org-96739902">删除列表中重复的数据</h2>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">RemoveDuplicates</span><span class="p">(</span><span class="nx">elements</span> <span class="p">[]</span><span class="kt">string</span><span class="p">)</span> <span class="p">[]</span><span class="kt">string</span> <span class="p">{</span>
+   <span class="nx">keys</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">bool</span><span class="p">{}</span>
+   <span class="nx">result</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{}</span>
+
+   <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">element</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">elements</span> <span class="p">{</span>
+       <span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">value</span> <span class="o">:=</span> <span class="nx">keys</span><span class="p">[</span><span class="nx">element</span><span class="p">];</span> <span class="p">!</span><span class="nx">value</span> <span class="p">{</span>
+           <span class="nx">keys</span><span class="p">[</span><span class="nx">element</span><span class="p">]</span> <span class="p">=</span> <span class="kc">true</span>
+           <span class="nx">result</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">result</span><span class="p">,</span> <span class="nx">element</span><span class="p">)</span>
+       <span class="p">}</span>
+   <span class="p">}</span>
+   <span class="k">return</span> <span class="nx">result</span>
+<span class="p">}</span>
+</pre></div>
+
+<h2 id="org-64662301">参数校验</h2>
+<h3 id="org-58598015">是否是IP</h3>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">IsValidIP</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="nx">IP</span> <span class="o">:=</span> <span class="nx">net</span><span class="p">.</span><span class="nx">ParseIP</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">IP</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">false</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="kc">true</span>
+<span class="p">}</span>
+</pre></div>
+
+<h3 id="org-87064949">是否是EMAIL</h3>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="s">&quot;regexp&quot;</span>
+
+<span class="kd">func</span> <span class="nx">IsValidEmail</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="nx">re</span> <span class="o">:=</span> <span class="nx">regexp</span><span class="p">.</span><span class="nx">MustCompile</span><span class="p">(</span><span class="s">&quot;^[a-zA-Z0-9.!#$%&amp;&#39;*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">!</span><span class="nx">re</span><span class="p">.</span><span class="nx">MatchString</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">false</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">HasSuffix</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="s">&quot;@upai.com&quot;</span><span class="p">)</span> <span class="o">||</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">HasSuffix</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="s">&quot;@huaban.com&quot;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">true</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="kc">false</span>
+<span class="p">}</span>
+</pre></div>
+
+<h2 id="org-2746047">读取http响应的gz package</h2>
+<div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">resp</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">HTTPRequest</span><span class="p">(</span><span class="s">&quot;GET&quot;</span><span class="p">,</span> <span class="s">&quot;http://some-gz-package/package-name&quot;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="k">defer</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nx">Close</span><span class="p">()</span>
+
+    <span class="nx">gz</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">gzip</span><span class="p">.</span><span class="nx">NewReader</span><span class="p">(</span><span class="nx">resp</span><span class="p">.</span><span class="nx">Body</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nx">Error</span><span class="p">())</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="k">defer</span> <span class="nx">gz</span><span class="p">.</span><span class="nx">Close</span><span class="p">()</span>
+    <span class="nx">scanner</span> <span class="o">:=</span> <span class="nx">bufio</span><span class="p">.</span><span class="nx">NewScanner</span><span class="p">(</span><span class="nx">gz</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nx">scanner</span><span class="p">.</span><span class="nx">Scan</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">scanner</span><span class="p">.</span><span class="nx">Text</span><span class="p">())</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>There are <a href="https://honmaple.me/articles/2018/03/golang笔记.html#disqus_thread">comments</a>.</p>
           </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/03/golang笔记.html">阅读全文 »</a>
-          </div>
-        </article></li>
-          </ul>
+        </article>
       </div>
     </div>
 <div class="footer">
