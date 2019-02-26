@@ -34,6 +34,7 @@ function decrypt(_this) {
 }
 
 $(document).ready(function(){
+    $("pre").css("max-height", $(window).height());
     var e = $(".back-to-top");
     var offsetHeight = document.body.offsetHeight;
     var scrollHeight = document.body.scrollHeight;
@@ -69,6 +70,10 @@ $(document).ready(function(){
     });
     $('[data-fancybox]').fancybox({
         protect: true
+    });
+    $("#entry-cover").click(function() {
+        $(".entry-cover-left").fadeOut(600);
+        $(".entry-cover").slideUp(600);
     });
 
     $(".entry-comment").click(function() {

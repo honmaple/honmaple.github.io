@@ -1,4 +1,4 @@
-function IsPC() {
+function ISPC() {
     var userAgentInfo = navigator.userAgent;
     var agents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
     var flag = true;
@@ -44,12 +44,9 @@ function Cover() {
         }
     }
     function scrollDown() {
-        if ($(window).scrollTop() === 0 && $(".entry-cover").length && !$(".entry-cover").is(":hidden")) {
-            $("html, body").animate({
-                scrollTop: $(window).height()
-            }, 600, function() {
-                $(".entry-cover").hide();
-            });
+        if ($(window).scrollTop() < $(window).height() && $(".entry-cover").length && !$(".entry-cover").is(":hidden")) {
+            $(".entry-cover-left").fadeOut(300);
+            $(".entry-cover").slideUp(600);
         }
     }
     $(document).keydown(function(e) {
@@ -63,26 +60,22 @@ function Cover() {
             scrollUp();
         }
     });
-    if (!IsPC()) {
-        var startPos = {
-            Top:-1,
-            Y:0
+    var startPos = {
+        Top:-1,
+        Y:0
+    };
+    $("body").on('touchstart', function(e) {
+        startPos = {
+            Top: $(window).scrollTop(),
+            Y: e.originalEvent.changedTouches[0].pageY
         };
-        $("body").on('touchstart', function(e) {
-            startPos = {
-                Top: $(window).scrollTop(),
-                Y: e.originalEvent.changedTouches[0].pageY
-            };
-        });
-        $("body").on("touchend", function(e) {
-            var pageY = e.originalEvent.changedTouches[0].pageY - startPos.Y;
-            if (pageY > 0) {
-                scrollUp();
-            }else if (pageY  < 0) {
-                if (startPos.Top === 0 && $(".entry-cover").length && !$(".entry-cover").is(":hidden")) {
-                    $(".entry-cover").fadeOut(500);
-                }
-            }
-        });
-    }
+    });
+    $("body").on("touchend", function(e) {
+        var pageY = e.originalEvent.changedTouches[0].pageY - startPos.Y;
+        if (pageY > 0) {
+            scrollUp();
+        }else if (pageY  < 0) {
+            scrollDown();
+        }
+    });
 }
