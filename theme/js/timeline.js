@@ -14,16 +14,25 @@ $(document).ready(function(){
         var date = new Date(time);
         Y = date.getFullYear();
         M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1);
-        D = date.getDate();
+        D = (date.getDate()+1 < 10 ? '0'+date.getDate() : date.getDate());
         h = date.getHours();
         m = date.getMinutes();
         s = date.getSeconds();
-        return [Y,M,D,h,m,s]
+        return [Y,M,D,h,m,s];
     }
+    var template = `
+      <li class="timeline-item">
+        <p class="timeline-date">
+          {0}
+        </p>
+        <div class="timeline-content">
+          <span class="arrow"></span>
+          <span class="timeline-text">{1}</span>
+        </div>
+      </li>`;
     $.get("https://honmaple.com/api/timeline",{
         number:17
     }, function(response){
-        var template = $("#timeline-template").html();
         var first_date = TimeFormat(response.data[0].created_at);
         var first_title = first_date[0] + '年' + first_date[1] + '月';
         var child_template = '';
