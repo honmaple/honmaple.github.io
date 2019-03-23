@@ -62,7 +62,7 @@
               <a href="https://honmaple.me/articles/2018/09/elasticsearch笔记.html" rel="bookmark" title="Permalink to elasticsearch笔记">elasticsearch笔记</a>
             </h1>
 <header class="entry-info">
-  <span title="Updated at 2019-02-12">
+  <span title="Updated at 2019-03-21">
     <i class="fa fa-calendar-o"></i>
     三 19 九月 2018
   </span>
@@ -110,8 +110,17 @@
 <h3 id="org-54291645">安装</h3>
 <h3 id="org-69210871">优化</h3>
 <ul>
-<li>关闭swap</li>
-<li>unlimit调整</li>
+<li>关闭swap
+<div class="highlight"><pre><span></span>swapoff -a
+<span class="c1"># 注释 /etc/fstab swap</span>
+sysctl -p
+</pre></div>
+</li>
+<li>unlimit调整
+<div class="highlight"><pre><span></span>sysctl -w vm.max_map_count<span class="o">=</span><span class="m">262144</span>
+<span class="nb">echo</span> <span class="s1">&#39;vm.max_map_count=262144&#39;</span> &gt;&gt; /etc/sysctl.conf
+</pre></div>
+</li>
 <li>使用ssd</li>
 </ul>
 <h3 id="org-80687756">重启</h3>
@@ -218,6 +227,13 @@ curl -X PUT <span class="s2">&quot;localhost:9200/_cluster/settings&quot;</span>
 <li>保存时kibana报错 <code>Visualization Editor: blocked by: [FORBIDDEN/12/index read-only</code>
 <p>参考 <a href="https://github.com/elastic/kibana/issues/13685">https://github.com/elastic/kibana/issues/13685</a></p>
 <div class="highlight"><pre><span></span>curl -XPUT -H <span class="s2">&quot;Content-Type: application/json&quot;</span> http://127.0.0.1:9200/.kibana/_settings -d <span class="s1">&#39;{&quot;index.blocks.read_only_allow_delete&quot;: null}&#39;</span>
+</pre></div>
+
+</li>
+<li>Timelion每次查询得到的数据不一样
+<p>参考 <a href="https://github.com/elastic/kibana/issues/23428">https://github.com/elastic/kibana/issues/23428</a> 和 <a href="https://discuss.elastic.co/t/timelion-gives-different-result-when-it-auto-refreshes/155182">https://discuss.elastic.co/t/timelion-gives-different-result-when-it-auto-refreshes/155182</a>
+修改<b>kibana.yml</b>配置</p>
+<div class="highlight"><pre><span></span>elasticsearch.shardTimeout = 30000
 </pre></div>
 
 </li>
