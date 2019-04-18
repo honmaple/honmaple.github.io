@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>honmaple's blog - honmaple</title><link>https://honmaple.me/</link><description>风落花语风落天，花落风雨花落田.</description><lastBuildDate>Wed, 03 Apr 2019 09:57:30 +0800</lastBuildDate><item><title>未来，谁知道呢</title><link>https://honmaple.me/articles/2019/03/%E6%9C%AA%E6%9D%A5%EF%BC%8C%E8%B0%81%E7%9F%A5%E9%81%93%E5%91%A2.html</link><description>
+<rss version="2.0"><channel><title>honmaple's blog - honmaple</title><link>https://honmaple.me/</link><description>风落花语风落天，花落风雨花落田.</description><lastBuildDate>Thu, 18 Apr 2019 10:16:42 +0800</lastBuildDate><item><title>路</title><link>https://honmaple.me/articles/2019/04/%E8%B7%AF.html</link><description>
+&lt;blockquote&gt;
+&lt;div class="org-center"&gt;
+&lt;p class="org-verse"&gt;
+当你不断超越前方的人&lt;br/&gt;在更前方&lt;br/&gt;总会有那么一盏红灯&lt;br/&gt;&lt;br/&gt;也许是为了安全&lt;br/&gt;也许是为了公平&lt;br/&gt;&lt;br/&gt;谁知道呢&lt;br/&gt;&lt;br/&gt;你，终归是只能等着
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Thu, 18 Apr 2019 10:11:43 +0800</pubDate><guid isPermaLink="false">tag:honmaple.me,2019-04-18:/articles/2019/04/路.html</guid><category>life</category><category>poem</category></item><item><title>未来，谁知道呢</title><link>https://honmaple.me/articles/2019/03/%E6%9C%AA%E6%9D%A5%EF%BC%8C%E8%B0%81%E7%9F%A5%E9%81%93%E5%91%A2.html</link><description>
 &lt;blockquote&gt;
 &lt;div class="org-center"&gt;
 &lt;p class="org-verse"&gt;
@@ -135,21 +142,4 @@ sysctl -p
 &lt;li&gt;使用ssd&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id="org-80687756"&gt;重启&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;curl -X PUT &lt;span class="s2"&gt;&amp;quot;localhost:9200/_cluster/settings&amp;quot;&lt;/span&gt; -H &lt;span class="s1"&gt;&amp;#39;Content-Type: application …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Wed, 19 Sep 2018 14:42:46 +0800</pubDate><guid isPermaLink="false">tag:honmaple.me,2018-09-19:/articles/2018/09/elasticsearch笔记.html</guid><category>linux</category><category>elasticsearch</category><category>devops</category></item><item><title>ansible笔记</title><link>https://honmaple.me/articles/2018/09/ansible%E7%AC%94%E8%AE%B0.html</link><description>&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-17703971"&gt;ansible动态解析inventory&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-98284113"&gt;ansible自定义模块传递list变量会变成字符串&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-
-
-&lt;h2 id="org-17703971"&gt;ansible动态解析inventory&lt;/h2&gt;
-&lt;p&gt;&lt;b&gt;ansible&lt;/b&gt;调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）&lt;/p&gt;
-
-&lt;p&gt;但问题是&lt;b&gt;ansible&lt;/b&gt;没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可&lt;/p&gt;
-
-&lt;p&gt;查找源码, 根据 &lt;code&gt;InventoryManager&lt;/code&gt; 传递的&lt;b&gt;source&lt;/b&gt;变量找到&lt;code&gt;parse_sources&lt;/code&gt;这个函数&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;InventoryManager&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;parse_sources&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;cache&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="sd"&gt;&amp;#39;&amp;#39;&amp;#39; iterate over inventory sources and parse each one to populate it&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
-
-        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_setup_inventory_plugins …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Tue, 04 Sep 2018 10:53:51 +0800</pubDate><guid isPermaLink="false">tag:honmaple.me,2018-09-04:/articles/2018/09/ansible笔记.html</guid><category>linux</category><category>python</category><category>ansible</category><category>devops</category></item></channel></rss>
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;curl -X PUT &lt;span class="s2"&gt;&amp;quot;localhost:9200/_cluster/settings&amp;quot;&lt;/span&gt; -H &lt;span class="s1"&gt;&amp;#39;Content-Type: application …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">honmaple</dc:creator><pubDate>Wed, 19 Sep 2018 14:42:46 +0800</pubDate><guid isPermaLink="false">tag:honmaple.me,2018-09-19:/articles/2018/09/elasticsearch笔记.html</guid><category>linux</category><category>elasticsearch</category><category>devops</category></item></channel></rss>
