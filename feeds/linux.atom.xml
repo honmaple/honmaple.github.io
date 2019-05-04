@@ -1,5 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Linux</title><link href="https://honmaple.me/" rel="alternate"></link><link href="http://127.0.0.1:8000/feeds/linux.atom.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2019-05-01T16:59:09+08:00</updated><subtitle>风落花语风落天，花落风雨花落田.</subtitle><entry><title>web-mode自定义fold函数以适应indent-region</title><link href="https://honmaple.me/articles/2018/11/web-mode%E8%87%AA%E5%AE%9A%E4%B9%89fold%E5%87%BD%E6%95%B0%E4%BB%A5%E9%80%82%E5%BA%94indent-region.html" rel="alternate"></link><published>2018-11-24T23:35:14+08:00</published><updated>2018-11-25T12:48:34+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-11-24:/articles/2018/11/web-mode自定义fold函数以适应indent-region.html</id><summary type="html">
+<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Linux</title><link href="https://honmaple.me/" rel="alternate"></link><link href="http://127.0.0.1:8000/feeds/linux.atom.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2019-05-04T17:43:16+08:00</updated><subtitle>风落花语风落天，花落风雨花落田.</subtitle><entry><title>emacs窗口管理</title><link href="https://honmaple.me/articles/2019/01/emacs%E7%AA%97%E5%8F%A3%E7%AE%A1%E7%90%86.html" rel="alternate"></link><published>2019-01-11T17:07:01+08:00</published><updated>2019-05-04T17:43:16+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2019-01-11:/articles/2019/01/emacs窗口管理.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-6102957"&gt;基础设置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-37502066"&gt;使用shackle管理窗口&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-29578346"&gt;窗口黄金分割zoom&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-12809853"&gt;window-numbering显示当前窗口号&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href="https://github.com/honmaple/dotfiles/tree/master/emacs.d/lisp/init-window.el"&gt;init-window.el&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id="org-6102957"&gt;基础设置&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;;; 设置默认为左右分屏&lt;/span&gt;
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;split-width-threshold&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;evil-leader/set-key&lt;/span&gt;
+  &lt;span class="s"&gt;&amp;quot;ws&amp;quot;&lt;/span&gt;  &lt;span class="ss"&gt;&amp;#39;split-window-below&lt;/span&gt;  &lt;span class="c1"&gt;;; 上下分屏&lt;/span&gt;
+  &lt;span class="s"&gt;&amp;quot;wv&amp;quot;&lt;/span&gt;  &lt;span class="ss"&gt;&amp;#39;split-window-right&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;;; 左右分屏&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2 id="org-37502066"&gt;使用shackle管理窗口&lt;/h2&gt;
+&lt;p&gt;当设置了 &lt;code&gt;(setq split-width-threshold 1)&lt;/code&gt; 后所有的窗口都会变成左右分屏，所以需要 &lt;b&gt;shackle&lt;/b&gt; 或 &lt;b&gt;popwin&lt;/b&gt; package对窗口进行管理, 对一些特殊的窗口或 &lt;b&gt;buffer&lt;/b&gt; 比如 &lt;code&gt;*Help*&lt;/code&gt; 和 &lt;code&gt;flycheck error list&lt;/code&gt; 需要设置为显示在下方，并且默认选中&lt;/p&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;shackle-rules&lt;/span&gt;
+      &lt;span class="o"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;*Help*&amp;quot;&lt;/span&gt; &lt;span class="nb"&gt;:select&lt;/span&gt; &lt;span class="no"&gt;t&lt;/span&gt; &lt;span class="nb"&gt;:align …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-6102957"&gt;基础设置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-37502066"&gt;使用shackle管理窗口&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-29578346"&gt;窗口黄金分割zoom&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-12809853"&gt;window-numbering显示当前窗口号&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href="https://github.com/honmaple/dotfiles/tree/master/emacs.d/lisp/init-window.el"&gt;init-window.el&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id="org-6102957"&gt;基础设置&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;;; 设置默认为左右分屏&lt;/span&gt;
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;split-width-threshold&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;evil-leader/set-key&lt;/span&gt;
+  &lt;span class="s"&gt;&amp;quot;ws&amp;quot;&lt;/span&gt;  &lt;span class="ss"&gt;&amp;#39;split-window-below&lt;/span&gt;  &lt;span class="c1"&gt;;; 上下分屏&lt;/span&gt;
+  &lt;span class="s"&gt;&amp;quot;wv&amp;quot;&lt;/span&gt;  &lt;span class="ss"&gt;&amp;#39;split-window-right&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;;; 左右分屏&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2 id="org-37502066"&gt;使用shackle管理窗口&lt;/h2&gt;
+&lt;p&gt;当设置了 &lt;code&gt;(setq split-width-threshold 1)&lt;/code&gt; 后所有的窗口都会变成左右分屏，所以需要 &lt;b&gt;shackle&lt;/b&gt; 或 &lt;b&gt;popwin&lt;/b&gt; package对窗口进行管理, 对一些特殊的窗口或 &lt;b&gt;buffer&lt;/b&gt; 比如 &lt;code&gt;*Help*&lt;/code&gt; 和 &lt;code&gt;flycheck error list&lt;/code&gt; 需要设置为显示在下方，并且默认选中&lt;/p&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;shackle-rules&lt;/span&gt;
+      &lt;span class="o"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;*Help*&amp;quot;&lt;/span&gt; &lt;span class="nb"&gt;:select&lt;/span&gt; &lt;span class="no"&gt;t&lt;/span&gt; &lt;span class="nb"&gt;:align&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;below&lt;/span&gt; &lt;span class="nb"&gt;:autoclose&lt;/span&gt; &lt;span class="no"&gt;t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;flycheck-error-list-mode&lt;/span&gt; &lt;span class="nb"&gt;:select&lt;/span&gt; &lt;span class="no"&gt;t&lt;/span&gt; &lt;span class="nb"&gt;:align&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;below&lt;/span&gt; &lt;span class="nb"&gt;:autoclose&lt;/span&gt; &lt;span class="no"&gt;t&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;设置默认的参数&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;shackle-default-size&lt;/span&gt; &lt;span class="mf"&gt;0.3&lt;/span&gt;
+      &lt;span class="nv"&gt;shackle-default-alignment&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;below&lt;/span&gt;
+      &lt;span class="nv"&gt;shackle-default-rule&lt;/span&gt; &lt;span class="no"&gt;nil&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2 id="org-29578346"&gt;窗口黄金分割zoom&lt;/h2&gt;
+&lt;p&gt;窗口黄金分割是一个非常有用的效果，当选中某个buffer时，这个buffer的window会自动按比例放大，这样就不用手动对窗口进行调整, 之前一直使用 &lt;b&gt;golden-ratio&lt;/b&gt; 这个package, 但看github上最近一次提交已经是两年前，加上使用需要定义很多的 &lt;code&gt;golden-ratio-extra-commands&lt;/code&gt;, 所以切换到了 &lt;b&gt;zoom&lt;/b&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;b&gt;zoom&lt;/b&gt; 这个 package也有一些问题，比如我定义了&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;zoom-size&lt;/span&gt; &lt;span class="o"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mf"&gt;0.618&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="mf"&gt;0.618&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="nv"&gt;zoom-ignored-major-modes&lt;/span&gt; &lt;span class="o"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;term-mode&lt;/span&gt; &lt;span class="nv"&gt;flycheck-error-list-mode&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;但使用 &lt;code&gt;flycheck-list-errors&lt;/code&gt; 时还是会自动缩放窗口大小，后来翻看源码时发现新建 &lt;b&gt;window&lt;/b&gt; 是都会调用 &lt;code&gt;balance-windows&lt;/code&gt; ,所以我稍微修改了一下&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/balance-windows&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;func&lt;/span&gt; &lt;span class="kp"&gt;&amp;amp;optional&lt;/span&gt; &lt;span class="nv"&gt;window-or-frame&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;unless&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;zoom--window-ignored-p&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;funcall&lt;/span&gt; &lt;span class="nv"&gt;func&lt;/span&gt; &lt;span class="nv"&gt;window-or-frame&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;advice-add&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;balance-windows&lt;/span&gt; &lt;span class="nb"&gt;:around&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;maple/balance-windows&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;这样在调用 &lt;code&gt;flycheck-list-errors&lt;/code&gt; 就不会再自动缩放窗口大小了&lt;/p&gt;
+
+&lt;p&gt;另外有一些命令需要临时关闭 &lt;b&gt;zoom-mode&lt;/b&gt; ,所以有添加了一个 &lt;b&gt;marco&lt;/b&gt; 临时关闭 &lt;b&gt;zoom-mode&lt;/b&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defmacro&lt;/span&gt; &lt;span class="nv"&gt;with-zoom-disable&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;body&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;declare&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;indent&lt;/span&gt; &lt;span class="nb"&gt;defun&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;zoom-mode-p&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;featurep&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;zoom&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;zoom-mode&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+        &lt;span class="nv"&gt;res&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="nv"&gt;zoom-mode-p&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;zoom-mode&lt;/span&gt; &lt;span class="mi"&gt;-1&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;res&lt;/span&gt; &lt;span class="o"&gt;`,@&lt;/span&gt;&lt;span class="nv"&gt;body&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="nv"&gt;zoom-mode-p&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;zoom-mode&lt;/span&gt; &lt;span class="nv"&gt;zoom-mode-p&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="nv"&gt;res&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;比如:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;with-zoom-disable&lt;/span&gt;
+  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple-imenu&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2 id="org-12809853"&gt;window-numbering显示当前窗口号&lt;/h2&gt;
+&lt;p&gt;为了更方便的在窗口间进行跳转，避免重复使用 &lt;code&gt;evil-window-down&lt;/code&gt;, &lt;code&gt;evil-window-right&lt;/code&gt;等命令&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;use-package&lt;/span&gt; &lt;span class="nv"&gt;window-numbering&lt;/span&gt;
+  &lt;span class="nb"&gt;:hook&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple-theme&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="nv"&gt;window-numbering-mode&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;b&gt;maple-theme-hook&lt;/b&gt;: 加载 &lt;b&gt;theme&lt;/b&gt; 后执行hook&lt;/p&gt;
+
+&lt;p&gt;然后设置(这里只设置到5,因为我大概不会开10个窗口的)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;evil-leader/set-key&lt;/span&gt;
+  &lt;span class="s"&gt;&amp;quot;w0&amp;quot;&lt;/span&gt;  &lt;span class="ss"&gt;&amp;#39;select-window-0&lt;/span&gt;
+  &lt;span class="s"&gt;&amp;quot;w1&amp;quot;&lt;/span&gt;  &lt;span class="ss"&gt;&amp;#39;select-window-1&lt;/span&gt;
+  &lt;span class="s"&gt;&amp;quot;w2&amp;quot;&lt;/span&gt;  &lt;span class="ss"&gt;&amp;#39;select-window-2&lt;/span&gt;
+  &lt;span class="s"&gt;&amp;quot;w3&amp;quot;&lt;/span&gt;  &lt;span class="ss"&gt;&amp;#39;select-window-3&lt;/span&gt;
+  &lt;span class="s"&gt;&amp;quot;w4&amp;quot;&lt;/span&gt;  &lt;span class="ss"&gt;&amp;#39;select-window-4&lt;/span&gt;
+  &lt;span class="s"&gt;&amp;quot;w5&amp;quot;&lt;/span&gt;  &lt;span class="ss"&gt;&amp;#39;select-window-5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;这样就可以使用&lt;code&gt;leader + w + {window number}&lt;/code&gt;或者 &lt;code&gt;alt + {window number}&lt;/code&gt;跳转&lt;/p&gt;
+
+&lt;p&gt;另外&lt;b&gt;window-number&lt;/b&gt;的显示需要&lt;b&gt;mode-line&lt;/b&gt;的支持，比如在&lt;a href="https://github.com/honmaple/emacs-maple-modeline"&gt;maple-modeline&lt;/a&gt;里可以这样定义&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple-modeline-define&lt;/span&gt; &lt;span class="nv"&gt;window-number&lt;/span&gt;
+  &lt;span class="nb"&gt;:if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;bound-and-true-p&lt;/span&gt; &lt;span class="nv"&gt;window-numbering-mode&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="nb"&gt;:format&lt;/span&gt;
+  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;color&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;face-attribute&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;cursor&lt;/span&gt; &lt;span class="nb"&gt;:background&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple-modeline--add-text-property&lt;/span&gt;
+     &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple-modeline--unicode-number&lt;/span&gt;
+      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int-to-string&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;window-numbering-get-number&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+     &lt;span class="ss"&gt;&amp;#39;face&lt;/span&gt; &lt;span class="o"&gt;`&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;:foreground&lt;/span&gt; &lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;color&lt;/span&gt; &lt;span class="nb"&gt;:distant-foreground&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;white&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;))))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+</content><category term="emacs"></category><category term="linux"></category></entry><entry><title>web-mode自定义fold函数以适应indent-region</title><link href="https://honmaple.me/articles/2018/11/web-mode%E8%87%AA%E5%AE%9A%E4%B9%89fold%E5%87%BD%E6%95%B0%E4%BB%A5%E9%80%82%E5%BA%94indent-region.html" rel="alternate"></link><published>2018-11-24T23:35:14+08:00</published><updated>2018-11-25T12:48:34+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-11-24:/articles/2018/11/web-mode自定义fold函数以适应indent-region.html</id><summary type="html">
 
 &lt;p&gt;&lt;code&gt;web-mode&lt;/code&gt;有一个内置的&lt;code&gt;web-mode-fold-or-unfold&lt;/code&gt;函数，但这个函数有一个问题，当存在&lt;b&gt;fold&lt;/b&gt;时，使用&lt;code&gt;indent-region&lt;/code&gt;会得到错误的缩进，想要得到正确的缩进，必须先 &lt;code&gt;unfold&lt;/code&gt;, 比如&lt;/p&gt;
 
@@ -1124,149 +1260,4 @@ git checkou pr
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;docker build --no-cache -t hello .
 &lt;/pre&gt;&lt;/div&gt;
 
-</content><category term="linux"></category><category term="docker"></category></entry><entry><title>emacs自动更新文件头</title><link href="https://honmaple.me/articles/2018/01/emacs%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0%E6%96%87%E4%BB%B6%E5%A4%B4.html" rel="alternate"></link><published>2018-01-09T16:00:45+08:00</published><updated>2018-01-14T16:42:06+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-01-09:/articles/2018/01/emacs自动更新文件头.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-10626316"&gt;自动更新Last Updated&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-71116359"&gt;自动更新Filename&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-81365469"&gt;自动更新Email&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-
-
-
-&lt;p&gt;前面已经说过，可以使用&lt;b&gt;auto-insert&lt;/b&gt;自动添加文件头，今天来说一说自动更新文件头，比如说每次保存时自动更新&lt;b&gt;last updated&lt;/b&gt;字段&lt;/p&gt;
-
-
-&lt;h3 id="org-10626316"&gt;自动更新Last Updated&lt;/h3&gt;
-&lt;p&gt;如果使用的是header2,直接设置相关的变量就可，假如使用的是&lt;b&gt;auto-insert&lt;/b&gt;，同样也可以使用emacs内置的&lt;b&gt;time-stamp&lt;/b&gt;对Last Updated进行自动更新&lt;/p&gt;
-
-&lt;p&gt;time-stamp默认使用&lt;code&gt;Time-stamp:&lt;/code&gt;,如果要对&lt;code&gt;Last Updated&lt;/code&gt;进行自动更新，只需要简单的设置&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;time-stamp-active&lt;/span&gt; &lt;span class="no"&gt;t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;time-stamp-line-limit&lt;/span&gt; &lt;span class="mi"&gt;11&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;time-stamp-start&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;[lL]ast[ -][uU]pdate[ \t]*:?&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;time-stamp-end&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;\n …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-10626316"&gt;自动更新Last Updated&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-71116359"&gt;自动更新Filename&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-81365469"&gt;自动更新Email&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-
-
-
-&lt;p&gt;前面已经说过，可以使用&lt;b&gt;auto-insert&lt;/b&gt;自动添加文件头，今天来说一说自动更新文件头，比如说每次保存时自动更新&lt;b&gt;last updated&lt;/b&gt;字段&lt;/p&gt;
-
-
-&lt;h3 id="org-10626316"&gt;自动更新Last Updated&lt;/h3&gt;
-&lt;p&gt;如果使用的是header2,直接设置相关的变量就可，假如使用的是&lt;b&gt;auto-insert&lt;/b&gt;，同样也可以使用emacs内置的&lt;b&gt;time-stamp&lt;/b&gt;对Last Updated进行自动更新&lt;/p&gt;
-
-&lt;p&gt;time-stamp默认使用&lt;code&gt;Time-stamp:&lt;/code&gt;,如果要对&lt;code&gt;Last Updated&lt;/code&gt;进行自动更新，只需要简单的设置&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;time-stamp-active&lt;/span&gt; &lt;span class="no"&gt;t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;time-stamp-line-limit&lt;/span&gt; &lt;span class="mi"&gt;11&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;time-stamp-start&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;[lL]ast[ -][uU]pdate[ \t]*:?&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;time-stamp-end&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;\n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;time-stamp-format&lt;/span&gt; &lt;span class="s"&gt;&amp;quot; %#A %Y-%02m-%02d %02H:%02M:%02S (%Z)&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;然后添加&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;add-hook&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;before-save-hook&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;time-stamp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;这样就能在每次保存时自动更新相应的字段了&lt;/p&gt;
-
-&lt;h3 id="org-71116359"&gt;自动更新Filename&lt;/h3&gt;
-&lt;p&gt;之前遇到过，使用&lt;b&gt;auto-insert&lt;/b&gt;在每次创建新文件时自动添加了文件头，但后面文件名被修改了，文件头里的文件名却不会自动更改，基于这个原因需要自己实现一个函数(我没有找到可以使用的已经存在的package)&lt;/p&gt;
-
-&lt;p&gt;先理一理逻辑: 只需要查找当前文件前几行信息，如果找到&lt;code&gt;File Name:&lt;/code&gt;字段，获取字段信息，与当前文件名进行对比，如果不一致则替换为当前文件名,直接给出代码吧&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;查找当前文件前几行
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;save-excursion&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;goto-char&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;point-min&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="c1"&gt;;;跳转到开头&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;lines&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;&amp;lt;&lt;/span&gt; &lt;span class="nv"&gt;lines&lt;/span&gt; &lt;span class="nv"&gt;line-limit&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="c1"&gt;;; 查找&lt;/span&gt;
-        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;lines&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;1+&lt;/span&gt; &lt;span class="nv"&gt;lines&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;forward-line&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;))))&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;/li&gt;
-&lt;li&gt;获取当前文件名
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;file-name-nondirectory&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;buffer-file-name&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;/li&gt;
-&lt;li&gt;查找File Name
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;looking-at&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;.*\\(File Name:\\)\\(.*\\)&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;/li&gt;
-&lt;li&gt;对文件名进行比对与替换
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;beg&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;match-beginning&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;end&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;match-end&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
-  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;not&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;string=&lt;/span&gt; &lt;span class="nv"&gt;文件名&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;string-trim-left&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;match-string&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;))))&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;goto-char&lt;/span&gt; &lt;span class="nv"&gt;beg&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;delete-region&lt;/span&gt; &lt;span class="nv"&gt;beg&lt;/span&gt; &lt;span class="nv"&gt;end&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;insert&lt;/span&gt; &lt;span class="s"&gt;&amp;quot; &amp;quot;&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;即可得到相关的完整函数(完整函数后面再讲)&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id="org-81365469"&gt;自动更新Email&lt;/h3&gt;
-&lt;p&gt;工作和平时使用的邮箱不一样，我虽然设置了&lt;i&gt;at_home&lt;/i&gt;变量区分工作与平时的邮箱,但不是每次我都记得要更新这个变量，所以有了这个需要，自动将文件头里的email信息更改为平时所用的邮箱，大致逻辑与自动更新Filename相同，所以我写了一个&lt;b&gt;macro&lt;/b&gt;来自动生成相关的代码&lt;/p&gt;
-
-&lt;p&gt;直接给出代码&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/header-update-action&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-  &lt;span class="s"&gt;&amp;quot;A.&amp;quot;&lt;/span&gt;
-  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;beg&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;match-beginning&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;end&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;match-end&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;not&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;string=&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;string-trim-left&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;match-string&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;))))&lt;/span&gt;
-      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;goto-char&lt;/span&gt; &lt;span class="nv"&gt;beg&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;delete-region&lt;/span&gt; &lt;span class="nv"&gt;beg&lt;/span&gt; &lt;span class="nv"&gt;end&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;insert&lt;/span&gt; &lt;span class="s"&gt;&amp;quot; &amp;quot;&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt;&lt;span class="p"&gt;))))&lt;/span&gt;
-&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/header-update&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;regex&lt;/span&gt; &lt;span class="nv"&gt;default&lt;/span&gt; &lt;span class="nv"&gt;line-limit&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-  &lt;span class="s"&gt;&amp;quot;B.&amp;quot;&lt;/span&gt;
-  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;interactive&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;save-excursion&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;goto-char&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;point-min&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;lines&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;&amp;lt;&lt;/span&gt; &lt;span class="nv"&gt;lines&lt;/span&gt; &lt;span class="nv"&gt;line-limit&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;and&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;looking-at&lt;/span&gt; &lt;span class="nv"&gt;regex&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-          &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple/header-update-action&lt;/span&gt; &lt;span class="nv"&gt;default&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;lines&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;1+&lt;/span&gt; &lt;span class="nv"&gt;lines&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;forward-line&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)))))&lt;/span&gt;
-&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defmacro&lt;/span&gt; &lt;span class="nv"&gt;maple/header-update-engine&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;name&lt;/span&gt; &lt;span class="nv"&gt;regex&lt;/span&gt; &lt;span class="nv"&gt;default&lt;/span&gt; &lt;span class="kp"&gt;&amp;amp;optional&lt;/span&gt; &lt;span class="nv"&gt;line-limit&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-  &lt;span class="s"&gt;&amp;quot;C.&amp;quot;&lt;/span&gt;
-  &lt;span class="o"&gt;`&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;intern&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;format&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;maple/header-update-%s&amp;quot;&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="p"&gt;()&lt;/span&gt;
-     &lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;format&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Update %s with regex.&amp;quot;&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-     &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;interactive&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-     &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple/header-update&lt;/span&gt; &lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;regex&lt;/span&gt; &lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;default&lt;/span&gt; &lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;or&lt;/span&gt; &lt;span class="nv"&gt;line-limit&lt;/span&gt; &lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;))))&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;这样，我就可以调用&lt;b&gt;macro&lt;/b&gt;来生成代码&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;自动更新Filename
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple/header-update-engine&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;filename&amp;quot;&lt;/span&gt;
-                            &lt;span class="s"&gt;&amp;quot;.*\\(File Name:\\)\\(.*\\)&amp;quot;&lt;/span&gt;
-                            &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;file-name-nondirectory&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;buffer-file-name&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;生成一个&lt;code&gt;maple/header-update-filename&lt;/code&gt;的函数,只要调用它即可更新文件名信息&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;自动更新email
-&lt;p&gt;同样的&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple/header-update-engine&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;email&amp;quot;&lt;/span&gt;
-                            &lt;span class="s"&gt;&amp;quot;.*\\(Email:\\)\\(.*\\)&amp;quot;&lt;/span&gt;
-                            &lt;span class="s"&gt;&amp;quot;youemail@gmail.com&amp;quot;&lt;/span&gt; &lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;生成一个可供调用的&lt;code&gt;maple/header-update-email&lt;/code&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;如果想要添加其它功能，只要使用&lt;code&gt;maple/header-update-engine&lt;/code&gt;即可&lt;/p&gt;
-
-&lt;p&gt;相关的配置可以在我的&lt;a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/site-lisp/header/header.el"&gt;github&lt;/a&gt;上找到&lt;/p&gt;</content><category term="linux"></category><category term="emacs"></category></entry></feed>
+</content><category term="linux"></category><category term="docker"></category></entry></feed>
