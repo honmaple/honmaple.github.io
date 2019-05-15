@@ -60,7 +60,7 @@
     <div class="entry-header">
       <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/06/自定义helm式的ivy.html">自定义helm式的ivy</a></h1>
 <header class="entry-info">
-  <span title="Updated at 2018-06-28">
+  <span title="Updated at 2019-05-15">
     <i class="fa fa-calendar-o"></i>
     四 14 六月 2018
   </span>
@@ -135,13 +135,14 @@
 <p>关于这一条，真的是“狠狠”地折腾了一把, 最终以<b>胜利</b>告终</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-done</span><span class="p">()</span>
   <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
-  <span class="p">(</span><span class="nv">ivy-partial-or-done</span><span class="p">)</span>
-  <span class="p">(</span><span class="nv">delete-minibuffer-contents</span><span class="p">)</span>
-  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">ivy-text</span> <span class="p">(</span><span class="nv">ivy-state-current</span> <span class="nv">ivy-last</span><span class="p">))</span> <span class="nv">dir</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">insert</span> <span class="nv">ivy-text</span><span class="p">)</span>
-    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">eq</span> <span class="p">(</span><span class="nv">ivy-state-collection</span> <span class="nv">ivy-last</span><span class="p">)</span> <span class="nf">#&#39;</span><span class="nv">read-file-name-internal</span><span class="p">)</span>
-               <span class="p">(</span><span class="k">setq</span> <span class="nv">dir</span> <span class="p">(</span><span class="nv">ivy-expand-file-if-directory</span> <span class="nv">ivy-text</span><span class="p">)))</span>
-      <span class="p">(</span><span class="nv">ivy--cd</span> <span class="nv">dir</span><span class="p">))))</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">dir</span> <span class="nv">ivy--directory</span><span class="p">))</span>
+    <span class="p">(</span><span class="nv">ivy-partial-or-done</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">string=</span> <span class="nv">dir</span> <span class="nv">ivy--directory</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">ivy-insert-current</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">eq</span> <span class="p">(</span><span class="nv">ivy-state-collection</span> <span class="nv">ivy-last</span><span class="p">)</span> <span class="nf">#&#39;</span><span class="nv">read-file-name-internal</span><span class="p">)</span>
+                 <span class="p">(</span><span class="k">setq</span> <span class="nv">dir</span> <span class="p">(</span><span class="nv">ivy-expand-file-if-directory</span> <span class="p">(</span><span class="nv">ivy-state-current</span> <span class="nv">ivy-last</span><span class="p">))))</span>
+        <span class="p">(</span><span class="nv">ivy--cd</span> <span class="nv">dir</span><span class="p">)</span>
+        <span class="p">(</span><span class="k">setq</span> <span class="nv">this-command</span> <span class="ss">&#39;ivy-cd</span><span class="p">)))))</span>
 </pre></div>
 
 <p>主要思路就是插入当前选中项, 如果是<code>read-file-name-internal</code>(文件操作), 并且选中项是一个目录，则列出这个目录的文件，避免选中<b>tab</b>两次才能列出文件, 这样一来，第一次<b>tab</b>就是<b>complete</b>, 第二次<b>tab</b>才是<b>done</b>, 最终效果超出预期(V 字手)</p>

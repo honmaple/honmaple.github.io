@@ -59,8 +59,246 @@
 </nav>        <article>
           <div class="entry-header">
             <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2019/01/emacs窗口管理.html" rel="bookmark" title="Permalink to emacs窗口管理">emacs窗口管理</a>
+              <a href="https://honmaple.me/articles/2019/05/关于ivy的使用技巧.html" rel="bookmark" title="Permalink to 关于ivy的使用技巧">关于ivy的使用技巧</a>
             </h1>
+<header class="entry-info">
+  <span title="Updated at 2019-05-15">
+    <i class="fa fa-calendar-o"></i>
+    二 14 五月 2019
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tag/emacs/index.html">emacs</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#org-4643559">ivy中的tab</a></li>
+<li><a href="#org-92345179">ivy中的C-h</a></li>
+<li><a href="#org-60529366">ivy-occur批量操作</a>
+<ul>
+<li><a href="#org-91796175">自动打开wgrep-mode</a></li>
+<li><a href="#org-98725075">批量修改文件名</a></li>
+</ul></li>
+<li><a href="#org-30342954">counsel-find-file</a>
+<ul>
+<li><a href="#org-36680827">重命名</a></li>
+<li><a href="#org-77717232">自动创建不存在的目录</a></li>
+</ul></li>
+<li><a href="#org-94098900">ivy自动使用选中的内容</a></li>
+<li><a href="#org-76473343">搜索某个目录</a></li>
+<li><a href="#org-58977516">ivy的显示避免出现在视线外</a></li>
+</ul>
+</div></div>
+
+
+<blockquote>
+<p>ivy默认的配置已经足够了，但还是可以通过一些技巧来提升使用体验</p>
+</blockquote>
+
+<h2 id="org-4643559">ivy中的tab</h2>
+<p>ivy提供了好几个有关补全的命令，分别是<b>ivy-done</b>, <b>ivy-partial-or-done</b>, <b>ivy-immediate-done</b>, <b>ivy-dispatching-done</b>, 但不幸，想要获得高效的补全，我不得不记住这n多个命令，这常常使效率变得更低，
+所以，我自定义了一个 <b>maple/ivy-done</b>, 仅使用 <code>tab</code> 这一个按键就可以获得以上所有的体验</p>
+
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-done</span><span class="p">()</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">dir</span> <span class="nv">ivy--directory</span><span class="p">))</span>
+    <span class="p">(</span><span class="nv">ivy-partial-or-done</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">string=</span> <span class="nv">dir</span> <span class="nv">ivy--directory</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">ivy-insert-current</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">eq</span> <span class="p">(</span><span class="nv">ivy-state-collection</span> <span class="nv">ivy-last</span><span class="p">)</span> <span class="nf">#&#39;</span><span class="nv">read-file-name-internal</span><span class="p">)</span>
+                 <span class="p">(</span><span class="k">setq</span> <span class="nv">dir</span> <span class="p">(</span><span class="nv">ivy-expand-file-if-directory</span> <span class="p">(</span><span class="nv">ivy-state-current</span> <span class="nv">ivy-last</span><span class="p">))))</span>
+        <span class="p">(</span><span class="nv">ivy--cd</span> <span class="nv">dir</span><span class="p">)</span>
+        <span class="p">(</span><span class="k">setq</span> <span class="nv">this-command</span> <span class="ss">&#39;ivy-cd</span><span class="p">)))))</span>
+</pre></div>
+
+
+<ul>
+<li>预设场景一
+<p>dirs目录下有</p>
+<div class="highlight"><pre><span></span>init-a.el
+init-b.el
+init-c.el
+</pre></div>
+
+<p>等多个文件, 我需要把<b>init-c.el</b>重命名为<b>init-c.el.bak</b>, 默认的ivy会怎么做呢</p>
+<ul>
+<li>输入 <b>init c</b> 进行查找</li>
+<li>使用 <code>C-M-j</code> <b>(ivy-immediate-done)</b> 插入当前选中项</li>
+<li>修改
+</li>
+</ul>
+<p>而使用 <b>maple/ivy-done</b> 后呢</p>
+<ul>
+<li>输入 <b>init c</b> 进行查找</li>
+<li>使用 <code>tab</code> 插入当前选中项</li>
+<li>修改
+</li>
+</ul></li>
+<li>预设场景二
+<p>有一个n级子目录，需要切换到第n个子目录下, 默认的ivy会怎么做呢</p>
+<ul>
+<li>使用 <code>tab</code> 选中</li>
+<li>再次使用 <code>tab</code> 切换目录
+</li>
+</ul>
+<p>而使用 <b>maple/ivy-done</b> 后呢</p>
+<ul>
+<li>使用 <code>tab</code> 选中并切换目录
+</li>
+</ul></li>
+</ul>
+<h2 id="org-92345179">ivy中的C-h</h2>
+<p>由于我是邪恶的 <b>evil</b> 用户, 所以我正常情况会使用 <code>C-j</code>, <code>C-k</code>来选择待选项，同样的，我希望能够使用 <code>C-h</code> 来进行某些操作,比如在<b>counsel-ag</b>中使用<code>C-h</code>代替<code>backspace</code>删除输入的字符，而在<b>counsel-find-file</b>中使用<code>C-h</code>切换到上一级目录</p>
+
+<p>ivy默认提供了 <b>counsel-up-directory</b> 命令可以切换到上级目录, 我希望能更进一步，当有插入的字符时, 调用<code>C-h</code>能够直接清除插入的字符,再次调用才切换到上一级目录</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-c-h</span> <span class="p">()</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">eq</span> <span class="p">(</span><span class="nv">ivy-state-collection</span> <span class="nv">ivy-last</span><span class="p">)</span> <span class="nf">#&#39;</span><span class="nv">read-file-name-internal</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">string-equal</span> <span class="p">(</span><span class="nv">ivy--input</span><span class="p">)</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+          <span class="p">(</span><span class="nv">counsel-up-directory</span><span class="p">)</span>
+        <span class="p">(</span><span class="nv">delete-minibuffer-contents</span><span class="p">))</span>
+    <span class="p">(</span><span class="nv">ivy-backward-delete-char</span><span class="p">)))</span>
+</pre></div>
+
+
+<h2 id="org-60529366">ivy-occur批量操作</h2>
+<h3 id="org-91796175">自动打开wgrep-mode</h3>
+<p>ivy默认调用<b>ivy-occur</b>后, 还需要调用<b>ivy-wgrep-change-to-wgrep-mode</b>才能进行批量修改</p>
+
+<div class="highlight"><pre><span></span><span class="c1">;; ivy-occur custom</span>
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-edit</span> <span class="p">()</span>
+  <span class="s">&quot;Edit the current search results in a buffer using wgrep.&quot;</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">run-with-idle-timer</span> <span class="mi">0</span> <span class="no">nil</span> <span class="ss">&#39;ivy-wgrep-change-to-wgrep-mode</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">ivy-occur</span><span class="p">))</span>
+</pre></div>
+
+
+<h3 id="org-98725075">批量修改文件名</h3>
+<p>预设场景: 当某个项目下有许多使用 <b>aaa.py</b>的文件,我需要把 <b>aaa.py</b> 全部修改为 <b>bbb.py</b>, 也许某个 <b>aaa.py</b> 需要修改成 <b>ccc.py</b>，我在使用 <b>projectile-find-file</b> 搜索完全部的 <b>aaa.py</b> 后，打开ivy默认的<b>ivy-occur</b>并不能对文件进行修改(提示<code>Text read only</code>), 所以我采用 <b>find-name-dired</b> 来批量修改文件名(目前还有些问题)</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-dired-occur</span><span class="p">()</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">find-name-dired</span>
+   <span class="p">(</span><span class="k">or</span> <span class="p">(</span><span class="nv">projectile-project-root</span><span class="p">)</span> <span class="nv">default-directory</span><span class="p">)</span> <span class="p">(</span><span class="nf">concat</span> <span class="p">(</span><span class="nv">ivy--input</span><span class="p">)</span> <span class="s">&quot;*&quot;</span><span class="p">))</span>
+  <span class="p">(</span><span class="nv">ivy-exit-with-action</span>
+   <span class="p">(</span><span class="nb">lambda</span> <span class="p">(</span><span class="nv">_</span><span class="p">)</span>
+     <span class="p">(</span><span class="nv">pop-to-buffer</span> <span class="p">(</span><span class="nf">get-buffer</span> <span class="s">&quot;*Find*&quot;</span><span class="p">))</span>
+     <span class="p">(</span><span class="nv">dired-hide-details-mode</span><span class="p">)</span>
+     <span class="p">(</span><span class="nv">wdired-change-to-wdired-mode</span><span class="p">)</span>
+     <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">bound-and-true-p</span> <span class="nv">evil-local-mode</span><span class="p">)</span> <span class="p">(</span><span class="nv">evil-normal-state</span><span class="p">)))))</span>
+</pre></div>
+
+
+<h2 id="org-30342954">counsel-find-file</h2>
+<h3 id="org-36680827">重命名</h3>
+<p>预设场景: 有一个dirs目录, 我需要在同级目录下创建一个 <b>dirs-aa.el</b> 的文件, 默认的ivy会怎么做呢</p>
+<ul>
+<li>切换到 dirs 目录的上级目录</li>
+<li>使用 <b>ivy-immediate-done</b> 插入目录名</li>
+<li>新建文件
+</li>
+</ul>
+<p>但还有一种方式</p>
+<ul>
+<li>切换到 dirs 目录</li>
+<li>使用 <code>backspace</code> 键删除目录末尾的 =/=</li>
+<li>新建文件
+</li>
+</ul>
+<p>不幸的是，ivy中 <code>backspace</code> 的按键绑定了 <b>ivy-backward-delete-char</b>, 在 <b>counsel-find-file</b> 中使用 ivy会直接返回上级目录, 所以需要对 <b>ivy-backward-delete-char</b> 作简单的修改</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-backward-delete-char</span> <span class="p">()</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">dir</span> <span class="nv">ivy--directory</span><span class="p">)</span>
+        <span class="p">(</span><span class="nv">p</span> <span class="p">(</span><span class="k">and</span> <span class="nv">ivy--directory</span> <span class="p">(</span><span class="nf">=</span> <span class="p">(</span><span class="nf">minibuffer-prompt-end</span><span class="p">)</span> <span class="p">(</span><span class="nf">point</span><span class="p">)))))</span>
+    <span class="p">(</span><span class="nv">ivy-backward-delete-char</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">when</span> <span class="nv">p</span> <span class="p">(</span><span class="nf">insert</span> <span class="p">(</span><span class="nf">file-name-nondirectory</span> <span class="p">(</span><span class="nf">directory-file-name</span> <span class="nv">dir</span><span class="p">))))))</span>
+</pre></div>
+
+
+<h3 id="org-77717232">自动创建不存在的目录</h3>
+<p>不仅用于ivy, 其它文件操作命令也需要</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-make-directory-maybe</span> <span class="p">()</span>
+  <span class="s">&quot;Create parent directory if not exists while visiting file.&quot;</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">dir</span> <span class="p">(</span><span class="nf">file-name-directory</span> <span class="nf">buffer-file-name</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nb">unless</span> <span class="p">(</span><span class="nf">file-exists-p</span> <span class="nv">dir</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">y-or-n-p</span> <span class="p">(</span><span class="nf">format</span> <span class="s">&quot;Directory %s does not exist,do you want you create it? &quot;</span> <span class="nv">dir</span><span class="p">))</span>
+          <span class="p">(</span><span class="nv">make-directory</span> <span class="nv">dir</span> <span class="no">t</span><span class="p">)</span>
+        <span class="p">(</span><span class="nv">keyboard-quit</span><span class="p">)))))</span>
+
+<span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">&#39;find-file-not-found-functions</span> <span class="ss">&#39;maple/ivy-make-directory-maybe</span> <span class="no">nil</span> <span class="nf">#&#39;eq</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="org-94098900">ivy自动使用选中的内容</h2>
+<p>在使用 <b>counsel-ag</b> 或者 <b>swiper</b>, 我需要快速搜索选中的关键词，然而，ivy默认并不支持这么做，ivy需要打开<b>counsel-ag</b>后使用 <code>M-n</code> 插入选中的关键词，当然，也许是作者认为这样的方式很方便，但我并不认同，我为何需要重复一次操作呢，为何还需要记住 <code>M-n</code> 这样的按键呢？</p>
+
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/region-string</span><span class="p">()</span>
+  <span class="s">&quot;Get region string.&quot;</span>
+  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">not</span> <span class="p">(</span><span class="nv">use-region-p</span><span class="p">))</span> <span class="s">&quot;&quot;</span>
+    <span class="p">(</span><span class="k">let*</span> <span class="p">((</span><span class="nv">beg</span> <span class="p">(</span><span class="nf">region-beginning</span><span class="p">))</span>
+           <span class="p">(</span><span class="nv">end</span> <span class="p">(</span><span class="nf">region-end</span><span class="p">))</span>
+           <span class="p">(</span><span class="nv">eol</span> <span class="p">(</span><span class="k">save-excursion</span> <span class="p">(</span><span class="nf">goto-char</span> <span class="nv">beg</span><span class="p">)</span> <span class="p">(</span><span class="nf">line-end-position</span><span class="p">))))</span>
+      <span class="p">(</span><span class="nv">deactivate-mark</span><span class="p">)</span> <span class="p">(</span><span class="nf">buffer-substring-no-properties</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">min</span> <span class="nv">end</span> <span class="nv">eol</span><span class="p">)))))</span>
+
+<span class="c1">;; custom counsel-ag</span>
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/counsel-ag</span><span class="p">(</span><span class="nv">-counsel-ag</span> <span class="kp">&amp;optional</span> <span class="nv">initial-input</span> <span class="nv">initial-directory</span> <span class="nv">extra-ag-args</span> <span class="nv">ag-prompt</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">funcall</span> <span class="nv">-counsel-ag</span>
+           <span class="p">(</span><span class="k">or</span> <span class="nv">initial-input</span> <span class="p">(</span><span class="nv">maple/region-string</span><span class="p">))</span>
+           <span class="p">(</span><span class="k">or</span> <span class="nv">initial-directory</span> <span class="nv">default-directory</span><span class="p">)</span>
+           <span class="nv">extra-ag-args</span>
+           <span class="nv">ag-prompt</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nv">advice-add</span> <span class="ss">&#39;counsel-ag</span> <span class="nb">:around</span> <span class="nf">#&#39;</span><span class="nv">maple/counsel-ag</span><span class="p">)</span>
+</pre></div>
+
+
+<p>这样，调用 <b>counsel-ag</b> 时，如何已经有选中的关键词，就会直接调用该关键词进行查找，避免重复操作, 同样的对于<b>swiper</b> 也可以使用另一种方式</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-search-at-point</span> <span class="p">(</span><span class="nv">func</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">ivy-initial-inputs-alist</span> <span class="p">(</span><span class="nf">list</span> <span class="p">(</span><span class="nf">cons</span> <span class="nv">func</span> <span class="p">(</span><span class="nv">maple/region-string</span><span class="p">)))))</span>
+    <span class="p">(</span><span class="nf">funcall</span> <span class="nv">func</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/swiper</span><span class="p">()</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">maple/ivy-search-at-point</span> <span class="ss">&#39;swiper</span><span class="p">))</span>
+</pre></div>
+
+
+
+<h2 id="org-76473343">搜索某个目录</h2>
+<p><b>counsel-ag</b>默认搜索当前目录，想要搜索某个目录，需要切换到该目录下调用<b>counsel-ag</b>，无疑的，这非常不方便，所以，我希望可以选择某个目录进行搜索</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/counsel-ag-directory</span><span class="p">()</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">counsel-ag</span> <span class="no">nil</span> <span class="p">(</span><span class="nv">read-directory-name</span> <span class="s">&quot;Search in directory: &quot;</span><span class="p">)))</span>
+</pre></div>
+
+
+<h2 id="org-58977516">ivy的显示避免出现在视线外</h2>
+<p>详见 <a href="https://honmaple.me/articles/2018/06/自定义helm式的ivy.html">自定义helm式的ivy.html</a> 中的</p>
+<blockquote>
+<p><b>吐嘈六: minibuffer</b></p>
+</blockquote>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2019/01/emacs窗口管理.html" rel="bookmark" title="Permalink to emacs窗口管理">emacs窗口管理</a></h1>
 <header class="entry-info">
   <span title="Updated at 2019-05-04">
     <i class="fa fa-calendar-o"></i>
@@ -116,88 +354,12 @@
 <p>当设置了 <code>(setq split-width-threshold 1)</code> 后所有的窗口都会变成左右分屏，所以需要 <b>shackle</b> 或 <b>popwin</b> package对窗口进行管理, 对一些特殊的窗口或 <b>buffer</b> 比如 <code>*Help*</code> 和 <code>flycheck error list</code> 需要设置为显示在下方，并且默认选中</p>
 
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">shackle-rules</span>
-      <span class="o">&#39;</span><span class="p">((</span><span class="s">&quot;*Help*&quot;</span> <span class="nb">:select</span> <span class="no">t</span> <span class="nb">:align</span> <span class="ss">&#39;below</span> <span class="nb">:autoclose</span> <span class="no">t</span><span class="p">)</span>
-        <span class="p">(</span><span class="nv">flycheck-error-list-mode</span> <span class="nb">:select</span> <span class="no">t</span> <span class="nb">:align</span> <span class="ss">&#39;below</span> <span class="nb">:autoclose</span> <span class="no">t</span><span class="p">)))</span>
-</pre></div>
-
-
-<p>设置默认的参数</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">shackle-default-size</span> <span class="mf">0.3</span>
-      <span class="nv">shackle-default-alignment</span> <span class="ss">&#39;below</span>
-      <span class="nv">shackle-default-rule</span> <span class="no">nil</span><span class="p">)</span>
-</pre></div>
-
-
-<h2 id="org-29578346">窗口黄金分割zoom</h2>
-<p>窗口黄金分割是一个非常有用的效果，当选中某个buffer时，这个buffer的window会自动按比例放大，这样就不用手动对窗口进行调整, 之前一直使用 <b>golden-ratio</b> 这个package, 但看github上最近一次提交已经是两年前，加上使用需要定义很多的 <code>golden-ratio-extra-commands</code>, 所以切换到了 <b>zoom</b></p>
-
-<p><b>zoom</b> 这个 package也有一些问题，比如我定义了</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">zoom-size</span> <span class="o">&#39;</span><span class="p">(</span><span class="mf">0.618</span> <span class="o">.</span> <span class="mf">0.618</span><span class="p">)</span>
-      <span class="nv">zoom-ignored-major-modes</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">term-mode</span> <span class="nv">flycheck-error-list-mode</span><span class="p">))</span>
-</pre></div>
-
-
-<p>但使用 <code>flycheck-list-errors</code> 时还是会自动缩放窗口大小，后来翻看源码时发现新建 <b>window</b> 是都会调用 <code>balance-windows</code> ,所以我稍微修改了一下</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/balance-windows</span><span class="p">(</span><span class="nv">func</span> <span class="kp">&amp;optional</span> <span class="nv">window-or-frame</span><span class="p">)</span>
-  <span class="p">(</span><span class="nb">unless</span> <span class="p">(</span><span class="nv">zoom--window-ignored-p</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">funcall</span> <span class="nv">func</span> <span class="nv">window-or-frame</span><span class="p">)))</span>
-
-<span class="p">(</span><span class="nv">advice-add</span> <span class="ss">&#39;balance-windows</span> <span class="nb">:around</span> <span class="ss">&#39;maple/balance-windows</span><span class="p">)</span>
-</pre></div>
-
-<p>这样在调用 <code>flycheck-list-errors</code> 就不会再自动缩放窗口大小了</p>
-
-<p>另外有一些命令需要临时关闭 <b>zoom-mode</b> ,所以有添加了一个 <b>marco</b> 临时关闭 <b>zoom-mode</b></p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defmacro</span> <span class="nv">with-zoom-disable</span><span class="p">(</span><span class="nv">body</span><span class="p">)</span>
-  <span class="p">(</span><span class="nb">declare</span> <span class="p">(</span><span class="nv">indent</span> <span class="nb">defun</span><span class="p">))</span>
-  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">zoom-mode-p</span> <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nb">featurep</span> <span class="ss">&#39;zoom</span><span class="p">)</span> <span class="nv">zoom-mode</span><span class="p">))</span>
-        <span class="nv">res</span><span class="p">)</span>
-    <span class="p">(</span><span class="nb">when</span> <span class="nv">zoom-mode-p</span> <span class="p">(</span><span class="nv">zoom-mode</span> <span class="mi">-1</span><span class="p">))</span>
-    <span class="p">(</span><span class="k">setq</span> <span class="nv">res</span> <span class="o">`,@</span><span class="nv">body</span><span class="p">)</span>
-    <span class="p">(</span><span class="nb">when</span> <span class="nv">zoom-mode-p</span> <span class="p">(</span><span class="nv">zoom-mode</span> <span class="nv">zoom-mode-p</span><span class="p">))</span>
-    <span class="nv">res</span><span class="p">))</span>
-</pre></div>
-
-<p>比如:</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">with-zoom-disable</span>
-  <span class="p">(</span><span class="nv">maple-imenu</span><span class="p">))</span>
-</pre></div>
-
-
-<h2 id="org-12809853">window-numbering显示当前窗口号</h2>
-<p>为了更方便的在窗口间进行跳转，避免重复使用 <code>evil-window-down</code>, <code>evil-window-right</code>等命令</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">use-package</span> <span class="nv">window-numbering</span>
-  <span class="nb">:hook</span> <span class="p">(</span><span class="nv">maple-theme</span> <span class="o">.</span> <span class="nv">window-numbering-mode</span><span class="p">))</span>
-</pre></div>
-
-<p><b>maple-theme-hook</b>: 加载 <b>theme</b> 后执行hook</p>
-
-<p>然后设置(这里只设置到5,因为我大概不会开10个窗口的)</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">evil-leader/set-key</span>
-  <span class="s">&quot;w0&quot;</span>  <span class="ss">&#39;select-window-0</span>
-  <span class="s">&quot;w1&quot;</span>  <span class="ss">&#39;select-window-1</span>
-  <span class="s">&quot;w2&quot;</span>  <span class="ss">&#39;select-window-2</span>
-  <span class="s">&quot;w3&quot;</span>  <span class="ss">&#39;select-window-3</span>
-  <span class="s">&quot;w4&quot;</span>  <span class="ss">&#39;select-window-4</span>
-  <span class="s">&quot;w5&quot;</span>  <span class="ss">&#39;select-window-5</span><span class="p">)</span>
-</pre></div>
-
-<p>这样就可以使用<code>leader + w + {window number}</code>或者 <code>alt + {window number}</code>跳转</p>
-
-<p>另外<b>window-number</b>的显示需要<b>mode-line</b>的支持，比如在<a href="https://github.com/honmaple/emacs-maple-modeline">maple-modeline</a>里可以这样定义</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">maple-modeline-define</span> <span class="nv">window-number</span>
-  <span class="nb">:if</span> <span class="p">(</span><span class="nv">bound-and-true-p</span> <span class="nv">window-numbering-mode</span><span class="p">)</span>
-  <span class="nb">:format</span>
-  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">color</span> <span class="p">(</span><span class="nv">face-attribute</span> <span class="ss">&#39;cursor</span> <span class="nb">:background</span><span class="p">)))</span>
-    <span class="p">(</span><span class="nv">maple-modeline--add-text-property</span>
-     <span class="p">(</span><span class="nv">maple-modeline--unicode-number</span>
-      <span class="p">(</span><span class="nv">int-to-string</span> <span class="p">(</span><span class="nv">window-numbering-get-number</span><span class="p">)))</span>
-     <span class="ss">&#39;face</span> <span class="o">`</span><span class="p">(</span><span class="nb">:foreground</span> <span class="o">,</span><span class="nv">color</span> <span class="nb">:distant-foreground</span> <span class="s">&quot;white&quot;</span><span class="p">))))</span>
-</pre></div>
-
+      <span class="o">&#39;</span><span class="p">((</span><span class="s">&quot;*Help*&quot;</span> <span class="nb">:select</span> <span class="no">t</span> <span class="nb">:align …</span></pre></div>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2019/01/emacs窗口管理.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/11/web-mode自定义fold函数以适应indent-region.html" rel="bookmark" title="Permalink to web-mode自定义fold函数以适应indent-region">web-mode自定义fold函数以适应indent-region</a></h1>
@@ -355,7 +517,7 @@
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/06/自定义helm式的ivy.html" rel="bookmark" title="Permalink to 自定义helm式的ivy">自定义helm式的ivy</a></h1>
 <header class="entry-info">
-  <span title="Updated at 2018-06-28">
+  <span title="Updated at 2019-05-15">
     <i class="fa fa-calendar-o"></i>
     四 14 六月 2018
   </span>
@@ -589,71 +751,6 @@
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/01/helm与ivy简单对比.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/05/方便的切换emacs主题.html" rel="bookmark" title="Permalink to 方便的切换emacs主题">方便的切换emacs主题</a></h1>
-<header class="entry-info">
-  <span title="2017-05-23T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    二 23 五月 2017
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tag/emacs/index.html">emacs</a>
-        <a href="https://honmaple.me/tag/elisp/index.html">elisp</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content">
-            
-
-<p>作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，*M-x*,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了<b>hydra</b>这个插件,也想实践一下</p>
-
-<p>获取主题列表</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">maple-cycle-themes</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="p">(</span><span class="nv">custom-available-themes</span><span class="p">)))</span>
-</pre></div>
-
-
-<p>获取当前主题索引</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">cl-position</span> <span class="p">(</span><span class="nf">car</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="nv">custom-enabled-themes</span><span class="p">))</span> <span class="nv">maple-cycle-themes</span> <span class="nb">:test</span> <span class="ss">&#39;equal</span><span class="p">)</span>
-</pre></div>
-
-
-<p>获取下一个主题</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index</span>
-      <span class="p">(</span><span class="nf">+</span> <span class="mi">1</span> <span class="nv">maple-current-theme-index</span><span class="p">))</span>
-<span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme</span> <span class="p">(</span><span class="nf">nth</span> <span class="nv">maple-current-theme-index</span> <span class="nv">maple-cycle-themes</span><span class="p">))</span>
-</pre></div>
-
-
-<p>加载主题</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">load-theme</span> <span class="p">(</span><span class="nf">intern</span> <span class="nv">maple-current-theme</span><span class="p">)</span> <span class="no">t</span><span class="p">)</span>
-</pre></div>
-
-
-<p>最后得到这样的函数</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/cycle-theme</span> <span class="p">(</span><span class="nv">num</span><span class="p">)</span>
-  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
-  <span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index …</span></pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/05/方便的切换emacs主题.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">
