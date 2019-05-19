@@ -38,6 +38,7 @@ $(document).ready(function(){
                                    item.stargazers_count,
                                    item.forks_count);
         }
+        $("#entry-project").html("");
         for(var i=0,len=result.length;i<len;i+=3){
             $("#entry-project").append(result.slice(i,i+3).map(Template).join(""));
         }

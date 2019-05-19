@@ -38,6 +38,7 @@ $(document).ready(function(){
         var child_template = '';
         var title = '';
         var date = [];
+        $("#timeline").html("");
         response.data.forEach(function(item,index) {
             date = TimeFormat(item.created_at);
             title = date[0] + '年' + date[1] + '月';
