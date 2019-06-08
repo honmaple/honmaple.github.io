@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>redis记录用户操作 · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
-      <link href="https://honmaple.b0.upaiyun.com/static/css/lib.min.css" rel="stylesheet">
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/theme/css/style.min.css" rel="stylesheet">
   </head>
   <body>
@@ -22,7 +22,7 @@
       <span class="icon-bar"></span>
     </button>
     <a class="navbar-brand" href="https://honmaple.me">
-      <img class="navbar-logo" src="https://honmaple.b0.upaiyun.com/images/header/header-logo.png" alt="楓">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
     </a>
       <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
   </div>
@@ -86,24 +86,24 @@
     <hr class="entry-hr" />
     <div class="entry-content entry-article">
       <p>必须得记下来，否则等那天看到又要浪费时间了,主要记录访问时间这里</p>
-<div class="highlight"><pre><span></span>    &#39;&#39;&#39;记录访问的时间&#39;&#39;&#39;
-    now_time = int(time()) #首先得到当前时间戳 
-    &#39;&#39;&#39;查询上次访问的时间和最近访问的时间&#39;&#39;&#39;
-    query_last_time = redis_data.zscore(visited_users,&#39;last_time&#39;)
-    query_now_time = redis_data.zscore(visited_users,&#39;time&#39;)
-    &#39;&#39;&#39;判断查询是否为空,一般是第一次访问还未记录的IP&#39;&#39;&#39;
-    if query_last_time is None:
-        query_last_time = now_time
-        pipe.zadd(visited_users,query_last_time,&#39;last_time&#39;)
-    if query_now_time is None:
-        query_now_time = now_time
-    &#39;&#39;&#39;将当前时间与last_time进行对比,十分钟之内不记录&#39;&#39;&#39;
-    if now_time - query_last_time &gt;= 600:
-        &#39;&#39;&#39;这里类似交换更新数据,把query_now_time变成last_time,把now_time更新&#39;&#39;&#39;
-        pipe.zadd(visited_users,query_now_time,&#39;last_time&#39;)
-        pipe.zadd(visited_users,now_time,&#39;time&#39;)
-    else:
-        pipe.zadd(visited_users,now_time,&#39;time&#39;)
+<div class="highlight"><pre><span></span>    <span class="s1">&#39;&#39;&#39;</span><span class="s">记录访问的时间</span><span class="s1">&#39;&#39;&#39;</span>
+    <span class="nv">now_time</span> <span class="o">=</span> <span class="nv">int</span><span class="ss">(</span><span class="nv">time</span><span class="ss">())</span> #首先得到当前时间戳 
+    <span class="s1">&#39;&#39;&#39;</span><span class="s">查询上次访问的时间和最近访问的时间</span><span class="s1">&#39;&#39;&#39;</span>
+    <span class="nv">query_last_time</span> <span class="o">=</span> <span class="nv">redis_data</span>.<span class="nv">zscore</span><span class="ss">(</span><span class="nv">visited_users</span>,<span class="s1">&#39;</span><span class="s">last_time</span><span class="s1">&#39;</span><span class="ss">)</span>
+    <span class="nv">query_now_time</span> <span class="o">=</span> <span class="nv">redis_data</span>.<span class="nv">zscore</span><span class="ss">(</span><span class="nv">visited_users</span>,<span class="s1">&#39;</span><span class="s">time</span><span class="s1">&#39;</span><span class="ss">)</span>
+    <span class="s1">&#39;&#39;&#39;</span><span class="s">判断查询是否为空,一般是第一次访问还未记录的IP</span><span class="s1">&#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="nv">query_last_time</span> <span class="nv">is</span> <span class="nv">None</span>:
+        <span class="nv">query_last_time</span> <span class="o">=</span> <span class="nv">now_time</span>
+        <span class="nv">pipe</span>.<span class="nv">zadd</span><span class="ss">(</span><span class="nv">visited_users</span>,<span class="nv">query_last_time</span>,<span class="s1">&#39;</span><span class="s">last_time</span><span class="s1">&#39;</span><span class="ss">)</span>
+    <span class="k">if</span> <span class="nv">query_now_time</span> <span class="nv">is</span> <span class="nv">None</span>:
+        <span class="nv">query_now_time</span> <span class="o">=</span> <span class="nv">now_time</span>
+    <span class="s1">&#39;&#39;&#39;</span><span class="s">将当前时间与last_time进行对比,十分钟之内不记录</span><span class="s1">&#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="nv">now_time</span> <span class="o">-</span> <span class="nv">query_last_time</span> <span class="o">&gt;=</span> <span class="mi">600</span>:
+        <span class="s1">&#39;&#39;&#39;</span><span class="s">这里类似交换更新数据,把query_now_time变成last_time,把now_time更新</span><span class="s1">&#39;&#39;&#39;</span>
+        <span class="nv">pipe</span>.<span class="nv">zadd</span><span class="ss">(</span><span class="nv">visited_users</span>,<span class="nv">query_now_time</span>,<span class="s1">&#39;</span><span class="s">last_time</span><span class="s1">&#39;</span><span class="ss">)</span>
+        <span class="nv">pipe</span>.<span class="nv">zadd</span><span class="ss">(</span><span class="nv">visited_users</span>,<span class="nv">now_time</span>,<span class="s1">&#39;</span><span class="s">time</span><span class="s1">&#39;</span><span class="ss">)</span>
+    <span class="k">else</span>:
+        <span class="nv">pipe</span>.<span class="nv">zadd</span><span class="ss">(</span><span class="nv">visited_users</span>,<span class="nv">now_time</span>,<span class="s1">&#39;</span><span class="s">time</span><span class="s1">&#39;</span><span class="ss">)</span>
 </pre></div>
     </div>
 <div class="entry-copyright">
@@ -121,7 +121,7 @@
     <i class="fa fa-copyright"></i>
     版权:
     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
-      <img class="hidden-xs" src="https://honmaple.b0.upaiyun.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
       知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
     </a>
   </div>
@@ -140,7 +140,7 @@
         </div>
       </div>
       <div class="entry-honor-wechat collapse">
-        <img src="https://honmaple.b0.upaiyun.com/images/pic/wechat.png" alt="wechat" />
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
       </div>
     </div>
   </div>
@@ -203,9 +203,9 @@
    gtag('js', new Date());
    gtag('config', 'UA-88401692-2');
   </script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/lib.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
         <script src="https://honmaple.me/theme/js/script.min.js"></script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
       <script data-no-instant>
        InstantClick.on('change', function() {
            if (typeof ga !== 'undefined') {

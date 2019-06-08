@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>sqlalchemy使用上的小tips · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
-      <link href="https://honmaple.b0.upaiyun.com/static/css/lib.min.css" rel="stylesheet">
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/theme/css/style.min.css" rel="stylesheet">
   </head>
   <body>
@@ -22,7 +22,7 @@
       <span class="icon-bar"></span>
     </button>
     <a class="navbar-brand" href="https://honmaple.me">
-      <img class="navbar-logo" src="https://honmaple.b0.upaiyun.com/images/header/header-logo.png" alt="楓">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
     </a>
       <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
   </div>
@@ -85,60 +85,61 @@
 </header>    </div>
     <hr class="entry-hr" />
     <div class="entry-content entry-article">
-      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-5717395">sqlalchemy object序列化为json</a>
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-79343213">多个实例</a></li>
-<li><a href="#org-87324763">单个实例</a></li>
-<li><a href="#org-89913205">排除字段</a></li>
-<li><a href="#org-1119626">仅包括字段</a></li>
-<li><a href="#org-16335653">关系查询深度</a></li>
-<li><a href="#org-99427186">增加一些自定义的函数</a></li>
-<li><a href="#org-83364645">可传递参数的函数</a></li>
+<li><a href="#org-c7f856f96c">sqlalchemy object序列化为json</a>
+<ul>
+<li><a href="#org-06f4a6e00e">多个实例</a></li>
+<li><a href="#org-5a80709d39">单个实例</a></li>
+<li><a href="#org-9d0b64116a">排除字段</a></li>
+<li><a href="#org-698cb4c6b7">仅包括字段</a></li>
+<li><a href="#org-3df6e98319">关系查询深度</a></li>
+<li><a href="#org-f921e70d21">增加一些自定义的函数</a></li>
+<li><a href="#org-27f9cd77bf">可传递参数的函数</a></li>
 </ul></li>
-<li><a href="#org-14643949">像django orm一样使用sqlalchemy</a>
+<li><a href="#org-7c0ae800cf">像django orm一样使用sqlalchemy</a>
 <ul>
-<li><a href="#org-13861232">基本查询(已实现)</a></li>
-<li><a href="#org-82218644">关系查询</a></li>
-<li><a href="#org-50256049">其它</a></li>
+<li><a href="#org-6304d7131d">基本查询(已实现)</a></li>
+<li><a href="#org-5a14fa9f1a">关系查询</a></li>
+<li><a href="#org-295c71ff98">其它</a></li>
 </ul></li>
-<li><a href="#org-77178184">去掉一些sqlalchemy的重复工作</a>
+<li><a href="#org-41820df388">去掉一些sqlalchemy的重复工作</a>
 <ul>
-<li><a href="#org-19487556">ModelMixin</a></li>
-<li><a href="#org-59203328">ModelTimeMixin</a></li>
-<li><a href="#org-77506691">ModelUserMixin</a></li>
+<li><a href="#org-bc47e490b7">ModelMixin</a></li>
+<li><a href="#org-d5546830f8">ModelTimeMixin</a></li>
+<li><a href="#org-a84fc5de8b">ModelUserMixin</a></li>
 </ul></li>
 </ul>
 </div></div>
 
 
-<h2 id="org-5717395">sqlalchemy object序列化为json</h2>
+<h2 id="org-c7f856f96c">sqlalchemy object序列化为json</h2>
 <p>灵感来源于 <b>Django REST framework</b></p>
-<h3 id="org-79343213">多个实例</h3>
+<h3 id="org-06f4a6e00e">多个实例</h3>
 <div class="highlight"><pre><span></span><span class="n">posts</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">posts</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 
 
-<h3 id="org-87324763">单个实例</h3>
+<h3 id="org-5a80709d39">单个实例</h3>
 <div class="highlight"><pre><span></span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
 <span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 
 
-<h3 id="org-89913205">排除字段</h3>
+<h3 id="org-9d0b64116a">排除字段</h3>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
 </pre></div>
 
 
-<h3 id="org-1119626">仅包括字段</h3>
+<h3 id="org-698cb4c6b7">仅包括字段</h3>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
 </pre></div>
 
 
-<h3 id="org-16335653">关系查询深度</h3>
+<h3 id="org-3df6e98319">关系查询深度</h3>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">depth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 
@@ -147,7 +148,7 @@
 <p>默认为2</p>
 </li>
 </ul>
-<h3 id="org-99427186">增加一些自定义的函数</h3>
+<h3 id="org-f921e70d21">增加一些自定义的函数</h3>
 <div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">Serializer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">extra</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;get_post_count&#39;</span><span class="p">])</span>
 </pre></div>
 
@@ -159,7 +160,7 @@
 </pre></div>
 
 
-<h3 id="org-83364645">可传递参数的函数</h3>
+<h3 id="org-27f9cd77bf">可传递参数的函数</h3>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PostSerializer</span><span class="p">(</span><span class="n">Serializer</span><span class="p">):</span>
     <span class="n">count</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">source</span> <span class="o">=</span> <span class="s1">&#39;get_post_count&#39;</span><span class="p">,</span><span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="s1">&#39;hello&#39;</span><span class="p">},</span><span class="n">default</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
     <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
@@ -170,10 +171,10 @@
         <span class="n">extra</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
 </pre></div>
 
-<h2 id="org-14643949">像django orm一样使用sqlalchemy</h2>
+<h2 id="org-7c0ae800cf">像django orm一样使用sqlalchemy</h2>
 <p><b>djang orm</b>与sqlalchemy相比,为什么很多人都认为django orm更好用,大概就是因为django orm更方便</p>
 
-<h3 id="org-13861232">基本查询(已实现)</h3>
+<h3 id="org-6304d7131d">基本查询(已实现)</h3>
 <ul>
 <li>gt</li>
 <li>lt</li>
@@ -200,12 +201,12 @@
 </pre></div>
 
 
-<h3 id="org-82218644">关系查询</h3>
+<h3 id="org-5a14fa9f1a">关系查询</h3>
 <div class="highlight"><pre><span></span><span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">tags__name__contains</span> <span class="o">=</span> <span class="s1">&#39;sql&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 </pre></div>
 
 
-<h3 id="org-50256049">其它</h3>
+<h3 id="org-295c71ff98">其它</h3>
 <div class="highlight"><pre><span></span><span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">tags__name__contains</span> <span class="o">=</span> <span class="s1">&#39;sql&#39;</span><span class="p">)</span><span class="o">.</span><span class="ow">or</span><span class="p">(</span><span class="n">Post</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span><span class="n">Post</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">tags__name__contains</span> <span class="o">=</span> <span class="s1">&#39;sql&#39;</span><span class="p">)</span><span class="o">.</span><span class="ow">and</span><span class="p">(</span><span class="n">Post</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span><span class="n">Post</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">tags__name__contains</span> <span class="o">=</span> <span class="s1">&#39;sql&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
@@ -213,10 +214,10 @@
 </pre></div>
 
 
-<h2 id="org-77178184">去掉一些sqlalchemy的重复工作</h2>
+<h2 id="org-41820df388">去掉一些sqlalchemy的重复工作</h2>
 <p>以<b>flask-sqlalchemy</b>为例,通过继承 <b>models.py</b> 中的<b>Mixin</b>,就可以去除部分重复工作</p>
 
-<h3 id="org-19487556">ModelMixin</h3>
+<h3 id="org-bc47e490b7">ModelMixin</h3>
 <p>自增ID -- id</p>
 
 <div class="highlight"><pre><span></span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="p">(</span><span class="err">·····</span><span class="p">)</span>
@@ -232,7 +233,7 @@
 <li>bulk_save
 </li>
 </ul>
-<h3 id="org-59203328">ModelTimeMixin</h3>
+<h3 id="org-d5546830f8">ModelTimeMixin</h3>
 <p>增加两字段</p>
 <ul>
 <li>created_at
@@ -241,7 +242,7 @@
 <p>数据更新时间</p>
 </li>
 </ul>
-<h3 id="org-77506691">ModelUserMixin</h3>
+<h3 id="org-a84fc5de8b">ModelUserMixin</h3>
 <p>关联用户表,与<b>User</b>表现为<b>多对一</b>关系(即一个用户有多个post)</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Post</span><span class="p">(</span><span class="n">ModelUserMixin</span><span class="p">,</span> <span class="n">Model</span><span class="p">):</span>
 
@@ -266,7 +267,7 @@
     <i class="fa fa-copyright"></i>
     版权:
     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
-      <img class="hidden-xs" src="https://honmaple.b0.upaiyun.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
       知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
     </a>
   </div>
@@ -285,7 +286,7 @@
         </div>
       </div>
       <div class="entry-honor-wechat collapse">
-        <img src="https://honmaple.b0.upaiyun.com/images/pic/wechat.png" alt="wechat" />
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
       </div>
     </div>
   </div>
@@ -348,9 +349,9 @@
    gtag('js', new Date());
    gtag('config', 'UA-88401692-2');
   </script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/lib.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
         <script src="https://honmaple.me/theme/js/script.min.js"></script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
       <script data-no-instant>
        InstantClick.on('change', function() {
            if (typeof ga !== 'undefined') {

@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>redis集群搭建 · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
-      <link href="https://honmaple.b0.upaiyun.com/static/css/lib.min.css" rel="stylesheet">
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/theme/css/style.min.css" rel="stylesheet">
   </head>
   <body>
@@ -22,7 +22,7 @@
       <span class="icon-bar"></span>
     </button>
     <a class="navbar-brand" href="https://honmaple.me">
-      <img class="navbar-logo" src="https://honmaple.b0.upaiyun.com/images/header/header-logo.png" alt="楓">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
     </a>
       <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
   </div>
@@ -85,10 +85,11 @@
 </header>    </div>
     <hr class="entry-hr" />
     <div class="entry-content entry-article">
-      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-64662058">准备</a></li>
-<li><a href="#org-98411540">创建集群</a></li>
-<li><a href="#org-3945471">测试集群</a></li>
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-cc3ce6dfcb">准备</a></li>
+<li><a href="#org-51a850545f">创建集群</a></li>
+<li><a href="#org-962504e356">测试集群</a></li>
 </ul>
 </div></div>
 
@@ -97,7 +98,7 @@
 
 <p>Redis 集群是一个提供在多个Redis间<b>节点间共享数据</b>的程序集</p>
 
-<h2 id="org-64662058">准备</h2>
+<h2 id="org-cc3ce6dfcb">准备</h2>
 
 <p>集群开始需要运行redis集群实例，而且要让集群正常运作至少需要三个主节点,这里创建六个节点，三个为主节点，三个为从节点,端口号分别为9001,9002,9003,9004,9005,9006</p>
 
@@ -116,11 +117,11 @@ mkdir <span class="m">9006</span>
 
 <blockquote>
 <p>最小配置选项:</p>
-<div class="highlight"><pre><span></span>port 9001
-cluster-enabled yes
-cluster-config-file node9001.conf
-cluster-node-timeout 5000
-appendonly yes
+<div class="highlight"><pre><span></span><span class="n">port</span> <span class="mi">9001</span>
+<span class="k">cluster</span><span class="o">-</span><span class="n">enabled</span> <span class="n">yes</span>
+<span class="k">cluster</span><span class="o">-</span><span class="n">config</span><span class="o">-</span><span class="n">file</span> <span class="n">node9001</span><span class="p">.</span><span class="n">conf</span>
+<span class="k">cluster</span><span class="o">-</span><span class="n">node</span><span class="o">-</span><span class="n">timeout</span> <span class="mi">5000</span>
+<span class="n">appendonly</span> <span class="n">yes</span>
 </pre></div>
 
 </blockquote>
@@ -158,7 +159,7 @@ redis-server redis/9006/redis.conf
 </pre></div>
 
 
-<h2 id="org-98411540">创建集群</h2>
+<h2 id="org-51a850545f">创建集群</h2>
 <p>使用redis的官方脚本<a href="https://github.com/antirez/redis/blob/unstable/src/redis-trib.rb">redis-trib</a>进行创建</p>
 <div class="highlight"><pre><span></span>ruby redis-trib.rb create --replicas <span class="m">1</span> <span class="m">127</span>.0.0.1:9001 <span class="m">127</span>.0.0.1:9002 <span class="m">127</span>.0.0.1:9003 <span class="m">127</span>.0.0.1:9004 <span class="m">127</span>.0.0.1:9005 <span class="m">127</span>.0.0.1:9006
 </pre></div>
@@ -179,24 +180,24 @@ redis-server redis/9006/redis.conf
 最后查看集群是否启动成功
 <a href="https://images.honmaple.com/images/admin/show/2017/08/150264059108046.png" data-fancybox="image"><img data-src="https://images.honmaple.com/images/admin/show/2017/08/150264059108046.png" class="lazyload" /></a></p>
 
-<h2 id="org-3945471">测试集群</h2>
+<h2 id="org-962504e356">测试集群</h2>
 <p><b>-c</b> 选项以集群方式启动</p>
 <div class="highlight"><pre><span></span>$ redis-cli -c -p <span class="m">7000</span>
-  <span class="m">127</span>.0.0.1:9001&gt; keys *
+  <span class="m">127</span>.0.0.1:9001<span class="p">&amp;</span>gt<span class="p">;</span> keys *
   <span class="o">(</span>empty list or <span class="nb">set</span><span class="o">)</span>
-  <span class="m">127</span>.0.0.1:9001&gt; <span class="nb">set</span> hello world
+  <span class="m">127</span>.0.0.1:9001<span class="p">&amp;</span>gt<span class="p">;</span> <span class="nb">set</span> hello world
   OK
-  <span class="m">127</span>.0.0.1:9001&gt; get hello
+  <span class="m">127</span>.0.0.1:9001<span class="p">&amp;</span>gt<span class="p">;</span> get hello
   <span class="s2">&quot;world&quot;</span>
-  <span class="m">127</span>.0.0.1:9001&gt; <span class="nb">set</span> hello1 world1
-  -&gt; Redirected to slot <span class="o">[</span><span class="m">11613</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9003
+  <span class="m">127</span>.0.0.1:9001<span class="p">&amp;</span>gt<span class="p">;</span> <span class="nb">set</span> hello1 world1
+  -<span class="p">&amp;</span>gt<span class="p">;</span> Redirected to slot <span class="o">[</span><span class="m">11613</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9003
   OK
-  <span class="m">127</span>.0.0.1:9003&gt; get hello1
+  <span class="m">127</span>.0.0.1:9003<span class="p">&amp;</span>gt<span class="p">;</span> get hello1
   <span class="s2">&quot;world1&quot;</span>
-  <span class="m">127</span>.0.0.1:9003&gt; <span class="nb">set</span> hello2 world2
-  -&gt; Redirected to slot <span class="o">[</span><span class="m">7486</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9002
+  <span class="m">127</span>.0.0.1:9003<span class="p">&amp;</span>gt<span class="p">;</span> <span class="nb">set</span> hello2 world2
+  -<span class="p">&amp;</span>gt<span class="p">;</span> Redirected to slot <span class="o">[</span><span class="m">7486</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9002
   OK
-  <span class="m">127</span>.0.0.1:9002&gt; get hello2
+  <span class="m">127</span>.0.0.1:9002<span class="p">&amp;</span>gt<span class="p">;</span> get hello2
   <span class="s2">&quot;world2&quot;</span>
 </pre></div>
 
@@ -204,14 +205,14 @@ redis-server redis/9006/redis.conf
 <p>进入另一个实例</p>
 
 <div class="highlight"><pre><span></span>$ redis-cli -c -p <span class="m">9002</span>
-  <span class="m">127</span>.0.0.1:9002&gt; get hello
-  -&gt; Redirected to slot <span class="o">[</span><span class="m">866</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9001
+  <span class="m">127</span>.0.0.1:9002<span class="p">&amp;</span>gt<span class="p">;</span> get hello
+  -<span class="p">&amp;</span>gt<span class="p">;</span> Redirected to slot <span class="o">[</span><span class="m">866</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9001
   <span class="s2">&quot;world&quot;</span>
-  <span class="m">127</span>.0.0.1:9001&gt; get hello1
-  -&gt; Redirected to slot <span class="o">[</span><span class="m">11613</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9003
+  <span class="m">127</span>.0.0.1:9001<span class="p">&amp;</span>gt<span class="p">;</span> get hello1
+  -<span class="p">&amp;</span>gt<span class="p">;</span> Redirected to slot <span class="o">[</span><span class="m">11613</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9003
   <span class="s2">&quot;world1&quot;</span>
-  <span class="m">127</span>.0.0.1:9003&gt; get hello2
-  -&gt; Redirected to slot <span class="o">[</span><span class="m">7486</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9002
+  <span class="m">127</span>.0.0.1:9003<span class="p">&amp;</span>gt<span class="p">;</span> get hello2
+  -<span class="p">&amp;</span>gt<span class="p">;</span> Redirected to slot <span class="o">[</span><span class="m">7486</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9002
   <span class="s2">&quot;world2&quot;</span>
 </pre></div>
 
@@ -233,7 +234,7 @@ redis-server redis/9006/redis.conf
     <i class="fa fa-copyright"></i>
     版权:
     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
-      <img class="hidden-xs" src="https://honmaple.b0.upaiyun.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
       知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
     </a>
   </div>
@@ -252,7 +253,7 @@ redis-server redis/9006/redis.conf
         </div>
       </div>
       <div class="entry-honor-wechat collapse">
-        <img src="https://honmaple.b0.upaiyun.com/images/pic/wechat.png" alt="wechat" />
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
       </div>
     </div>
   </div>
@@ -315,9 +316,9 @@ redis-server redis/9006/redis.conf
    gtag('js', new Date());
    gtag('config', 'UA-88401692-2');
   </script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/lib.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
         <script src="https://honmaple.me/theme/js/script.min.js"></script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
       <script data-no-instant>
        InstantClick.on('change', function() {
            if (typeof ga !== 'undefined') {

@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ansible笔记 · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
-      <link href="https://honmaple.b0.upaiyun.com/static/css/lib.min.css" rel="stylesheet">
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/theme/css/style.min.css" rel="stylesheet">
   </head>
   <body>
@@ -22,7 +22,7 @@
       <span class="icon-bar"></span>
     </button>
     <a class="navbar-brand" href="https://honmaple.me">
-      <img class="navbar-logo" src="https://honmaple.b0.upaiyun.com/images/header/header-logo.png" alt="楓">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
     </a>
       <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
   </div>
@@ -87,14 +87,15 @@
 </header>    </div>
     <hr class="entry-hr" />
     <div class="entry-content entry-article">
-      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-17703971">ansible动态解析inventory</a></li>
-<li><a href="#org-98284113">ansible自定义模块传递list变量会变成字符串</a></li>
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-123227efb3">ansible动态解析inventory</a></li>
+<li><a href="#org-062833af29">ansible自定义模块传递list变量会变成字符串</a></li>
 </ul>
 </div></div>
 
 
-<h2 id="org-17703971">ansible动态解析inventory</h2>
+<h2 id="org-123227efb3">ansible动态解析inventory</h2>
 <p><b>ansible</b>调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）</p>
 
 <p>但问题是<b>ansible</b>没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可</p>
@@ -174,20 +175,20 @@
 </pre></div>
 
 <p><b>结果</b>:</p>
-<div class="highlight"><pre><span></span>(ungrouped, [], {})
-(all, [ungrouped], {})
-(MY-HOST, [MY-HOST1], {u&#39;vip&#39;: u&#39;127.0.0.10&#39;, u&#39;ppp&#39;: u&#39;test&#39;})
-(MY_HOST-1, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.1&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
-(MY_HOST-2, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.2&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
-(MY_HOST-3, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.3&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
-(MY_HOST-4, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.4&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
-(MY-HOST1, [], {})
-(MY_HOST1-1, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.11&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
-(MY_HOST1-2, {u&#39;ansible_ssh_host&#39;: u&#39;127.0.0.12&#39;, &#39;inventory_file&#39;: None, &#39;inventory_dir&#39;: None})
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="n">ungrouped</span><span class="p">,</span><span class="w"> </span><span class="err">[]</span><span class="p">,</span><span class="w"> </span><span class="err">{}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="ow">all</span><span class="p">,</span><span class="w"> </span><span class="o">[</span><span class="n">ungrouped</span><span class="o">]</span><span class="p">,</span><span class="w"> </span><span class="err">{}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY</span><span class="o">-</span><span class="k">HOST</span><span class="p">,</span><span class="w"> </span><span class="o">[</span><span class="n">MY-HOST1</span><span class="o">]</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;vip&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.10&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;ppp&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;test&#39;</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.2&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.3&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.4&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY</span><span class="o">-</span><span class="n">HOST1</span><span class="p">,</span><span class="w"> </span><span class="err">[]</span><span class="p">,</span><span class="w"> </span><span class="err">{}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST1</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.11&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST1</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.12&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
 </pre></div>
 
 
-<p>可以看出已经没什么大的问题了, 但有一个点, <b>all</b>组下的groups列表只有<code>ungrouped</code>, 正常情况下<code>MY-HOST</code>组也应该继承<code>all</code>组, <del>可能是还需要一些其他的操作吧</del>，继续翻源码，找到了<code>InventoryData</code>的<code>reconcile_inventory</code>方法, 修改一下即可</p>
+<p>可以看出已经没什么大的问题了, 但有一个点, <b>all</b>组下的groups列表只有<code>ungrouped</code>, 正常情况下<code>MY-HOST</code>组也应该继承<code>all</code>组, <del>可能是还需要一些其他的操作吧</del>，继续翻源码，找到了<code>InventoryData</code>的=reconcile_inventory=方法, 修改一下即可</p>
 <div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">InventoryCustomModule</span><span class="p">()</span>
 <span class="n">module</span><span class="o">.</span><span class="n">mine_parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 <span class="n">module</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">reconcile_inventory</span><span class="p">()</span>
@@ -195,7 +196,7 @@
 
 </li>
 </ul>
-<h2 id="org-98284113">ansible自定义模块传递list变量会变成字符串</h2>
+<h2 id="org-062833af29">ansible自定义模块传递list变量会变成字符串</h2>
 <p>我自定义了一个模块，需要传入一个<b>list</b>变量<code>group_names</code></p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.module_utils.basic</span> <span class="kn">import</span> <span class="n">AnsibleModule</span>
 
@@ -216,7 +217,7 @@
 </pre></div>
 
 <p>但发现传入的变量最后变成的<code>str type</code></p>
-<div class="highlight"><pre><span></span>FAILED! =&gt; {&quot;changed&quot;: false, &quot;failed&quot;: true, &quot;msg&quot;: {&quot;group_names&quot;: &quot;[&#39;test&#39;]&quot;, &quot;type&quot;: &quot;&lt;type &#39;str&#39;&gt;&quot;}}
+<div class="highlight"><pre><span></span><span class="n">FAILED</span><span class="o">!</span> <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">{</span><span class="ss">&quot;changed&quot;</span><span class="p">:</span> <span class="k">false</span><span class="p">,</span> <span class="ss">&quot;failed&quot;</span><span class="p">:</span> <span class="k">true</span><span class="p">,</span> <span class="ss">&quot;msg&quot;</span><span class="p">:</span> <span class="err">{</span><span class="ss">&quot;group_names&quot;</span><span class="p">:</span> <span class="ss">&quot;[&#39;test&#39;]&quot;</span><span class="p">,</span> <span class="ss">&quot;type&quot;</span><span class="p">:</span> <span class="ss">&quot;&amp;lt;type &#39;str&#39;&amp;gt;&quot;</span><span class="err">}}</span>
 </pre></div>
 
 <p>最后查找资料后才知道, 传递的变量需要增加<code>type</code>参数, 否则都是<b>str</b></p>
@@ -245,7 +246,7 @@
     <i class="fa fa-copyright"></i>
     版权:
     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
-      <img class="hidden-xs" src="https://honmaple.b0.upaiyun.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
       知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
     </a>
   </div>
@@ -264,7 +265,7 @@
         </div>
       </div>
       <div class="entry-honor-wechat collapse">
-        <img src="https://honmaple.b0.upaiyun.com/images/pic/wechat.png" alt="wechat" />
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
       </div>
     </div>
   </div>
@@ -327,9 +328,9 @@
    gtag('js', new Date());
    gtag('config', 'UA-88401692-2');
   </script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/lib.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
         <script src="https://honmaple.me/theme/js/script.min.js"></script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
       <script data-no-instant>
        InstantClick.on('change', function() {
            if (typeof ga !== 'undefined') {

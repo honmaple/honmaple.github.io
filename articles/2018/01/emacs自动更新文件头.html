@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>emacs自动更新文件头 · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
-      <link href="https://honmaple.b0.upaiyun.com/static/css/lib.min.css" rel="stylesheet">
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/theme/css/style.min.css" rel="stylesheet">
   </head>
   <body>
@@ -22,7 +22,7 @@
       <span class="icon-bar"></span>
     </button>
     <a class="navbar-brand" href="https://honmaple.me">
-      <img class="navbar-logo" src="https://honmaple.b0.upaiyun.com/images/header/header-logo.png" alt="楓">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
     </a>
       <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
   </div>
@@ -85,10 +85,11 @@
 </header>    </div>
     <hr class="entry-hr" />
     <div class="entry-content entry-article">
-      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-10626316">自动更新Last Updated</a></li>
-<li><a href="#org-71116359">自动更新Filename</a></li>
-<li><a href="#org-81365469">自动更新Email</a></li>
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-a1b23f05ee">自动更新Last Updated</a></li>
+<li><a href="#org-4c33ac2dba">自动更新Filename</a></li>
+<li><a href="#org-b93404e8d6">自动更新Email</a></li>
 </ul>
 </div></div>
 
@@ -97,7 +98,7 @@
 <p>前面已经说过，可以使用<b>auto-insert</b>自动添加文件头，今天来说一说自动更新文件头，比如说每次保存时自动更新<b>last updated</b>字段</p>
 
 
-<h3 id="org-10626316">自动更新Last Updated</h3>
+<h3 id="org-a1b23f05ee">自动更新Last Updated</h3>
 <p>如果使用的是header2,直接设置相关的变量就可，假如使用的是<b>auto-insert</b>，同样也可以使用emacs内置的<b>time-stamp</b>对Last Updated进行自动更新</p>
 
 <p>time-stamp默认使用<code>Time-stamp:</code>,如果要对<code>Last Updated</code>进行自动更新，只需要简单的设置</p>
@@ -116,7 +117,7 @@
 
 <p>这样就能在每次保存时自动更新相应的字段了</p>
 
-<h3 id="org-71116359">自动更新Filename</h3>
+<h3 id="org-4c33ac2dba">自动更新Filename</h3>
 <p>之前遇到过，使用<b>auto-insert</b>在每次创建新文件时自动添加了文件头，但后面文件名被修改了，文件头里的文件名却不会自动更改，基于这个原因需要自己实现一个函数(我没有找到可以使用的已经存在的package)</p>
 
 <p>先理一理逻辑: 只需要查找当前文件前几行信息，如果找到<code>File Name:</code>字段，获取字段信息，与当前文件名进行对比，如果不一致则替换为当前文件名,直接给出代码吧</p>
@@ -126,7 +127,7 @@
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="k">save-excursion</span>
     <span class="p">(</span><span class="nf">goto-char</span> <span class="p">(</span><span class="nf">point-min</span><span class="p">))</span> <span class="c1">;;跳转到开头</span>
     <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">lines</span> <span class="mi">0</span><span class="p">))</span>
-    <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="nf">&lt;</span> <span class="nv">lines</span> <span class="nv">line-limit</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="nv">&amp;lt</span><span class="c1">; lines line-limit)</span>
         <span class="c1">;; 查找</span>
         <span class="p">(</span><span class="k">setq</span> <span class="nv">lines</span> <span class="p">(</span><span class="nf">1+</span> <span class="nv">lines</span><span class="p">))</span>
         <span class="p">(</span><span class="nf">forward-line</span> <span class="mi">1</span><span class="p">))))</span>
@@ -156,7 +157,7 @@
 <p>即可得到相关的完整函数(完整函数后面再讲)</p>
 </li>
 </ul>
-<h3 id="org-81365469">自动更新Email</h3>
+<h3 id="org-b93404e8d6">自动更新Email</h3>
 <p>工作和平时使用的邮箱不一样，我虽然设置了<i>at_home</i>变量区分工作与平时的邮箱,但不是每次我都记得要更新这个变量，所以有了这个需要，自动将文件头里的email信息更改为平时所用的邮箱，大致逻辑与自动更新Filename相同，所以我写了一个<b>macro</b>来自动生成相关的代码</p>
 
 <p>直接给出代码</p>
@@ -174,7 +175,7 @@
   <span class="p">(</span><span class="k">save-excursion</span>
     <span class="p">(</span><span class="nf">goto-char</span> <span class="p">(</span><span class="nf">point-min</span><span class="p">))</span>
     <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">lines</span> <span class="mi">0</span><span class="p">))</span>
-      <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="nf">&lt;</span> <span class="nv">lines</span> <span class="nv">line-limit</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="nv">&amp;lt</span><span class="c1">; lines line-limit)</span>
         <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">regex</span><span class="p">))</span>
           <span class="p">(</span><span class="nv">maple/header-update-action</span> <span class="nv">default</span><span class="p">))</span>
         <span class="p">(</span><span class="k">setq</span> <span class="nv">lines</span> <span class="p">(</span><span class="nf">1+</span> <span class="nv">lines</span><span class="p">))</span>
@@ -228,7 +229,7 @@
     <i class="fa fa-copyright"></i>
     版权:
     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
-      <img class="hidden-xs" src="https://honmaple.b0.upaiyun.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
       知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
     </a>
   </div>
@@ -247,7 +248,7 @@
         </div>
       </div>
       <div class="entry-honor-wechat collapse">
-        <img src="https://honmaple.b0.upaiyun.com/images/pic/wechat.png" alt="wechat" />
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
       </div>
     </div>
   </div>
@@ -310,9 +311,9 @@
    gtag('js', new Date());
    gtag('config', 'UA-88401692-2');
   </script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/lib.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
         <script src="https://honmaple.me/theme/js/script.min.js"></script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
       <script data-no-instant>
        InstantClick.on('change', function() {
            if (typeof ga !== 'undefined') {

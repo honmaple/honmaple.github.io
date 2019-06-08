@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ansible快速部署加速方案 · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
-      <link href="https://honmaple.b0.upaiyun.com/static/css/lib.min.css" rel="stylesheet">
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/theme/css/style.min.css" rel="stylesheet">
   </head>
   <body>
@@ -22,7 +22,7 @@
       <span class="icon-bar"></span>
     </button>
     <a class="navbar-brand" href="https://honmaple.me">
-      <img class="navbar-logo" src="https://honmaple.b0.upaiyun.com/images/header/header-logo.png" alt="楓">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
     </a>
       <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
   </div>
@@ -85,39 +85,40 @@
 </header>    </div>
     <hr class="entry-hr" />
     <div class="entry-content entry-article">
-      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#org-78088089">加速</a>
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-6607177">问题</a></li>
-<li><a href="#org-6356647">方案</a></li>
+<li><a href="#org-1580a79480">加速</a>
+<ul>
+<li><a href="#org-2fb49eec39">问题</a></li>
+<li><a href="#org-0fee25f074">方案</a></li>
 </ul></li>
-<li><a href="#org-74917925">目标</a>
+<li><a href="#org-941f08313a">目标</a>
 <ul>
-<li><a href="#org-17337917">web界面</a></li>
-<li><a href="#org-28322063">任务队列</a></li>
+<li><a href="#org-0949989841">web界面</a></li>
+<li><a href="#org-83856208ea">任务队列</a></li>
 </ul></li>
 </ul>
 </div></div>
 
 
 <p>ansible是基于Python的 <b>自动化部署</b> 方案,但是目前只是通过命令行</p>
-<div class="highlight"><pre><span></span>ansible -i hosts all -a &#39;uptime&#39;
-# or
-ansible-playbook -i hosts playbook.yml -e &#39;args&#39; -t deploy
+<div class="highlight"><pre><span></span><span class="nv">ansible</span> <span class="o">-</span><span class="nv">i</span> <span class="nv">hosts</span> <span class="nv">all</span> <span class="o">-</span><span class="nv">a</span> <span class="s1">&#39;</span><span class="s">uptime</span><span class="s1">&#39;</span>
+# <span class="nv">or</span>
+<span class="nv">ansible</span><span class="o">-</span><span class="nv">playbook</span> <span class="o">-</span><span class="nv">i</span> <span class="nv">hosts</span> <span class="nv">playbook</span>.<span class="nv">yml</span> <span class="o">-</span><span class="nv">e</span> <span class="s1">&#39;</span><span class="s">args</span><span class="s1">&#39;</span> <span class="o">-</span><span class="nv">t</span> <span class="nv">deploy</span>
 </pre></div>
 
 <p>实现自动化部署.</p>
 
 <p>长此以往，虽然可以实现所谓的自动化，但产品业务线多且杂的情况下，项目很难维护，更不用说以文件为存储的表现形式很差,针对目前使用ansible的经验以及使用中的困难,可以针对性的提出一些解决方案</p>
 
-<h2 id="org-78088089">加速</h2>
+<h2 id="org-1580a79480">加速</h2>
 
-<h3 id="org-6607177">问题</h3>
+<h3 id="org-2fb49eec39">问题</h3>
 <p>自动化部署其中最大的障碍就是 <b>网络</b> 的原因</p>
 
 <p>其中需要通过网络上传一些模板文件,有的甚至还需要上传一些压缩包,虽然说几MB的东西很快就能上传成功，但如果把这上传文件所需要的2秒乘以上百，上千台主机呢,更不用说ansible的表现形式就是一个任务一个任务的往下执行,假如在上传模板这一步卡住(等待所有服务器上传成功),这时某台未模板化的服务器的某服务需要重启，是不是会出问题呢</p>
 
-<h3 id="org-6356647">方案</h3>
+<h3 id="org-0fee25f074">方案</h3>
 <p>针对这一问题,目前想到的解决方案如下:</p>
 <ul>
 <li><b>适当增加fork数</b>
@@ -130,12 +131,12 @@ ansible-playbook -i hosts playbook.yml -e &#39;args&#39; -t deploy
 <p>像中国移动以及香港，国外的某些节点在运行ansible playbook的时候总会或多或少的出些问题,这些节点可以考虑放到最后,并且需要找出问题原因进行优化</p>
 </li>
 </ul>
-<h2 id="org-74917925">目标</h2>
+<h2 id="org-941f08313a">目标</h2>
 
-<h3 id="org-17337917">web界面</h3>
+<h3 id="org-0949989841">web界面</h3>
 <p>使用过ansible的同学一定知道ansible-tower，它是ansible的web方式部署，通过web界面就可以添加删除任务,并且运行ansible playbook,可惜，它是收费的 /捂脸</p>
 
-<h3 id="org-28322063">任务队列</h3>
+<h3 id="org-83856208ea">任务队列</h3>
 <p>把ansible playbook放到任务队列里，由消费者去消费对应的任务</p>
 
 <p>未完待续...</p>
@@ -155,7 +156,7 @@ ansible-playbook -i hosts playbook.yml -e &#39;args&#39; -t deploy
     <i class="fa fa-copyright"></i>
     版权:
     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
-      <img class="hidden-xs" src="https://honmaple.b0.upaiyun.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
       知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
     </a>
   </div>
@@ -174,7 +175,7 @@ ansible-playbook -i hosts playbook.yml -e &#39;args&#39; -t deploy
         </div>
       </div>
       <div class="entry-honor-wechat collapse">
-        <img src="https://honmaple.b0.upaiyun.com/images/pic/wechat.png" alt="wechat" />
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
       </div>
     </div>
   </div>
@@ -237,9 +238,9 @@ ansible-playbook -i hosts playbook.yml -e &#39;args&#39; -t deploy
    gtag('js', new Date());
    gtag('config', 'UA-88401692-2');
   </script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/lib.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
         <script src="https://honmaple.me/theme/js/script.min.js"></script>
-      <script src="https://honmaple.b0.upaiyun.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
       <script data-no-instant>
        InstantClick.on('change', function() {
            if (typeof ga !== 'undefined') {
