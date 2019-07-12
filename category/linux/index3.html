@@ -59,6 +59,51 @@
 </nav>          <ul class="entry-list" style="margin-top:0;">
         <li><article>
           <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/09/ansible-playbook中tasks单进程.html" rel="bookmark" title="Permalink to ansible-playbook中tasks单进程">ansible-playbook中tasks单进程</a></h1>
+<header class="entry-info">
+  <span title="2017-09-19T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    二 19 九月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tag/ansible/index.html">ansible</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            
+<p>之前有一个需求,ansible-playbook中需要某一步单步执行,也就是说在有多台服务器时,某个任务只能一台服务器执行完后,另一台服务器才能执行,否者对应集群的服务会出问题</p>
+
+<p>这是一个很简单的需求,ansible中也有对应的实现, <code>--fork 1</code> 或者 使用 <code>serial</code></p>
+
+<p>但是如果有人忘记加 <code>--fork 1</code> 了呢，而且该任务是在子任务中，使用 <b>include</b> 加载, <code>serial</code> 关键字无法在某一特定任务中使用,只能与 <b>hosts</b> 同级</p>
+
+<p>所幸，在这里 <a href="https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task">https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task</a> 找到了解决办法,使用 <b>delegate_to</b></p>
+
+<div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">service</span> <span class="n">restart</span>
+  <span class="c1"># serial: 1 would be the proper solution here, but …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/09/ansible-playbook中tasks单进程.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/08/redis集群搭建.html" rel="bookmark" title="Permalink to redis集群搭建">redis集群搭建</a></h1>
 <header class="entry-info">
   <span title="2017-08-13T00:00:00+08:00">
@@ -518,87 +563,6 @@ debain系,包括ubuntu …</p>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/05/晒晒我的Linux及桌面.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/04/emacs笔记.html" rel="bookmark" title="Permalink to emacs笔记">emacs笔记</a></h1>
-<header class="entry-info">
-  <span title="Updated at 2018-11-09">
-    <i class="fa fa-calendar-o"></i>
-    五 21 四月 2017
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tag/emacs/index.html">emacs</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content">
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
-<ul>
-<li><a href="#org-bd8f6735d6">Evil</a>
-<ul>
-<li><a href="#org-7b8e7bf723">粘贴替换的时候会复制替换的文本</a></li>
-<li><a href="#org-585010db6b">自动搜索已选中的字符</a></li>
-<li><a href="#org-c4d6d5ec2a">evil-mc不忽略大小写</a></li>
-</ul></li>
-<li><a href="#org-b97c4d4cdd">Font</a>
-<ul>
-<li><a href="#org-c64b1df3bf">设置中英文字体</a></li>
-</ul></li>
-<li><a href="#org-f3742ddc65">Ivy</a>
-<ul>
-<li><a href="#org-0fd1423b91">指定目录或文件进行搜索</a></li>
-<li><a href="#org-1f2c330e31">查找当前目录以及子目录的某个文件</a></li>
-<li><a href="#org-8a187202f2">当选中单词时，swiper使用已选单词进行搜索</a></li>
-</ul></li>
-<li><a href="#org-2c3cafa4db">File</a>
-<ul>
-<li><a href="#org-aa0a5120ce">获取文件或目录的basename</a></li>
-</ul></li>
-<li><a href="#org-e75efa6670">Elisp</a>
-<ul>
-<li><a href="#org-f9377ef1e3">golang自动增加注释</a></li>
-<li><a href="#org-76de667e3d">增加到hook但仅调用一次</a></li>
-<li><a href="#org-c58ca40da7">迭代并获取列表索引</a></li>
-<li><a href="#org-2305ffb5d8">深拷贝function</a></li>
-</ul></li>
-</ul>
-</div></div>
-
-
-<h2 id="org-bd8f6735d6">Evil</h2>
-<h3 id="org-7b8e7bf723">粘贴替换的时候会复制替换的文本</h3>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">evil-paste-after-from-0</span> <span class="p">()</span>
-  <span class="p">(</span><span class="nv">interactive</span><span class="p">)</span>
-  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">evil-this-register</span> <span class="nv">?0</span><span class="p">))</span>
-    <span class="p">(</span><span class="nv">call-interactively</span> <span class="ss">&#39;evil-paste-after</span><span class="p">)))</span>
-
-<span class="p">(</span><span class="nv">define-key</span> <span class="nv">evil-visual-state-map</span> <span class="s">&quot;p&quot;</span> <span class="ss">&#39;evil-paste-after-from-0</span><span class="p">)</span>
-</pre></div>
-
-<h3 id="org-585010db6b">自动搜索已选中的字符</h3>
-<p>经常使用 evil 中的 =/= 进行搜索, 但有时候想要搜索已有的字符, 在 <b>evil-visual-state</b> 下选中某个字符,按 =/= 时自动把选中的字符填入待搜索项中</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">use-package</span> <span class="nv">isearch</span>
-  <span class="nb">:ensure …</span></pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/04/emacs笔记.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">

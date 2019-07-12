@@ -59,8 +59,113 @@
 </nav>        <article>
           <div class="entry-header">
             <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2018/11/web-mode自定义fold函数以适应indent-region.html" rel="bookmark" title="Permalink to web-mode自定义fold函数以适应indent-region">web-mode自定义fold函数以适应indent-region</a>
+              <a href="https://honmaple.me/articles/2019/07/elisp生成渐变XPM图片.html" rel="bookmark" title="Permalink to elisp生成渐变XPM图片">elisp生成渐变XPM图片</a>
             </h1>
+<header class="entry-info">
+  <span title="Updated at 2019-07-12">
+    <i class="fa fa-calendar-o"></i>
+    五 12 七月 2019
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tag/emacs/index.html">emacs</a>
+        <a href="https://honmaple.me/tag/elisp/index.html">elisp</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-73d569baf7">渐变颜色</a></li>
+<li><a href="#org-9a9c7eb347">生成XPM图片</a></li>
+<li><a href="#org-35d265ae60">效果显示</a></li>
+</ul>
+</div></div>
+
+
+<blockquote>
+<p>无意中看到 <a href="https://github.com/dbordak/telephone-line">telephone-line</a> 有一种渐变颜色的效果，看起来很棒，但<b>telephone-line</b>的源码有些难懂，所以自己动手实现类似的效果</p>
+</blockquote>
+
+<h3 id="org-73d569baf7">渐变颜色</h3>
+<p>渐变颜色的实现可使用<code>color-gradient</code></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">color-gradient</span>
+ <span class="o">&#39;</span><span class="p">(</span><span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">)</span>
+ <span class="p">(</span><span class="nv">color-name-to-rgb</span> <span class="s">&quot;red&quot;</span><span class="p">)</span> <span class="mi">10</span><span class="p">)</span>
+</pre></div>
+
+
+<p>实现原理是对红(R)、绿(G)、蓝(B)三个颜色通道分别取 <b>n + 2</b> 个过渡值，*n* 为中间颜色过渡状态，所以对于<code>red</code>、=#000=、=#a0a0a0=等颜色需要转化为RGB色彩模式</p>
+
+<h3 id="org-9a9c7eb347">生成XPM图片</h3>
+<p>XPM图片格式参考 <a href="https://en.wikipedia.org/wiki/X_PixMap">https://en.wikipedia.org/wiki/X_PixMap</a>(XPM3)</p>
+
+<p>大概是这样的</p>
+<div class="highlight"><pre><span></span><span class="cm">/* XPM */</span><span class="w"></span>
+static<span class="w"> </span>char<span class="w"> </span><span class="o">*</span><span class="w"> </span>XFACE<span class="err">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">{</span><span class="w"></span>
+<span class="cm">/* &amp;lt;Values&amp;gt; */</span><span class="w"></span>
+<span class="cm">/* &amp;lt;width/columns&amp;gt; &amp;lt;height/rows&amp;gt; &amp;lt;colors&amp;gt; &amp;lt;chars per pixel&amp;gt;*/</span><span class="w"></span>
+<span class="s">&quot;48 4 2 1&quot;</span><span class="o">,</span><span class="w"></span>
+<span class="cm">/* &amp;lt;Colors&amp;gt; */</span><span class="w"></span>
+<span class="s">&quot;a c #ffffff&quot;</span><span class="o">,</span><span class="w"></span>
+<span class="s">&quot;b c #000000&quot;</span><span class="o">,</span><span class="w"></span>
+<span class="cm">/* &amp;lt;Pixels&amp;gt; */</span><span class="w"></span>
+<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="o">,</span><span class="w"></span>
+<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="o">,</span><span class="w"></span>
+<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="o">,</span><span class="w"></span>
+<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="w"></span>
+<span class="err">};</span><span class="w"></span>
+</pre></div>
+
+
+<p>渐变颜色XPM图片原理就是使用不同的字符代表不同状态的渐变颜色，当所使用的字符数越多，渐变效果越好，但同时XPM图片的宽度也就越大</p>
+
+<ul>
+<li><b>生成不同字符</b>
+<div class="highlight"><pre><span></span><span class="c1">;; 0～9</span>
+<span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;number-to-string</span> <span class="p">(</span><span class="nv">number-sequence</span> <span class="mi">0</span> <span class="mi">9</span><span class="p">))</span>
+<span class="c1">;; a~z</span>
+<span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;char-to-string</span> <span class="p">(</span><span class="nv">number-sequence</span> <span class="sc">?a</span> <span class="sc">?z</span><span class="p">))</span>
+</pre></div>
+
+</li>
+<li><b>不同字符对应不同颜色</b>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">number</span> <span class="mi">-1</span><span class="p">))</span>
+  <span class="p">(</span><span class="nf">mapconcat</span>
+   <span class="p">(</span><span class="nb">lambda</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">setq</span> <span class="nv">number</span> <span class="p">(</span><span class="nf">+</span> <span class="nv">number</span> <span class="mi">1</span><span class="p">))</span>
+     <span class="p">(</span><span class="nf">format</span> <span class="s">&quot;\&quot;%s c %s\&quot;,&quot;</span> <span class="p">(</span><span class="nf">nth</span> <span class="nv">number</span> <span class="nv">maple-xpm-chars</span><span class="p">)</span> <span class="p">(</span><span class="nf">apply</span> <span class="ss">&#39;color-rgb-to-hex</span> <span class="nv">x</span><span class="p">)))</span>
+   <span class="p">(</span><span class="nv">color-gradient</span>
+    <span class="p">(</span><span class="nv">color-name-to-rgb</span> <span class="nv">color1</span><span class="p">)</span>
+    <span class="p">(</span><span class="nv">color-name-to-rgb</span> <span class="nv">color2</span><span class="p">)</span> <span class="nv">width</span><span class="p">)</span> <span class="s">&quot;&quot;</span><span class="p">))</span>
+</pre></div>
+
+</li>
+</ul>
+<h3 id="org-35d265ae60">效果显示</h3>
+<p><a href="https://static.honmaple.com/default/images/2019/07/xpm-gradient.png?type=show" data-fancybox="image"><img data-src="https://static.honmaple.com/default/images/2019/07/xpm-gradient.png?type=thumb" class="lazyload" /></a></p>
+
+<p><a href="https://github.com/honmaple/emacs-maple-xpm">完整代码及更多XPM图片</a></p>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/11/web-mode自定义fold函数以适应indent-region.html" rel="bookmark" title="Permalink to web-mode自定义fold函数以适应indent-region">web-mode自定义fold函数以适应indent-region</a></h1>
 <header class="entry-info">
   <span title="Updated at 2018-11-25">
     <i class="fa fa-calendar-o"></i>
@@ -96,74 +201,12 @@
   <span class="ni">&amp;lt;</span>div class=&quot;col-xs-3 col-sm-3&quot; id=&quot;sidebar&quot; role=&quot;navigation&quot;<span class="ni">&amp;gt;</span>
     <span class="ni">&amp;lt;</span>button class=&quot;btn btn-primary&quot;<span class="ni">&amp;gt;</span>Submit<span class="ni">&amp;lt;</span>/button<span class="ni">&amp;gt;</span> <span class="ni">&amp;lt;</span>br /<span class="ni">&amp;gt;</span>
     <span class="ni">&amp;lt;</span>span<span class="ni">&amp;gt;</span>
-        <span class="ni">&amp;lt;</span>button class=&quot;btn btn-primary&quot;<span class="ni">&amp;gt;</span>Submit<span class="ni">&amp;lt;</span>/button<span class="ni">&amp;gt;</span> <span class="ni">&amp;lt;</span>br /<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>/span<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>span<span class="ni">&amp;gt;</span>
-        <span class="ni">&amp;lt;</span>button class=&quot;btn btn-primary&quot;<span class="ni">&amp;gt;</span>Submit<span class="ni">&amp;lt;</span>/button<span class="ni">&amp;gt;</span> <span class="ni">&amp;lt;</span>br /<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>/span<span class="ni">&amp;gt;</span>
-  <span class="ni">&amp;lt;</span>/div<span class="ni">&amp;gt;</span>
-<span class="ni">&amp;lt;</span>/div<span class="ni">&amp;gt;</span>
-<span class="ni">&amp;lt;</span>button class=&quot;btn btn-primary&quot;<span class="ni">&amp;gt;</span>Submit<span class="ni">&amp;lt;</span>/button<span class="ni">&amp;gt;</span>
-<span class="ni">&amp;lt;</span>br /<span class="ni">&amp;gt;</span>
-<span class="ni">&amp;lt;</span>a href=&quot;&quot;<span class="ni">&amp;gt;</span>as<span class="ni">&amp;lt;</span>/a<span class="ni">&amp;gt;</span>
-</pre></div>
-
-
-<p>当把<b>div#sidebar</b>使用<code>web-mode-fold-or-unfold</code>折叠起来, 然后使用</p>
-
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/indent-buffer</span> <span class="p">()</span>
-  <span class="s">&quot;Format buffer with `indent-region`.&quot;</span>
-  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
-  <span class="p">(</span><span class="k">save-excursion</span>
-    <span class="p">(</span><span class="nv">indent-region</span> <span class="p">(</span><span class="nf">point-min</span><span class="p">)</span> <span class="p">(</span><span class="nf">point-max</span><span class="p">)</span> <span class="no">nil</span><span class="p">)))</span>
-</pre></div>
-
-<p>展开后就会变成</p>
-<div class="highlight"><pre><span></span><span class="ni">&amp;lt;</span>!-- sidebar --<span class="ni">&amp;gt;</span>
-<span class="ni">&amp;lt;</span>div<span class="ni">&amp;gt;</span>
-  <span class="ni">&amp;lt;</span>div class=&quot;col-xs-3 col-sm-3&quot; id=&quot;sidebar&quot; role=&quot;navigation&quot;<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>button class=&quot;btn btn-primary&quot;<span class="ni">&amp;gt;</span>Submit<span class="ni">&amp;lt;</span>/button<span class="ni">&amp;gt;</span> <span class="ni">&amp;lt;</span>br /<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>span<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>button class=&quot;btn btn-primary&quot;<span class="ni">&amp;gt;</span>Submit<span class="ni">&amp;lt;</span>/button<span class="ni">&amp;gt;</span> <span class="ni">&amp;lt;</span>br /<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>/span<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>span<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>button class=&quot;btn btn-primary&quot;<span class="ni">&amp;gt;</span>Submit<span class="ni">&amp;lt;</span>/button<span class="ni">&amp;gt;</span> <span class="ni">&amp;lt;</span>br /<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>/span<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>/div<span class="ni">&amp;gt;</span>
-<span class="ni">&amp;lt;</span>/div<span class="ni">&amp;gt;</span>
-<span class="ni">&amp;lt;</span>button class=&quot;btn btn-primary&quot;<span class="ni">&amp;gt;</span>Submit<span class="ni">&amp;lt;</span>/button<span class="ni">&amp;gt;</span>
-<span class="ni">&amp;lt;</span>br /<span class="ni">&amp;gt;</span>
-<span class="ni">&amp;lt;</span>a href=&quot;&quot;<span class="ni">&amp;gt;</span>as<span class="ni">&amp;lt;</span>/a<span class="ni">&amp;gt;</span>
-</pre></div>
-
-
-<p>这与期望的效果不符(不知道是不是只有我碰到，还是这可能是一个<b>bug</b>),  我去看了一下<code>web-mode-fold-or-unfold</code>的实现, 它使用的是</p>
-
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nf">put-text-property</span> <span class="nv">beg-inside</span> <span class="nv">end-inside</span> <span class="ss">&#39;invisible</span> <span class="no">t</span><span class="p">)</span>
-</pre></div>
-
-
-<p>来隐藏折叠部分， <b>我不太清楚为什么使用put-text-property会使indent-region缩进有问题，有知道的可以告知一下</b>，但我平时在其他项目中都是使用 <code>hs-toggle-hiding</code> 来折叠代码， <code>hs-toggle-hiding</code>能很好的与<code>indent-region</code>配合</p>
-
-<p>由于<code>web-mode-fold-or-unfold</code>这个函数太长，不想占用我自己的配置， 所以魔改了一下</p>
-
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="nf">fset</span> <span class="ss">&#39;maple/put-text-property</span> <span class="p">(</span><span class="nf">symbol-function</span> <span class="ss">&#39;put-text-property</span><span class="p">))</span>
-<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/web-mode-put-text</span><span class="p">(</span><span class="nv">p</span> <span class="nv">q</span> <span class="nv">prop</span> <span class="nv">value</span><span class="p">)</span>
-  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">eq</span> <span class="nv">prop</span> <span class="ss">&#39;invisible</span><span class="p">)</span> <span class="nv">value</span><span class="p">)</span> <span class="p">(</span><span class="nv">hs-make-overlay</span> <span class="nv">p</span> <span class="nv">q</span> <span class="ss">&#39;code</span><span class="p">)</span>
-    <span class="p">(</span><span class="nv">maple/put-text-property</span> <span class="nv">p</span> <span class="nv">q</span> <span class="nv">prop</span> <span class="nv">value</span><span class="p">)))</span>
-<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/web-mode-fold-or-unfold</span><span class="p">()</span>
-  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
-  <span class="p">(</span><span class="nb">cl-letf</span> <span class="p">(((</span><span class="nf">symbol-function</span> <span class="ss">&#39;put-text-property</span><span class="p">)</span> <span class="ss">&#39;maple/web-mode-put-text</span><span class="p">))</span>
-    <span class="p">(</span><span class="nv">web-mode-fold-or-unfold</span><span class="p">)))</span>
-</pre></div>
-
-
-<p>把<code>put-text-property</code>临时修改成<code>hs-make-overlay</code>,这样<b>web-mode</b>折叠后就能正确地使用<code>maple/indent-buffer</code>了</p>
-
-<p>来源:<a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/lisp/init-web.el">honmaple's init-web.el</a></p>
+        <span class="ni">&amp;lt;</span>button class=&quot;btn btn-primary …</pre></div>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/11/web-mode自定义fold函数以适应indent-region.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/05/方便的切换emacs主题.html" rel="bookmark" title="Permalink to 方便的切换emacs主题">方便的切换emacs主题</a></h1>
