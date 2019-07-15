@@ -1,5 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Python</title><link href="https://honmaple.me/" rel="alternate"></link><link href="http://127.0.0.1:8000/feeds/python.atom.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2019-03-05T01:25:12+08:00</updated><subtitle>风落花语风落天，花落风雨花落田.</subtitle><entry><title>为pelican添加子站点功能</title><link href="https://honmaple.me/articles/2018/06/%E4%B8%BApelican%E6%B7%BB%E5%8A%A0%E5%AD%90%E7%AB%99%E7%82%B9%E5%8A%9F%E8%83%BD.html" rel="alternate"></link><published>2018-06-03T00:26:43+08:00</published><updated>2019-03-05T01:25:12+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-06-03:/articles/2018/06/为pelican添加子站点功能.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog - Python</title><link href="https://honmaple.me/" rel="alternate"></link><link href="http://127.0.0.1:8000/feeds/python.atom.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2019-07-15T21:31:55+08:00</updated><subtitle>风落花语风落天，花落风雨花落田.</subtitle><entry><title>Flask支持多语言站点</title><link href="https://honmaple.me/articles/2019/01/Flask%E6%94%AF%E6%8C%81%E5%A4%9A%E8%AF%AD%E8%A8%80%E7%AB%99%E7%82%B9.html" rel="alternate"></link><published>2019-01-13T01:32:11+08:00</published><updated>2019-07-15T21:31:55+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2019-01-13:/articles/2019/01/Flask支持多语言站点.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-c2bf92094d"&gt;使用nginx重定向uri&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a4987c2787"&gt;使用uri获取对应非302响应&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-daf44e9b9c"&gt;使用url_map复制并alias路由&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-bdd71c8026"&gt;演示效果&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+&lt;blockquote&gt;
+&lt;p&gt;Flask的多语言国际化可以使用&lt;b&gt;Flask-Babel&lt;/b&gt;插件，在此不再细述，但对于所谓的多语言站点(即形如&lt;b&gt;example.com/zh/uri、example.com/en/uri&lt;/b&gt;或者&lt;b&gt;zh.example.com、en.example.com&lt;/b&gt;)文档上却未作细述&lt;/p&gt;
+
+&lt;p&gt;有一个 &lt;a href="https://flask.palletsprojects.com/en/1.1.x/patterns/urlprocessors/"&gt;Flask URL Processors&lt;/a&gt; 需要对所有的&lt;b&gt;uri&lt;/b&gt;都额外增加一个&lt;b&gt;lang_code&lt;/b&gt;的前缀，路由数较少时没什么问题，但路由数较多时太过麻烦&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;实现&lt;b&gt;example.com/en/uri&lt;/b&gt;可以有多种方式，除了使用&lt;b&gt;Flask URL …&lt;/b&gt;&lt;/p&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-c2bf92094d"&gt;使用nginx重定向uri&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a4987c2787"&gt;使用uri获取对应非302响应&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-daf44e9b9c"&gt;使用url_map复制并alias路由&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-bdd71c8026"&gt;演示效果&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+
+
+&lt;blockquote&gt;
+&lt;p&gt;Flask的多语言国际化可以使用&lt;b&gt;Flask-Babel&lt;/b&gt;插件，在此不再细述，但对于所谓的多语言站点(即形如&lt;b&gt;example.com/zh/uri、example.com/en/uri&lt;/b&gt;或者&lt;b&gt;zh.example.com、en.example.com&lt;/b&gt;)文档上却未作细述&lt;/p&gt;
+
+&lt;p&gt;有一个 &lt;a href="https://flask.palletsprojects.com/en/1.1.x/patterns/urlprocessors/"&gt;Flask URL Processors&lt;/a&gt; 需要对所有的&lt;b&gt;uri&lt;/b&gt;都额外增加一个&lt;b&gt;lang_code&lt;/b&gt;的前缀，路由数较少时没什么问题，但路由数较多时太过麻烦&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;实现&lt;b&gt;example.com/en/uri&lt;/b&gt;可以有多种方式，除了使用&lt;b&gt;Flask URL Processors&lt;/b&gt;中介绍的外，还可以&lt;/p&gt;
+
+&lt;h3 id="org-c2bf92094d"&gt;使用nginx重定向uri&lt;/h3&gt;
+&lt;p&gt;这应该是各种方式里最简单的一种&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;location&lt;/span&gt; &lt;span class="p"&gt;~&lt;/span&gt; &lt;span class="sr"&gt;^/en/&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kn"&gt;rewrite&lt;/span&gt; &lt;span class="s"&gt;^/en/(.*)&lt;/span&gt;$ &lt;span class="s"&gt;/&lt;/span&gt;&lt;span class="nv"&gt;$1&lt;/span&gt; &lt;span class="s"&gt;last&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;location&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="s"&gt;/en&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kn"&gt;rewrite&lt;/span&gt; &lt;span class="s"&gt;^/(.*)&lt;/span&gt;$ &lt;span class="s"&gt;/index&lt;/span&gt; &lt;span class="s"&gt;last&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3 id="org-a4987c2787"&gt;使用uri获取对应非302响应&lt;/h3&gt;
+&lt;p&gt;即增加一个url为&lt;b&gt;/en/&amp;lt;path:uri&amp;gt;&lt;/b&gt;的路由，在此路由&lt;b&gt;func&lt;/b&gt;中，根据&lt;b&gt;&amp;lt;path:uri&amp;gt;&lt;/b&gt;信息获取已注册路由的&lt;b&gt;view_function&lt;/b&gt;，不使用重定向，而是直接调用&lt;b&gt;view_function&lt;/b&gt;返回实际响应&lt;/p&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# https://stackoverflow.com/questions/38488134/get-the-flask-view-function-that-matches-a-url&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_view_function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;method&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;GET&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;adapter&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;current_app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;url_map&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;bind&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;localhost&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;match&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;adapter&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;match&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;method&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;method&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="n"&gt;RequestRedirect&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c1"&gt;# recursively match redirects&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;get_view_function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;new_url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;method&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;MethodNotAllowed&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;NotFound&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="c1"&gt;# no match&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;
+
+    &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c1"&gt;# return the view function and arguments&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;current_app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;view_functions&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;match&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]],&lt;/span&gt; &lt;span class="n"&gt;match&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="ne"&gt;KeyError&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c1"&gt;# no view is associated with the endpoint&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;提高查找对应&lt;code&gt;view-function&lt;/code&gt;的性能，增加缓存到内存中&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;FUNCTION&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;dict&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;view_function_cache&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="nd"&gt;@wraps&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;_view_function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;method&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;GET&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="c1"&gt;# 避免故意访问&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;FUNCTION&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;gt&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;FUNCTION&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;FUNCTION&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pop&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;method&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt;
+        &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;hashlib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;md5&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;encode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;UTF-8&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;hexdigest&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;FUNCTION&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;FUNCTION&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+        &lt;span class="n"&gt;FUNCTION&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;method&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;FUNCTION&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;_view_function&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这样就可以定义&lt;b&gt;/en/&amp;lt;uri&amp;gt;&lt;/b&gt;实际的&lt;code&gt;view_function&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;redirect_en&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;uri&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;view_function&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;get_view_function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="s2"&gt;&amp;quot;/&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;uri&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;method&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;view_function&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;abort&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;404&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="c1"&gt;# 注：因为我使用Flask-Babel是根据accept_language来区别不同语言&lt;/span&gt;
+    &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;environ&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;HTTP_ACCEPT_LANGUAGE&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;en-US,en;q=0.5&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;view_function&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;](&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;view_function&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3 id="org-daf44e9b9c"&gt;使用url_map复制并alias路由&lt;/h3&gt;
+&lt;p&gt;原理同&lt;b&gt;Flask URL Processors&lt;/b&gt; ，为所有的路由都额外增加&lt;b&gt;/en&lt;/b&gt;前缀，并在&lt;code&gt;before_request&lt;/code&gt;中匹配到以&lt;b&gt;/en&lt;/b&gt;开头的请求就修改对应&lt;b&gt;accept_language&lt;/b&gt;信息&lt;/p&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@app.before_request&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;before_request&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;startswith&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;/en/&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;environ&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;HTTP_ACCEPT_LANGUAGE&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;en-US,en;q=0.5&amp;quot;&lt;/span&gt;
+
+&lt;span class="n"&gt;url_map&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;url_map&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;iter_rules&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;rule&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;url_map&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_url_rule&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;/en&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;rule&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rule&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;rule&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;endpoint&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;alias&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;咦，感觉这种方式更简单一些，但最好还是能够对一些特殊的路由比如: &lt;b&gt;static&lt;/b&gt;, &lt;b&gt;admin&lt;/b&gt;, &lt;b&gt;subdomain&lt;/b&gt;等进行特殊处理&lt;/p&gt;
+
+&lt;h3 id="org-bdd71c8026"&gt;演示效果&lt;/h3&gt;
+&lt;p&gt;&lt;a href="https://honmaple.com/en/article"&gt;切换成English&lt;/a&gt;&lt;/p&gt;
+</content><category term="python"></category><category term="flask"></category></entry><entry><title>为pelican添加子站点功能</title><link href="https://honmaple.me/articles/2018/06/%E4%B8%BApelican%E6%B7%BB%E5%8A%A0%E5%AD%90%E7%AB%99%E7%82%B9%E5%8A%9F%E8%83%BD.html" rel="alternate"></link><published>2018-06-03T00:26:43+08:00</published><updated>2019-03-05T01:25:12+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2018-06-03:/articles/2018/06/为pelican添加子站点功能.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-2cb683f2ae"&gt;创建翻译&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-e9d4ec907b"&gt;动态变量&lt;/a&gt;&lt;/li&gt;
@@ -66,7 +190,7 @@ babel-compile:
 &lt;span class="p"&gt;}&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;p&gt;这样就可以通过传递变量来获取对应的翻译, 而我所需要做的就是写好&lt;code&gt;messages.po&lt;/code&gt;然后编译成&lt;code&gt;messages.mo&lt;/code&gt;即可，同样为了每次使用&lt;code&gt;pybabel update&lt;/code&gt; 都可以得到相同的内容，我使用了一种取巧的办法, 同样是&lt;b&gt;i18n.html&lt;/b&gt;文件，把所需要国际化的可能变量全部放到一起，但不要在其它模板里&lt;code&gt;import&lt;/code&gt;这个模板，这样每次更新翻译文件，*Babel* 都能自动找到并生成相同的&lt;code&gt;messages.po&lt;/code&gt;文件&lt;/p&gt;
+&lt;p&gt;这样就可以通过传递变量来获取对应的翻译, 而我所需要做的就是写好&lt;code&gt;messages.po&lt;/code&gt;然后编译成&lt;code&gt;messages.mo&lt;/code&gt;即可，同样为了每次使用&lt;code&gt;pybabel update&lt;/code&gt; 都可以得到相同的内容，我使用了一种取巧的办法, 同样是&lt;b&gt;i18n.html&lt;/b&gt;文件，把所需要国际化的可能变量全部放到一起，但不要在其它模板里&lt;code&gt;import&lt;/code&gt;这个模板，这样每次更新翻译文件，&lt;b&gt;Babel&lt;/b&gt; 都能自动找到并生成相同的&lt;code&gt;messages.po&lt;/code&gt;文件&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;{%&lt;/span&gt; &lt;span class="k"&gt;macro&lt;/span&gt; &lt;span class="nv"&gt;gettrans&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;string&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; -&lt;span class="cp"&gt;%}&lt;/span&gt;&lt;span class="x"&gt;&lt;/span&gt;
 &lt;span class="x"&gt;  &lt;/span&gt;&lt;span class="cp"&gt;{%&lt;/span&gt; &lt;span class="k"&gt;set&lt;/span&gt; &lt;span class="nv"&gt;_gettrans&lt;/span&gt;&lt;span class="o"&gt;=[&lt;/span&gt;
       &lt;span class="kp"&gt;_&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Linux&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt;
@@ -667,7 +791,7 @@ babel-compile:
 
 &lt;p&gt;功能实现很简单, &lt;b&gt;pelican&lt;/b&gt;也有类似的插件实现 &lt;a href="https://github.com/getpelican/pelican-plugins/tree/master/neighbors"&gt;https://github.com/getpelican/pelican-plugins/tree/master/neighbors&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;不过自己实现起来更爽不是吗? 而且类似&lt;b&gt;prev_article_in_category&lt;/b&gt;和*prev_article_in_subcategory*的功能我并不需要&lt;/p&gt;
+&lt;p&gt;不过自己实现起来更爽不是吗? 而且类似&lt;b&gt;prev_article_in_category&lt;/b&gt;和&lt;b&gt;prev_article_in_subcategory&lt;/b&gt;的功能我并不需要&lt;/p&gt;
 
 &lt;p&gt;首先参考&lt;b&gt;pelican&lt;/b&gt;的文档,基础实现&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;add_neighbors&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
@@ -678,7 +802,7 @@ babel-compile:
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;然后在&lt;b&gt;generator.articles&lt;/b&gt;列表上进行操作,为article增加&lt;b&gt;previous_article&lt;/b&gt;和*next_article*对象&lt;/p&gt;
+&lt;p&gt;然后在&lt;b&gt;generator.articles&lt;/b&gt;列表上进行操作,为article增加&lt;b&gt;previous_article&lt;/b&gt;和&lt;b&gt;next_article&lt;/b&gt;对象&lt;/p&gt;
 
 &lt;p&gt;先进行排序(按时间)&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;articles&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;articles&lt;/span&gt;
@@ -686,7 +810,7 @@ babel-compile:
 
 &lt;p&gt;功能实现很简单, &lt;b&gt;pelican&lt;/b&gt;也有类似的插件实现 &lt;a href="https://github.com/getpelican/pelican-plugins/tree/master/neighbors"&gt;https://github.com/getpelican/pelican-plugins/tree/master/neighbors&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;不过自己实现起来更爽不是吗? 而且类似&lt;b&gt;prev_article_in_category&lt;/b&gt;和*prev_article_in_subcategory*的功能我并不需要&lt;/p&gt;
+&lt;p&gt;不过自己实现起来更爽不是吗? 而且类似&lt;b&gt;prev_article_in_category&lt;/b&gt;和&lt;b&gt;prev_article_in_subcategory&lt;/b&gt;的功能我并不需要&lt;/p&gt;
 
 &lt;p&gt;首先参考&lt;b&gt;pelican&lt;/b&gt;的文档,基础实现&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;add_neighbors&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
@@ -697,7 +821,7 @@ babel-compile:
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;然后在&lt;b&gt;generator.articles&lt;/b&gt;列表上进行操作,为article增加&lt;b&gt;previous_article&lt;/b&gt;和*next_article*对象&lt;/p&gt;
+&lt;p&gt;然后在&lt;b&gt;generator.articles&lt;/b&gt;列表上进行操作,为article增加&lt;b&gt;previous_article&lt;/b&gt;和&lt;b&gt;next_article&lt;/b&gt;对象&lt;/p&gt;
 
 &lt;p&gt;先进行排序(按时间)&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;articles&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;articles&lt;/span&gt;
@@ -1337,205 +1461,4 @@ babel-compile:
     &lt;span class="n"&gt;titile&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;...&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-</content><category term="python"></category><category term="sqlalchemy"></category></entry><entry><title>使用flask实现一个简单的图片上传存储服务</title><link href="https://honmaple.me/articles/2017/03/%E4%BD%BF%E7%94%A8flask%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1.html" rel="alternate"></link><published>2017-03-14T00:00:00+08:00</published><updated>2017-03-14T00:00:00+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2017-03-14:/articles/2017/03/使用flask实现一个简单的图片上传存储服务.html</id><summary type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
-&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org269e3c4"&gt;1. maple-file&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org7c6cb1e"&gt;1.1. 设计初衷&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org97baa2a"&gt;1.2. 使用&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgc428f36"&gt;1.2.1. API&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org921606b"&gt;1.2.2. 配置&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org1f88b3a"&gt;1.2.3. 创建账户&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org87063f2"&gt;1.2.4. 上传&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org06d4c86"&gt;1.2.5. example&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;a id="org269e3c4"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h1&gt;maple-file&lt;/h1&gt;
-&lt;blockquote&gt;
-&lt;p&gt;使用flask实现的一个简单的图片上传服务&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;&lt;a id="org7c6cb1e"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2&gt;设计初衷&lt;/h2&gt;
-&lt;p&gt;对于图片的存储,有很多选择,一般采用云服务如(七牛,又拍等),但是国内的服务像七牛
-自定义域名竟然需要域名备案(&lt;strong&gt;Excuse me …&lt;/strong&gt;&lt;/p&gt;</summary><content type="html">&lt;p&gt;GitHub地址: &lt;a href="https://github.com/honmaple/maple-file"&gt;https://github.com/honmaple/maple-file&lt;/a&gt;&lt;/p&gt;
-&lt;div id="table-of-contents"&gt;
-&lt;h2&gt;Table of Contents&lt;/h2&gt;
-&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org269e3c4"&gt;1. maple-file&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org7c6cb1e"&gt;1.1. 设计初衷&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org97baa2a"&gt;1.2. 使用&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#orgc428f36"&gt;1.2.1. API&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org921606b"&gt;1.2.2. 配置&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org1f88b3a"&gt;1.2.3. 创建账户&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org87063f2"&gt;1.2.4. 上传&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org06d4c86"&gt;1.2.5. example&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;a id="org269e3c4"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h1&gt;maple-file&lt;/h1&gt;
-&lt;blockquote&gt;
-&lt;p&gt;使用flask实现的一个简单的图片上传服务&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;&lt;a id="org7c6cb1e"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2&gt;设计初衷&lt;/h2&gt;
-&lt;p&gt;对于图片的存储,有很多选择,一般采用云服务如(七牛,又拍等),但是国内的服务像七牛
-自定义域名竟然需要域名备案(&lt;strong&gt;Excuse me&lt;/strong&gt;,当初就是因为备案麻烦才选择国外的),而且浪费了我十块钱,&lt;/p&gt;
-&lt;p&gt;而我又想像七牛一样可以直接在本地就可以上传图片,找来找去，没有找到一个比较合适的，所以花两天时间自己写了一个&lt;/p&gt;
-&lt;p&gt;&lt;a id="org97baa2a"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2&gt;使用&lt;/h2&gt;
-&lt;p&gt;由于初衷是本地脚本就可以发布,所以没有前端界面,等以后有时间了再加上&lt;/p&gt;
-&lt;p&gt;&lt;a id="orgc428f36"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3&gt;API&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;/api/login&lt;/strong&gt;&lt;ul&gt;
-&lt;li&gt;POST
-    登录&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;/api/logout&lt;/strong&gt;&lt;ul&gt;
-&lt;li&gt;GET
-    注销&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;/api/albums&lt;/strong&gt;&lt;ul&gt;
-&lt;li&gt;GET
-    获取相册列表&lt;/li&gt;
-&lt;li&gt;POST
-    新建相册&lt;ul&gt;
-&lt;li&gt;name 相册名称&lt;/li&gt;
-&lt;li&gt;description 相册描述&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;strong&gt;/api/albums/&lt;int:pk&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;pk 相册ID&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;GET
-    获取相册信息&lt;/li&gt;
-&lt;li&gt;PUT
-    修改相册信息&lt;ul&gt;
-&lt;li&gt;name 相册名称&lt;/li&gt;
-&lt;li&gt;description 相册描述&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;DELETE
-    删除相册&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;/api/images&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;GET
-    获取图片列表&lt;/li&gt;
-&lt;li&gt;POST
-    上传图片&lt;ul&gt;
-&lt;li&gt;images 上传图片列表&lt;/li&gt;
-&lt;li&gt;album 相册ID(默认会新建一个&lt;strong&gt;default&lt;/strong&gt;相册)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;/api/images/&lt;int:pk&gt;&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;GET
-    获取图片信息&lt;/li&gt;
-&lt;li&gt;PUT
-    修改图片信息&lt;ul&gt;
-&lt;li&gt;name 图片名称&lt;/li&gt;
-&lt;li&gt;description 图片描述&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;DELETE
-    删除图片&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;a id="org921606b"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3&gt;配置&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Config&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;object&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="n"&gt;DEBUG&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt; &lt;span class="c1"&gt;# 生产环境设置为False&lt;/span&gt;
-    &lt;span class="n"&gt;SECRET_KEY&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ccc&amp;#39;&lt;/span&gt; &lt;span class="c1"&gt;# import os;os.urandom(24)&lt;/span&gt;
-    &lt;span class="n"&gt;SECRET_KEY_SALT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ssss&amp;#39;&lt;/span&gt;
-    &lt;span class="n"&gt;JSON_AS_ASCII&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;
-
-    &lt;span class="n"&gt;PERMANENT_SESSION_LIFETIME&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;timedelta&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;days&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-
-    &lt;span class="n"&gt;PER_PAGE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt; &lt;span class="c1"&gt;# 分页&lt;/span&gt;
-    &lt;span class="n"&gt;ADMIN_URL&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;/admin/aaaaa&amp;#39;&lt;/span&gt; &lt;span class="c1"&gt;# 后台地址&lt;/span&gt;
-
-    &lt;span class="n"&gt;LOGIN_TOKEN_HEADER&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Api-Key&amp;#39;&lt;/span&gt; &lt;span class="c1"&gt;# 将会影响到后面headers设置&lt;/span&gt;
-    &lt;span class="n"&gt;LOGIN_TOKEN&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;api_key&amp;#39;&lt;/span&gt; &lt;span class="c1"&gt;#url?api_key=21312313&lt;/span&gt;
-
-    &lt;span class="n"&gt;MIDDLEWARE&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;storage.common.middleware.CommonMiddleware&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-
-    &lt;span class="n"&gt;SQLALCHEMY_TRACK_MODIFICATIONS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;
-    &lt;span class="n"&gt;SQLALCHEMY_DATABASE_URI&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;sqlite:///test.db&amp;#39;&lt;/span&gt;
-    &lt;span class="c1"&gt;# SQLALCHEMY_ECHO = DEBUG&lt;/span&gt;
-    &lt;span class="n"&gt;UPLOAD_ALLOWED_EXTENSIONS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;set&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;jpg&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;jpeg&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt; &lt;span class="c1"&gt;# 允许上传的扩展名&lt;/span&gt;
-    &lt;span class="n"&gt;UPLOAD_FOLDER_ROOT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dirname&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;abspath&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="vm"&gt;__file__&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-    &lt;span class="n"&gt;UPLOAD_FOLDER_PATH&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;images&amp;#39;&lt;/span&gt; &lt;span class="c1"&gt;# 相对于当前文件路径的地址&lt;/span&gt;
-    &lt;span class="n"&gt;UPLOAD_FOLDER&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;UPLOAD_FOLDER_ROOT&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;UPLOAD_FOLDER_PATH&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;&lt;a id="org1f88b3a"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3&gt;创建账户&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;python&lt;/span&gt; &lt;span class="n"&gt;manager&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt; &lt;span class="n"&gt;create_user&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;将同时创建一个&lt;strong&gt;default&lt;/strong&gt;的相册&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;python&lt;/span&gt; &lt;span class="n"&gt;manager&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt; &lt;span class="k"&gt;key&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;显示用户key&lt;/p&gt;
-&lt;p&gt;&lt;a id="org87063f2"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3&gt;上传&lt;/h3&gt;
-&lt;p&gt;上传后图片保存路径&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;原图路径:&lt;/p&gt;
-&lt;p&gt;UPLOAD_FOLDER + 'username' + 'photo' + %Y + %m + (时间戳+随机数).png&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;缩略图路径:&lt;/p&gt;
-&lt;p&gt;UPLOAD_FOLDER + 'username' + 'thumb' + %Y + %m + (时间戳+随机数).png&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;a id="org06d4c86"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3&gt;example&lt;/h3&gt;
-&lt;p&gt;使用&lt;strong&gt;requests&lt;/strong&gt;本地上传&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;requests&lt;/span&gt;
-
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;images&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
-    &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;http://127.0.0.1:8000/api/images&amp;#39;&lt;/span&gt;
-    &lt;span class="n"&gt;files&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;images&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;desktop.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;rb&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)}&lt;/span&gt;
-    &lt;span class="n"&gt;multiple_files&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
-        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;images&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;11.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;11.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;rb&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;image/png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt;
-        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;images&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;desktop.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;desktop.png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;rb&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;image/png&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-    &lt;span class="p"&gt;]&lt;/span&gt;
-    &lt;span class="n"&gt;headers&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-        &lt;span class="s1"&gt;&amp;#39;Api-Key&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="s1"&gt;&amp;#39;InhpeWFuZzA4MDdJBtx4AWlPpI_Oxx1Ki8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-        &lt;span class="s1"&gt;&amp;#39;User-Agent&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36&amp;#39;&lt;/span&gt;
-    &lt;span class="p"&gt;}&lt;/span&gt;
-    &lt;span class="c1"&gt;# r = requests.post(url, files=multiple_files, headers=headers)&lt;/span&gt;
-    &lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;post&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;files&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;files&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;headers&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;headers&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;text&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</content><category term="python"></category><category term="flask"></category><category term="linux"></category></entry></feed>
+</content><category term="python"></category><category term="sqlalchemy"></category></entry></feed>
