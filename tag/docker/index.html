@@ -62,7 +62,7 @@
               <a href="https://honmaple.me/articles/2018/02/docker笔记.html" rel="bookmark" title="Permalink to docker笔记">docker笔记</a>
             </h1>
 <header class="entry-info">
-  <span title="Updated at 2018-02-23">
+  <span title="Updated at 2020-07-24">
     <i class="fa fa-calendar-o"></i>
     五 23 二月 2018
   </span>
@@ -89,10 +89,29 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
+<li><a href="#org-01a24100bb">ubuntu安装docker</a></li>
 <li><a href="#org-5ba5904cda">docker删除硬盘残留的文件</a></li>
 <li><a href="#org-5e01916a5b">docker构建时禁用缓存</a></li>
+<li><a href="#org-3af3139ea6">docker配置国内源</a></li>
+<li><a href="#org-ee35a40995">docker权限</a></li>
+<li><a href="#org-4d7623dde6">常见问题FAQ</a>
+<ul>
+<li><a href="#org-c223d726bf">centos安装docker使用aliyun源</a></li>
+<li><a href="#org-8d7e015f29">docker无法pull镜像</a></li>
+<li><a href="#org-5bf5740bc3">docker挂载磁盘后文件不可写</a></li>
+<li><a href="#org-c50e056495">pip安装docker-compose时无法安装subprocess32</a></li>
+<li><a href="#org-93ee6c9d8e">error storing credentials - err: exit status 1</a></li>
+</ul></li>
 </ul>
 </div></div>
+
+
+<h3 id="org-01a24100bb">ubuntu安装docker</h3>
+<p>基本安装方式在官方文档里有写，但使用官方镜像源速度太慢，改为使用国内镜像</p>
+<div class="highlight"><pre><span></span>curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg <span class="p">|</span> sudo apt-key add -
+apt-key fingerprint 0EBFCD88
+add-apt-repository <span class="s2">&quot;deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu </span><span class="k">$(</span>lsb_release -cs<span class="k">)</span><span class="s2"> stable&quot;</span>
+</pre></div>
 
 
 <h3 id="org-5ba5904cda">docker删除硬盘残留的文件</h3>
@@ -117,6 +136,95 @@
 </pre></div>
 
 
+
+<h3 id="org-3af3139ea6">docker配置国内源</h3>
+<div class="highlight"><pre><span></span><span class="err">{</span>
+  <span class="ss">&quot;registry-mirrors&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="ss">&quot;https://mirror.ccs.tencentyun.com&quot;</span><span class="p">,</span>
+    <span class="ss">&quot;http://registry.docker-cn.com&quot;</span><span class="p">,</span>
+    <span class="ss">&quot;http://docker.mirrors.ustc.edu.cn&quot;</span><span class="p">,</span>
+    <span class="ss">&quot;http://hub-mirror.c.163.com&quot;</span>
+  <span class="p">],</span>
+  <span class="ss">&quot;debug&quot;</span><span class="p">:</span> <span class="k">true</span><span class="p">,</span>
+  <span class="ss">&quot;experimental&quot;</span><span class="p">:</span> <span class="k">false</span><span class="p">,</span>
+  <span class="ss">&quot;insecure-registries&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="ss">&quot;registry.docker-cn.com&quot;</span><span class="p">,</span>
+    <span class="ss">&quot;docker.mirrors.ustc.edu.cn&quot;</span><span class="p">,</span>
+    <span class="ss">&quot;test-cdn-chengdu-office5:5000&quot;</span><span class="p">,</span>
+    <span class="ss">&quot;registry.k8s.cloud&quot;</span>
+  <span class="p">]</span>
+<span class="err">}</span>
+</pre></div>
+
+
+<h3 id="org-ee35a40995">docker权限</h3>
+<div class="highlight"><pre><span></span><span class="n">nginx</span><span class="o">:</span>
+  <span class="n">cap_add</span><span class="o">:</span>
+    <span class="o">-</span> <span class="n">NET_ADMIN</span>
+    <span class="o">-</span> <span class="n">SYS_PTRACE</span>
+</pre></div>
+
+<h3 id="org-4d7623dde6">常见问题FAQ</h3>
+
+<h4 id="org-c223d726bf">centos安装docker使用aliyun源</h4>
+<p>https://docs.docker.com/install/linux/docker-ce/centos/</p>
+<div class="highlight"><pre><span></span>yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+</pre></div>
+
+
+<h4 id="org-8d7e015f29">docker无法pull镜像</h4>
+<ul>
+<li>现象
+<p>ping docker.io 不通
+curl https://docker.io 通</p>
+
+<div class="highlight"><pre><span></span>docker pull myregistry.local:5000/testing/test-image
+</pre></div>
+
+
+<p>或者配置默认的docker仓库
+https://www.jianshu.com/p/1a4025c5f186</p>
+
+<p>ubuntu</p>
+<div class="highlight"><pre><span></span><span class="n">vi</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="k">default</span><span class="o">/</span><span class="n">docker</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">DOCKER_OPTS</span><span class="o">=</span><span class="ss">&quot;$DOCKER_OPTS --registry-mirror=https://xxxxx.mirror.aliyuncs.com&quot;</span>
+</pre></div>
+
+<p>然后重启docker</p>
+</li>
+</ul>
+<h4 id="org-5bf5740bc3">docker挂载磁盘后文件不可写</h4>
+<p>https://stackoverflow.com/questions/35760760/writable-folder-permissions-in-docker</p>
+<div class="highlight"><pre><span></span>chmod a+rwx -R dir/
+</pre></div>
+
+
+<h4 id="org-c50e056495">pip安装docker-compose时无法安装subprocess32</h4>
+
+<div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span> <span class="n">Command</span> <span class="n">errored</span> <span class="n">out</span> <span class="k">with</span> <span class="nb">exit</span> <span class="n">status</span> <span class="mi">1</span><span class="p">:</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python2</span> <span class="o">-</span><span class="n">u</span> <span class="o">-</span><span class="n">c</span> <span class="s1">&#39;import sys, setuptools, tokenize; sys.argv[0] = &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;/tmp/pip-install-oX9c4h/subprocess32/setup.py&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;; __file__=&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;/tmp/pip-install-oX9c4h/subprocess32/setup.py&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;;f=getattr(tokenize, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;open&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;, open)(__file__);code=f.read().replace(&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;);f.close();exec(compile(code, __file__, &#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;exec&#39;</span><span class="s2">&quot;&#39;&quot;</span><span class="s1">&#39;))&#39;</span> <span class="n">install</span> <span class="o">--</span><span class="n">record</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">pip</span><span class="o">-</span><span class="n">record</span><span class="o">-</span><span class="n">bccCWb</span><span class="o">/</span><span class="n">install</span><span class="o">-</span><span class="n">record</span><span class="o">.</span><span class="n">txt</span> <span class="o">--</span><span class="n">single</span><span class="o">-</span><span class="n">version</span><span class="o">-</span><span class="n">externally</span><span class="o">-</span><span class="n">managed</span> <span class="o">--</span><span class="nb">compile</span> <span class="o">--</span><span class="n">user</span> <span class="o">--</span><span class="n">prefix</span><span class="o">=</span> <span class="n">Check</span> <span class="n">the</span> <span class="n">logs</span> <span class="k">for</span> <span class="n">full</span> <span class="n">command</span> <span class="n">output</span><span class="o">.</span>
+</pre></div>
+
+
+<p>一般情况下是由于docker-compose不支持python2导致的，需要在机器上安装python3
+centos可直接使用yum安装docker-compose, python3作为依赖会自动安装</p>
+
+<p>注: pip安装方式为</p>
+<div class="highlight"><pre><span></span><span class="n">yum</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="n">epel</span><span class="o">-</span><span class="n">release</span>
+<span class="n">yum</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">pip</span>
+<span class="o">#</span> <span class="k">or</span> <span class="n">yum</span> <span class="n">install</span> <span class="n">python2</span><span class="o">-</span><span class="n">pip</span>
+</pre></div>
+
+
+<h4 id="org-93ee6c9d8e">error storing credentials - err: exit status 1</h4>
+<div class="highlight"><pre><span></span><span class="nv">root</span>@<span class="nv">ubuntu</span>:<span class="o">~/</span><span class="nv">kunpeng</span># <span class="nv">docker</span> <span class="nv">login</span> <span class="nv">registry</span>.<span class="nv">k8s</span>.<span class="nv">cloud</span>
+<span class="nv">Username</span>: <span class="nv">jsl</span>
+<span class="nv">Password</span>:
+<span class="nv">Error</span> <span class="nv">saving</span> <span class="nv">credentials</span>: <span class="nv">error</span> <span class="nv">storing</span> <span class="nv">credentials</span> <span class="o">-</span> <span class="nv">err</span>: <span class="k">exit</span> <span class="nv">status</span> <span class="mi">1</span>, <span class="nv">out</span>: `<span class="nv">Cannot</span> <span class="nv">autolaunch</span> <span class="nv">D</span><span class="o">-</span><span class="nv">Bus</span> <span class="nv">without</span> <span class="nv">X11</span> <span class="mh">$D</span><span class="nv">ISPLAY</span>`
+</pre></div>
+
           </div>
         </article>
       </div>
@@ -131,7 +239,7 @@
       <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
   </ul>
   <ul class="list-inline copyright">
-    <li class="hidden-xs">© 2015-2019 honmaple</li>
+    <li class="hidden-xs">© 2015-2020 honmaple</li>
     <li class="hidden-xs">·</li>
     <li>
           <a href="https://honmaple.me/pages/friends.html">友链</a>

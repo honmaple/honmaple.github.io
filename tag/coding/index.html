@@ -62,7 +62,7 @@
               <a href="https://honmaple.me/articles/2018/03/golang笔记.html" rel="bookmark" title="Permalink to golang笔记">golang笔记</a>
             </h1>
 <header class="entry-info">
-  <span title="Updated at 2019-06-24">
+  <span title="Updated at 2020-03-01">
     <i class="fa fa-calendar-o"></i>
     一 26 三月 2018
   </span>
@@ -89,7 +89,10 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-20ae9f20e8">关于golang.org无法连接</a></li>
+<li><a href="#org-20ae9f20e8">关于golang.org无法连接</a>
+<ul>
+<li><a href="#org-82181880de">初始化Gopkg</a></li>
+</ul></li>
 <li><a href="#org-df8f1d1629">读取配置文件</a></li>
 <li><a href="#org-130e2e0988">判断文件是否存在</a></li>
 <li><a href="#org-5056da6909">随机睡眠</a></li>
@@ -110,6 +113,10 @@
 <li><a href="#org-690e63ca39">是否是EMAIL</a></li>
 </ul></li>
 <li><a href="#org-a96da83681">读取http响应的gz package</a></li>
+<li><a href="#org-8669ee9e4c">编译</a>
+<ul>
+<li><a href="#org-f4d47e475b">编译成不同系统的可执行文件</a></li>
+</ul></li>
 </ul>
 </div></div>
 
@@ -124,6 +131,27 @@
 git clone https://github.com/golang/sync
 mv sync <span class="nv">$GOPATH</span>/src/golang/x/
 </pre></div>
+
+
+<h3 id="org-82181880de">初始化Gopkg</h3>
+<div class="highlight"><pre><span></span><span class="c1"># go mod init jlb</span>
+go: copying requirements from Gopkg.lock
+go: converting Gopkg.lock: stat google.golang.org/genproto@a8101f21cf983e773d0c1133ebc5424792003214: unrecognized import path <span class="s2">&quot;google.golang.org/genproto&quot;</span>: https fetch: Get <span class="s2">&quot;https://google.golang.org/genproto?go-get=1&quot;</span>: dial tcp <span class="m">216</span>.239.37.1:443: i/o timeout
+</pre></div>
+
+
+<p>GORPOXY只适用于go mod</p>
+
+<p>需要先移动Gopkg.lock</p>
+<div class="highlight"><pre><span></span>mv Gopkg.lock Gopkg.lock.bak
+</pre></div>
+
+
+<p>然后执行</p>
+<div class="highlight"><pre><span></span>go mod init jlb
+go mod tidy
+</pre></div>
+
 
 
 <h2 id="org-df8f1d1629">读取配置文件</h2>
@@ -372,6 +400,42 @@ mv sync <span class="nv">$GOPATH</span>/src/golang/x/
 </pre></div>
 
 
+<h2 id="org-8669ee9e4c">编译</h2>
+<h3 id="org-f4d47e475b">编译成不同系统的可执行文件</h3>
+<ul>
+<li>GOOS：目标可执行程序运行操作系统，支持 darwin，freebsd，linux，windows</li>
+<li>GOARCH：目标可执行程序操作系统构架，包括 386，amd64，arm
+<div class="highlight"><pre><span></span><span class="c1"># Golang version 1.5以前版本在首次交叉编译时还需要配置交叉编译环境：</span>
+<span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span> <span class="nv">GOOS</span><span class="o">=</span>linux <span class="nv">GOARCH</span><span class="o">=</span>amd64 ./make.bash
+<span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span> <span class="nv">GOOS</span><span class="o">=</span>windows <span class="nv">GOARCH</span><span class="o">=</span>amd64 ./make.bash
+</pre></div>
+
+</li>
+</ul>
+<ol>
+<li>Mac下编译Linux, Windows平台的64位可执行程序：
+<div class="highlight"><pre><span></span>$ <span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span> <span class="nv">GOOS</span><span class="o">=</span>linux <span class="nv">GOARCH</span><span class="o">=</span>amd64 go build test.go
+$ <span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span> <span class="nv">GOOS</span><span class="o">=</span>windows <span class="nv">GOARCH</span><span class="o">=</span>amd64 go build test.go
+</pre></div>
+</li>
+<li>Linux下编译Mac, Windows平台的64位可执行程序：
+<div class="highlight"><pre><span></span>$ <span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span> <span class="nv">GOOS</span><span class="o">=</span>darwin <span class="nv">GOARCH</span><span class="o">=</span>amd64 go build test.go
+$ <span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span> <span class="nv">GOOS</span><span class="o">=</span>windows <span class="nv">GOARCH</span><span class="o">=</span>amd64 go build test.go
+</pre></div>
+
+</li>
+<li>Windows下编译Mac, Linux平台的64位可执行程序：
+<div class="highlight"><pre><span></span>$ SET <span class="nv">CGO_ENABLED</span><span class="o">=</span>0SET <span class="nv">GOOS</span><span class="o">=</span>darwin3 SET <span class="nv">GOARCH</span><span class="o">=</span>amd64 go build test.go
+$ SET <span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span> SET <span class="nv">GOOS</span><span class="o">=</span>linux SET <span class="nv">GOARCH</span><span class="o">=</span>amd64 go build test.go
+</pre></div>
+
+
+
+
+
+
+</li>
+</ol>
           </div>
         </article>
           <ul class="entry-list">
@@ -432,7 +496,7 @@ mv sync <span class="nv">$GOPATH</span>/src/golang/x/
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/01/python笔记.html" rel="bookmark" title="Permalink to python笔记">python笔记</a></h1>
 <header class="entry-info">
-  <span title="Updated at 2018-11-30">
+  <span title="Updated at 2020-04-03">
     <i class="fa fa-calendar-o"></i>
     日 29 一月 2017
   </span>
@@ -487,15 +551,23 @@ mv sync <span class="nv">$GOPATH</span>/src/golang/x/
 <li><a href="#org-9b0d5ac39f">Pip</a>
 <ul>
 <li><a href="#org-0e45bfe5d9">pip更新所有的packages</a></li>
+<li><a href="#org-62e2b54368">pip指定国内源</a></li>
 </ul></li>
 <li><a href="#org-7f01ead872">判斷是否激活virtualenv</a></li>
 <li><a href="#org-2bae3ff99f">Django model得到所有field name</a></li>
 <li><a href="#org-f25162b733">python运行超时设置</a></li>
-<li><a href="#org-87eedee459">库</a></li>
+<li><a href="#org-87eedee459">库</a>
+<ul>
+<li><a href="#org-66ff16d24a">json.loads时无法保持字典列表的顺序</a></li>
+</ul></li>
 <li><a href="#org-295c71ff98">其它</a>
 <ul>
 <li><a href="#org-5bd51f3a12">获取文件最后n行数据</a></li>
 <li><a href="#org-57b7335a35">python列表中去除烦人的"u"</a></li>
+</ul></li>
+<li><a href="#org-0adb1147b3">常见问题</a>
+<ul>
+<li><a href="#org-237159dd27">PROTOCOL_SSLv3 is not defined</a></li>
 </ul></li>
 </ul>
 </div></div>
@@ -503,11 +575,7 @@ mv sync <span class="nv">$GOPATH</span>/src/golang/x/
 
 <h2 id="org-64269f9bd2">TIME</h2>
 <h3 id="org-7ebf2338af">GMT时间格式</h3>
-<div class="highlight"><pre><span></span><span class="n">GMT_FORMAT</span> <span class="o">=</span> <span class="s1">&#39;%a, </span><span class="si">%d</span><span class="s1"> %b %Y %H:%M:%S GMT&#39;</span>
-</pre></div>
-
-<h3 id="org-65bad22cfc">获取某个时间的时间戳</h3>
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datetime …</span></pre></div>
+<div class="highlight"><pre><span></span><span class="n">GMT_FORMAT</span> <span class="o">=</span> <span class="s1">&#39;%a, </span><span class="si">%d</span><span class="s1"> %b …</span></pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/01/python笔记.html">阅读全文 »</a>
@@ -526,7 +594,7 @@ mv sync <span class="nv">$GOPATH</span>/src/golang/x/
       <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
   </ul>
   <ul class="list-inline copyright">
-    <li class="hidden-xs">© 2015-2019 honmaple</li>
+    <li class="hidden-xs">© 2015-2020 honmaple</li>
     <li class="hidden-xs">·</li>
     <li>
           <a href="https://honmaple.me/pages/friends.html">友链</a>
