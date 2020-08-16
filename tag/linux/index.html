@@ -59,8 +59,855 @@
 </nav>        <article>
           <div class="entry-header">
             <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2019/07/elisp生成渐变XPM图片.html" rel="bookmark" title="Permalink to elisp生成渐变XPM图片">elisp生成渐变XPM图片</a>
+              <a href="https://honmaple.me/articles/2020/02/K8S笔记之私有仓库搭建.html" rel="bookmark" title="Permalink to K8S笔记之私有仓库搭建">K8S笔记之私有仓库搭建</a>
             </h1>
+<header class="entry-info">
+  <span title="Updated at 2020-08-09">
+    <i class="fa fa-calendar-o"></i>
+    四 20 二月 2020
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tag/k8s/index.html">k8s</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li>
+<p>
+ <a href="#org-8ce83f5362">创建PV</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-1eb01fc955">搭建仓库</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-aad84bfe79">命名空间</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-9307ec39f2">https验证</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-a25f75a49f">用户名密码验证</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-2623604047">创建service</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-b9955b91a7">创建ingress</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-e466b3a515">测试Docker仓库</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-13bb95d9af">修改host</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-33cf91f58f">更新Docker证书</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-04664d007d">登陆仓库</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-a08a3d8137">测试上传与下载</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-03688ba6aa">FAQ</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-a596530fe1">certificate is valid for ingress.local, not registry.k8s.cloud</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-1265e7830b">certificate signed by unknown authority</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-2ba4a0d9db">Request Entity Too Large</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-54709db3b7">参考资料</a>
+</p>
+</li>
+</ul>
+</div></div>
+<h2 id="org-8ce83f5362">创建PV</h2>
+<p>
+  关于PV的创建参考 《K8S笔记之持久化存储》
+</p>
+<div class="highlight"><pre><span></span><span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PersistentVolumeClaim</span>
+<span class="nt">metadata</span><span class="p">:</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">docker-claim</span>
+<span class="nt">spec</span><span class="p">:</span>
+  <span class="nt">accessModes</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">ReadWriteOnce</span>
+  <span class="nt">resources</span><span class="p">:</span>
+    <span class="nt">requests</span><span class="p">:</span>
+      <span class="nt">storage</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">80Gi</span>
+  <span class="nt">storageClassName</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">local-volume</span>
+</pre></div>
+
+<h2 id="org-1eb01fc955">搭建仓库</h2>
+<p>
+  Docker 私有化仓库的搭建可参考官方文档, 并且将相关的配置转化为K8S所需要的yaml文件
+</p>
+<div class="highlight"><pre><span></span><span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ReplicationController</span>
+<span class="nt">metadata</span><span class="p">:</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry</span>
+  <span class="nt">namespace</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">default</span>
+  <span class="nt">labels</span><span class="p">:</span>
+    <span class="nt">k8s-app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry</span>
+<span class="nt">spec</span><span class="p">:</span>
+  <span class="nt">replicas</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+  <span class="nt">selector</span><span class="p">:</span>
+    <span class="nt">k8s-app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry</span>
+  <span class="nt">template</span><span class="p">:</span>
+    <span class="nt">metadata</span><span class="p">:</span>
+      <span class="nt">labels</span><span class="p">:</span>
+        <span class="nt">k8s-app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry</span>
+    <span class="nt">spec</span><span class="p">:</span>
+      <span class="nt">containers</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry</span>
+          <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry:2</span>
+          <span class="nt">ports</span><span class="p">:</span>
+            <span class="p p-Indicator">-</span> <span class="nt">containerPort</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5000</span>
+          <span class="nt">env</span><span class="p">:</span>
+            <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REGISTRY_HTTP_ADDR</span>
+              <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">:5000</span>
+            <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY</span>
+              <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/var/lib/registry</span>
+            <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REGISTRY_HTTP_TLS_CERTIFICATE</span>
+              <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/certs/tls.crt</span>
+            <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REGISTRY_HTTP_TLS_KEY</span>
+              <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/certs/tls.key</span>
+            <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REGISTRY_AUTH</span>
+              <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">htpasswd</span>
+            <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REGISTRY_AUTH_HTPASSWD_REALM</span>
+              <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Registry Realm</span>
+            <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REGISTRY_AUTH_HTPASSWD_PATH</span>
+              <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/auth/htpasswd</span>
+          <span class="nt">volumeMounts</span><span class="p">:</span>
+            <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry-storage</span>
+              <span class="nt">mountPath</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/var/lib/registry</span>
+              <span class="nt">subPath</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry</span>
+            <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry-secret</span>
+              <span class="nt">mountPath</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/certs</span>
+            <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry-passwd</span>
+              <span class="nt">mountPath</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/auth</span>
+      <span class="nt">volumes</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry-storage</span>
+          <span class="nt">persistentVolumeClaim</span><span class="p">:</span>
+            <span class="nt">claimName</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">docker-claim</span>
+        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry-secret</span>
+          <span class="nt">secret</span><span class="p">:</span>
+            <span class="nt">secretName</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry-tls-secret</span>
+        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry-passwd</span>
+          <span class="nt">secret</span><span class="p">:</span>
+            <span class="nt">secretName</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry-passwd-secret</span>
+</pre></div>
+
+<p>
+  <b>需要注意的几个点</b>
+</p>
+<h3 id="org-aad84bfe79">命名空间</h3>
+<p>
+   这里我指定的命名空间为 <b>default</b>， 包括前面的PV以及后续所创建的 service, secret, ingress等服务也需要指定相同的命名空间
+</p>
+<h3 id="org-9307ec39f2">https验证</h3>
+<p>
+   https验证所需要的ca文件命名为tls.crt, tls.key是为了后面可以方便的配置 ingress
+</p>
+<ul>
+<li>
+<p>
+ 创建ca证书与私钥
+</p>
+<div class="highlight"><pre><span></span><span class="c1"># openssl req -newkey rsa:4096 -nodes -sha256 -keyout certs/tls.key -x509 -days 365 -out certs/tls.crt</span>
+Generating a <span class="m">4096</span> bit RSA private key
+.......................................................................................................++
+................................................++
+writing new private key to <span class="s1">&#39;certs/tls.key&#39;</span>
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter <span class="s1">&#39;.&#39;</span>, the field will be left blank.
+-----
+Country Name <span class="o">(</span><span class="m">2</span> letter code<span class="o">)</span> <span class="o">[</span>XX<span class="o">]</span>:CN
+State or Province Name <span class="o">(</span>full name<span class="o">)</span> <span class="o">[]</span>:sichuan
+Locality Name <span class="o">(</span>eg, city<span class="o">)</span> <span class="o">[</span>Default City<span class="o">]</span>:chengdu
+Organization Name <span class="o">(</span>eg, company<span class="o">)</span> <span class="o">[</span>Default Company Ltd<span class="o">]</span>:
+Organizational Unit Name <span class="o">(</span>eg, section<span class="o">)</span> <span class="o">[]</span>:software
+Common Name <span class="o">(</span>eg, your name or your server<span class="err">&#39;</span>s hostname<span class="o">)</span> <span class="o">[]</span>:registry.k8s.cloud
+Email Address <span class="o">[]</span>:registry@xxx.com
+</pre></div>
+
+<p>
+     需要注意的是 <b>Common Name</b> 字段, 后续配置 <b>ingress</b> 的 <b>host</b> 要与该字段保持一致
+</p>
+</li>
+<li>
+<p>
+ 创建 <b>secret</b>
+</p>
+<div class="highlight"><pre><span></span>kubectl --namespace<span class="o">=</span>default create secret tls registry-tls-secret --cert ./certs/tls.crt --key ./certs/tls.key
+</pre></div>
+
+<p>
+     该密钥创建后会生成 <b>data</b> 下的两个文件，一个 <b>tls.crt</b>, 一个 <b>tls.key</b>, 这两个名字总是固定的，与执行命令中的文件名无关
+</p>
+</li>
+</ul>
+<h3 id="org-a25f75a49f">用户名密码验证</h3>
+<p>
+   Docker仓库默认未开启账号验证，需要添加三个环境变量
+</p>
+<div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REGISTRY_AUTH</span>
+  <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">htpasswd</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REGISTRY_AUTH_HTPASSWD_REALM</span>
+  <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Registry Realm</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REGISTRY_AUTH_HTPASSWD_PATH</span>
+  <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/auth/htpasswd</span>
+</pre></div>
+
+<p>
+   其中 <code>/auth/htpasswd</code> 将会被挂载在 <b>secret</b> 上
+</p>
+<ul>
+<li>
+<p>
+ 生成密码文件
+</p>
+<div class="highlight"><pre><span></span>docker run --entrypoint htpasswd registry:2 -Bbn username password &gt; certs/htpasswd
+</pre></div>
+
+<p>
+     或者
+</p>
+<div class="highlight"><pre><span></span>yum install httpd
+htpasswd -Bbn user passwd &gt; certs/passwd
+</pre></div>
+
+</li>
+<li>
+<p>
+ 创建 <b>secret</b>
+</p>
+<div class="highlight"><pre><span></span>kubectl --namespace<span class="o">=</span>default create secret generic registry-passwd-secret --from-file<span class="o">=</span><span class="nv">htpasswd</span><span class="o">=</span>./certs/passwd
+</pre></div>
+
+</li>
+</ul>
+<h2 id="org-2623604047">创建service</h2>
+<div class="highlight"><pre><span></span><span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Service</span>
+<span class="nt">metadata</span><span class="p">:</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry</span>
+  <span class="nt">namespace</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">default</span>
+  <span class="nt">labels</span><span class="p">:</span>
+    <span class="nt">k8s-app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry</span>
+    <span class="nt">kubernetes.io/name</span><span class="p">:</span> <span class="s">&quot;KubeRegistry&quot;</span>
+<span class="nt">spec</span><span class="p">:</span>
+  <span class="nt">selector</span><span class="p">:</span>
+    <span class="nt">k8s-app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry</span>
+  <span class="nt">ports</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5000</span>
+      <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">TCP</span>
+</pre></div>
+
+<p>
+  注: 我也不知道 <b>label</b> 中的 <code>kubernetes.io/name</code> 有什么作用
+</p>
+<h2 id="org-b9955b91a7">创建ingress</h2>
+<p>
+  由于该私有仓库需要对外服务, 我采用 <b>ingress</b> 方式
+</p>
+<div class="highlight"><pre><span></span><span class="nn">---</span>
+<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Ingress</span>
+<span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">extensions/v1beta1</span>
+<span class="nt">metadata</span><span class="p">:</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ingress.registry</span>
+  <span class="nt">namespace</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">default</span>
+  <span class="nt">annotations</span><span class="p">:</span>
+    <span class="nt">nginx.ingress.kubernetes.io/backend-protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">HTTPS</span>
+    <span class="nt">nginx.ingress.kubernetes.io/ingress.class</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
+    <span class="nt">nginx.ingress.kubernetes.io/rewrite-target</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/</span>
+    <span class="nt">nginx.ingress.kubernetes.io/ssl-passthrough</span><span class="p">:</span> <span class="s">&quot;true&quot;</span>
+<span class="nt">spec</span><span class="p">:</span>
+  <span class="nt">tls</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">hosts</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">registry.k8s.cloud</span>
+      <span class="nt">secretName</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry-tls-secret</span>
+  <span class="nt">rules</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry.k8s.cloud</span>
+      <span class="nt">http</span><span class="p">:</span>
+        <span class="nt">paths</span><span class="p">:</span>
+          <span class="p p-Indicator">-</span> <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/</span>
+            <span class="nt">backend</span><span class="p">:</span>
+              <span class="nt">serviceName</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">registry</span>
+              <span class="nt">servicePort</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5000</span>
+</pre></div>
+
+<ul>
+<li>
+<p>
+ 命名空间必须与之前保持一致
+</p>
+</li>
+<li>
+<p>
+ <b>host</b> 必须与之前创建证书时的 <b>CN</b> 保持一致
+</p>
+</li>
+</ul>
+<h2 id="org-e466b3a515">测试Docker仓库</h2>
+<h3 id="org-13bb95d9af">修改host</h3>
+<p>
+   由于 <b>registry.k8s.cloud</b> 并不是一个真实的域名，所以采用修改 <code>/etc/hosts</code> 方式进行测试和访问
+</p>
+<div class="highlight"><pre><span></span><span class="nb">echo</span> <span class="s2">&quot;10.8.235.202 registry.k8s.cloud&quot;</span> &gt;&gt; /etc/hosts
+</pre></div>
+
+<h3 id="org-33cf91f58f">更新Docker证书</h3>
+<div class="highlight"><pre><span></span>mkdir -p /etc/docker/certs.d/registry.k8s.cloud
+cp certs/tls.crt /etc/docker/certs.d/registry.k8s.cloud/ca.crt
+</pre></div>
+
+<p>
+   如果是不同机器，复制 <code>certs/tls.crt</code> 的内容到另一台机器上即可
+</p>
+<p>
+   注：<b>不需要重启Docker</b>
+</p>
+<h3 id="org-04664d007d">登陆仓库</h3>
+<div class="highlight"><pre><span></span>docker login registry.k8s.cloud
+</pre></div>
+
+<p>
+   输入之前创建时用的<b>用户名</b>，<b>密码</b>, 一般就可以登陆成功
+</p>
+<div class="highlight"><pre><span></span><span class="c1"># docker login registry.k8s.cloud</span>
+Username: xxxx
+Password: 
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+</pre></div>
+
+<h3 id="org-a08a3d8137">测试上传与下载</h3>
+<p>
+   准备任意 <b>Dockerfile</b>
+</p>
+<ul>
+<li>
+<p>
+ 构建本地镜像
+</p>
+<div class="highlight"><pre><span></span>docker build -t registry.k8s.cloud/mytest .
+</pre></div>
+
+</li>
+<li>
+<p>
+ 上传镜像
+</p>
+<div class="highlight"><pre><span></span><span class="c1"># docker push registry.k8s.cloud/mytest:latest</span>
+The push refers to repository <span class="o">[</span>registry.k8s.cloud/mytest<span class="o">]</span>
+1357220cb89: Layer already exists
+a965e1c532c: Pushed
+beaee123df5: Layer already exists
+2568a15e513: Layer already exists
+badc4d6e828: Pushed
+3c730fdba93: Pushed
+9d9e1e59db0: Pushed
+9dfa0a0da3b: Pushed
+latest: digest: sha256:c20c32ba413e6555159aa0722a866a576481fe4a177116c4919xxxxxxx2a5a size: <span class="m">1995</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+ 拉取镜像
+     当镜像上传成功，可在另一台机器上测试下载
+</p>
+<div class="highlight"><pre><span></span><span class="c1"># docker pull registry.k8s.cloud/mytest:latest</span>
+latest: Pulling from mytest
+605cebd3f31: Pull <span class="nb">complete</span>
+d08402297b9: Pull <span class="nb">complete</span>
+68c3b3bcbd0: Pull <span class="nb">complete</span>
+9ee925a87cc: Pull <span class="nb">complete</span>
+ebb13422b6b: Pull <span class="nb">complete</span>
+59c8302ac13: Pull <span class="nb">complete</span>
+7149c344f10: Pull <span class="nb">complete</span>
+7d8abdd4c32: Pull <span class="nb">complete</span>
+Digest: sha256:c20c32ba1e6555159aa0722a866a576481fe4a177116419ade0708652a5a
+Status: Downloaded newer image <span class="k">for</span> registry.k8s.cloud/mytest:latest
+registry.k8s.cloud/mytest:latest
+</pre></div>
+
+</li>
+</ul>
+<h2 id="org-03688ba6aa">FAQ</h2>
+<h3 id="org-a596530fe1"><span class="todo">x509:</span>certificate is valid for ingress.local, not registry.k8s.cloud</h3>
+<div class="highlight"><pre><span></span><span class="err">Error response from daemon: Get https://registry.k8s.cloud/v2/: x509: certificate is valid for ingress.local, not registry.k8s.cloud</span>
+</pre></div>
+
+<p>
+   这一般是 <b>ingress tls</b> 的配置问题, 比如创建 <b>secret</b> 时采用 <b>generic</b> 而不是 <b>tls</b>
+</p>
+<h3 id="org-1265e7830b"><span class="todo">x509:</span>certificate signed by unknown authority</h3>
+<div class="highlight"><pre><span></span><span class="err">Error response from daemon: Get https://registry.k8s.cloud/v2/: x509: certificate signed by unknown authority</span>
+</pre></div>
+
+<p>
+   这是未更新Docker证书导致的, 需要更新
+</p>
+<div class="highlight"><pre><span></span><span class="err">/etc/docker/certs.d/registry.k8s.cloud/ca.crt</span>
+</pre></div>
+
+<h3 id="org-2ba4a0d9db"><span class="todo">413</span>Request Entity Too Large</h3>
+<div class="highlight"><pre><span></span>error parsing HTTP 413 response body: invalid character &#39;<span class="err">&lt;</span>&#39; looking for beginning of value: &quot;<span class="nt">&lt;html&gt;</span>\r\n<span class="nt">&lt;head&gt;&lt;title&gt;</span>413 Request Entity Too Large<span class="nt">&lt;/title&gt;&lt;/head&gt;</span>\r\n<span class="nt">&lt;body&gt;</span>\r\n<span class="nt">&lt;center&gt;&lt;h1&gt;</span>413 Request Entity Too Large<span class="nt">&lt;/h1&gt;&lt;/center&gt;</span>\r\n<span class="nt">&lt;hr&gt;&lt;center&gt;</span>nginx/1.17.7<span class="nt">&lt;/center&gt;</span>\r\n<span class="nt">&lt;/body&gt;</span>\r\n<span class="nt">&lt;/html&gt;</span>\r\n&quot;
+</pre></div>
+
+<p>
+   当上传镜像时遇到413, 需要更新 <b>ingress</b> 配置
+</p>
+<div class="highlight"><pre><span></span><span class="nt">nginx.ingress.kubernetes.io/proxy-body-size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1024m</span>
+</pre></div>
+
+<h2 id="org-54709db3b7">参考资料</h2>
+<ul>
+<li>
+<p>
+ https://docs.docker.com/registry/deploying/
+</p>
+</li>
+<li>
+<p>
+ http://www.huamo.online/2017/06/07/Kubernetes%E6%90%AD%E5%BB%BATLS%E7%A7%81%E6%9C%89docker%E4%BB%93%E5%BA%93/
+</p>
+</li>
+</ul>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2020/01/KVM笔记之磁盘扩容.html" rel="bookmark" title="Permalink to KVM笔记之磁盘扩容">KVM笔记之磁盘扩容</a></h1>
+<header class="entry-info">
+  <span title="Updated at 2020-08-09">
+    <i class="fa fa-calendar-o"></i>
+    四 09 一月 2020
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tag/kvm/index.html">kvm</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li>
+<p>
+ <a href="#org-5abfa873d1">磁盘扩容</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-31a1eefbb6">关闭KVM虚拟机</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-c010e6d9b6">扩容磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-5a882856b4">查看磁盘位置</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f1c55fb6dd">查看磁盘信息</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f55fe26403">扩容磁盘大小</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-012a14e52c">扩容虚拟机分区</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-1c0029aae7">启动虚拟机</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-fa6c2f58a7">查看磁盘大小和格式</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-c010e6d9b6">扩容磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-953a5edfc0">磁盘挂载</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-fe4de5c8f0">创建磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-441d04855f">挂载磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-4d9471d089">挂载命令</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-72734d6c08">卸载命令</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-ea55ccb527">格式化磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-c43ca5e42a">格式化分区</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-dc439a52ae">格式化文件系统</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-441d04855f">挂载磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-03688ba6aa">FAQ</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-1fcc24a37d">output in sfdisk --version </a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-3ee3d9452c">参考链接</a>
+</p>
+</li>
+</ul>
+</div></div>
+<h2 id="org-5abfa873d1">磁盘扩容</h2>
+<h3 id="org-31a1eefbb6">关闭KVM虚拟机</h3>
+<div class="highlight"><pre><span></span>virsh shutdown vm-ubuntu-04
+</pre></div>
+
+<h3 id="org-c010e6d9b6">扩容磁盘</h3>
+<h4 id="org-5a882856b4">查看磁盘位置</h4>
+<div class="highlight"><pre><span></span><span class="c1"># virsh domblklist vm-ubuntu-04</span>
+Target     Source
+------------------------------------------------
+vda        /home/kvm/images/ubuntu-04.qcow2
+</pre></div>
+
+<h4 id="org-f1c55fb6dd">查看磁盘信息</h4>
+<div class="highlight"><pre><span></span><span class="c1"># qemu-img info …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/01/KVM笔记之磁盘扩容.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2020/01/KVM笔记之增量镜像.html" rel="bookmark" title="Permalink to KVM笔记之增量镜像">KVM笔记之增量镜像</a></h1>
+<header class="entry-info">
+  <span title="Updated at 2020-08-09">
+    <i class="fa fa-calendar-o"></i>
+    一 06 一月 2020
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tag/kvm/index.html">kvm</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li>
+<p>
+ <a href="#org-6514d0aeba">增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d2fb7d85bb">基础环境准备</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-3b85bc7daa">创建增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-e24c0af8af">创建KVM虚拟机</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-a597476d0f">手动创建</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-adb0b5b39c">使用virt-install创建</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-94db5f4ef2">测试增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f64bfae8d1">快照与增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-54709db3b7">参考资料</a>
+</p>
+</li>
+</ul>
+</div></div>
+<h2 id="org-6514d0aeba">增量镜像</h2>
+<p>
+  增量镜像即保持一个基础的镜像不变，在此基础镜像上安装或修改相应的服务所创建的一个单独的镜像，增量镜像类似GIT，只记录当前KVM的修改记录，这样可以节省磁盘空间，快速复制虚拟机
+</p>
+<h3 id="org-d2fb7d85bb">基础环境准备</h3>
+<ul>
+<li>
+<p>
+ KVM基础环境
+</p>
+</li>
+<li>
+<p>
+ 基础镜像 <b>ubuntu-base.qcow2</b>
+</p>
+</li>
+</ul>
+<h3 id="org-3b85bc7daa">创建增量镜像</h3>
+<p>
+   首先基于基础镜像 <b>ubuntu-base.qcow2</b> 创建一个增量镜像 <b>ubuntu-test.qcow2</b>
+</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>宿主机<span class="o">)</span> <span class="c1"># qemu-img info /home/kvm/images/ubuntu-base.qcow2</span>
+image: ubuntu-base.qcow2
+file format: qcow2
+virtual size: <span class="m">4</span>.0G …</pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/01/KVM笔记之增量镜像.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2019/07/elisp生成渐变XPM图片.html" rel="bookmark" title="Permalink to elisp生成渐变XPM图片">elisp生成渐变XPM图片</a></h1>
 <header class="entry-info">
   <span title="Updated at 2019-07-12">
     <i class="fa fa-calendar-o"></i>
@@ -90,79 +937,52 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-73d569baf7">渐变颜色</a></li>
-<li><a href="#org-9a9c7eb347">生成XPM图片</a></li>
-<li><a href="#org-35d265ae60">效果显示</a></li>
+<li>
+<p>
+ <a href="#org-73d569baf7">渐变颜色</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-9a9c7eb347">生成XPM图片</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-35d265ae60">效果显示</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
 <blockquote>
-<p>无意中看到 <a href="https://github.com/dbordak/telephone-line">telephone-line</a> 有一种渐变颜色的效果，看起来很棒，但<b>telephone-line</b>的源码有些难懂，所以自己动手实现类似的效果</p>
+<p>
+无意中看到 <a href="https://github.com/dbordak/telephone-line">telephone-line</a>有一种渐变颜色的效果，看起来很棒，但<b>telephone-line</b>的源码有些难懂，所以自己动手实现类似的效果
+</p>
 </blockquote>
-
 <h3 id="org-73d569baf7">渐变颜色</h3>
-<p>渐变颜色的实现可使用<code>color-gradient</code></p>
+<p>
+   渐变颜色的实现可使用<code>color-gradient</code>
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">color-gradient</span>
  <span class="o">&#39;</span><span class="p">(</span><span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span><span class="p">)</span>
  <span class="p">(</span><span class="nv">color-name-to-rgb</span> <span class="s">&quot;red&quot;</span><span class="p">)</span> <span class="mi">10</span><span class="p">)</span>
 </pre></div>
 
-
-<p>实现原理是对红(R)、绿(G)、蓝(B)三个颜色通道分别取 <b>n + 2</b> 个过渡值，<b>n</b> 为中间颜色过渡状态，所以对于<code>red</code>、<code>#000</code>、<code>#a0a0a0</code>等颜色需要转化为RGB色彩模式</p>
-
+<p>
+   实现原理是对红(R)、绿(G)、蓝(B)三个颜色通道分别取 <b>n + 2</b> 个过渡值，<b>n</b> 为中间颜色过渡状态，所以对于<code>red</code>、<code>#000</code>、<code>#a0a0a0</code>等颜色需要转化为RGB色彩模式
+</p>
 <h3 id="org-9a9c7eb347">生成XPM图片</h3>
-<p>XPM图片格式参考 <a href="https://en.wikipedia.org/wiki/X_PixMap">https://en.wikipedia.org/wiki/X_PixMap</a>(XPM3)</p>
-
-<p>大概是这样的</p>
-<div class="highlight"><pre><span></span><span class="cm">/* XPM */</span><span class="w"></span>
-static<span class="w"> </span>char<span class="w"> </span><span class="o">*</span><span class="w"> </span>XFACE<span class="err">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">{</span><span class="w"></span>
-<span class="cm">/* &amp;lt;Values&amp;gt; */</span><span class="w"></span>
-<span class="cm">/* &amp;lt;width/columns&amp;gt; &amp;lt;height/rows&amp;gt; &amp;lt;colors&amp;gt; &amp;lt;chars per pixel&amp;gt;*/</span><span class="w"></span>
-<span class="s">&quot;48 4 2 1&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="cm">/* &amp;lt;Colors&amp;gt; */</span><span class="w"></span>
-<span class="s">&quot;a c #ffffff&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="s">&quot;b c #000000&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="cm">/* &amp;lt;Pixels&amp;gt; */</span><span class="w"></span>
-<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="w"></span>
-<span class="err">};</span><span class="w"></span>
-</pre></div>
-
-
-<p>渐变颜色XPM图片原理就是使用不同的字符代表不同状态的渐变颜色，当所使用的字符数越多，渐变效果越好，但同时XPM图片的宽度也就越大</p>
-
-<ul>
-<li><b>生成不同字符</b>
-<div class="highlight"><pre><span></span><span class="c1">;; 0～9</span>
-<span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;number-to-string</span> <span class="p">(</span><span class="nv">number-sequence</span> <span class="mi">0</span> <span class="mi">9</span><span class="p">))</span>
-<span class="c1">;; a~z</span>
-<span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;char-to-string</span> <span class="p">(</span><span class="nv">number-sequence</span> <span class="sc">?a</span> <span class="sc">?z</span><span class="p">))</span>
-</pre></div>
-
-</li>
-<li><b>不同字符对应不同颜色</b>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">number</span> <span class="mi">-1</span><span class="p">))</span>
-  <span class="p">(</span><span class="nf">mapconcat</span>
-   <span class="p">(</span><span class="nb">lambda</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span>
-     <span class="p">(</span><span class="k">setq</span> <span class="nv">number</span> <span class="p">(</span><span class="nf">+</span> <span class="nv">number</span> <span class="mi">1</span><span class="p">))</span>
-     <span class="p">(</span><span class="nf">format</span> <span class="s">&quot;\&quot;%s c %s\&quot;,&quot;</span> <span class="p">(</span><span class="nf">nth</span> <span class="nv">number</span> <span class="nv">maple-xpm-chars</span><span class="p">)</span> <span class="p">(</span><span class="nf">apply</span> <span class="ss">&#39;color-rgb-to-hex</span> <span class="nv">x</span><span class="p">)))</span>
-   <span class="p">(</span><span class="nv">color-gradient</span>
-    <span class="p">(</span><span class="nv">color-name-to-rgb</span> <span class="nv">color1</span><span class="p">)</span>
-    <span class="p">(</span><span class="nv">color-name-to-rgb</span> <span class="nv">color2</span><span class="p">)</span> <span class="nv">width</span><span class="p">)</span> <span class="s">&quot;&quot;</span><span class="p">))</span>
-</pre></div>
-
-</li>
-</ul>
-<h3 id="org-35d265ae60">效果显示</h3>
-<p><a href="https://static.honmaple.com/default/images/2019/07/xpm-gradient.png?type=show" data-fancybox="image"><img data-src="https://static.honmaple.com/default/images/2019/07/xpm-gradient.png?type=thumb" class="lazyload" /></a></p>
-
-<p><a href="https://github.com/honmaple/emacs-maple-xpm">完整代码及更多XPM图片</a></p>
+<p>
+   XPM图片格式参考 <a href="https://en.wikipedia.org/wiki/X_PixMap">https://en.wikipedia.org/wiki/X_PixMap …</a></p>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2019/07/elisp生成渐变XPM图片.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2019/05/关于ivy的使用技巧.html" rel="bookmark" title="Permalink to 关于ivy的使用技巧">关于ivy的使用技巧</a></h1>
@@ -194,38 +1014,98 @@ static<span class="w"> </span>char<span class="w"> </span><span class="o">*</spa
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-3adaf767ed">ivy中的tab</a></li>
-<li><a href="#org-02cb96c0de">ivy中的C-h</a></li>
-<li><a href="#org-3528d8c79e">ivy-occur批量操作</a>
+<li>
+<p>
+ <a href="#org-3adaf767ed">ivy中的tab</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-b52fad50bf">自动打开wgrep-mode</a></li>
-<li><a href="#org-2e8b987865">批量修改文件名</a></li>
-</ul></li>
-<li><a href="#org-92aa2d024e">counsel-find-file</a>
+<li>
+<p>
+ <a href="#org-02cb96c0de">ivy中的C-h</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-1cd80fd7a8">重命名</a></li>
-<li><a href="#org-278502a2b7">自动创建不存在的目录</a></li>
-</ul></li>
-<li><a href="#org-c0d738df1a">ivy自动使用选中的内容</a></li>
-<li><a href="#org-f982e2b254">搜索某个目录</a></li>
-<li><a href="#org-16e38e01b5">ivy的显示避免出现在视线外</a></li>
+<li>
+<p>
+ <a href="#org-3528d8c79e">ivy-occur批量操作</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-b52fad50bf">自动打开wgrep-mode</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-2e8b987865">批量修改文件名</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-92aa2d024e">counsel-find-file</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-1cd80fd7a8">重命名</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-278502a2b7">自动创建不存在的目录</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-c0d738df1a">ivy自动使用选中的内容</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f982e2b254">搜索某个目录</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-16e38e01b5">ivy的显示避免出现在视线外</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
 <blockquote>
-<p>ivy默认的配置已经足够了，但还是可以通过一些技巧来提升使用体验</p>
+<p>
+ivy默认的配置已经足够了，但还是可以通过一些技巧来提升使用体验
+</p>
 </blockquote>
-
 <h2 id="org-3adaf767ed">ivy中的tab</h2>
-<p>ivy提供了好几个有关补全的命令，分别是<b>ivy-done</b>, <b>ivy-partial-or-done</b>, <b>ivy-immediate-done</b>, <b>ivy-dispatching-done</b>, 但不幸，想要获得高效的补全，我不得不记住这n多个命令，这常常使效率变得更低，
-所以，我自定义了一个 <b>maple/ivy-done</b>, 仅使用 <code>tab</code> 这一个按键就可以获得以上所有的体验</p>
-
+<p>
+  ivy提供了好几个有关补全的命令，分别是<b>ivy-done</b>, <b>ivy-partial-or-done</b>, <b>ivy-immediate-done</b>, <b>ivy-dispatching-done</b>, 但不幸，想要获得高效的补全，我不得不记住这n多个命令，这常常使效率变得更低，
+  所以，我自定义了一个 <b>maple/ivy-done</b>, 仅使用 <code>tab</code> 这一个按键就可以获得以上所有的体验
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/ivy-done</span><span class="p">()</span>
   <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
   <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">dir</span> <span class="nv">ivy--directory</span><span class="p">))</span>
     <span class="p">(</span><span class="nv">ivy-partial-or-done</span><span class="p">)</span>
-    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">string=</span> <span class="nv">dir</span> <span class="nv">ivy--directory</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nf">string=</span> <span class="nv">dir</span> <span class="nv">ivy--directory</span><span class="p">)</span>
       <span class="p">(</span><span class="nv">ivy-insert-current</span><span class="p">)</span>
       <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="k">and …</span></pre></div>
           </div>
@@ -264,33 +1144,53 @@ static<span class="w"> </span>char<span class="w"> </span><span class="o">*</spa
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-35ff770597">基础设置</a></li>
-<li><a href="#org-d0def72492">使用shackle管理窗口</a></li>
-<li><a href="#org-df6bd1959b">窗口黄金分割zoom</a></li>
-<li><a href="#org-63d185ebb3">window-numbering显示当前窗口号</a></li>
+<li>
+<p>
+ <a href="#org-35ff770597">基础设置</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d0def72492">使用shackle管理窗口</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-df6bd1959b">窗口黄金分割zoom</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-63d185ebb3">window-numbering显示当前窗口号</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
 <blockquote>
-<p><a href="https://github.com/honmaple/dotfiles/tree/master/emacs.d/lisp/init-window.el">init-window.el</a></p>
+<p>
+<a href="https://github.com/honmaple/dotfiles/tree/master/emacs.d/lisp/init-window.el">init-window.el</a>
+</p>
 </blockquote>
-
 <h2 id="org-35ff770597">基础设置</h2>
 <div class="highlight"><pre><span></span><span class="c1">;; 设置默认为左右分屏</span>
 <span class="p">(</span><span class="k">setq</span> <span class="nv">split-width-threshold</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
-
 
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">evil-leader/set-key</span>
   <span class="s">&quot;ws&quot;</span>  <span class="ss">&#39;split-window-below</span>  <span class="c1">;; 上下分屏</span>
   <span class="s">&quot;wv&quot;</span>  <span class="ss">&#39;split-window-right</span><span class="p">)</span> <span class="c1">;; 左右分屏</span>
 </pre></div>
 
-
 <h2 id="org-d0def72492">使用shackle管理窗口</h2>
-<p>当设置了 <code>(setq split-width-threshold 1)</code> 后所有的窗口都会变成左右分屏，所以需要 <b>shackle</b> 或 <b>popwin</b> package对窗口进行管理, 对一些特殊的窗口或 <b>buffer</b> 比如 <code>*Help*</code> 和 <code>flycheck error list</code> 需要设置为显示在下方，并且默认选中</p>
-
+<p>
+  当设置了 <code>(setq split-width-threshold 1)</code> 后所有的窗口都会变成左右分屏，所以需要 <b>shackle</b> 或 <b>popwin</b> package对窗口进行管理, 对一些特殊的窗口或 <b>buffer</b> 比如 <code><b>Help</b></code> 和 <code>flycheck error list</code> 需要设置为显示在下方，并且默认选中
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">shackle-rules</span>
       <span class="o">&#39;</span><span class="p">((</span><span class="s">&quot;*Help*&quot;</span> <span class="nb">:select</span> <span class="no">t</span> <span class="nb">:align …</span></pre></div>
           </div>
@@ -329,14 +1229,18 @@ static<span class="w"> </span>char<span class="w"> </span><span class="o">*</spa
           <hr class="entry-hr" />
           <div class="entry-content">
             
-
-<p><code>web-mode</code>有一个内置的<code>web-mode-fold-or-unfold</code>函数，但这个函数有一个问题，当存在<b>fold</b>时，使用<code>indent-region</code>会得到错误的缩进，想要得到正确的缩进，必须先 <code>unfold</code>, 比如</p>
-
-<div class="highlight"><pre><span></span><span class="ni">&amp;lt;</span>div<span class="ni">&amp;gt;</span>
-  <span class="ni">&amp;lt;</span>div class=&quot;col-xs-3 col-sm-3&quot; id=&quot;sidebar&quot; role=&quot;navigation&quot;<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>button class=&quot;btn btn-primary&quot;<span class="ni">&amp;gt;</span>Submit<span class="ni">&amp;lt;</span>/button<span class="ni">&amp;gt;</span> <span class="ni">&amp;lt;</span>br /<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>span<span class="ni">&amp;gt;</span>
-        <span class="ni">&amp;lt;</span>button class=&quot;btn btn-primary …</pre></div>
+<p>
+<code>web-mode</code>有一个内置的<code>web-mode-fold-or-unfold</code>函数，但这个函数有一个问题，当存在<b>fold</b>时，使用<code>indent-region</code>会得到错误的缩进，想要得到正确的缩进，必须先 <code>unfold</code>, 比如
+</p>
+<div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">div</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;col-xs-3 col-sm-3&quot;</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;sidebar&quot;</span> <span class="na">role</span><span class="o">=</span><span class="s">&quot;navigation&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">button</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;btn btn-primary&quot;</span><span class="p">&gt;</span>Submit<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span> <span class="p">&lt;</span><span class="nt">br</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;</span><span class="nt">span</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">button</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;btn btn-primary&quot;</span><span class="p">&gt;</span>Submit<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span> <span class="p">&lt;</span><span class="nt">br</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">span</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">button</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;btn btn-primary&quot;</span><span class="p">&gt;</span>Submit<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span> <span class="p">&lt;</span><span class="nt">br</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">span …</span></pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/11/web-mode自定义fold函数以适应indent-region.html">阅读全文 »</a>
@@ -372,13 +1276,18 @@ static<span class="w"> </span>char<span class="w"> </span><span class="o">*</spa
           <hr class="entry-hr" />
           <div class="entry-content">
             
-<p>这几天参考<code>imenu-list</code>重写了一个类似 vim 中<code>tagbar</code>的插件 <a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/site-lisp/maple/maple-imenu.el">maple-imenu</a>,  其实之前我一直在使用另一个类似的插件—— <b>imenu-list</b>, 虽然<b>imenu-list</b>已经足够使用了, 但它和<b>golden-ratio</b>搭配起来很难受， <b>golden-ratio</b> 我是常开的, 但<b>imenu-list</b>也会偶尔使用(浏览及讲解代码必备，否则查找某个函数和变量时很难受的)</p>
-
-<p>原本我想要自定义一下<b>imenu-list</b>，但看了源码之后, 发现很多地方都不符合我的需求， 而且需要改动的地方越来越多，最后不如自己重写</p>
-
+<p>
+这几天参考<code>imenu-list</code>重写了一个类似 vim 中<code>tagbar</code>的插件 <a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/site-lisp/maple/maple-imenu.el">maple-imenu</a>  其实之前我一直在使用另一个类似的插件—— <b>imenu-list</b>, 虽然<b>imenu-list</b>已经足够使用了, 但它和<b>golden-ratio</b>搭配起来很难受， <b>golden-ratio</b> 我是常开的, 但<b>imenu-list</b>也会偶尔使用(浏览及讲解代码必备，否则查找某个函数和变量时很难受的)
+</p>
+<p>
+原本我想要自定义一下<b>imenu-list</b>，但看了源码之后, 发现很多地方都不符合我的需求， 而且需要改动的地方越来越多，最后不如自己重写
+</p>
 <ul>
-<li>如何使用
-<p>下载<a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/site-lisp/maple/maple-imenu.el">文件</a>复制到 <code>$HOME/.emacs.d/site-lisp/maple-imenu</code> 目录, 然后</p>
+<li>
+<p>
+ 如何使用 
+  下载<a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/site-lisp/maple/maple-imenu.el">文件</a>制到 <code>$HOME/.emacs.d/site-lisp/maple-imenu</code> 目录, 然后
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">use-package</span> <span class="nv">maple-imenu</span>
   <span class="nb">:load-path</span> <span class="s">&quot;site-lisp/maple-imenu&quot;</span>
   <span class="nb">:commands</span> <span class="p">(</span><span class="nv">maple-imenu</span><span class="p">)</span>
@@ -420,223 +1329,58 @@ static<span class="w"> </span>char<span class="w"> </span><span class="o">*</spa
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-6a07a7a6a8">前言</a></li>
-<li><a href="#org-d7d7ce790b">配置</a></li>
-<li><a href="#org-31e3310765">快捷键</a></li>
+<li>
+<p>
+ <a href="#org-6a07a7a6a8">前言</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d7d7ce790b">配置</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-31e3310765">快捷键</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
 <blockquote>
-<p>更新于<code>2019.04</code></p>
+<p>
+更新于<code>2019.04</code>
+</p>
 <ol>
-<li><b>blog-mode</b> 更新为 <b>maple-note</b></li>
-<li>新建 <b>Git</b> 仓库 <a href="https://github.com/honmaple/emacs-maple-note">emacs-maple-note</a></li>
+<li>
+<p>
+ <b>blog-mode</b> 更新为 <b>maple-note</b>
+</p>
+</li>
+<li>
+<p>
+ 新建 <b>Git</b> 仓库 <a href="https://github.com/honmaple/emacs-maple-note">emacs-maple-note</a>
+</p>
+</li>
 </ol>
 </blockquote>
-
 <blockquote>
-<p><a href="https://github.com/honmaple/emacs-maple-note">emacs-maple-note</a> <del><a href="https://github.com/honmaple/dotfiles/tree/master/emacs.d/site-lisp/blog-mode">blog-mode</a></del>, 一个基于<code>tabulated-list</code>的emacs笔记管理插件</p>
+<p>
+<a href="https://github.com/honmaple/emacs-maple-note">emacs-maple-note</a><del><a href="https://github.com/honmaple/dotfiles/tree/master/emacs.d/site-lisp/blog-mode">blog-mode</a></del>, 一个基于<code>tabulated-list</code>的emacs笔记管理插件
+</p>
 </blockquote>
-
 <h3 id="org-6a07a7a6a8">前言</h3>
-<p>很早之前我一直在使用<code>blog-admin</code>作为博客笔记的管理工具, 虽然没有用社区维护的 <a href="https://github.com/CodeFalling/blog-admin">CodeFalling/blog-admin</a>, 而是用我自己修改的<a href="https://github.com/honmaple/dotfiles/tree/master/emacs.d/site-lisp/blog-admin">honmaple/blog-admin</a>, 毕竟我使用的<b>pelican</b>, 是一个很小众的静态博客生成工具, 为了适应<b>pelican</b>, 也为了适应自己平时的使用, 所以自己修改了一个版本</p>
-
-<p>但最近一是闲来没事，二是<b>blog-admin</b>使用的是<b>ctable</b>，中英文对齐上有些问题(虽然早就解决了), 三是觉得<b>blog-admin</b>有很多我不需要的代码, 而且看到那一长串的配置 …</p>
+<p>
+   很早之前我一直在使用<code>blog-admin</code>作为博客笔记的管理工具, 虽然没有用社区维护的 <a href="https://github.com/CodeFalling/blog-admin">CodeFalling/blog-admin</a> 而是用我自己修改的<a href="https://github.com/honmaple/dotfiles/tree/master/emacs.d/site-lisp/blog-admin">honmaple/blog-admin</a> 毕竟我使用的<b>pelican</b>, 是一个很小众的静态博客生成工具, 为了适应<b>pelican</b>, 也为了适应自己平时的使用, 所以自己修改了一个版本
+</p>
+<p>
+   但最近一是闲来没事，二是<b>blog-admin</b>使用的是<b>ctable</b>，中英文对齐上有些问题(虽然早就解决了), 三是觉得<b>blog-admin</b>有很多我不需要的代码, 而且看到那一长串的配置 …</p>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/10/使用maple-note管理笔记.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/09/elasticsearch笔记.html" rel="bookmark" title="Permalink to elasticsearch笔记">elasticsearch笔记</a></h1>
-<header class="entry-info">
-  <span title="Updated at 2019-03-21">
-    <i class="fa fa-calendar-o"></i>
-    三 19 九月 2018
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tag/elasticsearch/index.html">elasticsearch</a>
-        <a href="https://honmaple.me/tag/devops/index.html">devops</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content">
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
-<ul>
-<li><a href="#org-916e8b4bc5">elasticsearch</a>
-<ul>
-<li><a href="#org-087db63ab1">安装</a></li>
-<li><a href="#org-903d37c77f">优化</a></li>
-<li><a href="#org-385c272e35">重启</a></li>
-<li><a href="#org-a777262164">踩坑</a></li>
-</ul></li>
-<li><a href="#org-80d4015f1f">kibana</a>
-<ul>
-<li><a href="#org-087db63ab1">安装</a></li>
-<li><a href="#org-903d37c77f">优化</a></li>
-<li><a href="#org-a777262164">踩坑</a></li>
-</ul></li>
-</ul>
-</div></div>
-
-
-<h2 id="org-916e8b4bc5">elasticsearch</h2>
-<h3 id="org-087db63ab1">安装</h3>
-
-<h3 id="org-903d37c77f">优化</h3>
-<ul>
-<li>关闭swap
-<div class="highlight"><pre><span></span>swapoff -a
-<span class="c1"># 注释 /etc/fstab swap</span>
-sysctl -p
-</pre></div>
-</li>
-<li>unlimit调整
-<div class="highlight"><pre><span></span>sysctl -w vm.max_map_count<span class="o">=</span><span class="m">262144</span>
-<span class="nb">echo</span> <span class="s1">&#39;vm.max_map_count=262144&#39;</span> <span class="p">&amp;</span>gt<span class="p">;&amp;</span>gt<span class="p">;</span> /etc/sysctl.conf
-</pre></div>
-</li>
-<li>使用ssd</li>
-</ul>
-<h3 id="org-385c272e35">重启</h3>
-<div class="highlight"><pre><span></span>curl -X PUT <span class="s2">&quot;localhost:9200/_cluster/settings&quot;</span> -H …</pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/09/elasticsearch笔记.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/09/ansible笔记.html" rel="bookmark" title="Permalink to ansible笔记">ansible笔记</a></h1>
-<header class="entry-info">
-  <span title="Updated at 2019-12-20">
-    <i class="fa fa-calendar-o"></i>
-    二 04 九月 2018
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tag/python/index.html">python</a>
-        <a href="https://honmaple.me/tag/ansible/index.html">ansible</a>
-        <a href="https://honmaple.me/tag/devops/index.html">devops</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content">
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
-<ul>
-<li><a href="#org-123227efb3">ansible动态解析inventory</a></li>
-<li><a href="#org-062833af29">ansible自定义模块传递list变量会变成字符串</a></li>
-<li><a href="#org-4d7623dde6">常见问题FAQ</a></li>
-</ul>
-</div></div>
-
-
-<h2 id="org-123227efb3">ansible动态解析inventory</h2>
-<p><b>ansible</b>调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）</p>
-
-<p>但问题是<b>ansible</b>没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可</p>
-
-<p>查找源码, 根据 <code>InventoryManager</code> 传递的<b>source</b>变量找到<code>parse_sources</code>这个函数</p>
-<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">InventoryManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">parse_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39; iterate over inventory sources and parse each one to populate it&#39;&#39;&#39;</span>
-
-        <span class="bp">self …</span></pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/09/ansible笔记.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/07/如何保持一个干净的系统.html" rel="bookmark" title="Permalink to 如何保持一个干净的系统">如何保持一个干净的系统</a></h1>
-<header class="entry-info">
-  <span title="Updated at 2019-05-26">
-    <i class="fa fa-calendar-o"></i>
-    三 11 七月 2018
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tag/archlinux/index.html">archlinux</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content">
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
-<ul>
-<li><a href="#org-4235227b51">python</a></li>
-<li><a href="#org-771e417b9d">golang</a></li>
-<li><a href="#org-b8bd907ab8">lua</a></li>
-<li><a href="#org-b6e13ad53d">javascript</a></li>
-</ul>
-</div></div>
-
-
-<p>由于工作需要经常会使用多种语言, 比如 python, golang, lua, javascript等, 各种语言都有自己的包管理器，像python的包管理器<b>pip</b>, lua的包管理器<b>luarocks</b>。。。</p>
-
-<p>每个包管理器安装package的方式，位置都不相同，对于一个有洁癖的人来说,</p>
-<div class="highlight"><pre><span></span><span class="n">ls</span> <span class="o">~/</span> <span class="o">-</span><span class="n">al</span>
-</pre></div>
-
-<p>后各种各样的<code>.something</code>简直是场灾难, 所以保持一个干净的系统是非常必要的, 比如把相关语言的package都放到一个目录(我选择放到<code>$HOME/repo/{language}</code>)下</p>
-
-<blockquote>
-<p>请不要使用root用户，或者sudo来安装非必要的软件包</p>
-</blockquote>
-
-<h3 id="org-4235227b51">python</h3>
-<p>我的<b>python</b>环境是<code>pip+virtualenv+virtualenvwrapper</code>, <b>pip</b>可以有多种使用方式:</p>
-<ul>
-<li><b>sudo</b>
-<p><b>sudo</b>安装的package放到<code>/usr/lib64 …</code></p></li></ul>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/07/如何保持一个干净的系统.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">

@@ -87,32 +87,63 @@
     <div class="entry-content entry-article">
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-480eb10875">基础使用</a></li>
-<li><a href="#org-880a46f7c3">自定义文件头</a></li>
-<li><a href="#org-35fa7878ea">提取文件头公共信息</a></li>
-</ul>
-</div></div>
-
-
-
-<p>想要在emacs中添加文件头有好几种方法:</p>
-<ul>
-<li>直接手打</li>
-<li>使用模板yasnippet</li>
-<li>使用header2</li>
-<li>使用内置的package <b>auto-insert</b>
+<li>
+<p>
+ <a href="#org-480eb10875">基础使用</a>
+</p>
 </li>
 </ul>
-<p>header2可能是最方便的一种自动添加文件头的方式，但我之前使用过，想要自定义自己想要的内容很难，而且白白浪费header2的功能</p>
-
-<p>今天主要说一说emacs内置里<b>auto-insert</b>,使用它在创建文件时自动添加文件头信息</p>
-
+<ul>
+<li>
+<p>
+ <a href="#org-880a46f7c3">自定义文件头</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-35fa7878ea">提取文件头公共信息</a>
+</p>
+</li>
+</ul>
+</div></div>
+<p>
+想要在emacs中添加文件头有好几种方法:
+</p>
+<ul>
+<li>
+<p>
+ 直接手打
+</p>
+</li>
+<li>
+<p>
+ 使用模板yasnippet
+</p>
+</li>
+<li>
+<p>
+ 使用header2
+</p>
+</li>
+<li>
+<p>
+ 使用内置的package <b>auto-insert</b>
+</p>
+</li>
+</ul>
+header2可能是最方便的一种自动添加文件头的方式，但我之前使用过，想要自定义自己想要的内容很难，而且白白浪费header2的功能
+<p>
+今天主要说一说emacs内置里<b>auto-insert</b>,使用它在创建文件时自动添加文件头信息
+</p>
 <h3 id="org-480eb10875">基础使用</h3>
-<p>直接<code>(auto-insert-mode)</code>
-并且设置</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="n">setq</span> <span class="n">auto</span><span class="o">-</span><span class="k">insert</span><span class="o">-</span><span class="n">query</span> <span class="n">nil</span><span class="p">)</span> <span class="p">;;</span> <span class="err">不提醒</span>
+<p>
+   直接<code>(auto-insert-mode)</code>
+   并且设置
+</p>
+<div class="highlight"><pre><span></span><span class="err">(setq auto-insert-query nil) ;; 不提醒</span>
 </pre></div>
-
 
 <h3 id="org-880a46f7c3">自定义文件头</h3>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">auto-insert-alist</span>
@@ -140,8 +171,8 @@
          <span class="s">&quot;           By: \n&quot;</span>
          <span class="s">&quot; Description: \n&quot;</span>
          <span class="s">&quot; **************************************************************************/\n&quot;</span>
-         <span class="s">&quot;#include&amp;lt;stdio.h&amp;gt;\n&quot;</span>
-         <span class="s">&quot;#include&amp;lt;string.h&amp;gt;\n&quot;</span><span class="p">)</span>
+         <span class="s">&quot;#include&lt;stdio.h&gt;\n&quot;</span>
+         <span class="s">&quot;#include&lt;string.h&gt;\n&quot;</span><span class="p">)</span>
         <span class="p">((</span><span class="nv">sh-mode</span> <span class="o">.</span> <span class="s">&quot;Shell script&quot;</span><span class="p">)</span> <span class="no">nil</span>
          <span class="s">&quot;#!/bin/bash\n&quot;</span>
          <span class="s">&quot;# **************************************************************************\n&quot;</span>
@@ -156,12 +187,15 @@
          <span class="s">&quot;# **************************************************************************/\n&quot;</span><span class="p">)))</span>
 </pre></div>
 
-
 <h3 id="org-35fa7878ea">提取文件头公共信息</h3>
-<p>之前的模板有很多重复的内容，写一个函数把公共的信息提取出来</p>
-
+<p>
+   之前的模板有很多重复的内容，写一个函数把公共的信息提取出来
+</p>
 <ul>
-<li>基础信息
+<li>
+<p>
+ 基础信息
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple//insert-string</span><span class="p">()</span>
   <span class="p">(</span><span class="nf">concat</span>
    <span class="p">(</span><span class="nf">make-string</span> <span class="mi">80</span> <span class="sc">?*</span><span class="p">)</span>
@@ -178,16 +212,20 @@
 </pre></div>
 
 </li>
-<li>插入注释信息
-<p>&lt;2018-03-16 五&gt;更新:</p>
+<li>
+<p>
+ 插入注释信息
+     &lt;2018-03-16 五&gt;更新:
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/insert-string</span><span class="p">(</span><span class="kp">&amp;optional</span> <span class="nv">prefix</span><span class="p">)</span>
   <span class="p">(</span><span class="nv">replace-regexp-in-string</span>
    <span class="s">&quot;^&quot;</span> <span class="p">(</span><span class="k">or</span> <span class="nv">prefix</span> <span class="nv">comment-start</span><span class="p">)</span>
    <span class="p">(</span><span class="nv">maple//insert-string</span><span class="p">)))</span>
 </pre></div>
 
-
-<p>原代码:</p>
+<p>
+     原代码:
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/insert-string</span><span class="p">(</span><span class="kp">&amp;optional</span> <span class="nv">prefix</span><span class="p">)</span>
   <span class="p">(</span><span class="k">or</span> <span class="nv">prefix</span> <span class="p">(</span><span class="k">setq</span> <span class="nv">prefix</span> <span class="nv">comment-start</span><span class="p">))</span>
   <span class="p">(</span><span class="nf">mapconcat</span>
@@ -196,7 +234,10 @@
 </pre></div>
 
 </li>
-<li>更改模板
+<li>
+<p>
+ 更改模板
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">auto-insert-alist</span>
       <span class="o">&#39;</span><span class="p">(((</span><span class="nv">ruby-mode</span> <span class="o">.</span> <span class="s">&quot;Ruby program&quot;</span><span class="p">)</span> <span class="no">nil</span>
          <span class="s">&quot;#!/usr/bin/env ruby\n&quot;</span>
@@ -209,8 +250,8 @@
         <span class="p">((</span><span class="nv">c-mode</span> <span class="o">.</span> <span class="s">&quot;C program&quot;</span><span class="p">)</span> <span class="no">nil</span>
          <span class="s">&quot;/*&quot;</span>
          <span class="p">(</span><span class="nv">string-trim-left</span> <span class="p">(</span><span class="nv">maple/insert-string</span> <span class="s">&quot; &quot;</span><span class="p">))</span> <span class="s">&quot;*/\n&quot;</span>
-         <span class="s">&quot;#include&amp;lt;stdio.h&amp;gt;\n&quot;</span>
-         <span class="s">&quot;#include&amp;lt;string.h&amp;gt;\n&quot;</span><span class="p">)</span>
+         <span class="s">&quot;#include&lt;stdio.h&gt;\n&quot;</span>
+         <span class="s">&quot;#include&lt;string.h&gt;\n&quot;</span><span class="p">)</span>
         <span class="p">((</span><span class="nv">sh-mode</span> <span class="o">.</span> <span class="s">&quot;Shell script&quot;</span><span class="p">)</span> <span class="no">nil</span>
          <span class="s">&quot;#!/bin/bash\n&quot;</span>
          <span class="p">(</span><span class="nv">maple/insert-string</span><span class="p">)</span> <span class="s">&quot;\n&quot;</span><span class="p">)</span>
@@ -221,7 +262,7 @@
 
 </li>
 </ul>
-<p>相关的配置可以在我的<a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/lisp/init-auto-insert.el">github</a>上找到</p>
+   相关的配置可以在我的<a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/lisp/init-auto-insert.el">github</a>找到
     </div>
 <div class="entry-copyright">
   <div>

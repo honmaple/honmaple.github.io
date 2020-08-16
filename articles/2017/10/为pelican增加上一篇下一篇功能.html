@@ -86,12 +86,15 @@
     <hr class="entry-hr" />
     <div class="entry-content entry-article">
       
-
-<p>功能实现很简单, <b>pelican</b>也有类似的插件实现 <a href="https://github.com/getpelican/pelican-plugins/tree/master/neighbors">https://github.com/getpelican/pelican-plugins/tree/master/neighbors</a></p>
-
-<p>不过自己实现起来更爽不是吗? 而且类似<b>prev_article_in_category</b>和<b>prev_article_in_subcategory</b>的功能我并不需要</p>
-
-<p>首先参考<b>pelican</b>的文档,基础实现</p>
+<p>
+功能实现很简单, <b>pelican</b>也有类似的插件实现 <a href="https://github.com/getpelican/pelican-plugins/tree/master/neighbors">https://github.com/getpelican/pelican-plugins/tree/master/neighbors</a>
+</p>
+<p>
+不过自己实现起来更爽不是吗? 而且类似<b>prev_article_in_category</b>和<b>prev_article_in_subcategory</b>的功能我并不需要
+</p>
+<p>
+首先参考<b>pelican</b>的文档,基础实现
+</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_neighbors</span><span class="p">(</span><span class="n">generator</span><span class="p">):</span>
     <span class="o">....</span>
 
@@ -99,48 +102,52 @@
     <span class="n">signals</span><span class="o">.</span><span class="n">article_generator_finalized</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">add_neighbors</span><span class="p">)</span>
 </pre></div>
 
-
-<p>然后在<b>generator.articles</b>列表上进行操作,为article增加<b>previous_article</b>和<b>next_article</b>对象</p>
-
-<p>先进行排序(按时间)</p>
+<p>
+然后在<b>generator.articles</b>列表上进行操作,为article增加<b>previous_article</b>和<b>next_article</b>对象
+</p>
+<p>
+先进行排序(按时间)
+</p>
 <div class="highlight"><pre><span></span><span class="n">articles</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">articles</span>
-<span class="n">articles</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">date</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">articles</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">date</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
-
-<p>然后可以使用<b>iter</b>关键字,把列表变成生成器,使用next()( <code>python2用a.next(),python3用a.__next__()</code>)获取下一个可迭代对象</p>
-
-<div class="highlight"><pre><span></span><span class="n">pre_article</span> <span class="o">=</span> <span class="bp">None</span>
+<p>
+然后可以使用<b>iter</b>关键字,把列表变成生成器,使用next()( <code>python2用a.next(),python3用a.__next__()</code>)获取下一个可迭代对象
+</p>
+<div class="highlight"><pre><span></span><span class="n">pre_article</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="n">articles_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">articles</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 <span class="k">for</span> <span class="n">article</span> <span class="ow">in</span> <span class="n">articles</span><span class="p">:</span>
-    <span class="n">next_article</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">articles_iter</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">next_article</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">articles_iter</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="nb">setattr</span><span class="p">(</span><span class="n">article</span><span class="p">,</span> <span class="s1">&#39;previous_article&#39;</span><span class="p">,</span> <span class="n">pre_article</span><span class="p">)</span>
     <span class="nb">setattr</span><span class="p">(</span><span class="n">article</span><span class="p">,</span> <span class="s1">&#39;next_article&#39;</span><span class="p">,</span> <span class="n">next_article</span><span class="p">)</span>
     <span class="n">pre_article</span> <span class="o">=</span> <span class="n">article</span>
 </pre></div>
 
-
-<p>最后，在模板template中增加相关html代码，示例:</p>
+<p>
+最后，在模板template中增加相关html代码，示例:
+</p>
 <div class="highlight"><pre><span></span>{% if article.previous_article %}
-<span class="ni">&amp;lt;</span>li class=&quot;previous&quot;<span class="ni">&amp;gt;</span>
-  <span class="ni">&amp;lt;</span>a href=&quot;{{ SITEURL }}/{{ article.previous_article.url }}&quot; title=&quot;Previous article: {{ article.previous_article.title }}&quot;<span class="ni">&amp;gt;</span>
-    <span class="ni">&amp;lt;</span>i class=&quot;fa fa-chevron-left&quot;<span class="ni">&amp;gt;&amp;lt;</span>/i<span class="ni">&amp;gt;</span>
+<span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;previous&quot;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{ SITEURL }}/{{ article.previous_article.url }}&quot;</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Previous article: {{ article.previous_article.title }}&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">i</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;fa fa-chevron-left&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">i</span><span class="p">&gt;</span>
     {{ article.previous_article.title }}
-  <span class="ni">&amp;lt;</span>/a<span class="ni">&amp;gt;</span>
-<span class="ni">&amp;lt;</span>/li<span class="ni">&amp;gt;</span>
+  <span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
 {% endif %}
 {% if article.next_article %}
-<span class="ni">&amp;lt;</span>li class=&quot;next&quot;<span class="ni">&amp;gt;</span>
-  <span class="ni">&amp;lt;</span>a href=&quot;{{ SITEURL }}/{{ article.next_article.url }}&quot; title=&quot;Next article: {{ article.previous_article.title }}&quot;<span class="ni">&amp;gt;</span>
+<span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;next&quot;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{ SITEURL }}/{{ article.next_article.url }}&quot;</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Next article: {{ article.previous_article.title }}&quot;</span><span class="p">&gt;</span>
     {{ article.next_article.title }}
-    <span class="ni">&amp;lt;</span>i class=&quot;fa fa-chevron-right&quot;<span class="ni">&amp;gt;&amp;lt;</span>/i<span class="ni">&amp;gt;</span>
-  <span class="ni">&amp;lt;</span>/a<span class="ni">&amp;gt;</span>
-<span class="ni">&amp;lt;</span>/li<span class="ni">&amp;gt;</span>
+    <span class="p">&lt;</span><span class="nt">i</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;fa fa-chevron-right&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">i</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
 {% endif %}
 </pre></div>
 
-
-<p>ok,就这样</p>
+<p>
+ok,就这样
+</p>
     </div>
 <div class="entry-copyright">
   <div>

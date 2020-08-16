@@ -87,21 +87,37 @@
     <div class="entry-content entry-article">
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-a1b23f05ee">自动更新Last Updated</a></li>
-<li><a href="#org-4c33ac2dba">自动更新Filename</a></li>
-<li><a href="#org-b93404e8d6">自动更新Email</a></li>
+<li>
+<p>
+ <a href="#org-f2f8570ddd">Updated</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-4c33ac2dba">自动更新Filename</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-b93404e8d6">自动更新Email</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
-
-<p>前面已经说过，可以使用<b>auto-insert</b>自动添加文件头，今天来说一说自动更新文件头，比如说每次保存时自动更新<b>last updated</b>字段</p>
-
-
-<h3 id="org-a1b23f05ee">自动更新Last Updated</h3>
-<p>如果使用的是header2,直接设置相关的变量就可，假如使用的是<b>auto-insert</b>，同样也可以使用emacs内置的<b>time-stamp</b>对Last Updated进行自动更新</p>
-
-<p>time-stamp默认使用<code>Time-stamp:</code>,如果要对<code>Last Updated</code>进行自动更新，只需要简单的设置</p>
+<p>
+前面已经说过，可以使用<b>auto-insert</b>自动添加文件头，今天来说一说自动更新文件头，比如说每次保存时自动更新<b>last updated</b>字段
+</p>
+<h3 id="org-f2f8570ddd"><span class="todo">自动更新Last</span>Updated</h3>
+<p>
+   如果使用的是header2,直接设置相关的变量就可，假如使用的是<b>auto-insert</b>，同样也可以使用emacs内置的<b>time-stamp</b>对Last Updated进行自动更新
+</p>
+<p>
+   time-stamp默认使用<code>Time-stamp:</code>,如果要对<code>Last Updated</code>进行自动更新，只需要简单的设置
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">time-stamp-active</span> <span class="no">t</span><span class="p">)</span>
 <span class="p">(</span><span class="k">setq</span> <span class="nv">time-stamp-line-limit</span> <span class="mi">11</span><span class="p">)</span>
 <span class="p">(</span><span class="k">setq</span> <span class="nv">time-stamp-start</span> <span class="s">&quot;[lL]ast[ -][uU]pdate[ \t]*:?&quot;</span><span class="p">)</span>
@@ -109,63 +125,82 @@
 <span class="p">(</span><span class="k">setq</span> <span class="nv">time-stamp-format</span> <span class="s">&quot; %#A %Y-%02m-%02d %02H:%02M:%02S (%Z)&quot;</span><span class="p">)</span>
 </pre></div>
 
-
-<p>然后添加</p>
+<p>
+   然后添加
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">add-hook</span> <span class="ss">&#39;before-save-hook</span> <span class="ss">&#39;time-stamp</span><span class="p">)</span>
 </pre></div>
 
-
-<p>这样就能在每次保存时自动更新相应的字段了</p>
-
+<p>
+   这样就能在每次保存时自动更新相应的字段了
+</p>
 <h3 id="org-4c33ac2dba">自动更新Filename</h3>
-<p>之前遇到过，使用<b>auto-insert</b>在每次创建新文件时自动添加了文件头，但后面文件名被修改了，文件头里的文件名却不会自动更改，基于这个原因需要自己实现一个函数(我没有找到可以使用的已经存在的package)</p>
-
-<p>先理一理逻辑: 只需要查找当前文件前几行信息，如果找到<code>File Name:</code>字段，获取字段信息，与当前文件名进行对比，如果不一致则替换为当前文件名,直接给出代码吧</p>
-
+<p>
+   之前遇到过，使用<b>auto-insert</b>在每次创建新文件时自动添加了文件头，但后面文件名被修改了，文件头里的文件名却不会自动更改，基于这个原因需要自己实现一个函数(我没有找到可以使用的已经存在的package)
+</p>
+<p>
+   先理一理逻辑: 只需要查找当前文件前几行信息，如果找到<code>File Name:</code>字段，获取字段信息，与当前文件名进行对比，如果不一致则替换为当前文件名,直接给出代码吧
+</p>
 <ul>
-<li>查找当前文件前几行
+<li>
+<p>
+ 查找当前文件前几行
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="k">save-excursion</span>
     <span class="p">(</span><span class="nf">goto-char</span> <span class="p">(</span><span class="nf">point-min</span><span class="p">))</span> <span class="c1">;;跳转到开头</span>
     <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">lines</span> <span class="mi">0</span><span class="p">))</span>
-    <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="nv">&amp;lt</span><span class="c1">; lines line-limit)</span>
+    <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="nf">&lt;</span> <span class="nv">lines</span> <span class="nv">line-limit</span><span class="p">)</span>
         <span class="c1">;; 查找</span>
         <span class="p">(</span><span class="k">setq</span> <span class="nv">lines</span> <span class="p">(</span><span class="nf">1+</span> <span class="nv">lines</span><span class="p">))</span>
         <span class="p">(</span><span class="nf">forward-line</span> <span class="mi">1</span><span class="p">))))</span>
 </pre></div>
 
 </li>
-<li>获取当前文件名
+<li>
+<p>
+ 获取当前文件名
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nf">file-name-nondirectory</span> <span class="p">(</span><span class="nf">buffer-file-name</span><span class="p">))</span>
 </pre></div>
 
 </li>
-<li>查找File Name
+<li>
+<p>
+ 查找File Name
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nf">looking-at</span> <span class="s">&quot;.*\\(File Name:\\)\\(.*\\)&quot;</span><span class="p">)</span>
 </pre></div>
 
 </li>
-<li>对文件名进行比对与替换
+<li>
+<p>
+ 对文件名进行比对与替换
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">beg</span> <span class="p">(</span><span class="nf">match-beginning</span> <span class="mi">2</span><span class="p">))</span>
       <span class="p">(</span><span class="nv">end</span> <span class="p">(</span><span class="nf">match-end</span> <span class="mi">2</span><span class="p">)))</span>
-  <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">not</span> <span class="p">(</span><span class="nv">string=</span> <span class="nv">文件名</span> <span class="p">(</span><span class="nv">string-trim-left</span> <span class="p">(</span><span class="nv">match-string</span> <span class="mi">2</span><span class="p">))))</span>
+  <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">not</span> <span class="p">(</span><span class="nf">string=</span> <span class="nv">文件名</span> <span class="p">(</span><span class="nv">string-trim-left</span> <span class="p">(</span><span class="nv">match-string</span> <span class="mi">2</span><span class="p">))))</span>
     <span class="p">(</span><span class="nf">goto-char</span> <span class="nv">beg</span><span class="p">)</span>
     <span class="p">(</span><span class="nf">delete-region</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)</span>
     <span class="p">(</span><span class="nf">insert</span> <span class="s">&quot; &quot;</span> <span class="nv">name</span><span class="p">)))</span>
 </pre></div>
 
-
-<p>即可得到相关的完整函数(完整函数后面再讲)</p>
+<p>
+     即可得到相关的完整函数(完整函数后面再讲)
+</p>
 </li>
 </ul>
 <h3 id="org-b93404e8d6">自动更新Email</h3>
-<p>工作和平时使用的邮箱不一样，我虽然设置了<i>at_home</i>变量区分工作与平时的邮箱,但不是每次我都记得要更新这个变量，所以有了这个需要，自动将文件头里的email信息更改为平时所用的邮箱，大致逻辑与自动更新Filename相同，所以我写了一个<b>macro</b>来自动生成相关的代码</p>
-
-<p>直接给出代码</p>
+<p>
+   工作和平时使用的邮箱不一样，我虽然设置了<i>at_home</i>变量区分工作与平时的邮箱,但不是每次我都记得要更新这个变量，所以有了这个需要，自动将文件头里的email信息更改为平时所用的邮箱，大致逻辑与自动更新Filename相同，所以我写了一个<b>macro</b>来自动生成相关的代码
+</p>
+<p>
+   直接给出代码
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/header-update-action</span><span class="p">(</span><span class="nv">name</span><span class="p">)</span>
   <span class="s">&quot;A.&quot;</span>
   <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">beg</span> <span class="p">(</span><span class="nf">match-beginning</span> <span class="mi">2</span><span class="p">))</span>
         <span class="p">(</span><span class="nv">end</span> <span class="p">(</span><span class="nf">match-end</span> <span class="mi">2</span><span class="p">)))</span>
-    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">not</span> <span class="p">(</span><span class="nv">string=</span> <span class="nv">name</span> <span class="p">(</span><span class="nv">string-trim-left</span> <span class="p">(</span><span class="nv">match-string</span> <span class="mi">2</span><span class="p">))))</span>
+    <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">not</span> <span class="p">(</span><span class="nf">string=</span> <span class="nv">name</span> <span class="p">(</span><span class="nv">string-trim-left</span> <span class="p">(</span><span class="nv">match-string</span> <span class="mi">2</span><span class="p">))))</span>
       <span class="p">(</span><span class="nf">goto-char</span> <span class="nv">beg</span><span class="p">)</span>
       <span class="p">(</span><span class="nf">delete-region</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)</span>
       <span class="p">(</span><span class="nf">insert</span> <span class="s">&quot; &quot;</span> <span class="nv">name</span><span class="p">))))</span>
@@ -175,7 +210,7 @@
   <span class="p">(</span><span class="k">save-excursion</span>
     <span class="p">(</span><span class="nf">goto-char</span> <span class="p">(</span><span class="nf">point-min</span><span class="p">))</span>
     <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">lines</span> <span class="mi">0</span><span class="p">))</span>
-      <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="nv">&amp;lt</span><span class="c1">; lines line-limit)</span>
+      <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="nf">&lt;</span> <span class="nv">lines</span> <span class="nv">line-limit</span><span class="p">)</span>
         <span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">regex</span><span class="p">))</span>
           <span class="p">(</span><span class="nv">maple/header-update-action</span> <span class="nv">default</span><span class="p">))</span>
         <span class="p">(</span><span class="k">setq</span> <span class="nv">lines</span> <span class="p">(</span><span class="nf">1+</span> <span class="nv">lines</span><span class="p">))</span>
@@ -188,31 +223,42 @@
      <span class="p">(</span><span class="nv">maple/header-update</span> <span class="o">,</span><span class="nv">regex</span> <span class="o">,</span><span class="nv">default</span> <span class="o">,</span><span class="p">(</span><span class="k">or</span> <span class="nv">line-limit</span> <span class="mi">7</span><span class="p">))))</span>
 </pre></div>
 
-
-<p>这样，我就可以调用<b>macro</b>来生成代码</p>
+<p>
+   这样，我就可以调用<b>macro</b>来生成代码
+</p>
 <ul>
-<li>自动更新Filename
+<li>
+<p>
+ 自动更新Filename
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">maple/header-update-engine</span> <span class="s">&quot;filename&quot;</span>
                             <span class="s">&quot;.*\\(File Name:\\)\\(.*\\)&quot;</span>
                             <span class="p">(</span><span class="nf">file-name-nondirectory</span> <span class="p">(</span><span class="nf">buffer-file-name</span><span class="p">))</span> <span class="mi">7</span><span class="p">)</span>
 </pre></div>
 
-
-<p>生成一个<code>maple/header-update-filename</code>的函数,只要调用它即可更新文件名信息</p>
+<p>
+     生成一个<code>maple/header-update-filename</code>的函数,只要调用它即可更新文件名信息
+</p>
 </li>
-<li>自动更新email
-<p>同样的</p>
+<li>
+<p>
+ 自动更新email
+     同样的
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">maple/header-update-engine</span> <span class="s">&quot;email&quot;</span>
                             <span class="s">&quot;.*\\(Email:\\)\\(.*\\)&quot;</span>
                             <span class="s">&quot;youemail@gmail.com&quot;</span> <span class="mi">7</span><span class="p">)</span>
 </pre></div>
 
-<p>生成一个可供调用的<code>maple/header-update-email</code></p>
+<p>
+     生成一个可供调用的<code>maple/header-update-email</code>
+</p>
 </li>
 </ul>
-<p>如果想要添加其它功能，只要使用<code>maple/header-update-engine</code>即可</p>
-
-<p>相关的配置可以在我的<a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/site-lisp/header/header.el">github</a>上找到</p>
+   如果想要添加其它功能，只要使用<code>maple/header-update-engine</code>即可
+<p>
+相关的配置可以在我的<a href="https://github.com/honmaple/dotfiles/blob/master/emacs.d/site-lisp/header/header.el">github</a>找到
+</p>
     </div>
 <div class="entry-copyright">
   <div>

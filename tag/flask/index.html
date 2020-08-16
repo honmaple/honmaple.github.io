@@ -89,24 +89,49 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-c2bf92094d">使用nginx重定向uri</a></li>
-<li><a href="#org-a4987c2787">使用uri获取对应非302响应</a></li>
-<li><a href="#org-daf44e9b9c">使用url_map复制并alias路由</a></li>
-<li><a href="#org-bdd71c8026">演示效果</a></li>
+<li>
+<p>
+ <a href="#org-c2bf92094d">使用nginx重定向uri</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-a4987c2787">使用uri获取对应非302响应</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-daf44e9b9c">使用url_map复制并alias路由</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-bdd71c8026">演示效果</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
 <blockquote>
-<p>Flask的多语言国际化可以使用<b>Flask-Babel</b>插件，在此不再细述，但对于所谓的多语言站点(即形如<b>example.com/zh/uri、example.com/en/uri</b>或者<b>zh.example.com、en.example.com</b>)文档上却未作细述</p>
-
-<p>有一个 <a href="https://flask.palletsprojects.com/en/1.1.x/patterns/urlprocessors/">Flask URL Processors</a> 需要对所有的<b>uri</b>都额外增加一个<b>lang_code</b>的前缀，路由数较少时没什么问题，但路由数较多时太过麻烦</p>
+<p>
+Flask的多语言国际化可以使用<b>Flask-Babel</b>插件，在此不再细述，但对于所谓的多语言站点(即形如<b>example.com/zh/uri、example.com/en/uri</b>或者<b>zh.example.com、en.example.com</b>)文档上却未作细述
+</p>
+<p>
+有一个 <a href="https://flask.palletsprojects.com/en/1.1.x/patterns/urlprocessors/">Flask URL Processors</a>需要对所有的<b>uri</b>都额外增加一个<b>lang_code</b>的前缀，路由数较少时没什么问题，但路由数较多时太过麻烦
+</p>
 </blockquote>
-
-<p>实现<b>example.com/en/uri</b>可以有多种方式，除了使用<b>Flask URL Processors</b>中介绍的外，还可以</p>
-
+<p>
+实现<b>example.com/en/uri</b>可以有多种方式，除了使用<b>Flask URL Processors</b>中介绍的外，还可以
+</p>
 <h3 id="org-c2bf92094d">使用nginx重定向uri</h3>
-<p>这应该是各种方式里最简单的一种</p>
+<p>
+   这应该是各种方式里最简单的一种
+</p>
 <div class="highlight"><pre><span></span><span class="k">location</span> <span class="p">~</span> <span class="sr">^/en/</span> <span class="p">{</span>
     <span class="kn">rewrite</span> <span class="s">^/en/(.*)</span>$ <span class="s">/</span><span class="nv">$1</span> <span class="s">last</span><span class="p">;</span>
 <span class="p">}</span>
@@ -115,10 +140,10 @@
 <span class="p">}</span>
 </pre></div>
 
-
 <h3 id="org-a4987c2787">使用uri获取对应非302响应</h3>
-<p>即增加一个url为<b>/en/&lt;path:uri&gt;</b>的路由，在此路由<b>func</b>中，根据<b>&lt;path:uri&gt;</b>信息获取已注册路由的<b>view_function</b>，不使用重定向，而是直接调用<b>view_function</b>返回实际响应</p>
-
+<p>
+   即增加一个url为<b>/en/&lt;path:uri&gt;</b>的路由，在此路由<b>func</b>中，根据<b>&lt;path:uri&gt;</b>信息获取已注册路由的<b>view_function</b>，不使用重定向，而是直接调用<b>view_function</b>返回实际响应
+</p>
 <div class="highlight"><pre><span></span><span class="c1"># https://stackoverflow.com/questions/38488134/get-the-flask-view-function-that-matches-a-url</span>
 <span class="k">def</span> <span class="nf">get_view_function</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">):</span>
     <span class="n">adapter</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">url_map</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s1">&#39;localhost&#39;</span><span class="p">)</span>
@@ -129,27 +154,28 @@
         <span class="k">return</span> <span class="n">get_view_function</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">new_url</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="n">MethodNotAllowed</span><span class="p">,</span> <span class="n">NotFound</span><span class="p">):</span>
         <span class="c1"># no match</span>
-        <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># return the view function and arguments</span>
         <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">view_functions</span><span class="p">[</span><span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="c1"># no view is associated with the endpoint</span>
-        <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="kc">None</span>
 </pre></div>
 
-
-<p>提高查找对应<code>view-function</code>的性能，增加缓存到内存中</p>
+<p>
+   提高查找对应<code>view-function</code>的性能，增加缓存到内存中
+</p>
 <div class="highlight"><pre><span></span><span class="n">FUNCTION</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">view_function_cache</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_view_function</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">):</span>
         <span class="c1"># 避免故意访问</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">FUNCTION</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="mi">100</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">FUNCTION</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">FUNCTION</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">FUNCTION</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
         <span class="n">key</span> <span class="o">=</span> <span class="n">method</span> <span class="o">+</span> <span class="n">url</span>
@@ -162,40 +188,42 @@
     <span class="k">return</span> <span class="n">_view_function</span>
 </pre></div>
 
-
-<p>这样就可以定义<b>/en/&lt;uri&gt;</b>实际的<code>view_function</code></p>
+<p>
+   这样就可以定义<b>/en/&lt;uri&gt;</b>实际的<code>view_function</code>
+</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">redirect_en</span><span class="p">(</span><span class="n">uri</span><span class="p">):</span>
     <span class="n">view_function</span> <span class="o">=</span> <span class="n">get_view_function</span><span class="p">(</span>
         <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">uri</span><span class="p">,</span>
         <span class="n">request</span><span class="o">.</span><span class="n">method</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="k">if</span> <span class="n">view_function</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">view_function</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">abort</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
     <span class="c1"># 注：因为我使用Flask-Babel是根据accept_language来区别不同语言</span>
     <span class="n">request</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HTTP_ACCEPT_LANGUAGE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;en-US,en;q=0.5&quot;</span>
     <span class="k">return</span> <span class="n">view_function</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="o">**</span><span class="n">view_function</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 
-
 <h3 id="org-daf44e9b9c">使用url_map复制并alias路由</h3>
-<p>原理同<b>Flask URL Processors</b> ，为所有的路由都额外增加<b>/en</b>前缀，并在<code>before_request</code>中匹配到以<b>/en</b>开头的请求就修改对应<b>accept_language</b>信息</p>
-
-<div class="highlight"><pre><span></span><span class="nd">@app.before_request</span>
+<p>
+   原理同<b>Flask URL Processors</b> ，为所有的路由都额外增加<b>/en</b>前缀，并在<code>before_request</code>中匹配到以<b>/en</b>开头的请求就修改对应<b>accept_language</b>信息
+</p>
+<div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">before_request</span>
 <span class="k">def</span> <span class="nf">before_request</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/en/&quot;</span><span class="p">):</span>
         <span class="n">request</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HTTP_ACCEPT_LANGUAGE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;en-US,en;q=0.5&quot;</span>
 
 <span class="n">url_map</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">url_map</span><span class="o">.</span><span class="n">iter_rules</span><span class="p">())</span>
 <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">url_map</span><span class="p">:</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s2">&quot;/en&quot;</span> <span class="o">+</span> <span class="n">rule</span><span class="o">.</span><span class="n">rule</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s2">&quot;/en&quot;</span> <span class="o">+</span> <span class="n">rule</span><span class="o">.</span><span class="n">rule</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
-
-<p>咦，感觉这种方式更简单一些，但最好还是能够对一些特殊的路由比如: <b>static</b>, <b>admin</b>, <b>subdomain</b>等进行特殊处理</p>
-
+<p>
+   咦，感觉这种方式更简单一些，但最好还是能够对一些特殊的路由比如: <b>static</b>, <b>admin</b>, <b>subdomain</b>等进行特殊处理
+</p>
 <h3 id="org-bdd71c8026">演示效果</h3>
-<p><a href="https://honmaple.com/en/article">切换成English</a></p>
-
+<p>
+   <a href="https://honmaple.com/en/article">切换成English</a>
+</p>
           </div>
         </article>
           <ul class="entry-list">
@@ -230,67 +258,276 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-087db63ab1">安装</a></li>
-<li><a href="#org-5a24e1c8d8">用户系统</a></li>
-<li><a href="#org-560165a6d7">权限</a>
+<li>
+<p>
+ <a href="#org-087db63ab1">安装</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-cc0fd376bb">权限缓存</a></li>
-</ul></li>
-<li><a href="#org-21f1e88275">登录</a>
+<li>
+<p>
+ <a href="#org-5a24e1c8d8">用户系统</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-26b238cb1d">注意事项</a></li>
-</ul></li>
-<li><a href="#org-3e3d59a258">验证码</a>
+<li>
+<p>
+ <a href="#org-560165a6d7">权限</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-d7d7ce790b">配置</a></li>
-</ul></li>
-<li><a href="#org-128e9ff023">错误处理</a></li>
-<li><a href="#org-9ed627bcf6">邮箱</a></li>
-<li><a href="#org-1f515561b6">表单</a></li>
-<li><a href="#org-f4dbbc63a5">数据库</a>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-6304d7131d">基本查询(已实现)</a></li>
-<li><a href="#org-5a14fa9f1a">关系查询</a></li>
-<li><a href="#org-295c71ff98">其它</a></li>
-</ul></li>
-<li><a href="#org-0aa2f4ad8a">序列化</a>
+<li>
+<p>
+ <a href="#org-cc0fd376bb">权限缓存</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-06f4a6e00e">多个实例</a></li>
-<li><a href="#org-5a80709d39">单个实例</a></li>
-<li><a href="#org-9d0b64116a">排除字段</a></li>
-<li><a href="#org-698cb4c6b7">仅包括字段</a></li>
-<li><a href="#org-3df6e98319">关系查询深度</a></li>
-<li><a href="#org-934a46ccd6">额外的字段</a></li>
-<li><a href="#org-c493338e8c">自定义</a></li>
-</ul></li>
-<li><a href="#org-39231438a7">中间件</a></li>
-<li><a href="#org-4de50894b8">日志</a></li>
-<li><a href="#org-fc4a695f02">App</a>
+<li>
+<p>
+ <a href="#org-21f1e88275">登录</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-d7d7ce790b">配置</a></li>
-</ul></li>
-<li><a href="#org-89ec4ec2bf">Bootstrap</a>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-06d0f38dd2">模板</a></li>
-<li><a href="#org-d7d7ce790b">配置</a></li>
-</ul></li>
-<li><a href="#org-24071b57a1">Redis</a>
+<li>
+<p>
+ <a href="#org-26b238cb1d">注意事项</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-d7d7ce790b">配置</a></li>
-</ul></li>
+<li>
+<p>
+ <a href="#org-3e3d59a258">验证码</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d7d7ce790b">配置</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-128e9ff023">错误处理</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-9ed627bcf6">邮箱</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-1f515561b6">表单</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f4dbbc63a5">数据库</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-6304d7131d">基本查询(已实现)</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-5a14fa9f1a">关系查询</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-295c71ff98">其它</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0aa2f4ad8a">序列化</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-06f4a6e00e">多个实例</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-5a80709d39">单个实例</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-9d0b64116a">排除字段</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-698cb4c6b7">仅包括字段</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-3df6e98319">关系查询深度</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-934a46ccd6">额外的字段</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-c493338e8c">自定义</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-39231438a7">中间件</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-4de50894b8">日志</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-fc4a695f02">App</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d7d7ce790b">配置</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-89ec4ec2bf">Bootstrap</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-06d0f38dd2">模板</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d7d7ce790b">配置</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-24071b57a1">Redis</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d7d7ce790b">配置</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
-
 <h3 id="org-087db63ab1">安装</h3>
-<p>To install Flask-Maple:</p>
+<p>
+   To install Flask-Maple:
+</p>
 <div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">flask …</span></pre></div>
           </div>
           <div class="text-center">
@@ -329,21 +566,48 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-d07133c850">Quickstart</a></li>
-<li><a href="#org-0bb18642b7">Usage</a>
+<li>
+<p>
+ <a href="#org-d07133c850">Quickstart</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-f8eb13e34e">创建更新删除索引</a></li>
-<li><a href="#org-98bee9a16c">自定义analyzer</a></li>
-</ul></li>
-<li><a href="#org-792c81a4cf">Configure</a></li>
+<li>
+<p>
+ <a href="#org-0bb18642b7">Usage</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f8eb13e34e">创建更新删除索引</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-98bee9a16c">自定义analyzer</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-792c81a4cf">Configure</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
-<p>flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/Flask-WhooshAlchemy , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个</p>
-
+<p>
+flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/Flask-WhooshAlchemy , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个
+</p>
 <h2 id="org-d07133c850">Quickstart</h2>
-<p>插件基于 whoosh,纯 python 编写,使用上很简单</p>
+<p>
+  插件基于 whoosh,纯 python 编写,使用上很简单
+</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask_msearch</span> <span class="kn">import</span> <span class="n">Search</span>
 <span class="p">[</span><span class="o">...</span><span class="p">]</span>
 <span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
@@ -459,48 +723,114 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-da4338acc8">为什么需要用token验证</a></li>
-<li><a href="#org-5b6e813527">如何使用token?</a>
-<ul>
-<li><a href="#org-1392cc8548">生成token</a></li>
-<li><a href="#org-2f0f5c6f45">验证token</a></li>
-<li><a href="#org-acb7bf7aba">使用flask-login</a></li>
-<li><a href="#org-323662fd66">设置csrf白名单</a></li>
-</ul></li>
-<li><a href="#org-9f7a9d1a54">使用脚本发表</a></li>
-</ul>
-</div></div>
-
-
-<h2 id="org-da4338acc8">为什么需要用token验证</h2>
-<p>原因呢是因为写博客时已经在本地写好了，但是要发表到网站上还需要这么几步:</p>
-
-<ul>
-<li><input type="checkbox" checked="checked" />打开浏览器</li>
-<li><input type="checkbox" checked="checked" />打开我的网站</li>
-<li><input type="checkbox" checked="checked" />进入登陆页</li>
-<li><input type="checkbox" checked="checked" />登陆</li>
-<li><input type="checkbox" checked="checked" />进入后台页</li>
-<li><input type="checkbox" checked="checked" />进入文章发表页</li>
-<li><input type="checkbox" checked="checked" />复制粘贴</li>
-<li><input type="checkbox" checked="checked" />发表
+<li>
+<p>
+ <a href="#org-da4338acc8">为什么需要用token验证</a>
+</p>
 </li>
 </ul>
-<p>所以使用<b>token</b>验证成为必然</p>
-
+<ul>
+<li>
+<p>
+ <a href="#org-5b6e813527">如何使用token?</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-1392cc8548">生成token</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-2f0f5c6f45">验证token</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-acb7bf7aba">使用flask-login</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-323662fd66">设置csrf白名单</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-9f7a9d1a54">使用脚本发表</a>
+</p>
+</li>
+</ul>
+</div></div>
+<h2 id="org-da4338acc8">为什么需要用token验证</h2>
+<p>
+  原因呢是因为写博客时已经在本地写好了，但是要发表到网站上还需要这么几步:
+</p>
+<ul>
+<li>
+<p>
+ [X] 打开浏览器
+</p>
+</li>
+<li>
+<p>
+ [X] 打开我的网站
+</p>
+</li>
+<li>
+<p>
+ [X] 进入登陆页
+</p>
+</li>
+<li>
+<p>
+ [X] 登陆
+</p>
+</li>
+<li>
+<p>
+ [X] 进入后台页
+</p>
+</li>
+<li>
+<p>
+ [X] 进入文章发表页
+</p>
+</li>
+<li>
+<p>
+ [X] 复制粘贴
+</p>
+</li>
+<li>
+<p>
+ [X] 发表
+</p>
+</li>
+</ul>
+  所以使用<b>token</b>验证成为必然
 <h2 id="org-5b6e813527">如何使用token?</h2>
-
 <h3 id="org-1392cc8548">生成token</h3>
-<p>使用<b>itsdangerous</b>对token进行加密</p>
+<p>
+   使用<b>itsdangerous</b>对token进行加密
+</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
     <span class="o">......</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
-        <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
-        <span class="n">salt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;SECURITY_PASSWORD_SALT&#39;</span><span class="p">)</span>
-        <span class="n">serializer</span> <span class="o">=</span> <span class="n">URLSafeTimedSerializer …</span></pre></div>
+        <span class="n">secret_key</span> <span class="o">=</span> <span class="n">config …</span></pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2016/12/flask使用token进行登陆.html">阅读全文 »</a>
@@ -567,7 +897,7 @@
 
 <h1>如何安装及使用<a id="orgheadline6"></a></h1>
 <h2>安装需要的package<a id="orgheadline1"></a></h2>
-<div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="p">.</span><span class="n">txt</span>
+<div class="highlight"><pre><span></span><span class="err">pip install -r requirements.txt</span>
 </pre></div>
 
 
@@ -611,34 +941,67 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-45a6a31efe">设计需求</a></li>
-<li><a href="#org-2e00356c0b">具体实现</a></li>
-<li><a href="#org-468f11e783">具体代码</a></li>
+<li>
+<p>
+ <a href="#org-45a6a31efe">设计需求</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-2e00356c0b">具体实现</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-468f11e783">具体代码</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
-<p>在前端显示为该问题 "几分钟前发表或几天前发表"</p>
-
-<p>后端通过filter注册</p>
-
-<p><a href="http://flask.pocoo.org/snippets/33/">参考资料</a></p>
-
+<p>
+在前端显示为该问题 &#34;几分钟前发表或几天前发表&#34;
+</p>
+<p>
+后端通过filter注册
+</p>
+<p>
+<a href="http://flask.pocoo.org/snippets/33/">参考资料</a>
+</p>
 <h2 id="org-45a6a31efe">设计需求</h2>
 <ul>
-<li>如果问题发表超过 <b>10天</b> ,则显示为 /%Y-%m-%d %H:%M/
+<li>
+<p>
+ 如果问题发表超过 <b>10天</b> ,则显示为 <i>%Y-%m-%d %H:%M</i>
+</p>
 </li>
-<li>如果小于 <b>10天</b> ，但是大于 <b>1天</b> ，则显示为 /n天前/ 发表
+<li>
+<p>
+ 如果小于 <b>10天</b> ，但是大于 <b>1天</b> ，则显示为 <i>n天前</i> 发表
+</p>
 </li>
-<li>如果小于 <b>1天</b> ，但是大于 <b>1小时</b> ，则显示为 /n小时前/ 发表
+<li>
+<p>
+ 如果小于 <b>1天</b> ，但是大于 <b>1小时</b> ，则显示为 <i>n小时前</i> 发表
+</p>
 </li>
-<li>如果小于 <b>1小时</b> ，但是大于 <b>90秒</b> ，则显示为 /n分钟前/ 发表
+<li>
+<p>
+ 如果小于 <b>1小时</b> ，但是大于 <b>90秒</b> ，则显示为 <i>n分钟前</i> 发表
+</p>
 </li>
-<li>如果小于 <b>90秒</b> ，则显示为 /刚刚/ 发表
+<li>
+<p>
+ 如果小于 <b>90秒</b> ，则显示为 <i>刚刚</i> 发表
+</p>
 </li>
 </ul>
 <h2 id="org-2e00356c0b">具体实现</h2>
-<p>通过 <code>diff.days …</code></p>
+<p>
+  通过 <code>diff.days …</code></p>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2016/06/flask时间格式化.html">阅读全文 »</a>
@@ -677,7 +1040,7 @@
             <h3>为什么需要restful形式的权限管理<a id="orgheadline1"></a></h3>
 <p>最近在写flask应用时使用了 <strong>restful</strong> 形式的<code>flask.views.MethodView</code>，但是在对其进行权限管理时遇到了一些问题</p>
 <p>flask文档上介绍说用</p>
-<div class="highlight"><pre><span></span><span class="n">decorators</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="highlight"><pre><span></span><span class="err">decorators = []</span>
 </pre></div>
 
 

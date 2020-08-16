@@ -88,40 +88,97 @@
     <div class="entry-content entry-article">
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-916e8b4bc5">elasticsearch</a>
+<li>
+<p>
+ <a href="#org-916e8b4bc5">elasticsearch</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-087db63ab1">安装</a></li>
-<li><a href="#org-903d37c77f">优化</a></li>
-<li><a href="#org-385c272e35">重启</a></li>
-<li><a href="#org-a777262164">踩坑</a></li>
-</ul></li>
-<li><a href="#org-80d4015f1f">kibana</a>
+<li>
+<p>
+ <a href="#org-087db63ab1">安装</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-087db63ab1">安装</a></li>
-<li><a href="#org-903d37c77f">优化</a></li>
-<li><a href="#org-a777262164">踩坑</a></li>
-</ul></li>
+<li>
+<p>
+ <a href="#org-903d37c77f">优化</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-385c272e35">重启</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-a777262164">踩坑</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-80d4015f1f">kibana</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-087db63ab1">安装</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-903d37c77f">优化</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-a777262164">踩坑</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
 <h2 id="org-916e8b4bc5">elasticsearch</h2>
 <h3 id="org-087db63ab1">安装</h3>
-
 <h3 id="org-903d37c77f">优化</h3>
 <ul>
-<li>关闭swap
+<li>
+<p>
+ 关闭swap
+</p>
 <div class="highlight"><pre><span></span>swapoff -a
 <span class="c1"># 注释 /etc/fstab swap</span>
 sysctl -p
 </pre></div>
+
 </li>
-<li>unlimit调整
+<li>
+<p>
+ unlimit调整
+</p>
 <div class="highlight"><pre><span></span>sysctl -w vm.max_map_count<span class="o">=</span><span class="m">262144</span>
-<span class="nb">echo</span> <span class="s1">&#39;vm.max_map_count=262144&#39;</span> <span class="p">&amp;</span>gt<span class="p">;&amp;</span>gt<span class="p">;</span> /etc/sysctl.conf
+<span class="nb">echo</span> <span class="s1">&#39;vm.max_map_count=262144&#39;</span> &gt;&gt; /etc/sysctl.conf
 </pre></div>
+
 </li>
-<li>使用ssd</li>
+<li>
+<p>
+ 使用ssd
+</p>
+</li>
 </ul>
 <h3 id="org-385c272e35">重启</h3>
 <div class="highlight"><pre><span></span>curl -X PUT <span class="s2">&quot;localhost:9200/_cluster/settings&quot;</span> -H <span class="s1">&#39;Content-Type: application/json&#39;</span> -d<span class="s1">&#39;</span>
@@ -145,8 +202,11 @@ curl -X PUT <span class="s2">&quot;localhost:9200/_cluster/settings&quot;</span>
 
 <h3 id="org-a777262164">踩坑</h3>
 <ul>
-<li>滚动重启
-<p>重启前</p>
+<li>
+<p>
+ 滚动重启
+     重启前
+</p>
 <div class="highlight"><pre><span></span>curl -XPUT http://192.168.67.14:9200/_cluster/settings -d <span class="s1">&#39;{</span>
 <span class="s1">    &quot;transient&quot; : {</span>
 <span class="s1">        &quot;cluster.routing.allocation.enable&quot; : &quot;none&quot;</span>
@@ -154,31 +214,45 @@ curl -X PUT <span class="s2">&quot;localhost:9200/_cluster/settings&quot;</span>
 <span class="s1">}&#39;</span>
 </pre></div>
 
-<p>重启后</p>
+<p>
+     重启后
+</p>
 <div class="highlight"><pre><span></span>curl -XPUT http://192.168.67.14:9200/_cluster/settings -d <span class="s1">&#39;{</span>
 <span class="s1">    &quot;transient&quot; : {</span>
 <span class="s1">        &quot;cluster.routing.allocation.enable&quot; : &quot;all&quot;</span>
 <span class="s1">    }</span>
 <span class="s1">}&#39;</span>
 </pre></div>
+
 </li>
-<li>修改index.number_of_shards</li>
-<li>磁盘损坏
+<li>
+<p>
+ 修改index.number_of_shards
+</p>
+</li>
+<li>
+<p>
+ 磁盘损坏
+</p>
 <div class="highlight"><pre><span></span>curl -XPOST <span class="s1">&#39;http://192.168.60.32:9200/_cluster/reroute&#39;</span> -d <span class="s1">&#39;{</span>
 <span class="s1">        &quot;commands&quot; : [ {</span>
 <span class="s1">              &quot;allocate&quot; : {</span>
-<span class="s1">                  &quot;index&quot; : &quot;.marvel-2018.10.10&quot;,</span>
-<span class="s1">                  &quot;shard&quot; : 0,</span>
-<span class="s1">                  &quot;node&quot; : &quot;1.7.5-192.168.67.14&quot;,</span>
+<span class="s1">                  &quot;index&quot; : &quot;.marvel-2018.10.10&quot;, </span>
+<span class="s1">                  &quot;shard&quot; : 0, </span>
+<span class="s1">                  &quot;node&quot; : &quot;1.7.5-192.168.67.14&quot;, </span>
 <span class="s1">                  &quot;allow_primary&quot; : true</span>
 <span class="s1">              }</span>
 <span class="s1">            }</span>
 <span class="s1">        ]</span>
 <span class="s1">    }&#39;</span>
 </pre></div>
+
 </li>
-<li>unassigned shards
-<div class="highlight"><pre><span></span>curl http://127.0.0.1:9200/_cat/shards?v <span class="m">2</span><span class="p">&amp;</span>gt<span class="p">;&amp;</span><span class="m">1</span> <span class="p">|</span> grep UNASSIGNED
+<li>
+<p>
+ unassigned shards
+</p>
+<div class="highlight"><pre><span></span>curl http://127.0.0.1:9200/_cat/shards?v <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="p">|</span> grep UNASSIGNED
 </pre></div>
 
 <div class="highlight"><pre><span></span>curl http://127.0.0.1:9200/_nodes/process?pretty
@@ -187,17 +261,21 @@ curl -X PUT <span class="s2">&quot;localhost:9200/_cluster/settings&quot;</span>
 <div class="highlight"><pre><span></span>curl -XPOST <span class="s1">&#39;http://192.168.60.32:9200/_cluster/reroute&#39;</span> -d <span class="s1">&#39;{</span>
 <span class="s1">        &quot;commands&quot; : [ {</span>
 <span class="s1">                &quot;allocate&quot; : {</span>
-<span class="s1">                    &quot;index&quot; : &quot;logstash-xxx-up-2019.01.29&quot;,</span>
-<span class="s1">                    &quot;shard&quot; : 9,</span>
-<span class="s1">                    &quot;node&quot; : &quot;kzI0751OSJBcx_wmLQ&quot;,</span>
+<span class="s1">                    &quot;index&quot; : &quot;logstash-xxx-up-2019.01.29&quot;, </span>
+<span class="s1">                    &quot;shard&quot; : 9, </span>
+<span class="s1">                    &quot;node&quot; : &quot;kzI0751OSJBcx_wmLQ&quot;, </span>
 <span class="s1">                    &quot;allow_primary&quot; : true</span>
 <span class="s1">                }</span>
 <span class="s1">            }</span>
 <span class="s1">        ]</span>
 <span class="s1">    }&#39;</span>
 </pre></div>
+
 </li>
-<li>修改@timestamp类型
+<li>
+<p>
+ 修改@timestamp类型
+</p>
 <div class="highlight"><pre><span></span>curl -XPUT <span class="s2">&quot;http://127.0.0.1:9200/_template/uplog&quot;</span> -H <span class="s1">&#39;Content-Type: application/json&#39;</span> -H <span class="s1">&#39;Host: elasticsearch.morgans&#39;</span> -d<span class="s1">&#39;</span>
 <span class="s1">{</span>
 <span class="s1">  &quot;index_patterns&quot;: [&quot;uplog-*&quot;],</span>
@@ -221,21 +299,25 @@ curl -X PUT <span class="s2">&quot;localhost:9200/_cluster/settings&quot;</span>
 </ul>
 <h2 id="org-80d4015f1f">kibana</h2>
 <h3 id="org-087db63ab1">安装</h3>
-
 <h3 id="org-903d37c77f">优化</h3>
-
 <h3 id="org-a777262164">踩坑</h3>
 <ul>
-<li>保存时kibana报错 <code>Visualization Editor: blocked by: [FORBIDDEN/12/index read-only</code>
-<p>参考 <a href="https://github.com/elastic/kibana/issues/13685">https://github.com/elastic/kibana/issues/13685</a></p>
+<li>
+<p>
+ 保存时kibana报错 <code>Visualization Editor: blocked by: [FORBIDDEN/12/index read-only</code>
+     参考 <a href="https://github.com/elastic/kibana/issues/13685">https://github.com/elastic/kibana/issues/13685</a>
+</p>
 <div class="highlight"><pre><span></span>curl -XPUT -H <span class="s2">&quot;Content-Type: application/json&quot;</span> http://127.0.0.1:9200/.kibana/_settings -d <span class="s1">&#39;{&quot;index.blocks.read_only_allow_delete&quot;: null}&#39;</span>
 </pre></div>
 
 </li>
-<li>Timelion每次查询得到的数据不一样
-<p>参考 <a href="https://github.com/elastic/kibana/issues/23428">https://github.com/elastic/kibana/issues/23428</a> 和 <a href="https://discuss.elastic.co/t/timelion-gives-different-result-when-it-auto-refreshes/155182">https://discuss.elastic.co/t/timelion-gives-different-result-when-it-auto-refreshes/155182</a>
-修改<b>kibana.yml</b>配置</p>
-<div class="highlight"><pre><span></span><span class="n">elasticsearch</span><span class="p">.</span><span class="n">shardTimeout</span> <span class="o">=</span> <span class="mi">30000</span>
+<li>
+<p>
+ Timelion每次查询得到的数据不一样
+     参考 <a href="https://github.com/elastic/kibana/issues/23428">https://github.com/elastic/kibana/issues/23428</a>和 <a href="https://discuss.elastic.co/t/timelion-gives-different-result-when-it-auto-refreshes/155182">https://discuss.elastic.co/t/timelion-gives-different-result-when-it-auto-refreshes/155182</a>
+     修改<b>kibana.yml</b>配置
+</p>
+<div class="highlight"><pre><span></span><span class="err">elasticsearch.shardTimeout = 30000</span>
 </pre></div>
 
 </li>

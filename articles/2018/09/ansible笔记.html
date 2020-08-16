@@ -89,29 +89,48 @@
     <div class="entry-content entry-article">
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-123227efb3">ansible动态解析inventory</a></li>
-<li><a href="#org-062833af29">ansible自定义模块传递list变量会变成字符串</a></li>
-<li><a href="#org-4d7623dde6">常见问题FAQ</a></li>
+<li>
+<p>
+ <a href="#org-123227efb3">ansible动态解析inventory</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-062833af29">ansible自定义模块传递list变量会变成字符串</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-4d7623dde6">常见问题FAQ</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
 <h2 id="org-123227efb3">ansible动态解析inventory</h2>
-<p><b>ansible</b>调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）</p>
-
-<p>但问题是<b>ansible</b>没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可</p>
-
-<p>查找源码, 根据 <code>InventoryManager</code> 传递的<b>source</b>变量找到<code>parse_sources</code>这个函数</p>
+<p>
+  <b>ansible</b>调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）
+</p>
+<p>
+  但问题是<b>ansible</b>没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可
+</p>
+<p>
+  查找源码, 根据 <code>InventoryManager</code> 传递的<b>source</b>变量找到<code>parse_sources</code>这个函数
+</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">InventoryManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">parse_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">parse_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; iterate over inventory sources and parse each one to populate it&#39;&#39;&#39;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_setup_inventory_plugins</span><span class="p">()</span>
         <span class="o">...</span>
 </pre></div>
 
-
-<p>然后再根据</p>
+<p>
+  然后再根据
+</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_setup_inventory_plugins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39; sets up loaded inventory plugins for usage &#39;&#39;&#39;</span>
 
@@ -119,8 +138,9 @@
     <span class="o">...</span>
 </pre></div>
 
-<p>找到对应的解析<b>plugin</b>, 我使用的是<b>ini</b>格式的inventory, 所以自定义一下<code>ansible.plugins.inventory.ini.InventoryModule</code>这个模块即可</p>
-
+<p>
+  找到对应的解析<b>plugin</b>, 我使用的是<b>ini</b>格式的inventory, 所以自定义一下<code>ansible.plugins.inventory.ini.InventoryModule</code>这个模块即可
+</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.plugins.inventory.ini</span> <span class="kn">import</span> <span class="n">InventoryModule</span>
 <span class="kn">from</span> <span class="nn">ansible.inventory.data</span> <span class="kn">import</span> <span class="n">InventoryData</span>
 <span class="kn">from</span> <span class="nn">ansible.parsing.dataloader</span> <span class="kn">import</span> <span class="n">DataLoader</span>
@@ -145,9 +165,11 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </pre></div>
 
-
 <ul>
-<li><b>如何使用</b>:
+<li>
+<p>
+ <b>如何使用</b>:
+</p>
 <div class="highlight"><pre><span></span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span><span class="se">\</span>
 <span class="s1">[MY-HOST]</span>
 <span class="s1">MY_HOST-1 ansible_ssh_host=127.0.0.1</span>
@@ -170,12 +192,14 @@
 <span class="n">module</span><span class="o">.</span><span class="n">mine_parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">child_groups</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">child_groups</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">hosts</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">host</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">host</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
 </pre></div>
 
-<p><b>结果</b>:</p>
+<p>
+    <b>结果</b>:
+</p>
 <div class="highlight"><pre><span></span><span class="p">(</span><span class="n">ungrouped</span><span class="p">,</span><span class="w"> </span><span class="err">[]</span><span class="p">,</span><span class="w"> </span><span class="err">{}</span><span class="p">)</span><span class="w"></span>
 <span class="p">(</span><span class="ow">all</span><span class="p">,</span><span class="w"> </span><span class="o">[</span><span class="n">ungrouped</span><span class="o">]</span><span class="p">,</span><span class="w"> </span><span class="err">{}</span><span class="p">)</span><span class="w"></span>
 <span class="p">(</span><span class="n">MY</span><span class="o">-</span><span class="k">HOST</span><span class="p">,</span><span class="w"> </span><span class="o">[</span><span class="n">MY-HOST1</span><span class="o">]</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;vip&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.10&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;ppp&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;test&#39;</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
@@ -188,8 +212,9 @@
 <span class="p">(</span><span class="n">MY_HOST1</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.12&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
 </pre></div>
 
-
-<p>可以看出已经没什么大的问题了, 但有一个点, <b>all</b>组下的groups列表只有<code>ungrouped</code>, 正常情况下<code>MY-HOST</code>组也应该继承<code>all</code>组, <del>可能是还需要一些其他的操作吧</del>，继续翻源码，找到了<code>InventoryData</code>的<code>reconcile_inventory</code>方法, 修改一下即可</p>
+<p>
+    可以看出已经没什么大的问题了, 但有一个点, <b>all</b>组下的groups列表只有<code>ungrouped</code>, 正常情况下<code>MY-HOST</code>组也应该继承<code>all</code>组, <del>可能是还需要一些其他的操作吧</del>，继续翻源码，找到了<code>InventoryData</code>的<code>reconcile_inventory</code>方法, 修改一下即可
+</p>
 <div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">InventoryCustomModule</span><span class="p">()</span>
 <span class="n">module</span><span class="o">.</span><span class="n">mine_parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 <span class="n">module</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">reconcile_inventory</span><span class="p">()</span>
@@ -198,52 +223,57 @@
 </li>
 </ul>
 <h2 id="org-062833af29">ansible自定义模块传递list变量会变成字符串</h2>
-<p>我自定义了一个模块，需要传入一个<b>list</b>变量<code>group_names</code></p>
+<p>
+  我自定义了一个模块，需要传入一个<b>list</b>变量<code>group_names</code>
+</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.module_utils.basic</span> <span class="kn">import</span> <span class="n">AnsibleModule</span>
 
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="n">module</span> <span class="o">=</span> <span class="n">AnsibleModule</span><span class="p">(</span>
         <span class="n">argument_spec</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">group_names</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">}))</span>
 
     <span class="n">i</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group_names&#39;</span><span class="p">)</span>
     <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;group_names&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">))}</span>
-    <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">changed</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">changed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">main</span><span class="p">()</span>
 </pre></div>
 
-<p>但发现传入的变量最后变成的<code>str type</code></p>
-<div class="highlight"><pre><span></span><span class="n">FAILED</span><span class="o">!</span> <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">{</span><span class="ss">&quot;changed&quot;</span><span class="p">:</span> <span class="k">false</span><span class="p">,</span> <span class="ss">&quot;failed&quot;</span><span class="p">:</span> <span class="k">true</span><span class="p">,</span> <span class="ss">&quot;msg&quot;</span><span class="p">:</span> <span class="err">{</span><span class="ss">&quot;group_names&quot;</span><span class="p">:</span> <span class="ss">&quot;[&#39;test&#39;]&quot;</span><span class="p">,</span> <span class="ss">&quot;type&quot;</span><span class="p">:</span> <span class="ss">&quot;&amp;lt;type &#39;str&#39;&amp;gt;&quot;</span><span class="err">}}</span>
+<p>
+  但发现传入的变量最后变成的<code>str type</code>
+</p>
+<div class="highlight"><pre><span></span><span class="err">FAILED! =&gt; {&quot;changed&quot;: false, &quot;failed&quot;: true, &quot;msg&quot;: {&quot;group_names&quot;: &quot;[&#39;test&#39;]&quot;, &quot;type&quot;: &quot;&lt;type &#39;str&#39;&gt;&quot;}}</span>
 </pre></div>
 
-<p>最后查找资料后才知道, 传递的变量需要增加<code>type</code>参数, 否则都是<b>str</b></p>
+<p>
+  最后查找资料后才知道, 传递的变量需要增加<code>type</code>参数, 否则都是<b>str</b>
+</p>
 <div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">AnsibleModule</span><span class="p">(</span>
     <span class="n">argument_spec</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">group_names</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span>
     <span class="p">}))</span>
 </pre></div>
 
-
-
-
 <h2 id="org-4d7623dde6">常见问题FAQ</h2>
-<div class="highlight"><pre><span></span><span class="n">Aborting</span><span class="p">,</span> <span class="n">target</span> <span class="n">uses</span> <span class="n">selinux</span> <span class="n">but</span> <span class="n">python</span> <span class="n">bindings</span> <span class="p">(</span><span class="n">libselinux</span><span class="o">-</span><span class="n">python</span><span class="p">)</span> <span class="n">aren</span><span class="err">&#39;</span><span class="n">t</span> <span class="n">installed</span><span class="o">!</span>
+<div class="highlight"><pre><span></span><span class="err">Aborting, target uses selinux but python bindings (libselinux-python) aren&#39;t installed!</span>
 </pre></div>
 
+<p>
+  查看目标机器是否安装 <code>libselinux-python</code>
+</p>
+<div class="highlight"><pre><span></span><span class="err">yum install libselinux-python</span>
+</pre></div>
 
-<p>查看目标机器是否安装 <code>libselinux-python</code>
-#+begin_src
-yum install libselinux-python
-#+end_src</p>
-
-<p>修改<code>ansible.cfg</code></p>
-<div class="highlight"><pre><span></span><span class="n">interpreter_python</span> <span class="o">=</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">python</span>
+<p>
+  修改<code>ansible.cfg</code>
+</p>
+<div class="highlight"><pre><span></span><span class="err">interpreter_python = /usr/bin/python</span>
 </pre></div>
 
     </div>

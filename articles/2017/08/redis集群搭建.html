@@ -87,22 +87,40 @@
     <div class="entry-content entry-article">
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-cc3ce6dfcb">准备</a></li>
-<li><a href="#org-51a850545f">创建集群</a></li>
-<li><a href="#org-962504e356">测试集群</a></li>
+<li>
+<p>
+ <a href="#org-cc3ce6dfcb">准备</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-51a850545f">创建集群</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-962504e356">测试集群</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
-<p><a href="http://www.redis.cn/topics/cluster-tutorial.html">参考资料</a></p>
-
-<p>Redis 集群是一个提供在多个Redis间<b>节点间共享数据</b>的程序集</p>
-
+<p>
+<a href="http://www.redis.cn/topics/cluster-tutorial.html">参考资料</a>
+</p>
+<p>
+Redis 集群是一个提供在多个Redis间<b>节点间共享数据</b>的程序集
+</p>
 <h2 id="org-cc3ce6dfcb">准备</h2>
-
-<p>集群开始需要运行redis集群实例，而且要让集群正常运作至少需要三个主节点,这里创建六个节点，三个为主节点，三个为从节点,端口号分别为9001,9002,9003,9004,9005,9006</p>
-
-<p>并创建六个以端口号为名字的目录， 在每个目录中运行一个Redis实例</p>
+<p>
+  集群开始需要运行redis集群实例，而且要让集群正常运作至少需要三个主节点,这里创建六个节点，三个为主节点，三个为从节点,端口号分别为9001,9002,9003,9004,9005,9006
+</p>
+<p>
+  并创建六个以端口号为名字的目录， 在每个目录中运行一个Redis实例
+</p>
 <div class="highlight"><pre><span></span>mkdir -p redis/9001
 <span class="nb">cd</span> redis
 mkdir <span class="m">9002</span>
@@ -112,21 +130,24 @@ mkdir <span class="m">9005</span>
 mkdir <span class="m">9006</span>
 </pre></div>
 
-
-<p>然后将对应的配置<b>redis.conf</b>放入相应的目录中(记得修改端口号)</p>
-
+<p>
+  然后将对应的配置<b>redis.conf</b>放入相应的目录中(记得修改端口号)
+</p>
 <blockquote>
-<p>最小配置选项:</p>
-<div class="highlight"><pre><span></span><span class="n">port</span> <span class="mi">9001</span>
-<span class="k">cluster</span><span class="o">-</span><span class="n">enabled</span> <span class="n">yes</span>
-<span class="k">cluster</span><span class="o">-</span><span class="n">config</span><span class="o">-</span><span class="n">file</span> <span class="n">node9001</span><span class="p">.</span><span class="n">conf</span>
-<span class="k">cluster</span><span class="o">-</span><span class="n">node</span><span class="o">-</span><span class="n">timeout</span> <span class="mi">5000</span>
-<span class="n">appendonly</span> <span class="n">yes</span>
-</pre></div>
-
+<p>
+  最小配置选项:
+</p>
+<pre class="src src-example">
+port 9001
+cluster-enabled yes
+cluster-config-file node9001.conf
+cluster-node-timeout 5000
+appendonly yes
+</pre>
 </blockquote>
-
-<p>然后就可以启动redis实例了</p>
+<p>
+  然后就可以启动redis实例了
+</p>
 <div class="highlight"><pre><span></span>redis-server redis/9001/redis.conf
 redis-server redis/9002/redis.conf
 redis-server redis/9003/redis.conf
@@ -135,11 +156,12 @@ redis-server redis/9005/redis.conf
 redis-server redis/9006/redis.conf
 </pre></div>
 
-
-<p>由于这个过程很简单而且重复,所以我写了一个脚本进行创建:</p>
-<div class="highlight"><pre><span></span><span class="nd">@cli.command</span><span class="p">()</span>
-<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--dirs&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PATH</span><span class="p">)</span>
-<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">9001</span><span class="p">)</span>
+<p>
+  由于这个过程很简单而且重复,所以我写了一个脚本进行创建:
+</p>
+<div class="highlight"><pre><span></span><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;--dirs&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PATH</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">9001</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
@@ -147,77 +169,85 @@ redis-server redis/9006/redis.conf
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;redis.conf&#39;</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;port {0}</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;port </span><span class="si">{0}</span><span class="s1"></span>
 <span class="s1">cluster-enabled yes</span>
-<span class="s1">cluster-config-file nodes{0}.conf</span>
+<span class="s1">cluster-config-file nodes</span><span class="si">{0}</span><span class="s1">.conf</span>
 <span class="s1">cluster-node-timeout 5000</span>
 <span class="s1">appendonly yes</span>
 <span class="s1">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;redis-server {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf</span><span class="p">))</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;redis-server </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf</span><span class="p">))</span>
 </pre></div>
 
-
 <h2 id="org-51a850545f">创建集群</h2>
-<p>使用redis的官方脚本<a href="https://github.com/antirez/redis/blob/unstable/src/redis-trib.rb">redis-trib</a>进行创建</p>
+<p>
+  使用redis的官方脚本<a href="https://github.com/antirez/redis/blob/unstable/src/redis-trib.rb">redis-trib</a>行创建
+</p>
 <div class="highlight"><pre><span></span>ruby redis-trib.rb create --replicas <span class="m">1</span> <span class="m">127</span>.0.0.1:9001 <span class="m">127</span>.0.0.1:9002 <span class="m">127</span>.0.0.1:9003 <span class="m">127</span>.0.0.1:9004 <span class="m">127</span>.0.0.1:9005 <span class="m">127</span>.0.0.1:9006
 </pre></div>
 
-<p>或者接上面的脚本</p>
-<div class="highlight"><pre><span></span><span class="n">ports</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;127.0.0.1:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
-<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;ruby redis-trib.rb create --replicas 1 {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<p>
+  或者接上面的脚本
+</p>
+<div class="highlight"><pre><span></span><span class="n">ports</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;127.0.0.1:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;ruby redis-trib.rb create --replicas 1 </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
     <span class="n">ports</span><span class="p">)))</span>
 </pre></div>
 
-
-<p><b>–replicas 1</b>:表示为集群中的每个主节点创建一个从节点</p>
-
-<p>结果如图所示:
-<a href="https://static.honmaple.com/images/2017/08/150264027839037.png?type=show" data-fancybox="image"><img data-src="https://static.honmaple.com/images/2017/08/150264027839037.png?type=thumb" class="lazyload" /></a></p>
-
-<p>输入<b>yes</b>
-最后查看集群是否启动成功
-<a href="https://static.honmaple.com/images/2017/08/150264059108046.png?type=show" data-fancybox="image"><img data-src="https://static.honmaple.com/images/2017/08/150264059108046.png?type=thumb" class="lazyload" /></a></p>
-
+<p>
+  <b>–replicas 1</b>:表示为集群中的每个主节点创建一个从节点
+</p>
+<p>
+  结果如图所示:
+  <a href="https://static.honmaple.com/images/2017/08/150264027839037.png?type=show" data-fancybox="image"><img data-src="https://static.honmaple.com/images/2017/08/150264027839037.png?type=thumb" class="lazyload" /></a>
+</p>
+<p>
+  输入<b>yes</b>
+  最后查看集群是否启动成功
+  <a href="https://static.honmaple.com/images/2017/08/150264059108046.png?type=show" data-fancybox="image"><img data-src="https://static.honmaple.com/images/2017/08/150264059108046.png?type=thumb" class="lazyload" /></a>
+</p>
 <h2 id="org-962504e356">测试集群</h2>
-<p><b>-c</b> 选项以集群方式启动</p>
+<p>
+  <b>-c</b> 选项以集群方式启动
+</p>
 <div class="highlight"><pre><span></span>$ redis-cli -c -p <span class="m">7000</span>
-  <span class="m">127</span>.0.0.1:9001<span class="p">&amp;</span>gt<span class="p">;</span> keys *
+  <span class="m">127</span>.0.0.1:9001&gt; keys *
   <span class="o">(</span>empty list or <span class="nb">set</span><span class="o">)</span>
-  <span class="m">127</span>.0.0.1:9001<span class="p">&amp;</span>gt<span class="p">;</span> <span class="nb">set</span> hello world
+  <span class="m">127</span>.0.0.1:9001&gt; <span class="nb">set</span> hello world
   OK
-  <span class="m">127</span>.0.0.1:9001<span class="p">&amp;</span>gt<span class="p">;</span> get hello
+  <span class="m">127</span>.0.0.1:9001&gt; get hello
   <span class="s2">&quot;world&quot;</span>
-  <span class="m">127</span>.0.0.1:9001<span class="p">&amp;</span>gt<span class="p">;</span> <span class="nb">set</span> hello1 world1
-  -<span class="p">&amp;</span>gt<span class="p">;</span> Redirected to slot <span class="o">[</span><span class="m">11613</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9003
+  <span class="m">127</span>.0.0.1:9001&gt; <span class="nb">set</span> hello1 world1
+  -&gt; Redirected to slot <span class="o">[</span><span class="m">11613</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9003
   OK
-  <span class="m">127</span>.0.0.1:9003<span class="p">&amp;</span>gt<span class="p">;</span> get hello1
+  <span class="m">127</span>.0.0.1:9003&gt; get hello1
   <span class="s2">&quot;world1&quot;</span>
-  <span class="m">127</span>.0.0.1:9003<span class="p">&amp;</span>gt<span class="p">;</span> <span class="nb">set</span> hello2 world2
-  -<span class="p">&amp;</span>gt<span class="p">;</span> Redirected to slot <span class="o">[</span><span class="m">7486</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9002
+  <span class="m">127</span>.0.0.1:9003&gt; <span class="nb">set</span> hello2 world2
+  -&gt; Redirected to slot <span class="o">[</span><span class="m">7486</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9002
   OK
-  <span class="m">127</span>.0.0.1:9002<span class="p">&amp;</span>gt<span class="p">;</span> get hello2
+  <span class="m">127</span>.0.0.1:9002&gt; get hello2
   <span class="s2">&quot;world2&quot;</span>
 </pre></div>
 
-
-<p>进入另一个实例</p>
-
+<p>
+  进入另一个实例
+</p>
 <div class="highlight"><pre><span></span>$ redis-cli -c -p <span class="m">9002</span>
-  <span class="m">127</span>.0.0.1:9002<span class="p">&amp;</span>gt<span class="p">;</span> get hello
-  -<span class="p">&amp;</span>gt<span class="p">;</span> Redirected to slot <span class="o">[</span><span class="m">866</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9001
+  <span class="m">127</span>.0.0.1:9002&gt; get hello
+  -&gt; Redirected to slot <span class="o">[</span><span class="m">866</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9001
   <span class="s2">&quot;world&quot;</span>
-  <span class="m">127</span>.0.0.1:9001<span class="p">&amp;</span>gt<span class="p">;</span> get hello1
-  -<span class="p">&amp;</span>gt<span class="p">;</span> Redirected to slot <span class="o">[</span><span class="m">11613</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9003
+  <span class="m">127</span>.0.0.1:9001&gt; get hello1
+  -&gt; Redirected to slot <span class="o">[</span><span class="m">11613</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9003
   <span class="s2">&quot;world1&quot;</span>
-  <span class="m">127</span>.0.0.1:9003<span class="p">&amp;</span>gt<span class="p">;</span> get hello2
-  -<span class="p">&amp;</span>gt<span class="p">;</span> Redirected to slot <span class="o">[</span><span class="m">7486</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9002
+  <span class="m">127</span>.0.0.1:9003&gt; get hello2
+  -&gt; Redirected to slot <span class="o">[</span><span class="m">7486</span><span class="o">]</span> located at <span class="m">127</span>.0.0.1:9002
   <span class="s2">&quot;world2&quot;</span>
 </pre></div>
 
-
-<p>ok,先这样</p>
+<p>
+  ok,先这样
+</p>
     </div>
 <div class="entry-copyright">
   <div>

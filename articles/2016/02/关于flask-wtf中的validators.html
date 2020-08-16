@@ -93,12 +93,12 @@
 功能,如果想要更好的利用这个扩展，请google wtforms,或者<a href="http://wtforms.readthedocs.org/en/latest/">看这里</a>  </p>
 <p>这里记录一下wtforms的<strong>validators</strong><br>
 <a href="http://wtforms.simplecodes.com/docs/1.0.1/validators.html">参考文档</a></p>
-<div class="highlight"><pre><span></span><span class="k">class</span> <span class="n">RegisterForm</span>(<span class="n">Form</span>):
-    <span class="nb">name</span> = <span class="n">StringField</span>(<span class="s">&#39;用户名:&#39;</span>)
-    <span class="n">email</span> = <span class="n">StringField</span>(<span class="s">&#39;邮箱:&#39;</span>)
-    <span class="n">passwd</span> = <span class="n">PasswordField</span>(<span class="s">&#39;密码:&#39;</span>)
-    <span class="n">repasswd</span> = <span class="n">PasswordField</span>(<span class="s">&#39;重复密码:&#39;</span>)
-    <span class="n">register</span> = <span class="n">SubmitField</span>(<span class="s">&#39;注册&#39;</span>)
+<div class="highlight"><pre><span></span><span class="err">class RegisterForm(Form):</span>
+<span class="err">    name = StringField(&#39;用户名:&#39;)</span>
+<span class="err">    email = StringField(&#39;邮箱:&#39;)</span>
+<span class="err">    passwd = PasswordField(&#39;密码:&#39;)</span>
+<span class="err">    repasswd = PasswordField(&#39;重复密码:&#39;)</span>
+<span class="err">    register = SubmitField(&#39;注册&#39;)</span>
 </pre></div>
 
 
@@ -135,38 +135,38 @@
 
 <h4>自定义错误信息</h4>
 <p>默认错误信息可以通过  </p>
-<div class="highlight"><pre><span></span><span class="n">form</span> <span class="o">=</span> <span class="n">RegisterForm</span><span class="p">()</span>
-<span class="n">print</span><span class="p">(</span><span class="n">form</span><span class="p">.</span><span class="n">errors</span><span class="p">)</span> <span class="o">//</span><span class="err">或者</span><span class="n">print</span><span class="p">(</span><span class="n">form</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">errors</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="err">form = RegisterForm()</span>
+<span class="err">print(form.errors) //或者print(form.name.errors)</span>
 </pre></div>
 
 
 <p>查看<br>
 比如输入不能为空的默认错误信息  </p>
-<div class="highlight"><pre><span></span><span class="s1">&#39;This field is required.&#39;</span>
+<div class="highlight"><pre><span></span><span class="err">&#39;This field is required.&#39;</span>
 </pre></div>
 
 
 <p>想要修改默认信息,请使用<em>message</em><br>
 比如:</p>
-<div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="n">StringField</span><span class="p">(</span><span class="s1">&#39;用户名:&#39;</span><span class="p">,</span>
-                   <span class="p">[</span><span class="n">Required</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">u</span><span class="s1">&#39;输入不能为空&#39;</span><span class="p">)])</span>
+<div class="highlight"><pre><span></span><span class="err">name = StringField(&#39;用户名:&#39;,</span>
+<span class="err">                   [Required(message=u&#39;输入不能为空&#39;)])</span>
 </pre></div>
 
 
 <p>同样的  </p>
-<div class="highlight"><pre><span></span><span class="k">Length</span><span class="p">(</span><span class="k">min</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-       <span class="k">max</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>
-       <span class="n">message</span><span class="o">=</span><span class="n">u</span><span class="s1">&#39;用户名长度在4到25个字符之间&#39;</span><span class="p">)</span>
-<span class="n">Email</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">u</span><span class="s1">&#39;错误的邮箱地址&#39;</span><span class="p">)</span>
-<span class="n">EqualTo</span><span class="p">(</span><span class="s1">&#39;confirm&#39;</span><span class="p">,</span><span class="n">message</span><span class="o">=</span><span class="n">u</span><span class="s1">&#39;两次密码不一致&#39;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="err">Length(min=4,</span>
+<span class="err">       max=25,</span>
+<span class="err">       message=u&#39;用户名长度在4到25个字符之间&#39;)</span>
+<span class="err">Email(message=u&#39;错误的邮箱地址&#39;)</span>
+<span class="err">EqualTo(&#39;confirm&#39;,message=u&#39;两次密码不一致&#39;)</span>
 </pre></div>
 
 
 <p>这样就不用在视图文件不停地判断了,不要像我原先那样  </p>
-<div class="highlight"><pre><span></span><span class="k">if</span> <span class="nv">form</span>.<span class="nv">name</span>.<span class="nv">data</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="nv">or</span> <span class="nv">form</span>.<span class="nv">passwd</span>.<span class="nv">data</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span>:
-    <span class="nv">flash</span><span class="ss">(</span><span class="nv">u</span><span class="s1">&#39;</span><span class="s">输入不能为空</span><span class="s1">&#39;</span><span class="ss">)</span>
-<span class="k">if</span> <span class="nv">form</span>.<span class="nv">repasswd</span>.<span class="nv">data</span> <span class="o">!=</span> <span class="nv">form</span>.<span class="nv">passwd</span>.<span class="nv">data</span>:
-    <span class="nv">flash</span><span class="ss">(</span><span class="nv">u</span><span class="s1">&#39;</span><span class="s">两次密码不一致</span><span class="s1">&#39;</span><span class="ss">)</span>
+<div class="highlight"><pre><span></span><span class="err">if form.name.data == &#39;&#39; or form.passwd.data == &#39;&#39;:</span>
+<span class="err">    flash(u&#39;输入不能为空&#39;)</span>
+<span class="err">if form.repasswd.data != form.passwd.data:</span>
+<span class="err">    flash(u&#39;两次密码不一致&#39;)</span>
 </pre></div>
 
 

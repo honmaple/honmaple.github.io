@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>kvm · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/theme/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="particles-js" id="particles-js"></div>
+    <div class="scrollbar"></div>
+    <div class="wrap">
+      <div class="main">
+<nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="https://honmaple.me/category/life/index.html" >代码人生</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/category/coding/index.html">分享世界</a></li>
+                <li><a href="https://honmaple.me/category/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/category/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li ><a href="https://honmaple.me/category/linux/index.html">字符艺术</a></li>
+          <li ><a href="https://honmaple.me/category/python/index.html">人生苦短</a></li>
+          <li ><a href="https://honmaple.me/category/security/index.html">极客安全</a></li>
+      <li class="dropdown">
+        <a href="https://honmaple.me/archives.html">文章归档</a>
+        <ul class="dropdown-menu">
+          <li><a href="https://honmaple.me/tags.html">标签</a></li>
+          <li><a href="https://honmaple.me/categories.html">分类</a></li>
+          <li><a href="https://honmaple.me/authors.html">作者</a></li>
+        </ul>
+      </li>
+      <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>        <article>
+          <div class="entry-header">
+            <h1 class="entry-title">
+              <a href="https://honmaple.me/articles/2020/01/KVM笔记之磁盘扩容.html" rel="bookmark" title="Permalink to KVM笔记之磁盘扩容">KVM笔记之磁盘扩容</a>
+            </h1>
+<header class="entry-info">
+  <span title="Updated at 2020-08-09">
+    <i class="fa fa-calendar-o"></i>
+    四 09 一月 2020
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tag/kvm/index.html">kvm</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li>
+<p>
+ <a href="#org-5abfa873d1">磁盘扩容</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-31a1eefbb6">关闭KVM虚拟机</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-c010e6d9b6">扩容磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-5a882856b4">查看磁盘位置</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f1c55fb6dd">查看磁盘信息</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f55fe26403">扩容磁盘大小</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-012a14e52c">扩容虚拟机分区</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-1c0029aae7">启动虚拟机</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-fa6c2f58a7">查看磁盘大小和格式</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-c010e6d9b6">扩容磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-953a5edfc0">磁盘挂载</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-fe4de5c8f0">创建磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-441d04855f">挂载磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-4d9471d089">挂载命令</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-72734d6c08">卸载命令</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-ea55ccb527">格式化磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-c43ca5e42a">格式化分区</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-dc439a52ae">格式化文件系统</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-441d04855f">挂载磁盘</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-03688ba6aa">FAQ</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-1fcc24a37d">output in sfdisk --version </a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-3ee3d9452c">参考链接</a>
+</p>
+</li>
+</ul>
+</div></div>
+<h2 id="org-5abfa873d1">磁盘扩容</h2>
+<h3 id="org-31a1eefbb6">关闭KVM虚拟机</h3>
+<div class="highlight"><pre><span></span>virsh shutdown vm-ubuntu-04
+</pre></div>
+
+<h3 id="org-c010e6d9b6">扩容磁盘</h3>
+<h4 id="org-5a882856b4">查看磁盘位置</h4>
+<div class="highlight"><pre><span></span><span class="c1"># virsh domblklist vm-ubuntu-04</span>
+Target     Source
+------------------------------------------------
+vda        /home/kvm/images/ubuntu-04.qcow2
+</pre></div>
+
+<h4 id="org-f1c55fb6dd">查看磁盘信息</h4>
+<div class="highlight"><pre><span></span><span class="c1"># qemu-img info /home/kvm/images/ubuntu-04.qcow2</span>
+image: /home/kvm/images/ubuntu-04.qcow2
+file format: qcow2
+virtual size: <span class="m">2</span>.0G <span class="o">(</span><span class="m">2147483648</span> bytes<span class="o">)</span>
+disk size: <span class="m">1</span>.7G
+cluster_size: <span class="m">65536</span>
+Format specific information:
+    compat: <span class="m">0</span>.10
+    refcount bits: <span class="m">16</span>
+</pre></div>
+
+<p>
+    可以看出现在虚拟机磁盘大小为 <b>2G</b>
+</p>
+<h4 id="org-f55fe26403">扩容磁盘大小</h4>
+<div class="highlight"><pre><span></span><span class="c1"># qemu-img resize /home/kvm/images/ubuntu-04.qcow2 +28G</span>
+Image resized.
+</pre></div>
+
+<div class="highlight"><pre><span></span><span class="c1"># qemu-img info /home/kvm/images/ubuntu-04.qcow2 </span>
+image: /home/kvm/images/ubuntu-04.qcow2
+file format: qcow2
+virtual size: 30G <span class="o">(</span><span class="m">32212254720</span> bytes<span class="o">)</span>
+disk size: <span class="m">1</span>.7G
+cluster_size: <span class="m">65536</span>
+Format specific information:
+    compat: <span class="m">0</span>.10
+    refcount bits: <span class="m">16</span>
+</pre></div>
+
+<p>
+    现在磁盘大小已增加到 <b>30G</b>
+</p>
+<h3 id="org-012a14e52c">扩容虚拟机分区</h3>
+<h4 id="org-1c0029aae7">启动虚拟机</h4>
+<div class="highlight"><pre><span></span>virsh start vm-ubuntu-04
+</pre></div>
+
+<h4 id="org-fa6c2f58a7">查看磁盘大小和格式</h4>
+<div class="highlight"><pre><span></span>root@vm-ubuntu-04:~# lsblk
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+loop0    <span class="m">7</span>:0    <span class="m">0</span> <span class="m">88</span>.5M  <span class="m">1</span> loop /snap/core/7270
+vda    <span class="m">252</span>:0    <span class="m">0</span>   30G  <span class="m">0</span> disk
+├─vda1 <span class="m">252</span>:1    <span class="m">0</span>    1M  <span class="m">0</span> part
+└─vda2 <span class="m">252</span>:2    <span class="m">0</span>    2G  <span class="m">0</span> part /
+</pre></div>
+
+<p>
+    现在跟分区只分配了 <b>2G</b> 的大小，而当前 <b>vda</b> 磁盘总量为 <b>30G</b>
+</p>
+<div class="highlight"><pre><span></span>root@vm-ubuntu-04:~# df -T
+Filesystem     Type     1K-blocks    Used Available Use% Mounted on
+udev           devtmpfs   <span class="m">4053076</span>       <span class="m">0</span>   <span class="m">4053076</span>   <span class="m">0</span>% /dev
+tmpfs          tmpfs       <span class="m">816784</span>     <span class="m">936</span>    <span class="m">815848</span>   <span class="m">1</span>% /run
+/dev/vda2      ext4       <span class="m">2028368</span> <span class="m">1634136</span>    <span class="m">273144</span>  <span class="m">86</span>% /
+tmpfs          tmpfs      <span class="m">4083912</span>       <span class="m">0</span>   <span class="m">4083912</span>   <span class="m">0</span>% /dev/shm
+tmpfs          tmpfs         <span class="m">5120</span>       <span class="m">0</span>      <span class="m">5120</span>   <span class="m">0</span>% /run/lock
+tmpfs          tmpfs      <span class="m">4083912</span>       <span class="m">0</span>   <span class="m">4083912</span>   <span class="m">0</span>% /sys/fs/cgroup
+/dev/loop0     squashfs     <span class="m">90624</span>   <span class="m">90624</span>         <span class="m">0</span> <span class="m">100</span>% /snap/core/7270
+tmpfs          tmpfs       <span class="m">816780</span>       <span class="m">0</span>    <span class="m">816780</span>   <span class="m">0</span>% /run/user/0
+</pre></div>
+
+<p>
+    <b>注意</b> :不同格式的文件系统扩容磁盘命令 <b>有所不同</b>，比如我的根分区格式为 <b>ext4</b>, 以下将以 <b>ext4</b> 为例
+</p>
+<h4 id="org-c010e6d9b6">扩容磁盘</h4>
+<ul>
+<li>
+<p>
+ 安装 <b>cloud-guest-utils</b>
+</p>
+<div class="highlight"><pre><span></span>apt -y install cloud-guest-utils
+</pre></div>
+
+</li>
+<li>
+<p>
+ 扩容磁盘
+</p>
+<div class="highlight"><pre><span></span>root@vm-ubuntu-base:~# growpart /dev/vda <span class="m">2</span>
+CHANGED: <span class="nv">partition</span><span class="o">=</span><span class="m">2</span> <span class="nv">start</span><span class="o">=</span><span class="m">4096</span> old: <span class="nv">size</span><span class="o">=</span><span class="m">4188160</span> <span class="nv">end</span><span class="o">=</span><span class="m">4192256</span> new: <span class="nv">size</span><span class="o">=</span><span class="m">62910431</span>,end<span class="o">=</span><span class="m">62914527</span>
+</pre></div>
+
+<p>
+      <b>2</b> 为跟分区所在磁盘
+</p>
+<div class="highlight"><pre><span></span>root@vm-ubuntu-base:~# lsblk
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+loop0    <span class="m">7</span>:0    <span class="m">0</span> <span class="m">88</span>.5M  <span class="m">1</span> loop /snap/core/7270
+vda    <span class="m">252</span>:0    <span class="m">0</span>   30G  <span class="m">0</span> disk
+├─vda1 <span class="m">252</span>:1    <span class="m">0</span>    1M  <span class="m">0</span> part
+└─vda2 <span class="m">252</span>:2    <span class="m">0</span>   30G  <span class="m">0</span> part /
+</pre></div>
+
+</li>
+<li>
+<p>
+ 更新且格式化分区
+      <b>resize2fs</b> 扩容 <b>ext4</b> 文件系统, 其它可参考 <a href="https://computingforgeeks.com/extending-root-filesystem-using-lvm-linux/">https://computingforgeeks.com/extending-root-filesystem-using-lvm-linux/</a>
+</p>
+<div class="highlight"><pre><span></span>root@vm-ubuntu-base:~# resize2fs /dev/vda2
+resize2fs <span class="m">1</span>.44.1 <span class="o">(</span><span class="m">24</span>-Mar-2018<span class="o">)</span>
+Filesystem at /dev/vda2 is mounted on /<span class="p">;</span> on-line resizing required
+<span class="nv">old_desc_blocks</span> <span class="o">=</span> <span class="m">1</span>, <span class="nv">new_desc_blocks</span> <span class="o">=</span> <span class="m">4</span>
+The filesystem on /dev/vda2 is now <span class="m">7863803</span> <span class="o">(</span>4k<span class="o">)</span> blocks long.
+
+root@vm-ubuntu-base:~# lsblk
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+loop0    <span class="m">7</span>:0    <span class="m">0</span> <span class="m">88</span>.5M  <span class="m">1</span> loop /snap/core/7270
+vda    <span class="m">252</span>:0    <span class="m">0</span>   30G  <span class="m">0</span> disk
+├─vda1 <span class="m">252</span>:1    <span class="m">0</span>    1M  <span class="m">0</span> part
+└─vda2 <span class="m">252</span>:2    <span class="m">0</span>   30G  <span class="m">0</span> part /
+root@vm-ubuntu-base:~# df -hT <span class="p">|</span> grep /dev/vda
+/dev/vda2      ext4       30G  <span class="m">1</span>.6G   27G   <span class="m">6</span>% /
+</pre></div>
+
+</li>
+</ul>
+<h2 id="org-953a5edfc0">磁盘挂载</h2>
+<h3 id="org-fe4de5c8f0">创建磁盘</h3>
+<p>
+   创建一块大小为 <b>100G</b>，格式为 <b>qcow2</b> 的磁盘
+</p>
+<div class="highlight"><pre><span></span><span class="c1"># qemu-img create -f qcow2 ubuntu-04-disk.qcow2 100G</span>
+Formatting <span class="s1">&#39;ubuntu-04-disk.qcow2&#39;</span>, <span class="nv">fmt</span><span class="o">=</span>qcow2 <span class="nv">size</span><span class="o">=</span><span class="m">107374182400</span> <span class="nv">cluster_size</span><span class="o">=</span><span class="m">65536</span> <span class="nv">lazy_refcounts</span><span class="o">=</span>off <span class="nv">refcount_bits</span><span class="o">=</span><span class="m">16</span>
+</pre></div>
+
+<p>
+   查看磁盘大小
+</p>
+<div class="highlight"><pre><span></span><span class="c1"># qemu-img info ubuntu-04-disk.qcow2</span>
+image: ubuntu-04-disk.qcow2
+file format: qcow2
+virtual size: 100G <span class="o">(</span><span class="m">107374182400</span> bytes<span class="o">)</span>
+disk size: 196K
+cluster_size: <span class="m">65536</span>
+Format specific information:
+    compat: <span class="m">1</span>.1
+    lazy refcounts: <span class="nb">false</span>
+    refcount bits: <span class="m">16</span>
+    corrupt: <span class="nb">false</span>
+</pre></div>
+
+<h3 id="org-441d04855f">挂载磁盘</h3>
+<h4 id="org-4d9471d089">挂载命令</h4>
+<div class="highlight"><pre><span></span>virsh attach-disk vm-ubuntu-04 /home/kvm/images/ubuntu-04-disk.qcow2 --driver qemu --subdriver qcow2 vdb --persistent
+</pre></div>
+
+<p>
+    注: 
+</p>
+<ul>
+<li>
+<p>
+ <b>vm-ubuntu-04</b> 为需要扩展的虚拟机名称
+</p>
+</li>
+<li>
+<p>
+ <b>/home/kvm/images/ubuntu-04-disk.qcow2</b> 为刚创建好的扩展磁盘
+</p>
+</li>
+<li>
+<p>
+ <b>vdb</b> 为新扩展磁盘的名称
+</p>
+</li>
+</ul>
+<h4 id="org-72734d6c08">卸载命令</h4>
+<div class="highlight"><pre><span></span>virsh detach-disk vm-ubuntu-04 /home/kvm/images/ubuntu-04-disk.qcow2 --persistent
+</pre></div>
+
+<h3 id="org-ea55ccb527">格式化磁盘</h3>
+<p>
+   <b>虚拟机内执行</b>
+</p>
+<h4 id="org-c43ca5e42a">格式化分区</h4>
+<div class="highlight"><pre><span></span><span class="o">[</span><span class="n">root@vm-ubuntu-04 ~</span><span class="o">]</span><span class="err">#</span><span class="w"> </span><span class="n">fdisk</span><span class="w"> </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">vdb</span><span class="w"></span>
+<span class="n">欢迎使用</span><span class="w"> </span><span class="n">fdisk</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">-</span><span class="n">linux</span><span class="w"> </span><span class="mf">2.23.2</span><span class="p">)</span><span class="err">。</span><span class="w"></span>
+
+<span class="n">更改将停留在内存中</span><span class="err">，</span><span class="n">直到您决定将更改写入磁盘</span><span class="err">。</span><span class="w"></span>
+<span class="n">使用写入命令前请三思</span><span class="err">。</span><span class="w"></span>
+
+<span class="n">Device</span><span class="w"> </span><span class="n">does</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">contain</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">recognized</span><span class="w"> </span><span class="k">partition</span><span class="w"> </span><span class="nc">table</span><span class="w"></span>
+<span class="n">使用磁盘标识符</span><span class="w"> </span><span class="mh">0xd01c1c86</span><span class="w"> </span><span class="n">创建新的</span><span class="w"> </span><span class="n">DOS</span><span class="w"> </span><span class="n">磁盘标签</span><span class="err">。</span><span class="w"></span>
+
+<span class="n">命令</span><span class="p">(</span><span class="n">输入</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="n">获取帮助</span><span class="p">)</span><span class="err">：</span><span class="n">n</span><span class="w"></span>
+<span class="k">Partition</span><span class="w"> </span><span class="nl">type</span><span class="p">:</span><span class="w"></span>
+<span class="w">   </span><span class="n">p</span><span class="w">   </span><span class="k">primary</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="k">primary</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">extended</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="k">free</span><span class="p">)</span><span class="w"></span>
+<span class="w">   </span><span class="n">e</span><span class="w">   </span><span class="n">extended</span><span class="w"></span>
+<span class="k">Select</span><span class="w"> </span><span class="p">(</span><span class="k">default</span><span class="w"> </span><span class="n">p</span><span class="p">)</span><span class="err">:</span><span class="w"> </span><span class="n">p</span><span class="w"></span>
+<span class="n">分区号</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="mi">4</span><span class="err">，</span><span class="n">默认</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="err">：</span><span class="w"></span>
+<span class="n">起始</span><span class="w"> </span><span class="n">扇区</span><span class="w"> </span><span class="p">(</span><span class="mi">2048</span><span class="o">-</span><span class="mi">209715199</span><span class="err">，</span><span class="n">默认为</span><span class="w"> </span><span class="mi">2048</span><span class="p">)</span><span class="err">：</span><span class="w"></span>
+<span class="n">将使用默认值</span><span class="w"> </span><span class="mi">2048</span><span class="w"></span>
+<span class="k">Last</span><span class="w"> </span><span class="n">扇区</span><span class="p">,</span><span class="w"> </span><span class="o">+</span><span class="n">扇区</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="o">+</span><span class="k">size</span><span class="err">{</span><span class="n">K</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">G</span><span class="err">}</span><span class="w"> </span><span class="p">(</span><span class="mi">2048</span><span class="o">-</span><span class="mi">209715199</span><span class="err">，</span><span class="n">默认为</span><span class="w"> </span><span class="mi">209715199</span><span class="p">)</span><span class="err">：</span><span class="w"></span>
+<span class="n">将使用默认值</span><span class="w"> </span><span class="mi">209715199</span><span class="w"></span>
+<span class="n">分区</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">已设置为</span><span class="w"> </span><span class="n">Linux</span><span class="w"> </span><span class="n">类型</span><span class="err">，</span><span class="n">大小设为</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="n">GiB</span><span class="w"></span>
+
+<span class="n">命令</span><span class="p">(</span><span class="n">输入</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="n">获取帮助</span><span class="p">)</span><span class="err">：</span><span class="n">w</span><span class="w"></span>
+<span class="n">The</span><span class="w"> </span><span class="k">partition</span><span class="w"> </span><span class="nc">table</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="n">been</span><span class="w"> </span><span class="n">altered</span><span class="err">!</span><span class="w"></span>
+
+<span class="n">Calling</span><span class="w"> </span><span class="n">ioctl</span><span class="p">()</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">re</span><span class="o">-</span><span class="k">read</span><span class="w"> </span><span class="k">partition</span><span class="w"> </span><span class="nc">table</span><span class="p">.</span><span class="w"></span>
+<span class="n">正在同步磁盘</span><span class="w"></span>
+</pre></div>
+
+<h4 id="org-dc439a52ae">格式化文件系统</h4>
+<div class="highlight"><pre><span></span><span class="err">[root@vm-ubuntu-04 ~]# lsblk</span>
+<span class="err">[root@vm-ubuntu-04 ~]# mkfs.ext4 /dev/vdb1</span>
+</pre></div>
+
+<h4 id="org-441d04855f">挂载磁盘</h4>
+<div class="highlight"><pre><span></span>mkdir /home/data
+mount /dev/vdb1 /home/data
+</pre></div>
+
+<h2 id="org-03688ba6aa">FAQ</h2>
+<h3 id="org-1fcc24a37d"><span class="todo">unexpected</span>output in sfdisk --version </h3>
+<p>
+   在执行 <code>growpart /dev/vda 1</code> 时报错
+</p>
+<div class="highlight"><pre><span></span><span class="err">unexpected output in sfdisk --version [sfdisk，来自 util-linux 2.23.2]</span>
+</pre></div>
+
+<p>
+   解决方案
+</p>
+<div class="highlight"><pre><span></span><span class="nv">LANG</span><span class="o">=</span>en_US.UTF-8 growpart /dev/vda <span class="m">1</span>
+</pre></div>
+
+<h2 id="org-3ee3d9452c">参考链接</h2>
+<ul>
+<li>
+<p>
+ https://computingforgeeks.com/how-to-extend-increase-kvm-virtual-machine-disk-size/
+</p>
+</li>
+<li>
+<p>
+ https://computingforgeeks.com/resize-ext-and-xfs-root-partition-without-lvm/
+</p>
+</li>
+</ul>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2020/01/KVM笔记之增量镜像.html" rel="bookmark" title="Permalink to KVM笔记之增量镜像">KVM笔记之增量镜像</a></h1>
+<header class="entry-info">
+  <span title="Updated at 2020-08-09">
+    <i class="fa fa-calendar-o"></i>
+    一 06 一月 2020
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tag/kvm/index.html">kvm</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li>
+<p>
+ <a href="#org-6514d0aeba">增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d2fb7d85bb">基础环境准备</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-3b85bc7daa">创建增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-e24c0af8af">创建KVM虚拟机</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-a597476d0f">手动创建</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-adb0b5b39c">使用virt-install创建</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-94db5f4ef2">测试增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f64bfae8d1">快照与增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-54709db3b7">参考资料</a>
+</p>
+</li>
+</ul>
+</div></div>
+<h2 id="org-6514d0aeba">增量镜像</h2>
+<p>
+  增量镜像即保持一个基础的镜像不变，在此基础镜像上安装或修改相应的服务所创建的一个单独的镜像，增量镜像类似GIT，只记录当前KVM的修改记录，这样可以节省磁盘空间，快速复制虚拟机
+</p>
+<h3 id="org-d2fb7d85bb">基础环境准备</h3>
+<ul>
+<li>
+<p>
+ KVM基础环境
+</p>
+</li>
+<li>
+<p>
+ 基础镜像 <b>ubuntu-base.qcow2</b>
+</p>
+</li>
+</ul>
+<h3 id="org-3b85bc7daa">创建增量镜像</h3>
+<p>
+   首先基于基础镜像 <b>ubuntu-base.qcow2</b> 创建一个增量镜像 <b>ubuntu-test.qcow2</b>
+</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>宿主机<span class="o">)</span> <span class="c1"># qemu-img info /home/kvm/images/ubuntu-base.qcow2</span>
+image: ubuntu-base.qcow2
+file format: qcow2
+virtual size: <span class="m">4</span>.0G …</pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/01/KVM笔记之增量镜像.html">阅读全文 »</a>
+          </div>
+        </article></li>
+          </ul>
+      </div>
+    </div>
+<div class="footer">
+  <ul class="list-inline entry-social">
+    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/feeds/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+  <ul class="list-inline copyright">
+    <li class="hidden-xs">© 2015-2020 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+          <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+</div>    <div class="back-to-top back-to-top-on">
+      <i class="fa fa-hand-o-up" title="back to top"></i>
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+   window.dataLayer = window.dataLayer || [];
+   function gtag(){dataLayer.push(arguments);}
+   gtag('js', new Date());
+   gtag('config', 'UA-88401692-2');
+  </script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/theme/js/script.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+           if (typeof ga !== 'undefined') {
+               ga('send', 'pageview', location.pathname + location.search);
+           }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>

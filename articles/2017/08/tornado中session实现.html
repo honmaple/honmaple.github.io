@@ -86,14 +86,15 @@
     <hr class="entry-hr" />
     <div class="entry-content entry-article">
       
-<p>tornado中默认没有session的实现,虽然默认的 <b>set_secure_cookie</b> 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息</p>
-
-<p>注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行</p>
-
-
-<p>给出源码:</p>
-
-
+<p>
+tornado中默认没有session的实现,虽然默认的 <b>set_secure_cookie</b> 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息
+</p>
+<p>
+注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行
+</p>
+<p>
+给出源码:
+</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
 <span class="kn">from</span> <span class="nn">redis</span> <span class="kn">import</span> <span class="n">StrictRedis</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
@@ -113,8 +114,8 @@
     <span class="k">return</span> <span class="n">getinstance</span>
 
 
-<span class="k">def</span> <span class="nf">current_time</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">tz</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">current_time</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">tz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">tz</span> <span class="o">=</span> <span class="s1">&#39;UTC&#39;</span>
     <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="p">(</span><span class="n">tz</span><span class="p">))</span>
 
@@ -145,14 +146,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">expires_days</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">=</span> <span class="n">expires_days</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s1">&#39;is_authenticated&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+                <span class="s1">&#39;is_authenticated&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="n">current_time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span><span class="p">)</span>
             <span class="p">}</span>
-        <span class="k">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
@@ -161,12 +162,12 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">remove_expires</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">expire_sessions</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]</span> <span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">current_time</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">current_time</span><span class="p">():</span>
                 <span class="n">expire_sessions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -181,10 +182,10 @@
             <span class="n">port</span><span class="o">=</span><span class="mi">6379</span><span class="p">,</span>
             <span class="n">db</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
             <span class="n">password</span><span class="o">=</span><span class="s1">&#39;redis&#39;</span><span class="p">,</span>
-            <span class="n">decode_responses</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">decode_responses</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">expires_days</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;session:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">expires_days</span> <span class="o">=</span> <span class="n">expires_days</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="s1">&#39;is_authenticated&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>

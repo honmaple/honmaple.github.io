@@ -89,24 +89,49 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-c2bf92094d">使用nginx重定向uri</a></li>
-<li><a href="#org-a4987c2787">使用uri获取对应非302响应</a></li>
-<li><a href="#org-daf44e9b9c">使用url_map复制并alias路由</a></li>
-<li><a href="#org-bdd71c8026">演示效果</a></li>
+<li>
+<p>
+ <a href="#org-c2bf92094d">使用nginx重定向uri</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-a4987c2787">使用uri获取对应非302响应</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-daf44e9b9c">使用url_map复制并alias路由</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-bdd71c8026">演示效果</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
 <blockquote>
-<p>Flask的多语言国际化可以使用<b>Flask-Babel</b>插件，在此不再细述，但对于所谓的多语言站点(即形如<b>example.com/zh/uri、example.com/en/uri</b>或者<b>zh.example.com、en.example.com</b>)文档上却未作细述</p>
-
-<p>有一个 <a href="https://flask.palletsprojects.com/en/1.1.x/patterns/urlprocessors/">Flask URL Processors</a> 需要对所有的<b>uri</b>都额外增加一个<b>lang_code</b>的前缀，路由数较少时没什么问题，但路由数较多时太过麻烦</p>
+<p>
+Flask的多语言国际化可以使用<b>Flask-Babel</b>插件，在此不再细述，但对于所谓的多语言站点(即形如<b>example.com/zh/uri、example.com/en/uri</b>或者<b>zh.example.com、en.example.com</b>)文档上却未作细述
+</p>
+<p>
+有一个 <a href="https://flask.palletsprojects.com/en/1.1.x/patterns/urlprocessors/">Flask URL Processors</a>需要对所有的<b>uri</b>都额外增加一个<b>lang_code</b>的前缀，路由数较少时没什么问题，但路由数较多时太过麻烦
+</p>
 </blockquote>
-
-<p>实现<b>example.com/en/uri</b>可以有多种方式，除了使用<b>Flask URL Processors</b>中介绍的外，还可以</p>
-
+<p>
+实现<b>example.com/en/uri</b>可以有多种方式，除了使用<b>Flask URL Processors</b>中介绍的外，还可以
+</p>
 <h3 id="org-c2bf92094d">使用nginx重定向uri</h3>
-<p>这应该是各种方式里最简单的一种</p>
+<p>
+   这应该是各种方式里最简单的一种
+</p>
 <div class="highlight"><pre><span></span><span class="k">location</span> <span class="p">~</span> <span class="sr">^/en/</span> <span class="p">{</span>
     <span class="kn">rewrite</span> <span class="s">^/en/(.*)</span>$ <span class="s">/</span><span class="nv">$1</span> <span class="s">last</span><span class="p">;</span>
 <span class="p">}</span>
@@ -115,10 +140,10 @@
 <span class="p">}</span>
 </pre></div>
 
-
 <h3 id="org-a4987c2787">使用uri获取对应非302响应</h3>
-<p>即增加一个url为<b>/en/&lt;path:uri&gt;</b>的路由，在此路由<b>func</b>中，根据<b>&lt;path:uri&gt;</b>信息获取已注册路由的<b>view_function</b>，不使用重定向，而是直接调用<b>view_function</b>返回实际响应</p>
-
+<p>
+   即增加一个url为<b>/en/&lt;path:uri&gt;</b>的路由，在此路由<b>func</b>中，根据<b>&lt;path:uri&gt;</b>信息获取已注册路由的<b>view_function</b>，不使用重定向，而是直接调用<b>view_function</b>返回实际响应
+</p>
 <div class="highlight"><pre><span></span><span class="c1"># https://stackoverflow.com/questions/38488134/get-the-flask-view-function-that-matches-a-url</span>
 <span class="k">def</span> <span class="nf">get_view_function</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">):</span>
     <span class="n">adapter</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">url_map</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s1">&#39;localhost&#39;</span><span class="p">)</span>
@@ -129,27 +154,28 @@
         <span class="k">return</span> <span class="n">get_view_function</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">new_url</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="n">MethodNotAllowed</span><span class="p">,</span> <span class="n">NotFound</span><span class="p">):</span>
         <span class="c1"># no match</span>
-        <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># return the view function and arguments</span>
         <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">view_functions</span><span class="p">[</span><span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="c1"># no view is associated with the endpoint</span>
-        <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="kc">None</span>
 </pre></div>
 
-
-<p>提高查找对应<code>view-function</code>的性能，增加缓存到内存中</p>
+<p>
+   提高查找对应<code>view-function</code>的性能，增加缓存到内存中
+</p>
 <div class="highlight"><pre><span></span><span class="n">FUNCTION</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">view_function_cache</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_view_function</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">):</span>
         <span class="c1"># 避免故意访问</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">FUNCTION</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="mi">100</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">FUNCTION</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">FUNCTION</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">FUNCTION</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
         <span class="n">key</span> <span class="o">=</span> <span class="n">method</span> <span class="o">+</span> <span class="n">url</span>
@@ -162,40 +188,42 @@
     <span class="k">return</span> <span class="n">_view_function</span>
 </pre></div>
 
-
-<p>这样就可以定义<b>/en/&lt;uri&gt;</b>实际的<code>view_function</code></p>
+<p>
+   这样就可以定义<b>/en/&lt;uri&gt;</b>实际的<code>view_function</code>
+</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">redirect_en</span><span class="p">(</span><span class="n">uri</span><span class="p">):</span>
     <span class="n">view_function</span> <span class="o">=</span> <span class="n">get_view_function</span><span class="p">(</span>
         <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">uri</span><span class="p">,</span>
         <span class="n">request</span><span class="o">.</span><span class="n">method</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="k">if</span> <span class="n">view_function</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">view_function</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">abort</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
     <span class="c1"># 注：因为我使用Flask-Babel是根据accept_language来区别不同语言</span>
     <span class="n">request</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HTTP_ACCEPT_LANGUAGE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;en-US,en;q=0.5&quot;</span>
     <span class="k">return</span> <span class="n">view_function</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="o">**</span><span class="n">view_function</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 
-
 <h3 id="org-daf44e9b9c">使用url_map复制并alias路由</h3>
-<p>原理同<b>Flask URL Processors</b> ，为所有的路由都额外增加<b>/en</b>前缀，并在<code>before_request</code>中匹配到以<b>/en</b>开头的请求就修改对应<b>accept_language</b>信息</p>
-
-<div class="highlight"><pre><span></span><span class="nd">@app.before_request</span>
+<p>
+   原理同<b>Flask URL Processors</b> ，为所有的路由都额外增加<b>/en</b>前缀，并在<code>before_request</code>中匹配到以<b>/en</b>开头的请求就修改对应<b>accept_language</b>信息
+</p>
+<div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">before_request</span>
 <span class="k">def</span> <span class="nf">before_request</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/en/&quot;</span><span class="p">):</span>
         <span class="n">request</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HTTP_ACCEPT_LANGUAGE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;en-US,en;q=0.5&quot;</span>
 
 <span class="n">url_map</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">url_map</span><span class="o">.</span><span class="n">iter_rules</span><span class="p">())</span>
 <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">url_map</span><span class="p">:</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s2">&quot;/en&quot;</span> <span class="o">+</span> <span class="n">rule</span><span class="o">.</span><span class="n">rule</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s2">&quot;/en&quot;</span> <span class="o">+</span> <span class="n">rule</span><span class="o">.</span><span class="n">rule</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
-
-<p>咦，感觉这种方式更简单一些，但最好还是能够对一些特殊的路由比如: <b>static</b>, <b>admin</b>, <b>subdomain</b>等进行特殊处理</p>
-
+<p>
+   咦，感觉这种方式更简单一些，但最好还是能够对一些特殊的路由比如: <b>static</b>, <b>admin</b>, <b>subdomain</b>等进行特殊处理
+</p>
 <h3 id="org-bdd71c8026">演示效果</h3>
-<p><a href="https://honmaple.com/en/article">切换成English</a></p>
-
+<p>
+   <a href="https://honmaple.com/en/article">切换成English</a>
+</p>
           </div>
         </article>
           <ul class="entry-list">
@@ -232,21 +260,39 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-123227efb3">ansible动态解析inventory</a></li>
-<li><a href="#org-062833af29">ansible自定义模块传递list变量会变成字符串</a></li>
-<li><a href="#org-4d7623dde6">常见问题FAQ</a></li>
+<li>
+<p>
+ <a href="#org-123227efb3">ansible动态解析inventory</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-062833af29">ansible自定义模块传递list变量会变成字符串</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-4d7623dde6">常见问题FAQ</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
 <h2 id="org-123227efb3">ansible动态解析inventory</h2>
-<p><b>ansible</b>调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）</p>
-
-<p>但问题是<b>ansible</b>没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可</p>
-
-<p>查找源码, 根据 <code>InventoryManager</code> 传递的<b>source</b>变量找到<code>parse_sources</code>这个函数</p>
+<p>
+  <b>ansible</b>调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）
+</p>
+<p>
+  但问题是<b>ansible</b>没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可
+</p>
+<p>
+  查找源码, 根据 <code>InventoryManager</code> 传递的<b>source</b>变量找到<code>parse_sources</code>这个函数
+</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">InventoryManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">parse_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">parse_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; iterate over inventory sources and parse each one to populate it&#39;&#39;&#39;</span>
 
         <span class="bp">self …</span></pre></div>
@@ -287,12 +333,20 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-2cb683f2ae">创建翻译</a></li>
-<li><a href="#org-e9d4ec907b">动态变量</a></li>
+<li>
+<p>
+ <a href="#org-2cb683f2ae">创建翻译</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-e9d4ec907b">动态变量</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
 <h3 id="org-2cb683f2ae">创建翻译</h3>
 <div class="highlight"><pre><span></span>babel-init:
     <span class="nb">cd</span> <span class="k">$(</span>THEMEDIR<span class="k">)</span> <span class="o">&amp;&amp;</span> pybabel extract -F babel.cfg -k lazy_gettext -o messages.pot ./ <span class="o">&amp;&amp;</span> pybabel init -i messages.pot -d translations -l en
@@ -343,7 +397,7 @@ babel-compile …</pre></div>
     <span class="help-block">这是一篇加密的文章，密码是蟒蛇英文</span>
 </div>
 <div class="entry-encrypt-content">
-gAAAAABarRYGOXCd2_j79QXUtNz2n72liJK5xKgPpPryozTqyos2VLQ_2IOEr8rh2yQJCoEZXViKzburcD9IumMTcvkCZ9oBfbQLx4Ub0pH3dlXvDkpyFIpdy9qDy_BSS2b-fcZLUNVQlSShxMdpezmzn--s7EOSSqkWyNc2g0ZQrmFgzB_g1b89BmQX2sJZ21OHrel4G2HyH6K4OlZoqB6F6sDPsQoIxjxy1MJ9Y87MgtjfgkHGOaoMvZZZemVrU80ILP-fgzbbJGfz6w-qIXcN3cOyq1Kkz1M216dqVcQBHDAPYX6coMB0TKWX6y0R3P-rhodCD_a2mV2JM6nVLDPrGWZgI-lOFVDIDg4dfRUK7u-E4a6evoBVtXgbVIejOa9s46IkKyyu83GxB9bUt7C1OnPVdRHE5CSShrBv1KKEROUulKbD-2GyP5ChXk1nFLcAzUE7NZTdKipv9hGWUBoyXdAB6bxcfHOj9M3BzgQyqlyldzGQSwP0fVsu2dUIkqWMXUJcAKZSdtO1DvuZ5mtdfetuMhMdQTzyR68NaXK2JnzHUADkdVbARQrpC_EoDTM0pTnFODVMsj7QQs3LCqCPv5kFV-MY6MHFVQBS0lUHZNeCwgkeutAkmtUn-7KhYF540o2eECB1I__oRTDoAsYiONgXcYSJUdkvGGjgjFchNuuApmU2b_lHdWgRT9h537eT6Jcy0v-ZYsnbHcmYCvXMbMFpcFsq3sh-70k9aspFrvkYioCVJxBPmqRpn4R2wPmJPNXruJpjUmr_g9BKDdfMKV5t-A6wloF2X4hZkcC3suBqMJA6Wqd_ph83j_nlYC5TN-_bZSA5uJNQKxAGCODCjJ6HZvbY-adsG-z_4x9Op11T3C_jzPeTM1VGipr5reIkKYoZRTuxFd8wluzQkN96He9un5dy37iMRLnbV-B3OXHAzJNFZfCUuWs1QVhAqVf9kdiIAi_SBQTWuxR9hFtehRM5xh__2Wc89EvKCBqeuipfEceXAA4uOmupYsrofLZljbEO6abTmrm1WMW8w_7iqOw1DUPSh0OHSWv7uyDS4duDeRN8cCSXtaNIhzkLnh9KHIfvWxzRi9tzA0MXVlQB1-dnkmhd7b_SuoGD7trY-3er1MZveM1x0cuHoPh4wSp1fgbAZEJKauFG7hMk3BSjttTZH9rMiSWn3KfpNTURYqXwip14Qe54I4dXwY5KGLfRH8UXyp1FZ6PZW6GbDEBRrYti-eO8Z_3ZqxLZotONoH62-fCc5QNFohDikQLocUj6SZDlOd77UcU-UpDMTLE6Uz8MctGe7U3o1tLAjlBzJ2Uiw3P4vnNCeHBCa3XIR-z92g73GlQkk4hDJcvjIF5s5NIhk_4bexxp1RnW5vY3McxgqpieAqgFku8Bja6WDEbBoC3POaGJT9v4PKWp1gd4boDw710SzECTX0Q-wAlGWx47rmPesli3jKIb7K8630q179GSyvTB0hjdU-LEldeQpreew4MjnWVUAWy4zIp-C-z9BCyxUvnUtsReIuAUKpBKMrkuf2oVQyu_jruhVw5rX0Zr5fYWI-25pBEfqON8n4jBDFsAdiGKVaVDl6HT-2EX64GF8X9xzXC-e6RwMQpRVXGKdR0TYEcKP_jabwjJjKjGmnz19dMicM9maWXZZVAXzX-xTshfTkoDcpPxQFIDtT6monMmgRRztoS3iPg_XJ9O8kfSg9-lLJ2NMUPfxgQ74Lm-da3YT4ryaCG5PD31bc03HbXAvr29wMmTfkAbvxHYXvOiVMR2wUu3_zNpwbIEd22P6IMpAJ2yKvEyddl81IKb5EvfCHN8RefRmDbtKAutT0CgmMWjsPBrtGkjmgBHdClhvf_EtumjqWko-N4bwAl9CGjI8D5xTeaHDEWHADi5zVcQekmiG5oP8HXKd-PGsI6J2EEzORr1WAe-PF_KObA5QPJ5bSu45jop_qRbSD96d3LXMG1fTtLSjYDV5NoUzvUbwW5-HAlDGF7r7L4UB-5N2sMy-Xi-5DkOiFGwVLIW-tV7V7sXNu2t2z_tl_4YVQulD6Su4OXrjYUaLP5jaoihMqWgAeN5eIqFwKmSVyiQ25QqOxsN6lHK5ttaiDxP6qVAbn_d9jtxj6cltDeCKNOvuZG2qI-nmlNoS8TIoA_bDZRvc2_jTgTsYbPbDziPsBeuCrC6U9oX6acvpAXCzx-eSIiiwO7zG3QPjVxd1890iGNYD5Hm9eqR1mN7Fg2sqyk3QT0Nsg4AtJIWoDx3LgJyO4eEHWoWu9zg6Blh78ATfn3r0BdJSd47kGddX72y41VfmrzZb1x7BG87GkbCybv9XIM41RaTYjpOBVNSOzitN3Al971EaGBecCxM4Hx4uBHOFuTopJLG4lQt3MfS38TbyaHHTLQF-JNReBPj59YlrUW41FNcrE1_jdI2kYiT5HXuNOcdZIox_9qvaS9oUEEHerZCYfP0vtpXJcWB3tK2gKGiJFTYhAJbZ2Z9jvW6QYsdiNc-TDoGK_XvrdTC_b80TpJ0nWvAwV2scsF1MQ1LBHqmBu6pRpKSblw9NI3SE57MxR6bxgEtX2kxkETcbm_-y8pKUJ3bCOHFe5ZkpwKoN7NS1y2FJpcXZwp572UEzE9HkIw211fpU-haINiqwksuvBYVDot466y-U58orKZmyuM4jpW6vUOtbafQzlg64_wVDVahI98vE8sYkN6GEyKpvsIFBg==
+gAAAAABarRYGOXCd2_j79QXUtNz2n72liJK5xKgPpPryozTqyos2VLQ_2IOEr8rh2yQJCoEZXViKzburcD9IumMTcvkCZ9oBfbQLx4Ub0pH3dlXvDkpyFIpdy9qDy_BSS2b-fcZLUNVQlSShxMdpezmzn--s7EOSSuTZS6vhpZ6Ei54-a7eHoWuXaZ7gcCRQ5L8fEsQZE7I8QFd83prL0WxK89aCw2YMwMoP3RZrzpPDp1UVSIs-BBnD36U1T74kKTqPSitJydCdV6RGPDn31u9jnxIKxqajb11BEayp61XLzAL6xRInobI-zzWIxCo3volxlVRuGvtdOjZ4Z-yiTRESlnrMCxvwkU1x7egFtd21D-r5rg2P8aQaddMdLl7keekTctGOmxoucZUasnEZNYQrO_UpIwIb7qQUWvqgorZqQgTiKBb5eGTu5pFzReRgMX5qA2dPDf3hL63zJRmm12OvCQgyQVimpsL23SGUjgrhRUDw8y_zteo3SJ7AxzhdHHJAPRAjXK8zMasz6a-Dom8O9ZPjOpRTOzptcbQFqkW00_00tHgR4m7MMf2EjhZvFYU-WuKfrGXrGKovBcBgNMe-T7T8g8o39WhKlj9v8TkpEQmzAJEN08ExQipdpg7W1C_UUg0HBYgpUNa-CB_SzrrLCcRayE0px6UzmBXN0lCK61t1dxnV6AVRXqQK6ytRZBwUhAsZ8j7E6JqWkfwt57-M4O9kF5tXYNK2hpG_5FsOn2WIzXsICHWQ5s5HSr9RYJrSWn7m89O-sHILA5imCUhRGA9sPo8LTIGHjj8R957KR4RJEkSFzJR-lXREpypgY6BhHJrIIz2vTSFNYzJ3xlaMoy87zuNzZtHS5bIyO7eLvft8AEB5NtYfjnF4So8-Nr8uzAZqYRKkJmRRZ1g1Qq1Mj9GvW88D5s2jsozcw-mJBzGFtz8RPON_s_OTXMKDyBJ5hYqw8Q00Y3RbohMohyIf_OliJOwKI3cQcFcQBQDrNeEl5UtdOxTWK-Z-8HOZPW-g05yOkYD3BXuCsNMvnAIH3hB0J3OZQL2jucR43Gb6VnIpDXPpvwEGSDmbrnorje1f0eWMHiMbkhhF1E8laujVxoU_ZZFadUZvsHxkGeMj8ZVAWV7_3hnV6k0jTS9-v4-_D1Byg1Lh_6UaBAkbREAk830gZKm2ZfaDYacAWgeUK_j42_5q5Jmz0RDD-yHmBTUeRhYoyE1PXUyKJAf3RmDLSwCK9hATsB1Ko5d-podQbEwoWdEI8nDvxYVSw1A_8qM5lOLWarXdTqzl28HfMHRyxEDI3Y7BmDBFgk048Ox_x_0LAg3IqOgtvXCRw50tBtrV7QllTPBpxNkOjidfYP3XpmdPW8qYy_t2LPj2RQ92xhKoAbCnBZ1w7kUzoLdP5nyDKTeFU95jqJGsWOvV4lb2wDHerk1IgVpFmF4RqOEPe5g6v554g529EGpx3DB9j9FInSojbosizns2fb5lxbRG4OSzP8szAfe0y7NotWRIncRScXN2gpz_-SR8gSh5NkVe7Rmwbj0gt9ILpNWF0qX51WQ0x1vrYQ2dxHgAYUXI2_nrs29RXqG1q1LFhPm14m4tQiv2MizQVvC5ZDCi_AvE0Dgsz6gAR88jZxQCx4m7IAtJKSBOLeWTKrvv65ntQ8EiPiCL5S1Ir8npjEf4OMPks0uMlqE-J98sZiffWaaxpazU0A37CuBwxt7ZUXziJyGv95aLzI57ECsNE59XyCxXDqNOLCGua_fBsWkmnsIkofvRYJqYtPoAvrxkhEJbAvQkGZVLfJuL0t9Lrd9mwb6zGmrlN0lkI_sI4HXZnz7DAiqOF72XYIb-JHVVpmWiyGCvf8wqaYaw16Lm4ulyP5xPO_xh17iIjpd9FcRG1Kl2s6p4SH61w_QxJLtYg8FXNtO9zNk4rmrHTe0LuPksX2IUr8ltqOm-r7a4TZUK6rTH_JboTdcIiKkvc8ljM93TuFikmb7I0xZ2yBfT-horRZ7NOTGuPDyG4k-wUJ36mSMGreesZm_K4DQbC6yljZPzT5wgYGG-VBGCGEERDQ8rkrUtYqk7lBmD1Fe5qXZIjcmtVPm8QcfI2x1D0OHGTKNqyQDmPPk1J1wgQ-UNPf13w-UnCFvmSefi07J_eQbLR0k57uLKjPHjE2aEpfOQ2jA0S9GZUqGPPkTZelNY85Yj85K9hxUWbNMGU5mUq96MRUxdvtlY4PTZb234MwdTM5kJ58qhGq63cb9ykKBKRqfzo9vSqtXSGWBu--oZ9IpmSfZI4GnTjtUSim7kshP3Bb0BcAqTzITTYgFR3c51eEB4MDvzCZILmUjqjAQzS47BOsnYM3Q8FTfT95BBG3RVBAmKy2nfwLOLVA8JRUUwQ1E_vlJq081q-AY4dVveIVVE4XZTDhAScYtyi8enqeEO8RexWmh0lFSo82FUqOxtm7BU54rPH2vPUyiL73Q9feTgqdAUlOEFJSvvFlR29vERaj5BHM9HPJM3ZhJxPkBD9TYVzXb1S2jWSVPmzZzMHbXS8nJpdnnjvcdCYeO29h17ILT1Nb1iKlNEM7qJINLu0DLYrbAxn3yxmennf1uZW5DbJT1PshTVqOQWaAi1V-n1EFEzQqaZZwz5l9nKKPeWZD7gbbHvP8xvR9-3IDZPXOoJLw4g1Utnxm2Gui8=
 </div>
 </div>
 
@@ -383,67 +437,276 @@ gAAAAABarRYGOXCd2_j79QXUtNz2n72liJK5xKgPpPryozTqyos2VLQ_2IOEr8rh2yQJCoEZXViKzbur
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-087db63ab1">安装</a></li>
-<li><a href="#org-5a24e1c8d8">用户系统</a></li>
-<li><a href="#org-560165a6d7">权限</a>
+<li>
+<p>
+ <a href="#org-087db63ab1">安装</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-cc0fd376bb">权限缓存</a></li>
-</ul></li>
-<li><a href="#org-21f1e88275">登录</a>
+<li>
+<p>
+ <a href="#org-5a24e1c8d8">用户系统</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-26b238cb1d">注意事项</a></li>
-</ul></li>
-<li><a href="#org-3e3d59a258">验证码</a>
+<li>
+<p>
+ <a href="#org-560165a6d7">权限</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-d7d7ce790b">配置</a></li>
-</ul></li>
-<li><a href="#org-128e9ff023">错误处理</a></li>
-<li><a href="#org-9ed627bcf6">邮箱</a></li>
-<li><a href="#org-1f515561b6">表单</a></li>
-<li><a href="#org-f4dbbc63a5">数据库</a>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-6304d7131d">基本查询(已实现)</a></li>
-<li><a href="#org-5a14fa9f1a">关系查询</a></li>
-<li><a href="#org-295c71ff98">其它</a></li>
-</ul></li>
-<li><a href="#org-0aa2f4ad8a">序列化</a>
+<li>
+<p>
+ <a href="#org-cc0fd376bb">权限缓存</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-06f4a6e00e">多个实例</a></li>
-<li><a href="#org-5a80709d39">单个实例</a></li>
-<li><a href="#org-9d0b64116a">排除字段</a></li>
-<li><a href="#org-698cb4c6b7">仅包括字段</a></li>
-<li><a href="#org-3df6e98319">关系查询深度</a></li>
-<li><a href="#org-934a46ccd6">额外的字段</a></li>
-<li><a href="#org-c493338e8c">自定义</a></li>
-</ul></li>
-<li><a href="#org-39231438a7">中间件</a></li>
-<li><a href="#org-4de50894b8">日志</a></li>
-<li><a href="#org-fc4a695f02">App</a>
+<li>
+<p>
+ <a href="#org-21f1e88275">登录</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-d7d7ce790b">配置</a></li>
-</ul></li>
-<li><a href="#org-89ec4ec2bf">Bootstrap</a>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-06d0f38dd2">模板</a></li>
-<li><a href="#org-d7d7ce790b">配置</a></li>
-</ul></li>
-<li><a href="#org-24071b57a1">Redis</a>
+<li>
+<p>
+ <a href="#org-26b238cb1d">注意事项</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e2d3a3c09">使用</a></li>
-<li><a href="#org-d7d7ce790b">配置</a></li>
-</ul></li>
+<li>
+<p>
+ <a href="#org-3e3d59a258">验证码</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d7d7ce790b">配置</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-128e9ff023">错误处理</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-9ed627bcf6">邮箱</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-1f515561b6">表单</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f4dbbc63a5">数据库</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-6304d7131d">基本查询(已实现)</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-5a14fa9f1a">关系查询</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-295c71ff98">其它</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0aa2f4ad8a">序列化</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-06f4a6e00e">多个实例</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-5a80709d39">单个实例</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-9d0b64116a">排除字段</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-698cb4c6b7">仅包括字段</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-3df6e98319">关系查询深度</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-934a46ccd6">额外的字段</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-c493338e8c">自定义</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-39231438a7">中间件</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-4de50894b8">日志</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-fc4a695f02">App</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d7d7ce790b">配置</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-89ec4ec2bf">Bootstrap</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-06d0f38dd2">模板</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d7d7ce790b">配置</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-24071b57a1">Redis</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0e2d3a3c09">使用</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d7d7ce790b">配置</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
-
 <h3 id="org-087db63ab1">安装</h3>
-<p>To install Flask-Maple:</p>
+<p>
+   To install Flask-Maple:
+</p>
 <div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">flask …</span></pre></div>
           </div>
           <div class="text-center">
@@ -479,9 +742,9 @@ gAAAAABarRYGOXCd2_j79QXUtNz2n72liJK5xKgPpPryozTqyos2VLQ_2IOEr8rh2yQJCoEZXViKzbur
           <hr class="entry-hr" />
           <div class="entry-content">
             
-
-<p>参考 <a href="https://segmentfault.com/a/1190000007641519">这里</a></p>
-
+<p>
+参考 <a href="https://segmentfault.com/a/1190000007641519">这里</a>
+</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TailRecurseException</span><span class="p">(</span><span class="ne">BaseException</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
@@ -530,7 +793,6 @@ gAAAAABarRYGOXCd2_j79QXUtNz2n72liJK5xKgPpPryozTqyos2VLQ_2IOEr8rh2yQJCoEZXViKzbur
           <hr class="entry-hr" />
           <div class="entry-content">
             
-
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tornado</span>
 <span class="kn">from</span> <span class="nn">tornado.web</span> <span class="kn">import</span> <span class="n">Application</span>
 <span class="kn">from</span> <span class="nn">tornado.web</span> <span class="kn">import</span> <span class="n">RequestHandler</span>
@@ -538,12 +800,13 @@ gAAAAABarRYGOXCd2_j79QXUtNz2n72liJK5xKgPpPryozTqyos2VLQ_2IOEr8rh2yQJCoEZXViKzbur
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">json</span>
 
-<span class="n">template</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;&amp;lt;!doctype html&amp;gt;</span>
-<span class="s1">&amp;lt;html lang=&quot;en&quot;&amp;gt;</span>
-<span class="s1">  &amp;lt;head&amp;gt;</span>
-<span class="s1">    &amp;lt;meta charset=&quot;UTF-8&quot;/&amp;gt;</span>
-<span class="s1">    &amp;lt;title&amp;gt;Document&amp;lt;/title&amp;gt;</span>
-<span class="s1">    &amp;lt;meta name …</span></pre></div>
+<span class="n">template</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;&lt;!doctype html&gt;</span>
+<span class="s1">&lt;html lang=&quot;en&quot;&gt;</span>
+<span class="s1">  &lt;head&gt;</span>
+<span class="s1">    &lt;meta charset=&quot;UTF-8&quot;/&gt;</span>
+<span class="s1">    &lt;title&gt;Document&lt;/title&gt;</span>
+<span class="s1">    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;</span>
+<span class="s1">    &lt;script src=&quot;https://cdn.bootcss.com/jquery …</span></pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/11/使用tornado实时输出日志.html">阅读全文 »</a>
@@ -579,12 +842,15 @@ gAAAAABarRYGOXCd2_j79QXUtNz2n72liJK5xKgPpPryozTqyos2VLQ_2IOEr8rh2yQJCoEZXViKzbur
           <hr class="entry-hr" />
           <div class="entry-content">
             
-
-<p>功能实现很简单, <b>pelican</b>也有类似的插件实现 <a href="https://github.com/getpelican/pelican-plugins/tree/master/neighbors">https://github.com/getpelican/pelican-plugins/tree/master/neighbors</a></p>
-
-<p>不过自己实现起来更爽不是吗? 而且类似<b>prev_article_in_category</b>和<b>prev_article_in_subcategory</b>的功能我并不需要</p>
-
-<p>首先参考<b>pelican</b>的文档,基础实现</p>
+<p>
+功能实现很简单, <b>pelican</b>也有类似的插件实现 <a href="https://github.com/getpelican/pelican-plugins/tree/master/neighbors">https://github.com/getpelican/pelican-plugins/tree/master/neighbors</a>
+</p>
+<p>
+不过自己实现起来更爽不是吗? 而且类似<b>prev_article_in_category</b>和<b>prev_article_in_subcategory</b>的功能我并不需要
+</p>
+<p>
+首先参考<b>pelican</b>的文档,基础实现
+</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_neighbors</span><span class="p">(</span><span class="n">generator</span><span class="p">):</span>
     <span class="o">....</span>
 
@@ -592,10 +858,12 @@ gAAAAABarRYGOXCd2_j79QXUtNz2n72liJK5xKgPpPryozTqyos2VLQ_2IOEr8rh2yQJCoEZXViKzbur
     <span class="n">signals</span><span class="o">.</span><span class="n">article_generator_finalized</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">add_neighbors</span><span class="p">)</span>
 </pre></div>
 
-
-<p>然后在<b>generator.articles</b>列表上进行操作,为article增加<b>previous_article</b>和<b>next_article</b>对象</p>
-
-<p>先进行排序(按时间)</p>
+<p>
+然后在<b>generator.articles</b>列表上进行操作,为article增加<b>previous_article</b>和<b>next_article</b>对象
+</p>
+<p>
+先进行排序(按时间)
+</p>
 <div class="highlight"><pre><span></span><span class="n">articles</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">articles</span>
 <span class="n">articles</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x …</span></pre></div>
           </div>
@@ -633,14 +901,15 @@ gAAAAABarRYGOXCd2_j79QXUtNz2n72liJK5xKgPpPryozTqyos2VLQ_2IOEr8rh2yQJCoEZXViKzbur
           <hr class="entry-hr" />
           <div class="entry-content">
             
-<p>tornado中默认没有session的实现,虽然默认的 <b>set_secure_cookie</b> 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息</p>
-
-<p>注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行</p>
-
-
-<p>给出源码:</p>
-
-
+<p>
+tornado中默认没有session的实现,虽然默认的 <b>set_secure_cookie</b> 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息
+</p>
+<p>
+注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行
+</p>
+<p>
+给出源码:
+</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
 <span class="kn">from</span> <span class="nn">redis</span> <span class="kn">import</span> <span class="n">StrictRedis</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>

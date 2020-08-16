@@ -88,39 +88,107 @@
     <div class="entry-content entry-article">
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-da4338acc8">为什么需要用token验证</a></li>
-<li><a href="#org-5b6e813527">如何使用token?</a>
-<ul>
-<li><a href="#org-1392cc8548">生成token</a></li>
-<li><a href="#org-2f0f5c6f45">验证token</a></li>
-<li><a href="#org-acb7bf7aba">使用flask-login</a></li>
-<li><a href="#org-323662fd66">设置csrf白名单</a></li>
-</ul></li>
-<li><a href="#org-9f7a9d1a54">使用脚本发表</a></li>
-</ul>
-</div></div>
-
-
-<h2 id="org-da4338acc8">为什么需要用token验证</h2>
-<p>原因呢是因为写博客时已经在本地写好了，但是要发表到网站上还需要这么几步:</p>
-
-<ul>
-<li><input type="checkbox" checked="checked" />打开浏览器</li>
-<li><input type="checkbox" checked="checked" />打开我的网站</li>
-<li><input type="checkbox" checked="checked" />进入登陆页</li>
-<li><input type="checkbox" checked="checked" />登陆</li>
-<li><input type="checkbox" checked="checked" />进入后台页</li>
-<li><input type="checkbox" checked="checked" />进入文章发表页</li>
-<li><input type="checkbox" checked="checked" />复制粘贴</li>
-<li><input type="checkbox" checked="checked" />发表
+<li>
+<p>
+ <a href="#org-da4338acc8">为什么需要用token验证</a>
+</p>
 </li>
 </ul>
-<p>所以使用<b>token</b>验证成为必然</p>
-
+<ul>
+<li>
+<p>
+ <a href="#org-5b6e813527">如何使用token?</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-1392cc8548">生成token</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-2f0f5c6f45">验证token</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-acb7bf7aba">使用flask-login</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-323662fd66">设置csrf白名单</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-9f7a9d1a54">使用脚本发表</a>
+</p>
+</li>
+</ul>
+</div></div>
+<h2 id="org-da4338acc8">为什么需要用token验证</h2>
+<p>
+  原因呢是因为写博客时已经在本地写好了，但是要发表到网站上还需要这么几步:
+</p>
+<ul>
+<li>
+<p>
+ [X] 打开浏览器
+</p>
+</li>
+<li>
+<p>
+ [X] 打开我的网站
+</p>
+</li>
+<li>
+<p>
+ [X] 进入登陆页
+</p>
+</li>
+<li>
+<p>
+ [X] 登陆
+</p>
+</li>
+<li>
+<p>
+ [X] 进入后台页
+</p>
+</li>
+<li>
+<p>
+ [X] 进入文章发表页
+</p>
+</li>
+<li>
+<p>
+ [X] 复制粘贴
+</p>
+</li>
+<li>
+<p>
+ [X] 发表
+</p>
+</li>
+</ul>
+  所以使用<b>token</b>验证成为必然
 <h2 id="org-5b6e813527">如何使用token?</h2>
-
 <h3 id="org-1392cc8548">生成token</h3>
-<p>使用<b>itsdangerous</b>对token进行加密</p>
+<p>
+   使用<b>itsdangerous</b>对token进行加密
+</p>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
     <span class="o">......</span>
 
@@ -135,8 +203,9 @@
         <span class="k">return</span> <span class="n">token</span>
 </pre></div>
 
-<p>请保管好<b>SECRET_KEY</b> 和 <b>SECURITY_PASSWORD_SALT</b>,不要泄露</p>
-
+<p>
+   请保管好<b>SECRET_KEY</b> 和 <b>SECURITY_PASSWORD_SALT</b>,不要泄露
+</p>
 <h3 id="org-2f0f5c6f45">验证token</h3>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
     <span class="o">......</span>
@@ -150,25 +219,29 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">column</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">BadSignature</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="kc">False</span>
         <span class="k">except</span> <span class="n">SignatureExpired</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="kc">False</span>
 </pre></div>
 
 <ul>
-<li>max-age
-<p>最大过期时间</p>
+<li>
+<p>
+ max-age
+     最大过期时间
+</p>
 </li>
 </ul>
-<p>如果验证成功查找<b>该用户</b>是否存在</p>
+   如果验证成功查找<b>该用户</b>是否存在
 <div class="highlight"><pre><span></span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="n">column</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-<span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-    <span class="k">return</span> <span class="bp">False</span>
+<span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">return</span> <span class="kc">False</span>
 <span class="k">return</span> <span class="n">user</span>
 </pre></div>
 
-
-<p>示例:</p>
+<p>
+   示例:
+</p>
 <div class="highlight"><pre><span></span><span class="nd">@staticmethod</span>
 <span class="k">def</span> <span class="nf">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="mi">86400</span><span class="p">):</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span>
@@ -178,28 +251,32 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">username</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">,</span> <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">BadSignature</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="kc">False</span>
     <span class="k">except</span> <span class="n">SignatureExpired</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="kc">False</span>
     <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
     <span class="k">return</span> <span class="n">user</span>
 </pre></div>
 
-
 <h3 id="org-acb7bf7aba">使用flask-login</h3>
-<p>flask-login是flask的一个登陆扩展,自带token验证, <b>但是请一定要设</b></p>
+<p>
+   flask-login是flask的一个登陆扩展,自带token验证, <b>但是请一定要设</b>
+</p>
 <div class="highlight"><pre><span></span><span class="n">login_manager</span><span class="o">.</span><span class="n">session_protection</span> <span class="o">=</span> <span class="s2">&quot;basic&quot;</span>
 </pre></div>
 
-<p>这是我在试验了n次后,读了flask-login的源码后才发现的（其实后面发现文档有写☹）</p>
-
-<p>然后设置 <b>request_loader</b></p>
-<div class="highlight"><pre><span></span><span class="nd">@login_manager.request_loader</span>
+<p>
+   这是我在试验了n次后,读了flask-login的源码后才发现的（其实后面发现文档有写☹）
+</p>
+<p>
+   然后设置 <b>request_loader</b>
+</p>
+<div class="highlight"><pre><span></span><span class="nd">@login_manager</span><span class="o">.</span><span class="n">request_loader</span>
 <span class="k">def</span> <span class="nf">user_loader_from_request</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;your_token&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">token</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">token</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">check_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">user</span>
@@ -207,18 +284,23 @@
 <span class="k">return</span> <span class="n">login_manager</span>
 </pre></div>
 
-<p>这是简单的从<b>url</b>中获取<b>token</b>进行验证,也可以从 <b>header</b>中获取(更安全)</p>
+<p>
+   这是简单的从<b>url</b>中获取<b>token</b>进行验证,也可以从 <b>header</b>中获取(更安全)
+</p>
 <div class="highlight"><pre><span></span><span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;your_token&#39;</span><span class="p">)</span>
 </pre></div>
 
 <h3 id="org-323662fd66">设置csrf白名单</h3>
-<p>非常不幸的是，假设你开启了<b>csrf</b>保护,本地使用脚本验证时会报<b>400</b>错误,设置<b>csrf</b>白名单</p>
+<p>
+   非常不幸的是，假设你开启了<b>csrf</b>保护,本地使用脚本验证时会报<b>400</b>错误,设置<b>csrf</b>白名单
+</p>
 <div class="highlight"><pre><span></span><span class="n">csrf</span><span class="o">.</span><span class="n">exempt</span>
 </pre></div>
 
-
 <h2 id="org-9f7a9d1a54">使用脚本发表</h2>
-<p>直接给出代码</p>
+<p>
+  直接给出代码
+</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">request</span>
 <span class="kn">import</span> <span class="nn">json</span>
 
@@ -242,19 +324,28 @@
     <span class="s1">&#39;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.107 Safari/537.36&#39;</span>
 <span class="p">)</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </pre></div>
 
-
-<p>现在的步骤是:</p>
+<p>
+  现在的步骤是:
+</p>
 <ul>
-<li><input type="checkbox" checked="checked" />复制粘贴</li>
-<li><input type="checkbox" checked="checked" />发表
-
-<p>ok,后续可能还需要将<del>复制粘贴</del>这一步也去了</p>
+<li>
+<p>
+ [X] 复制粘贴
+</p>
+</li>
+<li>
+<p>
+ [X] 发表
+</p>
+<p>
+   ok,后续可能还需要将<del>复制粘贴</del>这一步也去了
+</p>
 </li>
 </ul>
-<p>本篇文章就是采用这种方式发表</p>
+本篇文章就是采用这种方式发表
     </div>
 <div class="entry-copyright">
   <div>

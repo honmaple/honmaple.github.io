@@ -87,29 +87,41 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-81fdf53c39">获取开始时间</a></li>
-<li><a href="#org-ca7b7f47a5">时间分组</a></li>
+<li>
+<p>
+ <a href="#org-81fdf53c39">获取开始时间</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-ca7b7f47a5">时间分组</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
-<p>之前有这么一个需求</p>
+<p>
+之前有这么一个需求
+</p>
 <blockquote>
-<p>将数据按照时间分组，比如说每5分钟为一组，或者每30分钟为一组，开始时间如果分钟数大于等于30分钟，则设置为30,如果小于30,则设置为0（也可以设置为更复杂的逻辑）</p>
-
-<p>当然中间还有一些数据的统计，分析和计算暂时不管</p>
+<p>
+将数据按照时间分组，比如说每5分钟为一组，或者每30分钟为一组，开始时间如果分钟数大于等于30分钟，则设置为30,如果小于30,则设置为0（也可以设置为更复杂的逻辑）
+</p>
+<p>
+当然中间还有一些数据的统计，分析和计算暂时不管
+</p>
 </blockquote>
-
 <h2 id="org-81fdf53c39">获取开始时间</h2>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_start_date</span><span class="p">(</span><span class="n">start_date</span><span class="p">):</span>
     <span class="n">time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">minute</span> <span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="o">=</span> <span class="mi">30</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">minute</span> <span class="o">&gt;=</span> <span class="mi">30</span><span class="p">:</span>
         <span class="n">minute</span> <span class="o">=</span> <span class="mi">30</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">minute</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">start_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span>
                           <span class="mi">0</span><span class="p">)</span>
-    <span class="n">start_date …</span></pre></div>
+    <span class="n">start_date</span> <span class="o">=</span> <span class="n">mktime …</span></pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/07/一个简单的数据分组算法.html">阅读全文 »</a>
@@ -146,23 +158,27 @@
           <hr class="entry-hr" />
           <div class="entry-content">
             
-
-<p>celery是一个基于Python的分布式调度系统，<a href="http://docs.celeryproject.org/en/latest/">文档在这</a> ,最近有个需求,想要动态的添加任务而不用重启celery服务,找了一圈没找到什么好办法(也有可能是文档没看仔细)，所以只能自己实现囉</p>
-
-<p>为celery动态添加任务，首先我想到的是传递一个函数进去，让某个特定任务去执行这个传递过去的函数，就像这样</p>
-<div class="highlight"><pre><span></span><span class="nd">@app.task</span>
+<p>
+celery是一个基于Python的分布式调度系统，<a href="http://docs.celeryproject.org/en/latest/">文档在这</a>,最近有个需求,想要动态的添加任务而不用重启celery服务,找了一圈没找到什么好办法(也有可能是文档没看仔细)，所以只能自己实现囉
+</p>
+<p>
+为celery动态添加任务，首先我想到的是传递一个函数进去，让某个特定任务去执行这个传递过去的函数，就像这样
+</p>
+<div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
 <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
 
-
-<p>很可惜，会出现这样的错误</p>
-<div class="highlight"><pre><span></span><span class="n">kombu</span><span class="p">.</span><span class="n">exceptions</span><span class="p">.</span><span class="n">EncodeError</span><span class="p">:</span> <span class="k">Object</span> <span class="k">of</span> <span class="k">type</span> <span class="s1">&#39;function&#39;</span> <span class="k">is</span> <span class="k">not</span> <span class="n">JSON</span> <span class="k">serializable</span>
+<p>
+很可惜，会出现这样的错误
+</p>
+<div class="highlight"><pre><span></span><span class="err">kombu.exceptions.EncodeError: Object of type &#39;function&#39; is not JSON serializable</span>
 </pre></div>
 
-
-<p>换一种序列化方式</p>
-<div class="highlight"><pre><span></span><span class="nd">@app.task</span><span class="p">(</span><span class="n">serializer</span><span class="o">=</span><span class="s1">&#39;pickle&#39;</span><span class="p">)</span>
+<p>
+换一种序列化方式
+</p>
+<div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">serializer</span><span class="o">=</span><span class="s1">&#39;pickle&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs …</span></pre></div>
           </div>
@@ -202,21 +218,48 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-d07133c850">Quickstart</a></li>
-<li><a href="#org-0bb18642b7">Usage</a>
+<li>
+<p>
+ <a href="#org-d07133c850">Quickstart</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-f8eb13e34e">创建更新删除索引</a></li>
-<li><a href="#org-98bee9a16c">自定义analyzer</a></li>
-</ul></li>
-<li><a href="#org-792c81a4cf">Configure</a></li>
+<li>
+<p>
+ <a href="#org-0bb18642b7">Usage</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f8eb13e34e">创建更新删除索引</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-98bee9a16c">自定义analyzer</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-792c81a4cf">Configure</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
-<p>flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/Flask-WhooshAlchemy , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个</p>
-
+<p>
+flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/Flask-WhooshAlchemy , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个
+</p>
 <h2 id="org-d07133c850">Quickstart</h2>
-<p>插件基于 whoosh,纯 python 编写,使用上很简单</p>
+<p>
+  插件基于 whoosh,纯 python 编写,使用上很简单
+</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask_msearch</span> <span class="kn">import</span> <span class="n">Search</span>
 <span class="p">[</span><span class="o">...</span><span class="p">]</span>
 <span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">()</span>
@@ -264,20 +307,27 @@
           <hr class="entry-hr" />
           <div class="entry-content">
             
-<p>第一版下载图片后设为壁纸,四周都是黑黑的不好看,
-所以结合本地壁纸将两张图片进行合成</p>
-
-<p>只要计算一下要缩减的大小与要放置的位置</p>
+<p>
+第一版下载图片后设为壁纸,四周都是黑黑的不好看,
+所以结合本地壁纸将两张图片进行合成
+</p>
+<p>
+只要计算一下要缩减的大小与要放置的位置
+</p>
 <blockquote>
-<p>我的方法是:打开 <b>gimp</b>,合成两张图片,记下缩减的大小(214,214)与位置(160,160)</p>
+<p>
+我的方法是:打开 <b>gimp</b>,合成两张图片,记下缩减的大小(214,214)与位置(160,160)
+</p>
 </blockquote>
-
-<p>每次只要运行一下</p>
-<div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">himawari8</span><span class="p">.</span><span class="n">py</span>
+<p>
+每次只要运行一下
+</p>
+<div class="highlight"><pre><span></span><span class="err">python himawari8.py</span>
 </pre></div>
 
-
-<p>源码</p>
+<p>
+源码
+</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageOps</span><span class="p">,</span> <span class="n">ImageDraw</span>
 <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
 <span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">urlopen</span>
@@ -325,19 +375,22 @@
           <hr class="entry-hr" />
           <div class="entry-content">
             
-<p>直接给出源码</p>
-
-<p>设置壁纸</p>
+<p>
+直接给出源码
+</p>
+<p>
+设置壁纸
+</p>
 <div class="highlight"><pre><span></span>feh --bg-scale /tmp/earth.png
 </pre></div>
 
-
-<p>设置桌面大小,及图片放大倍数</p>
+<p>
+设置桌面大小,及图片放大倍数
+</p>
 <div class="highlight"><pre><span></span><span class="n">SCALE</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
 <span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
 </pre></div>
-
 
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
@@ -388,44 +441,131 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-c7f856f96c">sqlalchemy object序列化为json</a>
+<li>
+<p>
+ <a href="#org-4a2227e6f9">object序列化为json</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-06f4a6e00e">多个实例</a></li>
-<li><a href="#org-5a80709d39">单个实例</a></li>
-<li><a href="#org-9d0b64116a">排除字段</a></li>
-<li><a href="#org-698cb4c6b7">仅包括字段</a></li>
-<li><a href="#org-3df6e98319">关系查询深度</a></li>
-<li><a href="#org-f921e70d21">增加一些自定义的函数</a></li>
-<li><a href="#org-27f9cd77bf">可传递参数的函数</a></li>
-</ul></li>
-<li><a href="#org-7c0ae800cf">像django orm一样使用sqlalchemy</a>
+<li>
+<p>
+ <a href="#org-06f4a6e00e">多个实例</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-6304d7131d">基本查询(已实现)</a></li>
-<li><a href="#org-5a14fa9f1a">关系查询</a></li>
-<li><a href="#org-295c71ff98">其它</a></li>
-</ul></li>
-<li><a href="#org-41820df388">去掉一些sqlalchemy的重复工作</a>
+<li>
+<p>
+ <a href="#org-5a80709d39">单个实例</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-bc47e490b7">ModelMixin</a></li>
-<li><a href="#org-d5546830f8">ModelTimeMixin</a></li>
-<li><a href="#org-a84fc5de8b">ModelUserMixin</a></li>
-</ul></li>
+<li>
+<p>
+ <a href="#org-9d0b64116a">排除字段</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-698cb4c6b7">仅包括字段</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-3df6e98319">关系查询深度</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f921e70d21">增加一些自定义的函数</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-27f9cd77bf">可传递参数的函数</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-5de5566e3c">orm一样使用sqlalchemy</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-6304d7131d">基本查询(已实现)</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-5a14fa9f1a">关系查询</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-295c71ff98">其它</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-41820df388">去掉一些sqlalchemy的重复工作</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-bc47e490b7">ModelMixin</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d5546830f8">ModelTimeMixin</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-a84fc5de8b">ModelUserMixin</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
-<h2 id="org-c7f856f96c">sqlalchemy object序列化为json</h2>
-<p>灵感来源于 <b>Django REST framework</b></p>
+<h2 id="org-4a2227e6f9"><span class="todo">sqlalchemy</span>object序列化为json</h2>
+<p>
+  灵感来源于 <b>Django REST framework</b>
+</p>
 <h3 id="org-06f4a6e00e">多个实例</h3>
 <div class="highlight"><pre><span></span><span class="n">posts</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-<span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">posts</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">posts</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 
-
 <h3 id="org-5a80709d39">单个实例</h3>
 <div class="highlight"><pre><span></span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-<span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post …</span></pre></div>
+<span class="n">serializer</span> <span class="o">=</span> <span class="n">Seralizer</span><span class="p">(</span><span class="n">post</span><span class="p">,</span><span class="n">many</span><span class="o">=</span><span class="kc">False …</span></pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/03/sqlalchemy使用上的小tips.html">阅读全文 »</a>
@@ -530,58 +670,226 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-64269f9bd2">TIME</a>
+<li>
+<p>
+ <a href="#org-64269f9bd2">TIME</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-7ebf2338af">GMT时间格式</a></li>
-<li><a href="#org-65bad22cfc">获取某个时间的时间戳</a></li>
-<li><a href="#org-9cdb4427c7">得到当天0点时间</a></li>
-<li><a href="#org-1cf8e4888e">时间或时间戳与字符串转换</a></li>
-<li><a href="#org-3114533efe">秒转化为时分秒</a></li>
-<li><a href="#org-ecd0fdd84a">获取上个月开始与结束时间</a></li>
-<li><a href="#org-c48f6ea082">获取上周星期天与星期六</a></li>
-<li><a href="#org-534be5b64e">获取上周时间(星期天零点到星期天零点)</a></li>
-</ul></li>
-<li><a href="#org-f40b27d6b8">HTTP</a>
+<li>
+<p>
+ <a href="#org-7ebf2338af">GMT时间格式</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-745c0c3505">在网址中加入参数</a></li>
-<li><a href="#org-8036325a6c">urllib2发送json数据 POST请求</a></li>
-<li><a href="#org-87628b5cdc">urllib2发送PUT或DELETE请求</a></li>
-</ul></li>
-<li><a href="#org-17c7ba7676">Syntax</a>
+<li>
+<p>
+ <a href="#org-65bad22cfc">获取某个时间的时间戳</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-b409df6e0a">解析赋值字符串</a></li>
-<li><a href="#org-69d45ba6f0">字典递归更新</a></li>
-<li><a href="#org-e5f09a69d7">字典使用dot</a></li>
-<li><a href="#org-7f68588df2">单例模式</a></li>
-</ul></li>
-<li><a href="#org-9b0d5ac39f">Pip</a>
+<li>
+<p>
+ <a href="#org-9cdb4427c7">得到当天0点时间</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-0e45bfe5d9">pip更新所有的packages</a></li>
-<li><a href="#org-62e2b54368">pip指定国内源</a></li>
-</ul></li>
-<li><a href="#org-7f01ead872">判斷是否激活virtualenv</a></li>
-<li><a href="#org-2bae3ff99f">Django model得到所有field name</a></li>
-<li><a href="#org-f25162b733">python运行超时设置</a></li>
-<li><a href="#org-87eedee459">库</a>
+<li>
+<p>
+ <a href="#org-1cf8e4888e">时间或时间戳与字符串转换</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-66ff16d24a">json.loads时无法保持字典列表的顺序</a></li>
-</ul></li>
-<li><a href="#org-295c71ff98">其它</a>
+<li>
+<p>
+ <a href="#org-3114533efe">秒转化为时分秒</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-5bd51f3a12">获取文件最后n行数据</a></li>
-<li><a href="#org-57b7335a35">python列表中去除烦人的"u"</a></li>
-</ul></li>
-<li><a href="#org-0adb1147b3">常见问题</a>
+<li>
+<p>
+ <a href="#org-ecd0fdd84a">获取上个月开始与结束时间</a>
+</p>
+</li>
+</ul>
 <ul>
-<li><a href="#org-237159dd27">PROTOCOL_SSLv3 is not defined</a></li>
-</ul></li>
+<li>
+<p>
+ <a href="#org-c48f6ea082">获取上周星期天与星期六</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-534be5b64e">获取上周时间(星期天零点到星期天零点)</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f40b27d6b8">HTTP</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-745c0c3505">在网址中加入参数</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-9c314b5910">POST请求</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-87628b5cdc">urllib2发送PUT或DELETE请求</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-17c7ba7676">Syntax</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-b409df6e0a">解析赋值字符串</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-69d45ba6f0">字典递归更新</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-b858cb2826"> </a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-b858cb2826"> </a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-9b0d5ac39f">Pip</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0e45bfe5d9">pip更新所有的packages</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-62e2b54368">pip指定国内源</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-7f01ead872">判斷是否激活virtualenv</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d8ac9205d9">model得到所有field name</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f25162b733">python运行超时设置</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-87eedee459">库</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-66ff16d24a">json.loads时无法保持字典列表的顺序</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-295c71ff98">其它</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-5bd51f3a12">获取文件最后n行数据</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-57b7335a35">python列表中去除烦人的&#34;u&#34;</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-0adb1147b3">常见问题</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-5a5a54c000">is not defined</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
 <h2 id="org-64269f9bd2">TIME</h2>
 <h3 id="org-7ebf2338af">GMT时间格式</h3>
-<div class="highlight"><pre><span></span><span class="n">GMT_FORMAT</span> <span class="o">=</span> <span class="s1">&#39;%a, </span><span class="si">%d</span><span class="s1"> %b …</span></pre></div>
+<div class="highlight"><pre><span></span><span class="n">GMT_FORMAT</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%a</span><span class="s1">, </span><span class="si">%d</span><span class="s1"> %b %Y %H:%M:%S GMT …</span></pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/01/python笔记.html">阅读全文 »</a>
@@ -620,32 +928,45 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li><a href="#org-c0fb593d84">事故（一）</a></li>
-<li><a href="#org-6e6d9dd7a7">事故（二）</a></li>
+<li>
+<p>
+ <a href="#org-c0fb593d84">事故（一）</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-6e6d9dd7a7">事故（二）</a>
+</p>
+</li>
 </ul>
 </div></div>
-
-
-<p>最近archlinux升级至了 <b>python3.6</b> ，直接导致了我的开发环境失效,唉</p>
-
+<p>
+最近archlinux升级至了 <b>python3.6</b> ，直接导致了我的开发环境失效,唉
+</p>
 <blockquote>
-<p>archlinux 果然不适合开发</p>
+<p>
+archlinux 果然不适合开发
+</p>
 </blockquote>
-
-<p>虽然后面都已经解决了</p>
-
+<p>
+虽然后面都已经解决了
+</p>
 <h3 id="org-c0fb593d84">事故（一）</h3>
-<p><b>virtualenv不可用</b>,原先使用python3.5创建的环境直接不能用了,只好删了原有了东西,重新使用python3.6创建</p>
-
-<div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">freeze</span> <span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">requestments</span><span class="o">.</span><span class="n">txt</span>
+<p>
+   <b>virtualenv不可用</b>,原先使用python3.5创建的环境直接不能用了,只好删了原有了东西,重新使用python3.6创建
+</p>
+<div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">freeze</span> <span class="o">&gt;</span> <span class="n">requestments</span><span class="o">.</span><span class="n">txt</span>
 <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requestments</span><span class="o">.</span><span class="n">txt</span>
 </pre></div>
 
-
 <h3 id="org-6e6d9dd7a7">事故（二）</h3>
-<p><b>py3status</b> 报错</p>
+<p>
+   <b>py3status</b> 报错
+</p>
 <div class="highlight"><pre><span></span>   <span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s2">&quot;/usr/bin/py3status&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in …</span></pre></div>
+  <span class="n">File</span> <span class="s2">&quot;/usr/bin/py3status&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module …</span></pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/01/升级至python3.6导致环境出错解决.html">阅读全文 »</a>

@@ -89,7 +89,7 @@
       <h3>为什么需要restful形式的权限管理<a id="orgheadline1"></a></h3>
 <p>最近在写flask应用时使用了 <strong>restful</strong> 形式的<code>flask.views.MethodView</code>，但是在对其进行权限管理时遇到了一些问题</p>
 <p>flask文档上介绍说用</p>
-<div class="highlight"><pre><span></span><span class="n">decorators</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="highlight"><pre><span></span><span class="err">decorators = []</span>
 </pre></div>
 
 
@@ -128,13 +128,13 @@
 
 <p>是不是看起来还不错, <strong>但是</strong>,如果再加上<a href="http://www.pythonhosted.org/Flask-Principal/">类似EditBlogPostPermission</a> 这样的权限管理呢?
 是不是还需要这样</p>
-<div class="highlight"><pre><span></span>@<span class="nv">login_required</span>
-<span class="nv">def</span> <span class="nv">put</span><span class="ss">(</span><span class="nv">self</span>,<span class="nv">uid</span><span class="ss">)</span>:
-    <span class="nv">permission</span> <span class="o">=</span> <span class="nv">EditBlogPostPermission</span><span class="ss">(</span><span class="nv">uid</span><span class="ss">)</span>
-    <span class="k">if</span> <span class="nv">permission</span>.<span class="nv">can</span><span class="ss">()</span>:
-        # <span class="nv">Save</span> <span class="nv">the</span> <span class="nv">edits</span> ...
-        <span class="k">return</span> <span class="nv">render_template</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">edit_post.html</span><span class="s1">&#39;</span><span class="ss">)</span>
-    ...
+<div class="highlight"><pre><span></span><span class="err">@login_required</span>
+<span class="err">def put(self,uid):</span>
+<span class="err">    permission = EditBlogPostPermission(uid)</span>
+<span class="err">    if permission.can():</span>
+<span class="err">        # Save the edits ...</span>
+<span class="err">        return render_template(&#39;edit_post.html&#39;)</span>
+<span class="err">    ...</span>
 </pre></div>
 
 
@@ -143,57 +143,57 @@
 </ul>
 <h3>怎么实现restful形式的权限管理<a id="orgheadline2"></a></h3>
 <p>同样采用装饰器实现,调用 <em>BasePermission</em> 时会自动调用 <em><strong>call</strong></em> 函数</p>
-<div class="highlight"><pre><span></span><span class="nv">class</span> <span class="nv">BasePermission</span><span class="ss">(</span><span class="nv">object</span><span class="ss">)</span>:
+<div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="n">BasePermission</span><span class="p">(</span><span class="k">object</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
 
-    <span class="nv">def</span> <span class="nv">__call__</span><span class="ss">(</span><span class="nv">self</span>, <span class="nv">func</span><span class="ss">)</span>:
-        @<span class="nv">wraps</span><span class="ss">(</span><span class="nv">func</span><span class="ss">)</span>
-        <span class="nv">def</span> <span class="nv">decorator</span><span class="ss">(</span><span class="o">*</span><span class="nv">args</span>, <span class="o">**</span><span class="nv">kwargs</span><span class="ss">)</span>:
-            <span class="nv">meth</span> <span class="o">=</span> <span class="nv">getattr</span><span class="ss">(</span><span class="nv">self</span>, <span class="nv">request</span>.<span class="nv">method</span>.<span class="nv">lower</span><span class="ss">()</span>, <span class="nv">None</span><span class="ss">)</span>
-            <span class="k">if</span> <span class="nv">meth</span> <span class="nv">is</span> <span class="nv">None</span> <span class="nv">and</span> <span class="nv">request</span>.<span class="nv">method</span> <span class="o">==</span> <span class="s1">&#39;</span><span class="s">HEAD</span><span class="s1">&#39;</span>:
-                <span class="nv">meth</span> <span class="o">=</span> <span class="nv">getattr</span><span class="ss">(</span><span class="nv">self</span>, <span class="s1">&#39;</span><span class="s">get</span><span class="s1">&#39;</span>, <span class="nv">None</span><span class="ss">)</span>
-            <span class="nv">assert</span> <span class="nv">meth</span> <span class="nv">is</span> <span class="nv">not</span> <span class="nv">None</span>, <span class="s1">&#39;</span><span class="s">Unimplemented method %r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nv">request</span>.<span class="nv">method</span>
-            <span class="nv">check</span> <span class="o">=</span> <span class="nv">meth</span><span class="ss">(</span><span class="o">*</span><span class="nv">args</span>, <span class="o">**</span><span class="nv">kwargs</span><span class="ss">)</span>
-            <span class="k">if</span> <span class="nv">check</span>:
-                <span class="k">return</span> <span class="nv">check</span>
-            <span class="k">else</span>:
-                <span class="nv">pass</span>
-            <span class="k">return</span> <span class="nv">func</span><span class="ss">(</span><span class="o">*</span><span class="nv">args</span>, <span class="o">**</span><span class="nv">kwargs</span><span class="ss">)</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">__call__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">func</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+<span class="w">        </span><span class="nv">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">def</span><span class="w"> </span><span class="n">decorator</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+<span class="w">            </span><span class="n">meth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getattr</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="k">method</span><span class="p">.</span><span class="nf">lower</span><span class="p">(),</span><span class="w"> </span><span class="k">None</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="n">meth</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="k">None</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="k">method</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;HEAD&#39;</span><span class="err">:</span><span class="w"></span>
+<span class="w">                </span><span class="n">meth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getattr</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;get&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">None</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">assert</span><span class="w"> </span><span class="n">meth</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unimplemented method %r&#39;</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="k">method</span><span class="w"></span>
+<span class="w">            </span><span class="k">check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">meth</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="k">check</span><span class="err">:</span><span class="w"></span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="k">check</span><span class="w"></span>
+<span class="w">            </span><span class="k">else</span><span class="err">:</span><span class="w"></span>
+<span class="w">                </span><span class="n">pass</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="w"></span>
 
-        <span class="k">return</span> <span class="nv">decorator</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">decorator</span><span class="w"></span>
 </pre></div>
 
 
 <p>举个例子,get方式不需要用户登陆,而其它方式需要,并且put方式需要创建主题的作者才能更改</p>
-<div class="highlight"><pre><span></span><span class="nv">class</span> <span class="nv">TopicPermission</span><span class="ss">(</span><span class="nv">BasePermission</span><span class="ss">)</span>:
-    @<span class="nv">login_required</span>
-    <span class="nv">def</span> <span class="nv">post</span><span class="ss">(</span><span class="nv">self</span><span class="ss">)</span>:
-        <span class="nv">pass</span>
+<div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="n">TopicPermission</span><span class="p">(</span><span class="n">BasePermission</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+<span class="w">    </span><span class="nv">@login_required</span><span class="w"></span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">post</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+<span class="w">        </span><span class="n">pass</span><span class="w"></span>
 
-    <span class="nv">def</span> <span class="nv">get</span><span class="ss">(</span><span class="nv">self</span>, <span class="nv">uid</span><span class="ss">)</span>:
-        <span class="nv">pass</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="k">get</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">uid</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+<span class="w">        </span><span class="n">pass</span><span class="w"></span>
 
-    @<span class="nv">login_required</span>
-    <span class="nv">def</span> <span class="nv">put</span><span class="ss">(</span><span class="nv">self</span>, <span class="nv">uid</span><span class="ss">)</span>:
-        <span class="nv">permission</span> <span class="o">=</span> <span class="nv">EditTopicPermission</span><span class="ss">(</span><span class="nv">uid</span><span class="ss">)</span>
-        <span class="k">if</span> <span class="nv">not</span> <span class="nv">permission</span>.<span class="nv">can</span><span class="ss">()</span>:
-            <span class="nv">flash</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">你没有权限</span><span class="s1">&#39;</span><span class="ss">)</span>
-            <span class="k">return</span> <span class="nv">redirect</span><span class="ss">(</span><span class="nv">url_for</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">topic.topic</span><span class="s1">&#39;</span>, <span class="nv">uid</span><span class="o">=</span><span class="nv">uid</span><span class="ss">))</span>
+<span class="w">    </span><span class="nv">@login_required</span><span class="w"></span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">put</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">uid</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+<span class="w">        </span><span class="n">permission</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EditTopicPermission</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">permission</span><span class="p">.</span><span class="n">can</span><span class="p">()</span><span class="err">:</span><span class="w"></span>
+<span class="w">            </span><span class="n">flash</span><span class="p">(</span><span class="s1">&#39;你没有权限&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;topic.topic&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">uid</span><span class="o">=</span><span class="n">uid</span><span class="p">))</span><span class="w"></span>
 
-    @<span class="nv">login_required</span>
-    <span class="nv">def</span> <span class="nv">delete</span><span class="ss">(</span><span class="nv">self</span>,<span class="nv">uid</span><span class="ss">)</span>:
-        <span class="nv">pass</span>
+<span class="w">    </span><span class="nv">@login_required</span><span class="w"></span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="k">delete</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="n">uid</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+<span class="w">        </span><span class="n">pass</span><span class="w"></span>
 
-<span class="nv">topic_permission</span> <span class="o">=</span> <span class="nv">TopicPermission</span><span class="ss">()</span>
+<span class="n">topic_permission</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TopicPermission</span><span class="p">()</span><span class="w"></span>
 </pre></div>
 
 
 <p>假设四种方式都需要同一种权限,都需要用户登陆,总不能每个函数前都加上装饰器吧
 所以稍加修改</p>
-<div class="highlight"><pre><span></span><span class="nv">decorators</span> <span class="o">=</span> <span class="ss">()</span>
-<span class="nv">def</span> <span class="nv">__call__</span><span class="ss">(</span><span class="nv">self</span>, <span class="nv">func</span><span class="ss">)</span>:
-    <span class="k">if</span> <span class="nv">self</span>.<span class="nv">decorators</span>:
-        <span class="k">for</span> <span class="nv">dec</span> <span class="nv">in</span> <span class="nv">self</span>.<span class="nv">decorators</span>:
-            <span class="k">return</span> <span class="nv">dec</span><span class="ss">(</span><span class="nv">func</span><span class="ss">)</span>
+<div class="highlight"><pre><span></span><span class="err">decorators = ()</span>
+<span class="err">def __call__(self, func):</span>
+<span class="err">    if self.decorators:</span>
+<span class="err">        for dec in self.decorators:</span>
+<span class="err">            return dec(func)</span>
 </pre></div>
 
 

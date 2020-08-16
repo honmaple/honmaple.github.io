@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>KVM笔记之增量镜像 · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/theme/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="particles-js" id="particles-js"></div>
+    <div class="scrollbar"></div>
+    <div class="wrap">
+      <div class="main">
+<nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="https://honmaple.me/category/life/index.html" >代码人生</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/category/coding/index.html">分享世界</a></li>
+                <li><a href="https://honmaple.me/category/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/category/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li class="active"><a href="https://honmaple.me/category/linux/index.html">字符艺术</a></li>
+          <li ><a href="https://honmaple.me/category/python/index.html">人生苦短</a></li>
+          <li ><a href="https://honmaple.me/category/security/index.html">极客安全</a></li>
+      <li class="dropdown">
+        <a href="https://honmaple.me/archives.html">文章归档</a>
+        <ul class="dropdown-menu">
+          <li><a href="https://honmaple.me/tags.html">标签</a></li>
+          <li><a href="https://honmaple.me/categories.html">分类</a></li>
+          <li><a href="https://honmaple.me/authors.html">作者</a></li>
+        </ul>
+      </li>
+      <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>  <article>
+    <div class="entry-header">
+      <h1 class="entry-title"><a href="https://honmaple.me/articles/2020/01/KVM笔记之增量镜像.html">KVM笔记之增量镜像</a></h1>
+<header class="entry-info">
+  <span title="Updated at 2020-08-09">
+    <i class="fa fa-calendar-o"></i>
+    一 06 一月 2020
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/category/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tag/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tag/kvm/index.html">kvm</a>
+    </span>
+
+</header>    </div>
+    <hr class="entry-hr" />
+    <div class="entry-content entry-article">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li>
+<p>
+ <a href="#org-6514d0aeba">增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-d2fb7d85bb">基础环境准备</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-3b85bc7daa">创建增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-e24c0af8af">创建KVM虚拟机</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-a597476d0f">手动创建</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-adb0b5b39c">使用virt-install创建</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-94db5f4ef2">测试增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-f64bfae8d1">快照与增量镜像</a>
+</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>
+ <a href="#org-54709db3b7">参考资料</a>
+</p>
+</li>
+</ul>
+</div></div>
+<h2 id="org-6514d0aeba">增量镜像</h2>
+<p>
+  增量镜像即保持一个基础的镜像不变，在此基础镜像上安装或修改相应的服务所创建的一个单独的镜像，增量镜像类似GIT，只记录当前KVM的修改记录，这样可以节省磁盘空间，快速复制虚拟机
+</p>
+<h3 id="org-d2fb7d85bb">基础环境准备</h3>
+<ul>
+<li>
+<p>
+ KVM基础环境
+</p>
+</li>
+<li>
+<p>
+ 基础镜像 <b>ubuntu-base.qcow2</b>
+</p>
+</li>
+</ul>
+<h3 id="org-3b85bc7daa">创建增量镜像</h3>
+<p>
+   首先基于基础镜像 <b>ubuntu-base.qcow2</b> 创建一个增量镜像 <b>ubuntu-test.qcow2</b>
+</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>宿主机<span class="o">)</span> <span class="c1"># qemu-img info /home/kvm/images/ubuntu-base.qcow2</span>
+image: ubuntu-base.qcow2
+file format: qcow2
+virtual size: <span class="m">4</span>.0G <span class="o">(</span><span class="m">4294967296</span> bytes<span class="o">)</span>
+disk size: <span class="m">2</span>.4G
+cluster_size: <span class="m">65536</span>
+Format specific information:
+    compat: <span class="m">1</span>.1
+    lazy refcounts: <span class="nb">true</span>
+    refcount bits: <span class="m">16</span>
+    corrupt: <span class="nb">false</span>
+
+<span class="o">(</span>宿主机<span class="o">)</span> <span class="c1">#:/home/kvm/images# qemu-img create -b ubuntu-base.qcow2 -f qcow2 ubuntu-test.qcow2</span>
+Formatting <span class="s1">&#39;ubuntu-test.qcow2&#39;</span>, <span class="nv">fmt</span><span class="o">=</span>qcow2 <span class="nv">size</span><span class="o">=</span><span class="m">4294967296</span> <span class="nv">backing_file</span><span class="o">=</span>ubuntu-base.qcow2 <span class="nv">cluster_size</span><span class="o">=</span><span class="m">65536</span> <span class="nv">lazy_refcounts</span><span class="o">=</span>off <span class="nv">refcount_bits</span><span class="o">=</span><span class="m">16</span>
+
+<span class="o">(</span>宿主机<span class="o">)</span> <span class="c1">#:/home/kvm/images# qemu-img info ubuntu-test.qcow2</span>
+image: ubuntu-test.qcow2
+file format: qcow2
+virtual size: <span class="m">4</span>.0G <span class="o">(</span><span class="m">4294967296</span> bytes<span class="o">)</span>
+disk size: 196K
+cluster_size: <span class="m">65536</span>
+backing file: ubuntu-base.qcow2
+Format specific information:
+    compat: <span class="m">1</span>.1
+    lazy refcounts: <span class="nb">false</span>
+    refcount bits: <span class="m">16</span>
+    corrupt: <span class="nb">false</span>
+
+<span class="o">(</span>宿主机<span class="o">)</span> <span class="c1">#:/home/kvm/images# du -sh *</span>
+<span class="m">2</span>.4G	ubuntu-base.qcow2
+196K	ubuntu-test.qcow2
+</pre></div>
+
+<h3 id="org-e24c0af8af">创建KVM虚拟机</h3>
+<h4 id="org-a597476d0f">手动创建</h4>
+<div class="highlight"><pre><span></span><span class="c1"># 注: 我基于基础镜像创建的KVM虚拟机名称为*vm-ubuntu-base*, 请根据实际进行修改</span>
+<span class="o">(</span>宿主机<span class="o">)</span> <span class="c1"># cp /etc/libvirt/qemu/vm-ubuntu-base.xml /etc/libvirt/qemu/vm-ubuntu-test.xml</span>
+<span class="o">(</span>宿主机<span class="o">)</span> <span class="c1"># vim /etc/libvirt/qemu/vm-ubuntu-test.xml</span>
+</pre></div>
+
+<div class="highlight"><pre><span></span><span class="nt">&lt;domain</span> <span class="na">type=</span><span class="s">&#39;kvm&#39;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;name&gt;</span>vm-ubuntu-base<span class="nt">&lt;/name&gt;</span>                                  # 虚拟机名，必须修改，否则与基本镜像虚拟机冲突
+  <span class="nt">&lt;uuid&gt;</span>xxxx<span class="nt">&lt;/uuid&gt;</span>                                            # UUID，必须修改，否则与基本虚拟机冲突
+  ...
+  <span class="nt">&lt;devices&gt;</span>                                                                     
+     <span class="nt">&lt;emulator&gt;</span>/usr/bin/kvm-spice<span class="nt">&lt;/emulator&gt;</span>                                     
+     <span class="nt">&lt;disk</span> <span class="na">type=</span><span class="s">&#39;file&#39;</span> <span class="na">device=</span><span class="s">&#39;disk&#39;</span><span class="nt">&gt;</span>                                            
+       <span class="nt">&lt;driver</span> <span class="na">name=</span><span class="s">&#39;qemu&#39;</span> <span class="na">type=</span><span class="s">&#39;qcow2&#39;</span><span class="nt">/&gt;</span>                                        
+       <span class="nt">&lt;source</span> <span class="na">file=</span><span class="s">&#39;/home/kvm/images/ubuntu-test.qcow2&#39;</span><span class="nt">/&gt;</span>     # 改成增量镜像文件位置
+       <span class="nt">&lt;target</span> <span class="na">dev=</span><span class="s">&#39;vda&#39;</span> <span class="na">bus=</span><span class="s">&#39;virtio&#39;</span><span class="nt">/&gt;</span>                                          
+       <span class="nt">&lt;address</span> <span class="na">type=</span><span class="s">&#39;pci&#39;</span> <span class="na">domain=</span><span class="s">&#39;0x0000&#39;</span> <span class="na">bus=</span><span class="s">&#39;0x00&#39;</span> <span class="na">slot=</span><span class="s">&#39;0x05&#39;</span> <span class="na">function=</span><span class="s">&#39;0x0&#39;</span><span class="nt">/&gt;</span>
+     <span class="nt">&lt;/disk&gt;</span>     
+     ...
+     <span class="nt">&lt;interface</span> <span class="na">type=</span><span class="s">&#39;bridge&#39;</span><span class="nt">&gt;</span>                                                   
+        <span class="nt">&lt;mac</span> <span class="na">address=</span><span class="s">&#39;52:54:00:83:5f:e6&#39;</span><span class="nt">/&gt;</span>                     # MAC地址，必须修改
+        <span class="nt">&lt;source</span> <span class="na">bridge=</span><span class="s">&#39;br0&#39;</span><span class="nt">/&gt;</span>                                                    
+        <span class="nt">&lt;model</span> <span class="na">type=</span><span class="s">&#39;virtio&#39;</span><span class="nt">/&gt;</span>                                                    
+        <span class="nt">&lt;address</span> <span class="na">type=</span><span class="s">&#39;pci&#39;</span> <span class="na">domain=</span><span class="s">&#39;0x0000&#39;</span> <span class="na">bus=</span><span class="s">&#39;0x00&#39;</span> <span class="na">slot=</span><span class="s">&#39;0x03&#39;</span> <span class="na">function=</span><span class="s">&#39;0x0&#39;</span><span class="nt">/&gt;</span>
+     <span class="nt">&lt;/interface&gt;</span> 
+     ....
+<span class="nt">&lt;/domain&gt;</span>
+</pre></div>
+
+<div class="highlight"><pre><span></span><span class="o">(</span>宿主机<span class="o">)</span> <span class="c1"># virsh define /etc/libvirt/qemu/vm-ubuntu-test.xml</span>
+<span class="o">(</span>宿主机<span class="o">)</span> <span class="c1"># virsh start vm-ubuntu-test</span>
+<span class="o">(</span>宿主机<span class="o">)</span> <span class="c1"># virsh list</span>
+</pre></div>
+
+<h4 id="org-adb0b5b39c">使用virt-install创建</h4>
+<div class="highlight"><pre><span></span><span class="o">(</span>宿主机<span class="o">)</span> <span class="c1"># qemu-img create -b ubuntu-base.qcow2 -f qcow2 ubuntu-test01.qcow2</span>
+<span class="o">(</span>宿主机<span class="o">)</span> <span class="c1"># virt-install --name vm-ubuntu-test01 --memory 8192 --vcpus 4 --disk /home/kvm/images/ubuntu-test.qcow2 --import --virt-type kvm --os-type linux --os-variant ubuntu18.04 --network bridge=virbr0,model=virtio --graphics vnc,listen=0.0.0.0,password=foobar,port=5910 --noautoconsole --hvm</span>
+</pre></div>
+
+<h3 id="org-94db5f4ef2">测试增量镜像</h3>
+<ul>
+<li>
+<p>
+ 进入 <b>vm-ubuntu-test</b> 虚拟机, 并创建一个200M的文件
+</p>
+<div class="highlight"><pre><span></span>dd <span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>test.img <span class="nv">bs</span><span class="o">=</span>1M <span class="nv">count</span><span class="o">=</span><span class="m">200</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+ 在宿主机上查看镜像大小
+</p>
+<div class="highlight"><pre><span></span><span class="m">2</span>.4G	ubuntu-base.qcow2
+294M	ubuntu-test.qcow2
+</pre></div>
+
+<p>
+     可以看出基础镜像大小保持不变, 增量镜像大小发生变化(为什么不是增加200M大小？)
+</p>
+</li>
+<li>
+<p>
+ 进入 <b>vm-ubuntu-base</b> 虚拟机, 并创建一个800M的文件
+</p>
+<div class="highlight"><pre><span></span>dd <span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>base.img <span class="nv">bs</span><span class="o">=</span>1M <span class="nv">count</span><span class="o">=</span><span class="m">800</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+ 在宿主机上查看镜像大小
+</p>
+<div class="highlight"><pre><span></span><span class="m">3</span>.0G	ubuntu-base.qcow2
+294M	ubuntu-test.qcow2
+</pre></div>
+
+<p>
+     可以看出基础镜像大小发生变化, 增量镜像大小不变
+</p>
+</li>
+</ul>
+<h2 id="org-f64bfae8d1"><span class="todo">TODO</span>快照与增量镜像</h2>
+<h2 id="org-54709db3b7">参考资料</h2>
+<ul>
+<li>
+<p>
+ https://yq.aliyun.com/articles/461356
+</p>
+</li>
+<li>
+<p>
+ http://www.361way.com/snapshots-blockcommit-blockpull/3194.html
+</p>
+</li>
+</ul>
+    </div>
+<div class="entry-copyright">
+  <div>
+    <i class="fa fa-user-o"></i>
+    作者:
+    <a href="https://honmaple.me/author/honmaple.html">honmaple</a>
+  </div>
+  <div>
+    <i class="fa fa-link"></i>
+    链接:
+    <a href="https://honmaple.me/articles/2020/01/KVM笔记之增量镜像.html">https://honmaple.me/articles/2020/01/KVM笔记之增量镜像.html</a>
+  </div>
+  <div>
+    <i class="fa fa-copyright"></i>
+    版权:
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+    </a>
+  </div>
+</div>
+
+<div class="entry-honor">
+  <button class="btn" data-target="#entry-honor-content" data-toggle="collapse">赏</button>
+  <div class="collapse" id="entry-honor-content">
+    <div class="entry-honor-content">
+      <div class="entry-honor-alipay">
+        <div class="entry-honor-mask">
+          <button class="btn btn-success" data-target=".entry-honor-wechat" data-toggle="collapse">
+            <i class="fa fa-wechat"></i>
+            <span>微信</span>
+          </button>
+        </div>
+      </div>
+      <div class="entry-honor-wechat collapse">
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+    </div>
+  </div>
+</div>    <hr class="entry-hr" />
+    <ul class="entry-pager">
+        <li class="previous">
+          <a href="https://honmaple.me/articles/2020/01/KVM笔记之磁盘扩容.html" title="Previous article: KVM笔记之磁盘扩容">
+            <i class="fa fa-chevron-left"></i>
+            KVM笔记之磁盘扩容
+          </a>
+        </li>
+        <li class="next">
+          <a href="https://honmaple.me/articles/2019/07/macos初始化设置.html" title="Next article: macos初始化设置">
+            macos初始化设置
+            <i class="fa fa-chevron-right"></i>
+          </a>
+        </li>
+    </ul>
+      <div class="comments">
+        <div class="text-center">
+          <a class="btn entry-read-more entry-comment">加载评论</a>
+        </div>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         var disqus_identifier = "articles/2020/01/KVM笔记之增量镜像.html";
+        </script>
+      </div>
+  </article>
+      </div>
+    </div>
+<div class="footer">
+  <ul class="list-inline entry-social">
+    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/feeds/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+  <ul class="list-inline copyright">
+    <li class="hidden-xs">© 2015-2020 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+          <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+</div>    <div class="back-to-top back-to-top-on">
+      <i class="fa fa-hand-o-up" title="back to top"></i>
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+   window.dataLayer = window.dataLayer || [];
+   function gtag(){dataLayer.push(arguments);}
+   gtag('js', new Date());
+   gtag('config', 'UA-88401692-2');
+  </script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/theme/js/script.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+           if (typeof ga !== 'undefined') {
+               ga('send', 'pageview', location.pathname + location.search);
+           }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>
