@@ -87,25 +87,9 @@
     <div class="entry-content entry-article">
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li>
-<p>
- <a href="#org-cc3ce6dfcb">准备</a>
-</p>
-</li>
-</ul>
-<ul>
-<li>
-<p>
- <a href="#org-51a850545f">创建集群</a>
-</p>
-</li>
-</ul>
-<ul>
-<li>
-<p>
- <a href="#org-962504e356">测试集群</a>
-</p>
-</li>
+<li><a href="#org-99562051f9">准备</a></li>
+<li><a href="#org-ab1aafa27f">创建集群</a></li>
+<li><a href="#org-5d9c8651f0">测试集群</a></li>
 </ul>
 </div></div>
 <p>
@@ -114,8 +98,7 @@
 <p>
 Redis 集群是一个提供在多个Redis间<b>节点间共享数据</b>的程序集
 </p>
-<h2 id="org-cc3ce6dfcb">准备</h2>
-<p>
+<h2 id="org-99562051f9">准备</h2><p>
   集群开始需要运行redis集群实例，而且要让集群正常运作至少需要三个主节点,这里创建六个节点，三个为主节点，三个为从节点,端口号分别为9001,9002,9003,9004,9005,9006
 </p>
 <p>
@@ -159,9 +142,9 @@ redis-server redis/9006/redis.conf
 <p>
   由于这个过程很简单而且重复,所以我写了一个脚本进行创建:
 </p>
-<div class="highlight"><pre><span></span><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;--dirs&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PATH</span><span class="p">)</span>
-<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">9001</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="nd">@cli.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--dirs&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PATH</span><span class="p">)</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">9001</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
@@ -169,19 +152,18 @@ redis-server redis/9006/redis.conf
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;redis.conf&#39;</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;port </span><span class="si">{0}</span><span class="s1"></span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;port {0}</span>
 <span class="s1">cluster-enabled yes</span>
-<span class="s1">cluster-config-file nodes</span><span class="si">{0}</span><span class="s1">.conf</span>
+<span class="s1">cluster-config-file nodes{0}.conf</span>
 <span class="s1">cluster-node-timeout 5000</span>
 <span class="s1">appendonly yes</span>
 <span class="s1">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;redis-server </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf</span><span class="p">))</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;redis-server {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf</span><span class="p">))</span>
 </pre></div>
 
-<h2 id="org-51a850545f">创建集群</h2>
-<p>
+<h2 id="org-ab1aafa27f">创建集群</h2><p>
   使用redis的官方脚本<a href="https://github.com/antirez/redis/blob/unstable/src/redis-trib.rb">redis-trib</a>行创建
 </p>
 <div class="highlight"><pre><span></span>ruby redis-trib.rb create --replicas <span class="m">1</span> <span class="m">127</span>.0.0.1:9001 <span class="m">127</span>.0.0.1:9002 <span class="m">127</span>.0.0.1:9003 <span class="m">127</span>.0.0.1:9004 <span class="m">127</span>.0.0.1:9005 <span class="m">127</span>.0.0.1:9006
@@ -190,8 +172,8 @@ redis-server redis/9006/redis.conf
 <p>
   或者接上面的脚本
 </p>
-<div class="highlight"><pre><span></span><span class="n">ports</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;127.0.0.1:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
-<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;ruby redis-trib.rb create --replicas 1 </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<div class="highlight"><pre><span></span><span class="n">ports</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;127.0.0.1:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;ruby redis-trib.rb create --replicas 1 {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
     <span class="n">ports</span><span class="p">)))</span>
 </pre></div>
 
@@ -207,8 +189,7 @@ redis-server redis/9006/redis.conf
   最后查看集群是否启动成功
   <a href="https://static.honmaple.com/images/2017/08/150264059108046.png?type=show" data-fancybox="image"><img data-src="https://static.honmaple.com/images/2017/08/150264059108046.png?type=thumb" class="lazyload" /></a>
 </p>
-<h2 id="org-962504e356">测试集群</h2>
-<p>
+<h2 id="org-5d9c8651f0">测试集群</h2><p>
   <b>-c</b> 选项以集群方式启动
 </p>
 <div class="highlight"><pre><span></span>$ redis-cli -c -p <span class="m">7000</span>

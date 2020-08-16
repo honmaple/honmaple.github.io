@@ -87,54 +87,32 @@
     <div class="entry-content entry-article">
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li>
-<p>
- <a href="#org-1580a79480">加速</a>
-</p>
-</li>
-</ul>
+<li><a href="#org-ba95193840">加速</a>
 <ul>
-<li>
-<p>
- <a href="#org-2fb49eec39">问题</a>
-</p>
-</li>
+<li><a href="#org-c189fab022">问题</a></li>
 </ul>
+
 <ul>
-<li>
-<p>
- <a href="#org-0fee25f074">方案</a>
-</p>
-</li>
+<li><a href="#org-3eb4797917">方案</a></li>
 </ul>
-<ul>
-<li>
-<p>
- <a href="#org-941f08313a">目标</a>
-</p>
 </li>
-</ul>
+<li><a href="#org-d886ceb3aa">目标</a>
 <ul>
-<li>
-<p>
- <a href="#org-0949989841">web界面</a>
-</p>
-</li>
+<li><a href="#org-e1ed5e0a9a">web界面</a></li>
 </ul>
+
 <ul>
-<li>
-<p>
- <a href="#org-83856208ea">任务队列</a>
-</p>
+<li><a href="#org-deb4a8188c">任务队列</a></li>
+</ul>
 </li>
 </ul>
 </div></div>
 <p>
 ansible是基于Python的 <b>自动化部署</b> 方案,但是目前只是通过命令行
 </p>
-<div class="highlight"><pre><span></span><span class="err">ansible -i hosts all -a &#39;uptime&#39;</span>
-<span class="err"># or</span>
-<span class="err">ansible-playbook -i hosts playbook.yml -e &#39;args&#39; -t deploy</span>
+<div class="highlight"><pre><span></span><span class="nv">ansible</span> <span class="o">-</span><span class="nv">i</span> <span class="nv">hosts</span> <span class="nv">all</span> <span class="o">-</span><span class="nv">a</span> <span class="s1">&#39;</span><span class="s">uptime</span><span class="s1">&#39;</span>
+# <span class="nv">or</span>
+<span class="nv">ansible</span><span class="o">-</span><span class="nv">playbook</span> <span class="o">-</span><span class="nv">i</span> <span class="nv">hosts</span> <span class="nv">playbook</span>.<span class="nv">yml</span> <span class="o">-</span><span class="nv">e</span> <span class="s1">&#39;</span><span class="s">args</span><span class="s1">&#39;</span> <span class="o">-</span><span class="nv">t</span> <span class="nv">deploy</span>
 </pre></div>
 
 <p>
@@ -143,51 +121,45 @@ ansible是基于Python的 <b>自动化部署</b> 方案,但是目前只是通过
 <p>
 长此以往，虽然可以实现所谓的自动化，但产品业务线多且杂的情况下，项目很难维护，更不用说以文件为存储的表现形式很差,针对目前使用ansible的经验以及使用中的困难,可以针对性的提出一些解决方案
 </p>
-<h2 id="org-1580a79480">加速</h2>
-<h3 id="org-2fb49eec39">问题</h3>
-<p>
+<h2 id="org-ba95193840">加速</h2><h3 id="org-c189fab022">问题</h3><p>
   自动化部署其中最大的障碍就是 <b>网络</b> 的原因
 </p>
 <p>
   其中需要通过网络上传一些模板文件,有的甚至还需要上传一些压缩包,虽然说几MB的东西很快就能上传成功，但如果把这上传文件所需要的2秒乘以上百，上千台主机呢,更不用说ansible的表现形式就是一个任务一个任务的往下执行,假如在上传模板这一步卡住(等待所有服务器上传成功),这时某台未模板化的服务器的某服务需要重启，是不是会出问题呢
 </p>
-<h3 id="org-0fee25f074">方案</h3>
-<p>
+<h3 id="org-3eb4797917">方案</h3><p>
   针对这一问题,目前想到的解决方案如下:
 </p>
 <ul>
 <li>
 <p>
- <b>适当增加fork数</b>
+<b>适当增加fork数</b>
     目前fork数默认为50，可以适当增加
 </p>
 </li>
 <li>
 <p>
- <b>大文件使用内网(外网)下载</b>
+<b>大文件使用内网(外网)下载</b>
     从部署机上上传文件可能会出现这样那样的问题，尤其是上传到国外服务器时经常会出现ansible playbook的任务卡住问题(其实是正在以几KB/s的龟速运行)，所以其中大于xxMB的文件(压缩包)全部使用从远程服务器上下载方式,并且全部进行加密处理
 </p>
 </li>
 <li>
 <p>
- <b>把超过几百台服务器的节点分组多进程运行</b>
+<b>把超过几百台服务器的节点分组多进程运行</b>
     服务器一旦多了，对应任务的等待时间也就多了，所以将500台的节点分为十组，每组50台,使用多进程分别同时运行，这样可以有效减少任务等待时间,需要注意每组运行失败的服务器。
 </p>
 </li>
 <li>
 <p>
- <b>把经常出问题或者网络不太好的节点放到最后运行</b>
+<b>把经常出问题或者网络不太好的节点放到最后运行</b>
     像中国移动以及香港，国外的某些节点在运行ansible playbook的时候总会或多或少的出些问题,这些节点可以考虑放到最后,并且需要找出问题原因进行优化
 </p>
 </li>
 </ul>
-<h2 id="org-941f08313a">目标</h2>
-<h3 id="org-0949989841">web界面</h3>
-<p>
+<h2 id="org-d886ceb3aa">目标</h2><h3 id="org-e1ed5e0a9a">web界面</h3><p>
    使用过ansible的同学一定知道ansible-tower，它是ansible的web方式部署，通过web界面就可以添加删除任务,并且运行ansible playbook,可惜，它是收费的 /捂脸
 </p>
-<h3 id="org-83856208ea">任务队列</h3>
-<p>
+<h3 id="org-deb4a8188c">任务队列</h3><p>
    把ansible playbook放到任务队列里，由消费者去消费对应的任务
 </p>
 <p>

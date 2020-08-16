@@ -1,258 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom"><title>honmaple's blog</title><link href="https://honmaple.me/" rel="alternate"></link><link href="http://127.0.0.1:8000/feeds/atom.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2020-08-09T22:28:43+08:00</updated><subtitle>风落花语风落天，花落风雨花落田.</subtitle><entry><title>K8S笔记之私有仓库搭建</title><link href="https://honmaple.me/articles/2020/02/K8S%E7%AC%94%E8%AE%B0%E4%B9%8B%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93%E6%90%AD%E5%BB%BA.html" rel="alternate"></link><published>2020-02-20T23:19:43+08:00</published><updated>2020-08-09T21:54:17+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2020-02-20:/articles/2020/02/K8S笔记之私有仓库搭建.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-8ce83f5362"&gt;创建PV&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
+&lt;li&gt;&lt;a href="#org-5f7389de2c"&gt;创建PV&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-f61d77c866"&gt;搭建仓库&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-1eb01fc955"&gt;搭建仓库&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-41de7f343e"&gt;命名空间&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-aad84bfe79"&gt;命名空间&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-1b3bcc8635"&gt;https验证&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-9307ec39f2"&gt;https验证&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-14cdb70726"&gt;用户名密码验证&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-a25f75a49f"&gt;用户名密码验证&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-4f396e4263"&gt;创建service&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-5645aba732"&gt;创建ingress&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-9b5857ba29"&gt;测试Docker仓库&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-af512cb1ff"&gt;修改host&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-2623604047"&gt;创建service&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-1cca093eb1"&gt;更新Docker证书&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-b9955b91a7"&gt;创建ingress&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-4a7a0b6782"&gt;登陆仓库&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-e466b3a515"&gt;测试Docker仓库&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-da57d03915"&gt;测试上传与下载&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-13bb95d9af"&gt;修改host&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a6b5e561ba"&gt;FAQ&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-6e02daaefe"&gt;x509: certificate is valid for ingress.local, not registry.k8s.cloud&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-33cf91f58f"&gt;更新Docker证书&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-db8af61b64"&gt;x509: certificate signed by unknown authority&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-04664d007d"&gt;登陆仓库&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-9f9e5f34a9"&gt;413 Request Entity Too Large&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-a08a3d8137"&gt;测试上传与下载&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-03688ba6aa"&gt;FAQ&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-a596530fe1"&gt;certificate is valid for ingress.local, not registry.k8s.cloud&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-1265e7830b"&gt;certificate signed by unknown authority&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-2ba4a0d9db"&gt;Request Entity Too Large&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-54709db3b7"&gt;参考资料&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a2035894d2"&gt;参考资料&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
-&lt;h2 id="org-8ce83f5362"&gt;创建PV&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-5f7389de2c"&gt;创建PV&lt;/h2&gt;&lt;p&gt;
   关于PV的创建参考 《K8S笔记之持久化存储》
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;apiVersion&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;v1&lt;/span&gt;
 &lt;span class="nt"&gt;kind&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;PersistentVolumeClaim&lt;/span&gt;
 &lt;span class="nt"&gt;metadata&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-  &lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;docker-claim&lt;/span&gt;
-&lt;span class="nt"&gt;spec&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-  &lt;span class="nt"&gt;accessModes&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-    &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;ReadWriteOnce …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+  &lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;docker-claim …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-8ce83f5362"&gt;创建PV&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-5f7389de2c"&gt;创建PV&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-f61d77c866"&gt;搭建仓库&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-41de7f343e"&gt;命名空间&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-1eb01fc955"&gt;搭建仓库&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-1b3bcc8635"&gt;https验证&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-aad84bfe79"&gt;命名空间&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-14cdb70726"&gt;用户名密码验证&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-9307ec39f2"&gt;https验证&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-4f396e4263"&gt;创建service&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-5645aba732"&gt;创建ingress&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-9b5857ba29"&gt;测试Docker仓库&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-af512cb1ff"&gt;修改host&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-a25f75a49f"&gt;用户名密码验证&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-1cca093eb1"&gt;更新Docker证书&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-2623604047"&gt;创建service&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-4a7a0b6782"&gt;登陆仓库&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-b9955b91a7"&gt;创建ingress&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-da57d03915"&gt;测试上传与下载&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-e466b3a515"&gt;测试Docker仓库&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a6b5e561ba"&gt;FAQ&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-6e02daaefe"&gt;x509: certificate is valid for ingress.local, not registry.k8s.cloud&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-13bb95d9af"&gt;修改host&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-db8af61b64"&gt;x509: certificate signed by unknown authority&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-33cf91f58f"&gt;更新Docker证书&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-9f9e5f34a9"&gt;413 Request Entity Too Large&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-04664d007d"&gt;登陆仓库&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-a08a3d8137"&gt;测试上传与下载&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-03688ba6aa"&gt;FAQ&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-a596530fe1"&gt;certificate is valid for ingress.local, not registry.k8s.cloud&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-1265e7830b"&gt;certificate signed by unknown authority&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-2ba4a0d9db"&gt;Request Entity Too Large&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-54709db3b7"&gt;参考资料&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a2035894d2"&gt;参考资料&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
-&lt;h2 id="org-8ce83f5362"&gt;创建PV&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-5f7389de2c"&gt;创建PV&lt;/h2&gt;&lt;p&gt;
   关于PV的创建参考 《K8S笔记之持久化存储》
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;apiVersion&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;v1&lt;/span&gt;
@@ -268,8 +123,7 @@
   &lt;span class="nt"&gt;storageClassName&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;local-volume&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h2 id="org-1eb01fc955"&gt;搭建仓库&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-f61d77c866"&gt;搭建仓库&lt;/h2&gt;&lt;p&gt;
   Docker 私有化仓库的搭建可参考官方文档, 并且将相关的配置转化为K8S所需要的yaml文件
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;---&lt;/span&gt;
@@ -332,18 +186,16 @@
 &lt;p&gt;
   &lt;b&gt;需要注意的几个点&lt;/b&gt;
 &lt;/p&gt;
-&lt;h3 id="org-aad84bfe79"&gt;命名空间&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-41de7f343e"&gt;命名空间&lt;/h3&gt;&lt;p&gt;
    这里我指定的命名空间为 &lt;b&gt;default&lt;/b&gt;， 包括前面的PV以及后续所创建的 service, secret, ingress等服务也需要指定相同的命名空间
 &lt;/p&gt;
-&lt;h3 id="org-9307ec39f2"&gt;https验证&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-1b3bcc8635"&gt;https验证&lt;/h3&gt;&lt;p&gt;
    https验证所需要的ca文件命名为tls.crt, tls.key是为了后面可以方便的配置 ingress
 &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 创建ca证书与私钥
+创建ca证书与私钥
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# openssl req -newkey rsa:4096 -nodes -sha256 -keyout certs/tls.key -x509 -days 365 -out certs/tls.crt&lt;/span&gt;
 Generating a &lt;span class="m"&gt;4096&lt;/span&gt; bit RSA private key
@@ -373,7 +225,7 @@ Email Address &lt;span class="o"&gt;[]&lt;/span&gt;:registry@xxx.com
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 创建 &lt;b&gt;secret&lt;/b&gt;
+创建 &lt;b&gt;secret&lt;/b&gt;
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;kubectl --namespace&lt;span class="o"&gt;=&lt;/span&gt;default create secret tls registry-tls-secret --cert ./certs/tls.crt --key ./certs/tls.key
 &lt;/pre&gt;&lt;/div&gt;
@@ -383,8 +235,7 @@ Email Address &lt;span class="o"&gt;[]&lt;/span&gt;:registry@xxx.com
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id="org-a25f75a49f"&gt;用户名密码验证&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-14cdb70726"&gt;用户名密码验证&lt;/h3&gt;&lt;p&gt;
    Docker仓库默认未开启账号验证，需要添加三个环境变量
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;REGISTRY_AUTH&lt;/span&gt;
@@ -401,7 +252,7 @@ Email Address &lt;span class="o"&gt;[]&lt;/span&gt;:registry@xxx.com
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 生成密码文件
+生成密码文件
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;docker run --entrypoint htpasswd registry:2 -Bbn username password &amp;gt; certs/htpasswd
 &lt;/pre&gt;&lt;/div&gt;
@@ -416,15 +267,14 @@ htpasswd -Bbn user passwd &amp;gt; certs/passwd
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 创建 &lt;b&gt;secret&lt;/b&gt;
+创建 &lt;b&gt;secret&lt;/b&gt;
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;kubectl --namespace&lt;span class="o"&gt;=&lt;/span&gt;default create secret generic registry-passwd-secret --from-file&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;htpasswd&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;./certs/passwd
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id="org-2623604047"&gt;创建service&lt;/h2&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;---&lt;/span&gt;
+&lt;h2 id="org-4f396e4263"&gt;创建service&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;---&lt;/span&gt;
 &lt;span class="nt"&gt;apiVersion&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;v1&lt;/span&gt;
 &lt;span class="nt"&gt;kind&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;Service&lt;/span&gt;
 &lt;span class="nt"&gt;metadata&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
@@ -444,8 +294,7 @@ htpasswd -Bbn user passwd &amp;gt; certs/passwd
 &lt;p&gt;
   注: 我也不知道 &lt;b&gt;label&lt;/b&gt; 中的 &lt;code&gt;kubernetes.io/name&lt;/code&gt; 有什么作用
 &lt;/p&gt;
-&lt;h2 id="org-b9955b91a7"&gt;创建ingress&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-5645aba732"&gt;创建ingress&lt;/h2&gt;&lt;p&gt;
   由于该私有仓库需要对外服务, 我采用 &lt;b&gt;ingress&lt;/b&gt; 方式
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;---&lt;/span&gt;
@@ -477,25 +326,22 @@ htpasswd -Bbn user passwd &amp;gt; certs/passwd
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 命名空间必须与之前保持一致
+命名空间必须与之前保持一致
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- &lt;b&gt;host&lt;/b&gt; 必须与之前创建证书时的 &lt;b&gt;CN&lt;/b&gt; 保持一致
+&lt;b&gt;host&lt;/b&gt; 必须与之前创建证书时的 &lt;b&gt;CN&lt;/b&gt; 保持一致
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id="org-e466b3a515"&gt;测试Docker仓库&lt;/h2&gt;
-&lt;h3 id="org-13bb95d9af"&gt;修改host&lt;/h3&gt;
-&lt;p&gt;
+&lt;h2 id="org-9b5857ba29"&gt;测试Docker仓库&lt;/h2&gt;&lt;h3 id="org-af512cb1ff"&gt;修改host&lt;/h3&gt;&lt;p&gt;
    由于 &lt;b&gt;registry.k8s.cloud&lt;/b&gt; 并不是一个真实的域名，所以采用修改 &lt;code&gt;/etc/hosts&lt;/code&gt; 方式进行测试和访问
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;10.8.235.202 registry.k8s.cloud&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/hosts
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-33cf91f58f"&gt;更新Docker证书&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkdir -p /etc/docker/certs.d/registry.k8s.cloud
+&lt;h3 id="org-1cca093eb1"&gt;更新Docker证书&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkdir -p /etc/docker/certs.d/registry.k8s.cloud
 cp certs/tls.crt /etc/docker/certs.d/registry.k8s.cloud/ca.crt
 &lt;/pre&gt;&lt;/div&gt;
 
@@ -505,8 +351,7 @@ cp certs/tls.crt /etc/docker/certs.d/registry.k8s.cloud/ca.crt
 &lt;p&gt;
    注：&lt;b&gt;不需要重启Docker&lt;/b&gt;
 &lt;/p&gt;
-&lt;h3 id="org-04664d007d"&gt;登陆仓库&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;docker login registry.k8s.cloud
+&lt;h3 id="org-4a7a0b6782"&gt;登陆仓库&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;docker login registry.k8s.cloud
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;
@@ -522,14 +367,13 @@ https://docs.docker.com/engine/reference/commandline/login/#credentials-store
 Login Succeeded
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-a08a3d8137"&gt;测试上传与下载&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-da57d03915"&gt;测试上传与下载&lt;/h3&gt;&lt;p&gt;
    准备任意 &lt;b&gt;Dockerfile&lt;/b&gt;
 &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 构建本地镜像
+构建本地镜像
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;docker build -t registry.k8s.cloud/mytest .
 &lt;/pre&gt;&lt;/div&gt;
@@ -537,7 +381,7 @@ Login Succeeded
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 上传镜像
+上传镜像
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# docker push registry.k8s.cloud/mytest:latest&lt;/span&gt;
 The push refers to repository &lt;span class="o"&gt;[&lt;/span&gt;registry.k8s.cloud/mytest&lt;span class="o"&gt;]&lt;/span&gt;
@@ -555,7 +399,7 @@ latest: digest: sha256:c20c32ba413e6555159aa0722a866a576481fe4a177116c4919xxxxxx
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 拉取镜像
+拉取镜像
      当镜像上传成功，可在另一台机器上测试下载
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# docker pull registry.k8s.cloud/mytest:latest&lt;/span&gt;
@@ -575,26 +419,22 @@ registry.k8s.cloud/mytest:latest
 
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id="org-03688ba6aa"&gt;FAQ&lt;/h2&gt;
-&lt;h3 id="org-a596530fe1"&gt;&lt;span class="todo"&gt;x509:&lt;/span&gt;certificate is valid for ingress.local, not registry.k8s.cloud&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;Error response from daemon: Get https://registry.k8s.cloud/v2/: x509: certificate is valid for ingress.local, not registry.k8s.cloud&lt;/span&gt;
+&lt;h2 id="org-a6b5e561ba"&gt;FAQ&lt;/h2&gt;&lt;h3 id="org-6e02daaefe"&gt;x509: certificate is valid for ingress.local, not registry.k8s.cloud&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nv"&gt;Error&lt;/span&gt; &lt;span class="nv"&gt;response&lt;/span&gt; &lt;span class="nv"&gt;from&lt;/span&gt; &lt;span class="nv"&gt;daemon&lt;/span&gt;: &lt;span class="nv"&gt;Get&lt;/span&gt; &lt;span class="nv"&gt;https&lt;/span&gt;:&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="nv"&gt;registry&lt;/span&gt;.&lt;span class="nv"&gt;k8s&lt;/span&gt;.&lt;span class="nv"&gt;cloud&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nv"&gt;v2&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;: &lt;span class="nv"&gt;x509&lt;/span&gt;: &lt;span class="nv"&gt;certificate&lt;/span&gt; &lt;span class="nv"&gt;is&lt;/span&gt; &lt;span class="nv"&gt;valid&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;ingress&lt;/span&gt;.&lt;span class="nv"&gt;local&lt;/span&gt;, &lt;span class="nv"&gt;not&lt;/span&gt; &lt;span class="nv"&gt;registry&lt;/span&gt;.&lt;span class="nv"&gt;k8s&lt;/span&gt;.&lt;span class="nv"&gt;cloud&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;
    这一般是 &lt;b&gt;ingress tls&lt;/b&gt; 的配置问题, 比如创建 &lt;b&gt;secret&lt;/b&gt; 时采用 &lt;b&gt;generic&lt;/b&gt; 而不是 &lt;b&gt;tls&lt;/b&gt;
 &lt;/p&gt;
-&lt;h3 id="org-1265e7830b"&gt;&lt;span class="todo"&gt;x509:&lt;/span&gt;certificate signed by unknown authority&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;Error response from daemon: Get https://registry.k8s.cloud/v2/: x509: certificate signed by unknown authority&lt;/span&gt;
+&lt;h3 id="org-db8af61b64"&gt;x509: certificate signed by unknown authority&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Error&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="k"&gt;from&lt;/span&gt; &lt;span class="n"&gt;daemon&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="k"&gt;Get&lt;/span&gt; &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;registry&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;k8s&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cloud&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;v2&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;x509&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;certificate&lt;/span&gt; &lt;span class="n"&gt;signed&lt;/span&gt; &lt;span class="k"&gt;by&lt;/span&gt; &lt;span class="k"&gt;unknown&lt;/span&gt; &lt;span class="n"&gt;authority&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;
    这是未更新Docker证书导致的, 需要更新
 &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;/etc/docker/certs.d/registry.k8s.cloud/ca.crt&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;docker&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;certs&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;registry&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;k8s&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cloud&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ca&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;crt&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-2ba4a0d9db"&gt;&lt;span class="todo"&gt;413&lt;/span&gt;Request Entity Too Large&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;error parsing HTTP 413 response body: invalid character &amp;#39;&lt;span class="err"&gt;&amp;lt;&lt;/span&gt;&amp;#39; looking for beginning of value: &amp;quot;&lt;span class="nt"&gt;&amp;lt;html&amp;gt;&lt;/span&gt;\r\n&lt;span class="nt"&gt;&amp;lt;head&amp;gt;&amp;lt;title&amp;gt;&lt;/span&gt;413 Request Entity Too Large&lt;span class="nt"&gt;&amp;lt;/title&amp;gt;&amp;lt;/head&amp;gt;&lt;/span&gt;\r\n&lt;span class="nt"&gt;&amp;lt;body&amp;gt;&lt;/span&gt;\r\n&lt;span class="nt"&gt;&amp;lt;center&amp;gt;&amp;lt;h1&amp;gt;&lt;/span&gt;413 Request Entity Too Large&lt;span class="nt"&gt;&amp;lt;/h1&amp;gt;&amp;lt;/center&amp;gt;&lt;/span&gt;\r\n&lt;span class="nt"&gt;&amp;lt;hr&amp;gt;&amp;lt;center&amp;gt;&lt;/span&gt;nginx/1.17.7&lt;span class="nt"&gt;&amp;lt;/center&amp;gt;&lt;/span&gt;\r\n&lt;span class="nt"&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;\r\n&lt;span class="nt"&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;\r\n&amp;quot;
+&lt;h3 id="org-9f9e5f34a9"&gt;413 Request Entity Too Large&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nv"&gt;error&lt;/span&gt; &lt;span class="nv"&gt;parsing&lt;/span&gt; &lt;span class="nv"&gt;HTTP&lt;/span&gt; &lt;span class="mi"&gt;413&lt;/span&gt; &lt;span class="nv"&gt;response&lt;/span&gt; &lt;span class="nv"&gt;body&lt;/span&gt;: &lt;span class="nv"&gt;invalid&lt;/span&gt; &lt;span class="nv"&gt;character&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="s"&gt;&amp;lt;&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt; &lt;span class="nv"&gt;looking&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;beginning&lt;/span&gt; &lt;span class="nv"&gt;of&lt;/span&gt; &lt;span class="nv"&gt;value&lt;/span&gt;: &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="s"&gt;&amp;lt;html&amp;gt;\r&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;lt;head&amp;gt;&amp;lt;title&amp;gt;413 Request Entity Too Large&amp;lt;/title&amp;gt;&amp;lt;/head&amp;gt;\r&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;lt;body&amp;gt;\r&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;lt;center&amp;gt;&amp;lt;h1&amp;gt;413 Request Entity Too Large&amp;lt;/h1&amp;gt;&amp;lt;/center&amp;gt;\r&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;lt;hr&amp;gt;&amp;lt;center&amp;gt;nginx/1.17.7&amp;lt;/center&amp;gt;\r&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;lt;/body&amp;gt;\r&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;lt;/html&amp;gt;\r&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;
@@ -603,359 +443,196 @@ registry.k8s.cloud/mytest:latest
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;nginx.ingress.kubernetes.io/proxy-body-size&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;1024m&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h2 id="org-54709db3b7"&gt;参考资料&lt;/h2&gt;
-&lt;ul&gt;
+&lt;h2 id="org-a2035894d2"&gt;参考资料&lt;/h2&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- https://docs.docker.com/registry/deploying/
+https://docs.docker.com/registry/deploying/
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- http://www.huamo.online/2017/06/07/Kubernetes%E6%90%AD%E5%BB%BATLS%E7%A7%81%E6%9C%89docker%E4%BB%93%E5%BA%93/
+http://www.huamo.online/2017/06/07/Kubernetes%E6%90%AD%E5%BB%BATLS%E7%A7%81%E6%9C%89docker%E4%BB%93%E5%BA%93/
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;</content><category term="Linux"></category><category term="linux"></category><category term="k8s"></category></entry><entry><title>KVM笔记之磁盘扩容</title><link href="https://honmaple.me/articles/2020/01/KVM%E7%AC%94%E8%AE%B0%E4%B9%8B%E7%A3%81%E7%9B%98%E6%89%A9%E5%AE%B9.html" rel="alternate"></link><published>2020-01-09T11:38:09+08:00</published><updated>2020-08-09T21:53:47+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2020-01-09:/articles/2020/01/KVM笔记之磁盘扩容.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-5abfa873d1"&gt;磁盘扩容&lt;/a&gt;
-&lt;/p&gt;
+&lt;li&gt;&lt;a href="#org-5d285b7612"&gt;磁盘扩容&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-35e40d226a"&gt;关闭KVM虚拟机&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-20b3a390bc"&gt;扩容磁盘&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-f9608c0b5f"&gt;查看磁盘位置&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-dac0a691da"&gt;查看磁盘信息&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-bb346a56be"&gt;扩容磁盘大小&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-31a1eefbb6"&gt;关闭KVM虚拟机&lt;/a&gt;
-&lt;/p&gt;
+&lt;li&gt;&lt;a href="#org-5c63b6736f"&gt;扩容虚拟机分区&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-edd2b15cbf"&gt;启动虚拟机&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-23d40038ff"&gt;查看磁盘大小和格式&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-20b3a390bc"&gt;扩容磁盘&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-94fa03a8b3"&gt;磁盘挂载&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-c010e6d9b6"&gt;扩容磁盘&lt;/a&gt;
-&lt;/p&gt;
+&lt;li&gt;&lt;a href="#org-36e79feb69"&gt;创建磁盘&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-ee3161eca3"&gt;挂载磁盘&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-a4902b33b9"&gt;挂载命令&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-80c2028d42"&gt;卸载命令&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-5a882856b4"&gt;查看磁盘位置&lt;/a&gt;
-&lt;/p&gt;
+&lt;li&gt;&lt;a href="#org-af22e5d86f"&gt;格式化磁盘&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-eb1558edf7"&gt;格式化分区&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-9422da9e85"&gt;格式化文件系统&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-ee3161eca3"&gt;挂载磁盘&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-f1c55fb6dd"&gt;查看磁盘信息&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a6b5e561ba"&gt;FAQ&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-cbbcb30941"&gt;unexpected output in sfdisk --version&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-f55fe26403"&gt;扩容磁盘大小&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-012a14e52c"&gt;扩容虚拟机分区&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-1c0029aae7"&gt;启动虚拟机&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-fa6c2f58a7"&gt;查看磁盘大小和格式&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-c010e6d9b6"&gt;扩容磁盘&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-953a5edfc0"&gt;磁盘挂载&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-fe4de5c8f0"&gt;创建磁盘&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-441d04855f"&gt;挂载磁盘&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-4d9471d089"&gt;挂载命令&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-72734d6c08"&gt;卸载命令&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-ea55ccb527"&gt;格式化磁盘&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-c43ca5e42a"&gt;格式化分区&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-dc439a52ae"&gt;格式化文件系统&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-441d04855f"&gt;挂载磁盘&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-03688ba6aa"&gt;FAQ&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-1fcc24a37d"&gt;output in sfdisk --version &lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-3ee3d9452c"&gt;参考链接&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-28464e090b"&gt;参考链接&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
-&lt;h2 id="org-5abfa873d1"&gt;磁盘扩容&lt;/h2&gt;
-&lt;h3 id="org-31a1eefbb6"&gt;关闭KVM虚拟机&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;virsh shutdown vm-ubuntu-04
+&lt;h2 id="org-5d285b7612"&gt;磁盘扩容&lt;/h2&gt;&lt;h3 id="org-35e40d226a"&gt;关闭KVM虚拟机&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;virsh shutdown vm-ubuntu-04
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-c010e6d9b6"&gt;扩容磁盘&lt;/h3&gt;
-&lt;h4 id="org-5a882856b4"&gt;查看磁盘位置&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# virsh domblklist vm-ubuntu-04&lt;/span&gt;
+&lt;h3 id="org-20b3a390bc"&gt;扩容磁盘&lt;/h3&gt;&lt;h4 id="org-f9608c0b5f"&gt;查看磁盘位置&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# virsh domblklist vm-ubuntu-04&lt;/span&gt;
 Target     Source
 ------------------------------------------------
 vda        /home/kvm/images/ubuntu-04.qcow2
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h4 id="org-f1c55fb6dd"&gt;查看磁盘信息&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# qemu-img info …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+&lt;h4 id="org-dac0a691da"&gt;查看磁盘信息&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# qemu-img …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-5abfa873d1"&gt;磁盘扩容&lt;/a&gt;
-&lt;/p&gt;
+&lt;li&gt;&lt;a href="#org-5d285b7612"&gt;磁盘扩容&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-35e40d226a"&gt;关闭KVM虚拟机&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-20b3a390bc"&gt;扩容磁盘&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-f9608c0b5f"&gt;查看磁盘位置&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-dac0a691da"&gt;查看磁盘信息&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-bb346a56be"&gt;扩容磁盘大小&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-31a1eefbb6"&gt;关闭KVM虚拟机&lt;/a&gt;
-&lt;/p&gt;
+&lt;li&gt;&lt;a href="#org-5c63b6736f"&gt;扩容虚拟机分区&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-edd2b15cbf"&gt;启动虚拟机&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-23d40038ff"&gt;查看磁盘大小和格式&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-20b3a390bc"&gt;扩容磁盘&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-94fa03a8b3"&gt;磁盘挂载&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-c010e6d9b6"&gt;扩容磁盘&lt;/a&gt;
-&lt;/p&gt;
+&lt;li&gt;&lt;a href="#org-36e79feb69"&gt;创建磁盘&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-ee3161eca3"&gt;挂载磁盘&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-a4902b33b9"&gt;挂载命令&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-80c2028d42"&gt;卸载命令&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-5a882856b4"&gt;查看磁盘位置&lt;/a&gt;
-&lt;/p&gt;
+&lt;li&gt;&lt;a href="#org-af22e5d86f"&gt;格式化磁盘&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-eb1558edf7"&gt;格式化分区&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-9422da9e85"&gt;格式化文件系统&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-ee3161eca3"&gt;挂载磁盘&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-f1c55fb6dd"&gt;查看磁盘信息&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a6b5e561ba"&gt;FAQ&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-cbbcb30941"&gt;unexpected output in sfdisk --version&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-f55fe26403"&gt;扩容磁盘大小&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-012a14e52c"&gt;扩容虚拟机分区&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-1c0029aae7"&gt;启动虚拟机&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-fa6c2f58a7"&gt;查看磁盘大小和格式&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-c010e6d9b6"&gt;扩容磁盘&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-953a5edfc0"&gt;磁盘挂载&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-fe4de5c8f0"&gt;创建磁盘&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-441d04855f"&gt;挂载磁盘&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-4d9471d089"&gt;挂载命令&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-72734d6c08"&gt;卸载命令&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-ea55ccb527"&gt;格式化磁盘&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-c43ca5e42a"&gt;格式化分区&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-dc439a52ae"&gt;格式化文件系统&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-441d04855f"&gt;挂载磁盘&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-03688ba6aa"&gt;FAQ&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-1fcc24a37d"&gt;output in sfdisk --version &lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-3ee3d9452c"&gt;参考链接&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-28464e090b"&gt;参考链接&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
-&lt;h2 id="org-5abfa873d1"&gt;磁盘扩容&lt;/h2&gt;
-&lt;h3 id="org-31a1eefbb6"&gt;关闭KVM虚拟机&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;virsh shutdown vm-ubuntu-04
+&lt;h2 id="org-5d285b7612"&gt;磁盘扩容&lt;/h2&gt;&lt;h3 id="org-35e40d226a"&gt;关闭KVM虚拟机&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;virsh shutdown vm-ubuntu-04
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-c010e6d9b6"&gt;扩容磁盘&lt;/h3&gt;
-&lt;h4 id="org-5a882856b4"&gt;查看磁盘位置&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# virsh domblklist vm-ubuntu-04&lt;/span&gt;
+&lt;h3 id="org-20b3a390bc"&gt;扩容磁盘&lt;/h3&gt;&lt;h4 id="org-f9608c0b5f"&gt;查看磁盘位置&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# virsh domblklist vm-ubuntu-04&lt;/span&gt;
 Target     Source
 ------------------------------------------------
 vda        /home/kvm/images/ubuntu-04.qcow2
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h4 id="org-f1c55fb6dd"&gt;查看磁盘信息&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# qemu-img info /home/kvm/images/ubuntu-04.qcow2&lt;/span&gt;
+&lt;h4 id="org-dac0a691da"&gt;查看磁盘信息&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# qemu-img info /home/kvm/images/ubuntu-04.qcow2&lt;/span&gt;
 image: /home/kvm/images/ubuntu-04.qcow2
 file format: qcow2
 virtual size: &lt;span class="m"&gt;2&lt;/span&gt;.0G &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;2147483648&lt;/span&gt; bytes&lt;span class="o"&gt;)&lt;/span&gt;
@@ -969,8 +646,7 @@ Format specific information:
 &lt;p&gt;
     可以看出现在虚拟机磁盘大小为 &lt;b&gt;2G&lt;/b&gt;
 &lt;/p&gt;
-&lt;h4 id="org-f55fe26403"&gt;扩容磁盘大小&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# qemu-img resize /home/kvm/images/ubuntu-04.qcow2 +28G&lt;/span&gt;
+&lt;h4 id="org-bb346a56be"&gt;扩容磁盘大小&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# qemu-img resize /home/kvm/images/ubuntu-04.qcow2 +28G&lt;/span&gt;
 Image resized.
 &lt;/pre&gt;&lt;/div&gt;
 
@@ -988,13 +664,10 @@ Format specific information:
 &lt;p&gt;
     现在磁盘大小已增加到 &lt;b&gt;30G&lt;/b&gt;
 &lt;/p&gt;
-&lt;h3 id="org-012a14e52c"&gt;扩容虚拟机分区&lt;/h3&gt;
-&lt;h4 id="org-1c0029aae7"&gt;启动虚拟机&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;virsh start vm-ubuntu-04
+&lt;h3 id="org-5c63b6736f"&gt;扩容虚拟机分区&lt;/h3&gt;&lt;h4 id="org-edd2b15cbf"&gt;启动虚拟机&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;virsh start vm-ubuntu-04
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h4 id="org-fa6c2f58a7"&gt;查看磁盘大小和格式&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;root@vm-ubuntu-04:~# lsblk
+&lt;h4 id="org-23d40038ff"&gt;查看磁盘大小和格式&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;root@vm-ubuntu-04:~# lsblk
 NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
 loop0    &lt;span class="m"&gt;7&lt;/span&gt;:0    &lt;span class="m"&gt;0&lt;/span&gt; &lt;span class="m"&gt;88&lt;/span&gt;.5M  &lt;span class="m"&gt;1&lt;/span&gt; loop /snap/core/7270
 vda    &lt;span class="m"&gt;252&lt;/span&gt;:0    &lt;span class="m"&gt;0&lt;/span&gt;   30G  &lt;span class="m"&gt;0&lt;/span&gt; disk
@@ -1020,11 +693,10 @@ tmpfs          tmpfs       &lt;span class="m"&gt;816780&lt;/span&gt;       &lt;s
 &lt;p&gt;
     &lt;b&gt;注意&lt;/b&gt; :不同格式的文件系统扩容磁盘命令 &lt;b&gt;有所不同&lt;/b&gt;，比如我的根分区格式为 &lt;b&gt;ext4&lt;/b&gt;, 以下将以 &lt;b&gt;ext4&lt;/b&gt; 为例
 &lt;/p&gt;
-&lt;h4 id="org-c010e6d9b6"&gt;扩容磁盘&lt;/h4&gt;
-&lt;ul&gt;
+&lt;h4 id="org-20b3a390bc"&gt;扩容磁盘&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 安装 &lt;b&gt;cloud-guest-utils&lt;/b&gt;
+安装 &lt;b&gt;cloud-guest-utils&lt;/b&gt;
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;apt -y install cloud-guest-utils
 &lt;/pre&gt;&lt;/div&gt;
@@ -1032,7 +704,7 @@ tmpfs          tmpfs       &lt;span class="m"&gt;816780&lt;/span&gt;       &lt;s
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 扩容磁盘
+扩容磁盘
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;root@vm-ubuntu-base:~# growpart /dev/vda &lt;span class="m"&gt;2&lt;/span&gt;
 CHANGED: &lt;span class="nv"&gt;partition&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt; &lt;span class="nv"&gt;start&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;4096&lt;/span&gt; old: &lt;span class="nv"&gt;size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;4188160&lt;/span&gt; &lt;span class="nv"&gt;end&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;4192256&lt;/span&gt; new: &lt;span class="nv"&gt;size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;62910431&lt;/span&gt;,end&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;62914527&lt;/span&gt;
@@ -1052,7 +724,7 @@ vda    &lt;span class="m"&gt;252&lt;/span&gt;:0    &lt;span class="m"&gt;0&lt;/s
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 更新且格式化分区
+更新且格式化分区
       &lt;b&gt;resize2fs&lt;/b&gt; 扩容 &lt;b&gt;ext4&lt;/b&gt; 文件系统, 其它可参考 &lt;a href="https://computingforgeeks.com/extending-root-filesystem-using-lvm-linux/"&gt;https://computingforgeeks.com/extending-root-filesystem-using-lvm-linux/&lt;/a&gt;
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;root@vm-ubuntu-base:~# resize2fs /dev/vda2
@@ -1073,9 +745,7 @@ root@vm-ubuntu-base:~# df -hT &lt;span class="p"&gt;|&lt;/span&gt; grep /dev/vda
 
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id="org-953a5edfc0"&gt;磁盘挂载&lt;/h2&gt;
-&lt;h3 id="org-fe4de5c8f0"&gt;创建磁盘&lt;/h3&gt;
-&lt;p&gt;
+&lt;h2 id="org-94fa03a8b3"&gt;磁盘挂载&lt;/h2&gt;&lt;h3 id="org-36e79feb69"&gt;创建磁盘&lt;/h3&gt;&lt;p&gt;
    创建一块大小为 &lt;b&gt;100G&lt;/b&gt;，格式为 &lt;b&gt;qcow2&lt;/b&gt; 的磁盘
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# qemu-img create -f qcow2 ubuntu-04-disk.qcow2 100G&lt;/span&gt;
@@ -1098,9 +768,7 @@ Format specific information:
     corrupt: &lt;span class="nb"&gt;false&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-441d04855f"&gt;挂载磁盘&lt;/h3&gt;
-&lt;h4 id="org-4d9471d089"&gt;挂载命令&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;virsh attach-disk vm-ubuntu-04 /home/kvm/images/ubuntu-04-disk.qcow2 --driver qemu --subdriver qcow2 vdb --persistent
+&lt;h3 id="org-ee3161eca3"&gt;挂载磁盘&lt;/h3&gt;&lt;h4 id="org-a4902b33b9"&gt;挂载命令&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;virsh attach-disk vm-ubuntu-04 /home/kvm/images/ubuntu-04-disk.qcow2 --driver qemu --subdriver qcow2 vdb --persistent
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;
@@ -1109,30 +777,27 @@ Format specific information:
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- &lt;b&gt;vm-ubuntu-04&lt;/b&gt; 为需要扩展的虚拟机名称
+&lt;b&gt;vm-ubuntu-04&lt;/b&gt; 为需要扩展的虚拟机名称
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- &lt;b&gt;/home/kvm/images/ubuntu-04-disk.qcow2&lt;/b&gt; 为刚创建好的扩展磁盘
+&lt;b&gt;/home/kvm/images/ubuntu-04-disk.qcow2&lt;/b&gt; 为刚创建好的扩展磁盘
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- &lt;b&gt;vdb&lt;/b&gt; 为新扩展磁盘的名称
+&lt;b&gt;vdb&lt;/b&gt; 为新扩展磁盘的名称
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h4 id="org-72734d6c08"&gt;卸载命令&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;virsh detach-disk vm-ubuntu-04 /home/kvm/images/ubuntu-04-disk.qcow2 --persistent
+&lt;h4 id="org-80c2028d42"&gt;卸载命令&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;virsh detach-disk vm-ubuntu-04 /home/kvm/images/ubuntu-04-disk.qcow2 --persistent
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-ea55ccb527"&gt;格式化磁盘&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-af22e5d86f"&gt;格式化磁盘&lt;/h3&gt;&lt;p&gt;
    &lt;b&gt;虚拟机内执行&lt;/b&gt;
 &lt;/p&gt;
-&lt;h4 id="org-c43ca5e42a"&gt;格式化分区&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root@vm-ubuntu-04 ~&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;fdisk&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;vdb&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;h4 id="org-eb1558edf7"&gt;格式化分区&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root@vm-ubuntu-04 ~&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;fdisk&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;vdb&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;span class="n"&gt;欢迎使用&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;fdisk&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;util&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;linux&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="mf"&gt;2.23.2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="err"&gt;。&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 
 &lt;span class="n"&gt;更改将停留在内存中&lt;/span&gt;&lt;span class="err"&gt;，&lt;/span&gt;&lt;span class="n"&gt;直到您决定将更改写入磁盘&lt;/span&gt;&lt;span class="err"&gt;。&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
@@ -1160,22 +825,18 @@ Format specific information:
 &lt;span class="n"&gt;正在同步磁盘&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h4 id="org-dc439a52ae"&gt;格式化文件系统&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;[root@vm-ubuntu-04 ~]# lsblk&lt;/span&gt;
-&lt;span class="err"&gt;[root@vm-ubuntu-04 ~]# mkfs.ext4 /dev/vdb1&lt;/span&gt;
+&lt;h4 id="org-9422da9e85"&gt;格式化文件系统&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root@vm-ubuntu-04 ~&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;lsblk&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root@vm-ubuntu-04 ~&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;mkfs&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ext4&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;vdb1&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h4 id="org-441d04855f"&gt;挂载磁盘&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkdir /home/data
+&lt;h4 id="org-ee3161eca3"&gt;挂载磁盘&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkdir /home/data
 mount /dev/vdb1 /home/data
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h2 id="org-03688ba6aa"&gt;FAQ&lt;/h2&gt;
-&lt;h3 id="org-1fcc24a37d"&gt;&lt;span class="todo"&gt;unexpected&lt;/span&gt;output in sfdisk --version &lt;/h3&gt;
-&lt;p&gt;
+&lt;h2 id="org-a6b5e561ba"&gt;FAQ&lt;/h2&gt;&lt;h3 id="org-cbbcb30941"&gt;unexpected output in sfdisk --version&lt;/h3&gt;&lt;p&gt;
    在执行 &lt;code&gt;growpart /dev/vda 1&lt;/code&gt; 时报错
 &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;unexpected output in sfdisk --version [sfdisk，来自 util-linux 2.23.2]&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;unexpected&lt;/span&gt; &lt;span class="k"&gt;output&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="n"&gt;sfdisk&lt;/span&gt; &lt;span class="c1"&gt;--version [sfdisk，来自 util-linux 2.23.2]&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;
@@ -1184,191 +845,116 @@ mount /dev/vdb1 /home/data
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nv"&gt;LANG&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;en_US.UTF-8 growpart /dev/vda &lt;span class="m"&gt;1&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h2 id="org-3ee3d9452c"&gt;参考链接&lt;/h2&gt;
-&lt;ul&gt;
+&lt;h2 id="org-28464e090b"&gt;参考链接&lt;/h2&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- https://computingforgeeks.com/how-to-extend-increase-kvm-virtual-machine-disk-size/
+https://computingforgeeks.com/how-to-extend-increase-kvm-virtual-machine-disk-size/
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- https://computingforgeeks.com/resize-ext-and-xfs-root-partition-without-lvm/
+https://computingforgeeks.com/resize-ext-and-xfs-root-partition-without-lvm/
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;</content><category term="Linux"></category><category term="linux"></category><category term="kvm"></category></entry><entry><title>KVM笔记之增量镜像</title><link href="https://honmaple.me/articles/2020/01/KVM%E7%AC%94%E8%AE%B0%E4%B9%8B%E5%A2%9E%E9%87%8F%E9%95%9C%E5%83%8F.html" rel="alternate"></link><published>2020-01-06T17:41:26+08:00</published><updated>2020-08-09T22:28:43+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2020-01-06:/articles/2020/01/KVM笔记之增量镜像.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-6514d0aeba"&gt;增量镜像&lt;/a&gt;
-&lt;/p&gt;
+&lt;li&gt;&lt;a href="#org-7fd6cdfa82"&gt;增量镜像&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-912d221749"&gt;基础环境准备&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-9b69b8cf2d"&gt;创建增量镜像&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-0168a908c3"&gt;创建KVM虚拟机&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-7819125e6d"&gt;手动创建&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-521ab0477d"&gt;使用virt-install创建&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-d2fb7d85bb"&gt;基础环境准备&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-490b8928bc"&gt;测试增量镜像&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-3b85bc7daa"&gt;创建增量镜像&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-e24c0af8af"&gt;创建KVM虚拟机&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-a597476d0f"&gt;手动创建&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-adb0b5b39c"&gt;使用virt-install创建&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-94db5f4ef2"&gt;测试增量镜像&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-f64bfae8d1"&gt;快照与增量镜像&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-54709db3b7"&gt;参考资料&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-f64bfae8d1"&gt;&lt;span class="todo"&gt;TODO&lt;/span&gt;快照与增量镜像&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a2035894d2"&gt;参考资料&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
-&lt;h2 id="org-6514d0aeba"&gt;增量镜像&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-7fd6cdfa82"&gt;增量镜像&lt;/h2&gt;&lt;p&gt;
   增量镜像即保持一个基础的镜像不变，在此基础镜像上安装或修改相应的服务所创建的一个单独的镜像，增量镜像类似GIT，只记录当前KVM的修改记录，这样可以节省磁盘空间，快速复制虚拟机
 &lt;/p&gt;
-&lt;h3 id="org-d2fb7d85bb"&gt;基础环境准备&lt;/h3&gt;
-&lt;ul&gt;
+&lt;h3 id="org-912d221749"&gt;基础环境准备&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- KVM基础环境
+KVM基础环境
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 基础镜像 &lt;b&gt;ubuntu-base.qcow2&lt;/b&gt;
+基础镜像 &lt;b&gt;ubuntu-base.qcow2&lt;/b&gt;
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id="org-3b85bc7daa"&gt;创建增量镜像&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-9b69b8cf2d"&gt;创建增量镜像&lt;/h3&gt;&lt;p&gt;
    首先基于基础镜像 &lt;b&gt;ubuntu-base.qcow2&lt;/b&gt; 创建一个增量镜像 &lt;b&gt;ubuntu-test.qcow2&lt;/b&gt;
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;宿主机&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;# qemu-img info /home/kvm/images/ubuntu-base.qcow2&lt;/span&gt;
 image: ubuntu-base.qcow2
 file format: qcow2
-virtual size: &lt;span class="m"&gt;4&lt;/span&gt;.0G …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+virtual size: &lt;span class="m"&gt;4 …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-6514d0aeba"&gt;增量镜像&lt;/a&gt;
-&lt;/p&gt;
+&lt;li&gt;&lt;a href="#org-7fd6cdfa82"&gt;增量镜像&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-912d221749"&gt;基础环境准备&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-9b69b8cf2d"&gt;创建增量镜像&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-0168a908c3"&gt;创建KVM虚拟机&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-7819125e6d"&gt;手动创建&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-521ab0477d"&gt;使用virt-install创建&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-d2fb7d85bb"&gt;基础环境准备&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-490b8928bc"&gt;测试增量镜像&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-3b85bc7daa"&gt;创建增量镜像&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-e24c0af8af"&gt;创建KVM虚拟机&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-a597476d0f"&gt;手动创建&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-adb0b5b39c"&gt;使用virt-install创建&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-94db5f4ef2"&gt;测试增量镜像&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-f64bfae8d1"&gt;快照与增量镜像&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-54709db3b7"&gt;参考资料&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-f64bfae8d1"&gt;&lt;span class="todo"&gt;TODO&lt;/span&gt;快照与增量镜像&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a2035894d2"&gt;参考资料&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
-&lt;h2 id="org-6514d0aeba"&gt;增量镜像&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-7fd6cdfa82"&gt;增量镜像&lt;/h2&gt;&lt;p&gt;
   增量镜像即保持一个基础的镜像不变，在此基础镜像上安装或修改相应的服务所创建的一个单独的镜像，增量镜像类似GIT，只记录当前KVM的修改记录，这样可以节省磁盘空间，快速复制虚拟机
 &lt;/p&gt;
-&lt;h3 id="org-d2fb7d85bb"&gt;基础环境准备&lt;/h3&gt;
-&lt;ul&gt;
+&lt;h3 id="org-912d221749"&gt;基础环境准备&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- KVM基础环境
+KVM基础环境
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 基础镜像 &lt;b&gt;ubuntu-base.qcow2&lt;/b&gt;
+基础镜像 &lt;b&gt;ubuntu-base.qcow2&lt;/b&gt;
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id="org-3b85bc7daa"&gt;创建增量镜像&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-9b69b8cf2d"&gt;创建增量镜像&lt;/h3&gt;&lt;p&gt;
    首先基于基础镜像 &lt;b&gt;ubuntu-base.qcow2&lt;/b&gt; 创建一个增量镜像 &lt;b&gt;ubuntu-test.qcow2&lt;/b&gt;
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;宿主机&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;# qemu-img info /home/kvm/images/ubuntu-base.qcow2&lt;/span&gt;
@@ -1404,9 +990,7 @@ Format specific information:
 196K	ubuntu-test.qcow2
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-e24c0af8af"&gt;创建KVM虚拟机&lt;/h3&gt;
-&lt;h4 id="org-a597476d0f"&gt;手动创建&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# 注: 我基于基础镜像创建的KVM虚拟机名称为*vm-ubuntu-base*, 请根据实际进行修改&lt;/span&gt;
+&lt;h3 id="org-0168a908c3"&gt;创建KVM虚拟机&lt;/h3&gt;&lt;h4 id="org-7819125e6d"&gt;手动创建&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# 注: 我基于基础镜像创建的KVM虚拟机名称为*vm-ubuntu-base*, 请根据实际进行修改&lt;/span&gt;
 &lt;span class="o"&gt;(&lt;/span&gt;宿主机&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;# cp /etc/libvirt/qemu/vm-ubuntu-base.xml /etc/libvirt/qemu/vm-ubuntu-test.xml&lt;/span&gt;
 &lt;span class="o"&gt;(&lt;/span&gt;宿主机&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;# vim /etc/libvirt/qemu/vm-ubuntu-test.xml&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -1439,16 +1023,14 @@ Format specific information:
 &lt;span class="o"&gt;(&lt;/span&gt;宿主机&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;# virsh list&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h4 id="org-adb0b5b39c"&gt;使用virt-install创建&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;宿主机&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;# qemu-img create -b ubuntu-base.qcow2 -f qcow2 ubuntu-test01.qcow2&lt;/span&gt;
+&lt;h4 id="org-521ab0477d"&gt;使用virt-install创建&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;宿主机&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;# qemu-img create -b ubuntu-base.qcow2 -f qcow2 ubuntu-test01.qcow2&lt;/span&gt;
 &lt;span class="o"&gt;(&lt;/span&gt;宿主机&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="c1"&gt;# virt-install --name vm-ubuntu-test01 --memory 8192 --vcpus 4 --disk /home/kvm/images/ubuntu-test.qcow2 --import --virt-type kvm --os-type linux --os-variant ubuntu18.04 --network bridge=virbr0,model=virtio --graphics vnc,listen=0.0.0.0,password=foobar,port=5910 --noautoconsole --hvm&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-94db5f4ef2"&gt;测试增量镜像&lt;/h3&gt;
-&lt;ul&gt;
+&lt;h3 id="org-490b8928bc"&gt;测试增量镜像&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 进入 &lt;b&gt;vm-ubuntu-test&lt;/b&gt; 虚拟机, 并创建一个200M的文件
+进入 &lt;b&gt;vm-ubuntu-test&lt;/b&gt; 虚拟机, 并创建一个200M的文件
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dd &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/dev/zero &lt;span class="nv"&gt;of&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;test.img &lt;span class="nv"&gt;bs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;1M &lt;span class="nv"&gt;count&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;200&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -1456,7 +1038,7 @@ Format specific information:
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 在宿主机上查看镜像大小
+在宿主机上查看镜像大小
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;.4G	ubuntu-base.qcow2
 294M	ubuntu-test.qcow2
@@ -1468,7 +1050,7 @@ Format specific information:
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 进入 &lt;b&gt;vm-ubuntu-base&lt;/b&gt; 虚拟机, 并创建一个800M的文件
+进入 &lt;b&gt;vm-ubuntu-base&lt;/b&gt; 虚拟机, 并创建一个800M的文件
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dd &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/dev/zero &lt;span class="nv"&gt;of&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;base.img &lt;span class="nv"&gt;bs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;1M &lt;span class="nv"&gt;count&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;800&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -1476,7 +1058,7 @@ Format specific information:
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 在宿主机上查看镜像大小
+在宿主机上查看镜像大小
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="m"&gt;3&lt;/span&gt;.0G	ubuntu-base.qcow2
 294M	ubuntu-test.qcow2
@@ -1488,74 +1070,38 @@ Format specific information:
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id="org-f64bfae8d1"&gt;&lt;span class="todo"&gt;TODO&lt;/span&gt;快照与增量镜像&lt;/h2&gt;
-&lt;h2 id="org-54709db3b7"&gt;参考资料&lt;/h2&gt;
-&lt;ul&gt;
+&lt;h2 id="org-a2035894d2"&gt;参考资料&lt;/h2&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- https://yq.aliyun.com/articles/461356
+https://yq.aliyun.com/articles/461356
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- http://www.361way.com/snapshots-blockcommit-blockpull/3194.html
+http://www.361way.com/snapshots-blockcommit-blockpull/3194.html
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;</content><category term="Linux"></category><category term="linux"></category><category term="kvm"></category></entry><entry><title>macos初始化设置</title><link href="https://honmaple.me/articles/2019/07/macos%E5%88%9D%E5%A7%8B%E5%8C%96%E8%AE%BE%E7%BD%AE.html" rel="alternate"></link><published>2019-07-28T01:57:44+08:00</published><updated>2020-07-05T13:54:02+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2019-07-28:/articles/2019/07/macos初始化设置.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-45d50a4d7a"&gt;安装homebrew&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
+&lt;li&gt;&lt;a href="#org-72796dc253"&gt;安装homebrew&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-e6e1a9f363"&gt;切换中国源&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-082bfc23a3"&gt;切换中国源&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-41dd1184d9"&gt;恢复官方源&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-9a19d98555"&gt;恢复官方源&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-b93e87ffbf"&gt;brew更新&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-edf24895bf"&gt;macos使用深色菜单栏&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-159245bcad"&gt;安装powerline字体&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-40a8979a23"&gt;禁止.DS_store生成&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-36700f4242"&gt;brew更新&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-6694bfcab1"&gt;macos使用深色菜单栏&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-5130519617"&gt;安装powerline字体&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-ed5a490d63"&gt;禁止.DS_store生成&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
-&lt;h3 id="org-45d50a4d7a"&gt;安装homebrew&lt;/h3&gt;
-&lt;ul&gt;
+&lt;h3 id="org-72796dc253"&gt;安装homebrew&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 安装命令行tools
+安装命令行tools
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;xcode-install
 &lt;/pre&gt;&lt;/div&gt;
@@ -1566,19 +1112,21 @@ Format specific information:
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 修改REPO地址
+修改REPO地址
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 执行安装
+执行安装
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ruby brew_install
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;
    homebrew cask
+&lt;/p&gt;
 &lt;p&gt;
    使用git clone 中科大到指定目录
 &lt;/p&gt;
@@ -1593,60 +1141,25 @@ Format specific information:
 &lt;p&gt;
    拷贝文件，使用共享里的远程管理 …&lt;/p&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-45d50a4d7a"&gt;安装homebrew&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
+&lt;li&gt;&lt;a href="#org-72796dc253"&gt;安装homebrew&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-e6e1a9f363"&gt;切换中国源&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-082bfc23a3"&gt;切换中国源&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-41dd1184d9"&gt;恢复官方源&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-9a19d98555"&gt;恢复官方源&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-b93e87ffbf"&gt;brew更新&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-edf24895bf"&gt;macos使用深色菜单栏&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-159245bcad"&gt;安装powerline字体&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-40a8979a23"&gt;禁止.DS_store生成&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-36700f4242"&gt;brew更新&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-6694bfcab1"&gt;macos使用深色菜单栏&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-5130519617"&gt;安装powerline字体&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-ed5a490d63"&gt;禁止.DS_store生成&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
-&lt;h3 id="org-45d50a4d7a"&gt;安装homebrew&lt;/h3&gt;
-&lt;ul&gt;
+&lt;h3 id="org-72796dc253"&gt;安装homebrew&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 安装命令行tools
+安装命令行tools
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;xcode-install
 &lt;/pre&gt;&lt;/div&gt;
@@ -1657,19 +1170,21 @@ Format specific information:
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 修改REPO地址
+修改REPO地址
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 执行安装
+执行安装
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ruby brew_install
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;
    homebrew cask
+&lt;/p&gt;
 &lt;p&gt;
    使用git clone 中科大到指定目录
 &lt;/p&gt;
@@ -1687,25 +1202,22 @@ Format specific information:
 &lt;p&gt;
    修改电脑名，在设置共享里
 &lt;/p&gt;
-&lt;h4 id="org-e6e1a9f363"&gt;切换中国源&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;git -C &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;brew --repo&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git
+&lt;h4 id="org-082bfc23a3"&gt;切换中国源&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;git -C &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;brew --repo&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git
 git -C &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;brew --repo homebrew/core&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git
 git -C &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;brew --repo homebrew/cask&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-cask.git
 brew update -v
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h4 id="org-41dd1184d9"&gt;恢复官方源&lt;/h4&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;git -C &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;brew --repo&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; remote set-url origin https://github.com/Homebrew/brew.git
+&lt;h4 id="org-9a19d98555"&gt;恢复官方源&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;git -C &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;brew --repo&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; remote set-url origin https://github.com/Homebrew/brew.git
 git -C &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;brew --repo homebrew/core&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; remote set-url origin https://github.com/Homebrew/homebrew-core.git
 git -C &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;brew --repo homebrew/cask&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; remote set-url origin https://github.com/Homebrew/homebrew-cask.git
 brew update -v
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-b93e87ffbf"&gt;brew更新&lt;/h3&gt;
-&lt;ul&gt;
+&lt;h3 id="org-36700f4242"&gt;brew更新&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 更新brew
+更新brew
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;brew update -v
 &lt;/pre&gt;&lt;/div&gt;
@@ -1716,7 +1228,7 @@ brew update -v
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 列出可更新
+列出可更新
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;brew outdated
 brew cask outdated --greedy
@@ -1725,7 +1237,7 @@ brew cask outdated --greedy
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 更新软件
+更新软件
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;brew upgrade go git node
 brew cask upgrade steam
@@ -1733,8 +1245,7 @@ brew cask upgrade steam
 
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id="org-edf24895bf"&gt;macos使用深色菜单栏&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-6694bfcab1"&gt;macos使用深色菜单栏&lt;/h3&gt;&lt;p&gt;
    1.在「系统偏好设置 - 通用」中将外观切换成「浅色」。
    2.打开终端，输入指令：defaults write -g NSRequiresAquaSystemAppearance -bool Yes
    3.注销并重新登录。这一步会关闭当前所有打开的应用，因此需要提前保存好所有文稿。
@@ -1750,15 +1261,13 @@ defaults delete -g NSRequiresAquaSystemAppearance
 &lt;p&gt;
    再执行第 3 步即可
 &lt;/p&gt;
-&lt;h3 id="org-159245bcad"&gt;安装powerline字体&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;brew cask install font-inconsolata-for-powerline
+&lt;h3 id="org-5130519617"&gt;安装powerline字体&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;brew cask install font-inconsolata-for-powerline
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;
    终端设置字体，重启终端
 &lt;/p&gt;
-&lt;h3 id="org-40a8979a23"&gt;禁止.DS_store生成&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# 禁止 .DS_store 生成，打开“终端”，复制黏贴下面的命令，回车执行，重启 Mac 即可生效。&lt;/span&gt;
+&lt;h3 id="org-ed5a490d63"&gt;禁止.DS_store生成&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# 禁止 .DS_store 生成，打开“终端”，复制黏贴下面的命令，回车执行，重启 Mac 即可生效。&lt;/span&gt;
 defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool TRUE
 &lt;span class="c1"&gt;# 恢复 .DS_store 生成&lt;/span&gt;
 defaults delete com.apple.desktopservices DSDontWriteNetworkStores
@@ -1767,25 +1276,9 @@ sudo find . -name &lt;span class="s2"&gt;&amp;quot;.DS_Store&amp;quot;&lt;/span&
 &lt;/pre&gt;&lt;/div&gt;
 </content><category term="Linux"></category><category term="macos"></category><category term="brew"></category></entry><entry><title>elisp生成渐变XPM图片</title><link href="https://honmaple.me/articles/2019/07/elisp%E7%94%9F%E6%88%90%E6%B8%90%E5%8F%98XPM%E5%9B%BE%E7%89%87.html" rel="alternate"></link><published>2019-07-12T18:21:04+08:00</published><updated>2019-07-12T19:09:25+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2019-07-12:/articles/2019/07/elisp生成渐变XPM图片.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-73d569baf7"&gt;渐变颜色&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-9a9c7eb347"&gt;生成XPM图片&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-35d265ae60"&gt;效果显示&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-c354d0ed7c"&gt;渐变颜色&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-261f6d2b0b"&gt;生成XPM图片&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-8c98efb633"&gt;效果显示&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
 &lt;blockquote&gt;
@@ -1793,8 +1286,7 @@ sudo find . -name &lt;span class="s2"&gt;&amp;quot;.DS_Store&amp;quot;&lt;/span&
 无意中看到 &lt;a href="https://github.com/dbordak/telephone-line"&gt;telephone-line&lt;/a&gt;有一种渐变颜色的效果，看起来很棒，但&lt;b&gt;telephone-line&lt;/b&gt;的源码有些难懂，所以自己动手实现类似的效果
 &lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id="org-73d569baf7"&gt;渐变颜色&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-c354d0ed7c"&gt;渐变颜色&lt;/h3&gt;&lt;p&gt;
    渐变颜色的实现可使用&lt;code&gt;color-gradient&lt;/code&gt;
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;color-gradient&lt;/span&gt;
@@ -1805,29 +1297,12 @@ sudo find . -name &lt;span class="s2"&gt;&amp;quot;.DS_Store&amp;quot;&lt;/span&
 &lt;p&gt;
    实现原理是对红(R)、绿(G)、蓝(B)三个颜色通道分别取 &lt;b&gt;n + 2&lt;/b&gt; 个过渡值，&lt;b&gt;n&lt;/b&gt; 为中间颜色过渡状态，所以对于&lt;code&gt;red&lt;/code&gt;、&lt;code&gt;#000&lt;/code&gt;、&lt;code&gt;#a0a0a0&lt;/code&gt;等颜色需要转化为RGB色彩模式
 &lt;/p&gt;
-&lt;h3 id="org-9a9c7eb347"&gt;生成XPM图片&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-261f6d2b0b"&gt;生成XPM图片&lt;/h3&gt;&lt;p&gt;
    XPM图片格式参考 &lt;a href="https://en.wikipedia.org/wiki/X_PixMap"&gt;https://en.wikipedia.org/wiki/X_PixMap …&lt;/a&gt;&lt;/p&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-73d569baf7"&gt;渐变颜色&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-9a9c7eb347"&gt;生成XPM图片&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-35d265ae60"&gt;效果显示&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-c354d0ed7c"&gt;渐变颜色&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-261f6d2b0b"&gt;生成XPM图片&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-8c98efb633"&gt;效果显示&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
 &lt;blockquote&gt;
@@ -1835,8 +1310,7 @@ sudo find . -name &lt;span class="s2"&gt;&amp;quot;.DS_Store&amp;quot;&lt;/span&
 无意中看到 &lt;a href="https://github.com/dbordak/telephone-line"&gt;telephone-line&lt;/a&gt;有一种渐变颜色的效果，看起来很棒，但&lt;b&gt;telephone-line&lt;/b&gt;的源码有些难懂，所以自己动手实现类似的效果
 &lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id="org-73d569baf7"&gt;渐变颜色&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-c354d0ed7c"&gt;渐变颜色&lt;/h3&gt;&lt;p&gt;
    渐变颜色的实现可使用&lt;code&gt;color-gradient&lt;/code&gt;
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;color-gradient&lt;/span&gt;
@@ -1847,27 +1321,26 @@ sudo find . -name &lt;span class="s2"&gt;&amp;quot;.DS_Store&amp;quot;&lt;/span&
 &lt;p&gt;
    实现原理是对红(R)、绿(G)、蓝(B)三个颜色通道分别取 &lt;b&gt;n + 2&lt;/b&gt; 个过渡值，&lt;b&gt;n&lt;/b&gt; 为中间颜色过渡状态，所以对于&lt;code&gt;red&lt;/code&gt;、&lt;code&gt;#000&lt;/code&gt;、&lt;code&gt;#a0a0a0&lt;/code&gt;等颜色需要转化为RGB色彩模式
 &lt;/p&gt;
-&lt;h3 id="org-9a9c7eb347"&gt;生成XPM图片&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-261f6d2b0b"&gt;生成XPM图片&lt;/h3&gt;&lt;p&gt;
    XPM图片格式参考 &lt;a href="https://en.wikipedia.org/wiki/X_PixMap"&gt;https://en.wikipedia.org/wiki/X_PixMap&lt;/a&gt;XPM3)
 &lt;/p&gt;
 &lt;p&gt;
    大概是这样的
 &lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;/* XPM */&lt;/span&gt;
-&lt;span class="err"&gt;static char * XFACE[] = {&lt;/span&gt;
-&lt;span class="err"&gt;/* &amp;lt;Values&amp;gt; */&lt;/span&gt;
-&lt;span class="err"&gt;/* &amp;lt;width/columns&amp;gt; &amp;lt;height/rows&amp;gt; &amp;lt;colors&amp;gt; &amp;lt;chars per pixel&amp;gt;*/&lt;/span&gt;
-&lt;span class="err"&gt;&amp;quot;48 4 2 1&amp;quot;,&lt;/span&gt;
-&lt;span class="err"&gt;/* &amp;lt;Colors&amp;gt; */&lt;/span&gt;
-&lt;span class="err"&gt;&amp;quot;a c #ffffff&amp;quot;,&lt;/span&gt;
-&lt;span class="err"&gt;&amp;quot;b c #000000&amp;quot;,&lt;/span&gt;
-&lt;span class="err"&gt;/* &amp;lt;Pixels&amp;gt; */&lt;/span&gt;
-&lt;span class="err"&gt;&amp;quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&amp;quot;,&lt;/span&gt;
-&lt;span class="err"&gt;&amp;quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&amp;quot;,&lt;/span&gt;
-&lt;span class="err"&gt;&amp;quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&amp;quot;,&lt;/span&gt;
-&lt;span class="err"&gt;&amp;quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&amp;quot;&lt;/span&gt;
-&lt;span class="err"&gt;};&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cm"&gt;/* XPM */&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+static&lt;span class="w"&gt; &lt;/span&gt;char&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;XFACE&lt;span class="err"&gt;[]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="err"&gt;{&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="cm"&gt;/* &amp;lt;Values&amp;gt; */&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="cm"&gt;/* &amp;lt;width/columns&amp;gt; &amp;lt;height/rows&amp;gt; &amp;lt;colors&amp;gt; &amp;lt;chars per pixel&amp;gt;*/&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;48 4 2 1&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="cm"&gt;/* &amp;lt;Colors&amp;gt; */&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;a c #ffffff&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;b c #000000&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="cm"&gt;/* &amp;lt;Pixels&amp;gt; */&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&amp;quot;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="err"&gt;};&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;
@@ -1876,7 +1349,7 @@ sudo find . -name &lt;span class="s2"&gt;&amp;quot;.DS_Store&amp;quot;&lt;/span&
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- &lt;b&gt;生成不同字符&lt;/b&gt;
+&lt;b&gt;生成不同字符&lt;/b&gt;
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;;; 0～9&lt;/span&gt;
 &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;mapcar&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;number-to-string&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;number-sequence&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
@@ -1887,7 +1360,7 @@ sudo find . -name &lt;span class="s2"&gt;&amp;quot;.DS_Store&amp;quot;&lt;/span&
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- &lt;b&gt;不同字符对应不同颜色&lt;/b&gt;
+&lt;b&gt;不同字符对应不同颜色&lt;/b&gt;
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;number&lt;/span&gt; &lt;span class="mi"&gt;-1&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;mapconcat&lt;/span&gt;
@@ -1901,8 +1374,7 @@ sudo find . -name &lt;span class="s2"&gt;&amp;quot;.DS_Store&amp;quot;&lt;/span&
 
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id="org-35d265ae60"&gt;效果显示&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-8c98efb633"&gt;效果显示&lt;/h3&gt;&lt;p&gt;
    &lt;a href="https://static.honmaple.com/default/images/2019/07/xpm-gradient.png?type=show" data-fancybox="image"&gt;&lt;img data-src="https://static.honmaple.com/default/images/2019/07/xpm-gradient.png?type=thumb" class="lazyload" /&gt;&lt;/a&gt;
 &lt;/p&gt;
 &lt;p&gt;
@@ -1943,81 +1415,29 @@ sudo find . -name &lt;span class="s2"&gt;&amp;quot;.DS_Store&amp;quot;&lt;/span&
 &lt;/div&gt;
 &lt;/blockquote&gt;</content><category term="love"></category><category term="life"></category></entry><entry><title>关于ivy的使用技巧</title><link href="https://honmaple.me/articles/2019/05/%E5%85%B3%E4%BA%8Eivy%E7%9A%84%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7.html" rel="alternate"></link><published>2019-05-14T02:32:02+08:00</published><updated>2019-05-27T16:10:32+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2019-05-14:/articles/2019/05/关于ivy的使用技巧.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-3adaf767ed"&gt;ivy中的tab&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
+&lt;li&gt;&lt;a href="#org-9c33758f8a"&gt;ivy中的tab&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-d874b32c29"&gt;ivy中的C-h&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-b0ce61450a"&gt;ivy-occur批量操作&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-02cb96c0de"&gt;ivy中的C-h&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-8e5c170ffd"&gt;自动打开wgrep-mode&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-3528d8c79e"&gt;ivy-occur批量操作&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-fc4b298934"&gt;批量修改文件名&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-b52fad50bf"&gt;自动打开wgrep-mode&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a09c565927"&gt;counsel-find-file&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-25030a9f72"&gt;重命名&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-2e8b987865"&gt;批量修改文件名&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-92f88f164e"&gt;自动创建不存在的目录&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-92aa2d024e"&gt;counsel-find-file&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-1cd80fd7a8"&gt;重命名&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-278502a2b7"&gt;自动创建不存在的目录&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-c0d738df1a"&gt;ivy自动使用选中的内容&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-f982e2b254"&gt;搜索某个目录&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-16e38e01b5"&gt;ivy的显示避免出现在视线外&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-38cf79a4d8"&gt;ivy自动使用选中的内容&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a666681327"&gt;搜索某个目录&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-056736c9dc"&gt;ivy的显示避免出现在视线外&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
 &lt;blockquote&gt;
@@ -2025,8 +1445,7 @@ sudo find . -name &lt;span class="s2"&gt;&amp;quot;.DS_Store&amp;quot;&lt;/span&
 ivy默认的配置已经足够了，但还是可以通过一些技巧来提升使用体验
 &lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h2 id="org-3adaf767ed"&gt;ivy中的tab&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-9c33758f8a"&gt;ivy中的tab&lt;/h2&gt;&lt;p&gt;
   ivy提供了好几个有关补全的命令，分别是&lt;b&gt;ivy-done&lt;/b&gt;, &lt;b&gt;ivy-partial-or-done&lt;/b&gt;, &lt;b&gt;ivy-immediate-done&lt;/b&gt;, &lt;b&gt;ivy-dispatching-done&lt;/b&gt;, 但不幸，想要获得高效的补全，我不得不记住这n多个命令，这常常使效率变得更低，
   所以，我自定义了一个 &lt;b&gt;maple/ivy-done&lt;/b&gt;, 仅使用 &lt;code&gt;tab&lt;/code&gt; 这一个按键就可以获得以上所有的体验
 &lt;/p&gt;
@@ -2034,85 +1453,33 @@ ivy默认的配置已经足够了，但还是可以通过一些技巧来提升�
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;interactive&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;dir&lt;/span&gt; &lt;span class="nv"&gt;ivy--directory&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
     &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;ivy-partial-or-done&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;string=&lt;/span&gt; &lt;span class="nv"&gt;dir&lt;/span&gt; &lt;span class="nv"&gt;ivy--directory&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;string=&lt;/span&gt; &lt;span class="nv"&gt;dir&lt;/span&gt; &lt;span class="nv"&gt;ivy--directory&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
       &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;ivy-insert-current&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
       &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;and …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-3adaf767ed"&gt;ivy中的tab&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
+&lt;li&gt;&lt;a href="#org-9c33758f8a"&gt;ivy中的tab&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-d874b32c29"&gt;ivy中的C-h&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-b0ce61450a"&gt;ivy-occur批量操作&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-02cb96c0de"&gt;ivy中的C-h&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-8e5c170ffd"&gt;自动打开wgrep-mode&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-3528d8c79e"&gt;ivy-occur批量操作&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-fc4b298934"&gt;批量修改文件名&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-b52fad50bf"&gt;自动打开wgrep-mode&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a09c565927"&gt;counsel-find-file&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-25030a9f72"&gt;重命名&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-2e8b987865"&gt;批量修改文件名&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-92f88f164e"&gt;自动创建不存在的目录&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-92aa2d024e"&gt;counsel-find-file&lt;/a&gt;
-&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-1cd80fd7a8"&gt;重命名&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-278502a2b7"&gt;自动创建不存在的目录&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-c0d738df1a"&gt;ivy自动使用选中的内容&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-f982e2b254"&gt;搜索某个目录&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href="#org-16e38e01b5"&gt;ivy的显示避免出现在视线外&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-38cf79a4d8"&gt;ivy自动使用选中的内容&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a666681327"&gt;搜索某个目录&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-056736c9dc"&gt;ivy的显示避免出现在视线外&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;&lt;/div&gt;
 &lt;blockquote&gt;
@@ -2120,8 +1487,7 @@ ivy默认的配置已经足够了，但还是可以通过一些技巧来提升�
 ivy默认的配置已经足够了，但还是可以通过一些技巧来提升使用体验
 &lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h2 id="org-3adaf767ed"&gt;ivy中的tab&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-9c33758f8a"&gt;ivy中的tab&lt;/h2&gt;&lt;p&gt;
   ivy提供了好几个有关补全的命令，分别是&lt;b&gt;ivy-done&lt;/b&gt;, &lt;b&gt;ivy-partial-or-done&lt;/b&gt;, &lt;b&gt;ivy-immediate-done&lt;/b&gt;, &lt;b&gt;ivy-dispatching-done&lt;/b&gt;, 但不幸，想要获得高效的补全，我不得不记住这n多个命令，这常常使效率变得更低，
   所以，我自定义了一个 &lt;b&gt;maple/ivy-done&lt;/b&gt;, 仅使用 &lt;code&gt;tab&lt;/code&gt; 这一个按键就可以获得以上所有的体验
 &lt;/p&gt;
@@ -2129,7 +1495,7 @@ ivy默认的配置已经足够了，但还是可以通过一些技巧来提升�
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;interactive&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;dir&lt;/span&gt; &lt;span class="nv"&gt;ivy--directory&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
     &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;ivy-partial-or-done&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;string=&lt;/span&gt; &lt;span class="nv"&gt;dir&lt;/span&gt; &lt;span class="nv"&gt;ivy--directory&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;string=&lt;/span&gt; &lt;span class="nv"&gt;dir&lt;/span&gt; &lt;span class="nv"&gt;ivy--directory&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
       &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;ivy-insert-current&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
       &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;and&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;eq&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;ivy-state-collection&lt;/span&gt; &lt;span class="nv"&gt;ivy-last&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="nf"&gt;#&amp;#39;&lt;/span&gt;&lt;span class="nv"&gt;read-file-name-internal&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
                  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;dir&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;ivy-expand-file-if-directory&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;ivy-state-current&lt;/span&gt; &lt;span class="nv"&gt;ivy-last&lt;/span&gt;&lt;span class="p"&gt;))))&lt;/span&gt;
@@ -2140,7 +1506,7 @@ ivy默认的配置已经足够了，但还是可以通过一些技巧来提升�
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 预设场景一
+预设场景一
     dirs目录下有
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;init-a.el
@@ -2154,68 +1520,71 @@ init-c.el
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 输入 &lt;b&gt;init c&lt;/b&gt; 进行查找
+输入 &lt;b&gt;init c&lt;/b&gt; 进行查找
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 使用 &lt;code&gt;C-M-j&lt;/code&gt; &lt;b&gt;(ivy-immediate-done)&lt;/b&gt; 插入当前选中项
+使用 &lt;code&gt;C-M-j&lt;/code&gt; &lt;b&gt;(ivy-immediate-done)&lt;/b&gt; 插入当前选中项
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 修改
+修改
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;
     而使用 &lt;b&gt;maple/ivy-done&lt;/b&gt; 后呢
+&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 输入 &lt;b&gt;init c&lt;/b&gt; 进行查找
+输入 &lt;b&gt;init c&lt;/b&gt; 进行查找
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 使用 &lt;code&gt;tab&lt;/code&gt; 插入当前选中项
+使用 &lt;code&gt;tab&lt;/code&gt; 插入当前选中项
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 修改
+修改
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 预设场景二
+预设场景二
     有一个n级子目录，需要切换到第n个子目录下, 默认的ivy会怎么做呢
 &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 使用 &lt;code&gt;tab&lt;/code&gt; 选中
+使用 &lt;code&gt;tab&lt;/code&gt; 选中
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 再次使用 &lt;code&gt;tab&lt;/code&gt; 切换目录
+再次使用 &lt;code&gt;tab&lt;/code&gt; 切换目录
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;
     而使用 &lt;b&gt;maple/ivy-done&lt;/b&gt; 后呢
+&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 使用 &lt;code&gt;tab&lt;/code&gt; 选中并切换目录
+使用 &lt;code&gt;tab&lt;/code&gt; 选中并切换目录
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id="org-02cb96c0de"&gt;ivy中的C-h&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-d874b32c29"&gt;ivy中的C-h&lt;/h2&gt;&lt;p&gt;
   由于我是邪恶的 &lt;b&gt;evil&lt;/b&gt; 用户, 所以我正常情况会使用 &lt;code&gt;C-j&lt;/code&gt;, &lt;code&gt;C-k&lt;/code&gt;来选择待选项，同样的，我希望能够使用 &lt;code&gt;C-h&lt;/code&gt; 来进行某些操作,比如在&lt;b&gt;counsel-ag&lt;/b&gt;中使用&lt;code&gt;C-h&lt;/code&gt;代替&lt;code&gt;backspace&lt;/code&gt;删除输入的字符，而在&lt;b&gt;counsel-find-file&lt;/b&gt;中使用&lt;code&gt;C-h&lt;/code&gt;切换到上一级目录
 &lt;/p&gt;
 &lt;p&gt;
@@ -2230,9 +1599,7 @@ init-c.el
     &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;ivy-backward-delete-char&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h2 id="org-3528d8c79e"&gt;ivy-occur批量操作&lt;/h2&gt;
-&lt;h3 id="org-b52fad50bf"&gt;自动打开wgrep-mode&lt;/h3&gt;
-&lt;p&gt;
+&lt;h2 id="org-b0ce61450a"&gt;ivy-occur批量操作&lt;/h2&gt;&lt;h3 id="org-8e5c170ffd"&gt;自动打开wgrep-mode&lt;/h3&gt;&lt;p&gt;
    ivy默认调用&lt;b&gt;ivy-occur&lt;/b&gt;后, 还需要调用&lt;b&gt;ivy-wgrep-change-to-wgrep-mode&lt;/b&gt;才能进行批量修改
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;;; ivy-occur custom&lt;/span&gt;
@@ -2243,8 +1610,7 @@ init-c.el
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;ivy-occur&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-2e8b987865"&gt;批量修改文件名&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-fc4b298934"&gt;批量修改文件名&lt;/h3&gt;&lt;p&gt;
    预设场景: 当某个项目下有许多使用 &lt;b&gt;aaa.py&lt;/b&gt;的文件,我需要把 &lt;b&gt;aaa.py&lt;/b&gt; 全部修改为 &lt;b&gt;bbb.py&lt;/b&gt;, 也许某个 &lt;b&gt;aaa.py&lt;/b&gt; 需要修改成 &lt;b&gt;ccc.py&lt;/b&gt;，我在使用 &lt;b&gt;projectile-find-file&lt;/b&gt; 搜索完全部的 &lt;b&gt;aaa.py&lt;/b&gt; 后，打开ivy默认的&lt;b&gt;ivy-occur&lt;/b&gt;并不能对文件进行修改(提示&lt;code&gt;Text read only&lt;/code&gt;), 所以我采用 &lt;b&gt;find-name-dired&lt;/b&gt; 来批量修改文件名(目前还有些问题)
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/ivy-dired-occur&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
@@ -2259,49 +1625,51 @@ init-c.el
      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;bound-and-true-p&lt;/span&gt; &lt;span class="nv"&gt;evil-local-mode&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;evil-normal-state&lt;/span&gt;&lt;span class="p"&gt;)))))&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h2 id="org-92aa2d024e"&gt;counsel-find-file&lt;/h2&gt;
-&lt;h3 id="org-1cd80fd7a8"&gt;重命名&lt;/h3&gt;
-&lt;p&gt;
+&lt;h2 id="org-a09c565927"&gt;counsel-find-file&lt;/h2&gt;&lt;h3 id="org-25030a9f72"&gt;重命名&lt;/h3&gt;&lt;p&gt;
    预设场景: 有一个dirs目录, 我需要在同级目录下创建一个 &lt;b&gt;dirs-aa.el&lt;/b&gt; 的文件, 默认的ivy会怎么做呢
 &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 切换到 dirs 目录的上级目录
+切换到 dirs 目录的上级目录
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 使用 &lt;b&gt;ivy-immediate-done&lt;/b&gt; 插入目录名
+使用 &lt;b&gt;ivy-immediate-done&lt;/b&gt; 插入目录名
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 新建文件
+新建文件
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;
    但还有一种方式
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 切换到 dirs 目录
 &lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 使用 &lt;code&gt;backspace&lt;/code&gt; 键删除目录末尾的 =/= 
+切换到 dirs 目录
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+使用 &lt;code&gt;backspace&lt;/code&gt; 键删除目录末尾的 =/= 
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 新建文件
+新建文件
 &lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;
    不幸的是，ivy中 &lt;code&gt;backspace&lt;/code&gt; 的按键绑定了 &lt;b&gt;ivy-backward-delete-char&lt;/b&gt;, 在 &lt;b&gt;counsel-find-file&lt;/b&gt; 中使用 ivy会直接返回上级目录, 所以需要对 &lt;b&gt;ivy-backward-delete-char&lt;/b&gt; 作简单的修改
+&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/ivy-backward-delete-char&lt;/span&gt; &lt;span class="p"&gt;()&lt;/span&gt;
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;interactive&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;dir&lt;/span&gt; &lt;span class="nv"&gt;ivy--directory&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
@@ -2310,8 +1678,7 @@ init-c.el
     &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;when&lt;/span&gt; &lt;span class="nv"&gt;p&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;insert&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;file-name-nondirectory&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;directory-file-name&lt;/span&gt; &lt;span class="nv"&gt;dir&lt;/span&gt;&lt;span class="p"&gt;))))))&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h3 id="org-278502a2b7"&gt;自动创建不存在的目录&lt;/h3&gt;
-&lt;p&gt;
+&lt;h3 id="org-92f88f164e"&gt;自动创建不存在的目录&lt;/h3&gt;&lt;p&gt;
    不仅用于ivy, 其它文件操作命令也需要
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/ivy-make-directory-maybe&lt;/span&gt; &lt;span class="p"&gt;()&lt;/span&gt;
@@ -2325,8 +1692,7 @@ init-c.el
 &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;add-to-list&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;find-file-not-found-functions&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;maple/ivy-make-directory-maybe&lt;/span&gt; &lt;span class="no"&gt;nil&lt;/span&gt; &lt;span class="nf"&gt;#&amp;#39;eq&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h2 id="org-c0d738df1a"&gt;ivy自动使用选中的内容&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-38cf79a4d8"&gt;ivy自动使用选中的内容&lt;/h2&gt;&lt;p&gt;
   在使用 &lt;b&gt;counsel-ag&lt;/b&gt; 或者 &lt;b&gt;swiper&lt;/b&gt;, 我需要快速搜索选中的关键词，然而，ivy默认并不支持这么做，ivy需要打开&lt;b&gt;counsel-ag&lt;/b&gt;后使用 &lt;code&gt;M-n&lt;/code&gt; 插入选中的关键词，当然，也许是作者认为这样的方式很方便，但我并不认同，我为何需要重复一次操作呢，为何还需要记住 &lt;code&gt;M-n&lt;/code&gt; 这样的按键呢？
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/region-string&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
@@ -2360,8 +1726,7 @@ init-c.el
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple/ivy-search-at-point&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;swiper&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h2 id="org-f982e2b254"&gt;搜索某个目录&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-a666681327"&gt;搜索某个目录&lt;/h2&gt;&lt;p&gt;
   &lt;b&gt;counsel-ag&lt;/b&gt;默认搜索当前目录，想要搜索某个目录，需要切换到该目录下调用&lt;b&gt;counsel-ag&lt;/b&gt;，无疑的，这非常不方便，所以，我希望可以选择某个目录进行搜索
 &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/counsel-ag-directory&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
@@ -2369,8 +1734,7 @@ init-c.el
   &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;counsel-ag&lt;/span&gt; &lt;span class="no"&gt;nil&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;read-directory-name&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Search in directory: &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
-&lt;h2 id="org-16e38e01b5"&gt;ivy的显示避免出现在视线外&lt;/h2&gt;
-&lt;p&gt;
+&lt;h2 id="org-056736c9dc"&gt;ivy的显示避免出现在视线外&lt;/h2&gt;&lt;p&gt;
   详见 &lt;a href="https://honmaple.me/articles/2018/06/自定义helm式的ivy.html"&gt;自定义helm式的ivy.html&lt;/a&gt;中的
 &lt;/p&gt;
 &lt;blockquote&gt;

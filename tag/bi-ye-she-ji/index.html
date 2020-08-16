@@ -89,92 +89,67 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li>
-<p>
- <a href="#org-59c5779a52">站内信设计</a>
-</p>
+<li><a href="#org-9413147dde">站内信设计</a>
+<ul>
+<li><a href="#org-0c3f30c5b8">逻辑实现</a>
+<ul>
+<li><a href="#org-c7eda11573">点对点(私信)</a></li>
+</ul>
+
+<ul>
+<li><a href="#org-b7c2739d78">点对面(系统消息)</a></li>
+</ul>
 </li>
 </ul>
+
 <ul>
-<li>
-<p>
- <a href="#org-b5f6630370">逻辑实现</a>
-</p>
+<li><a href="#org-bb32b8aa5a">数据库设计</a>
+<ul>
+<li><a href="#org-52d14a0a2c">信息表(关联)</a></li>
+</ul>
+
+<ul>
+<li><a href="#org-653f55fc01">信息内容表</a></li>
+</ul>
 </li>
 </ul>
-<ul>
-<li>
-<p>
- <a href="#org-af7590b11e">点对点(私信)</a>
-</p>
-</li>
-</ul>
-<ul>
-<li>
-<p>
- <a href="#org-bc6868e96f">点对面(系统消息)</a>
-</p>
-</li>
-</ul>
-<ul>
-<li>
-<p>
- <a href="#org-69d2528e68">数据库设计</a>
-</p>
-</li>
-</ul>
-<ul>
-<li>
-<p>
- <a href="#org-c796b527b8">信息表(关联)</a>
-</p>
-</li>
-</ul>
-<ul>
-<li>
-<p>
- <a href="#org-4c941d2b1b">信息内容表</a>
-</p>
 </li>
 </ul>
 </div></div>
-<h2 id="org-59c5779a52">站内信设计</h2>
-<h3 id="org-b5f6630370">逻辑实现</h3>
-<h4 id="org-af7590b11e">点对点(私信)</h4>
-<ul>
+<h2 id="org-9413147dde">站内信设计</h2><h3 id="org-0c3f30c5b8">逻辑实现</h3><h4 id="org-c7eda11573">点对点(私信)</h4><ul>
 <li>
 <p>
- 发送方
+发送方
       sender
 </p>
 </li>
 <li>
 <p>
- 接收方
+接收方
       receiver
 </p>
 </li>
 <li>
 <p>
- 状态
+状态
       status
 </p>
 </li>
 <li>
 <p>
- 信息内容
+信息内容
       message
 </p>
 </li>
 <li>
 <p>
- 信息分类
+信息分类
       message_type
 </p>
 </li>
 <li>
 <p>
- 发送时间
+发送时间
       created_at
 </p>
 <p>
@@ -188,7 +163,7 @@
 </li>
 <li>
 <p>
- 获取未读信息
+获取未读信息
 </p>
 <div class="highlight"><pre><span></span><span class="k">select</span> <span class="n">message</span> <span class="k">from</span> <span class="n">message</span> <span class="k">where</span> <span class="n">reveiver_id</span> <span class="o">==</span> <span class="s1">&#39;user.id&#39;</span> <span class="k">and</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;unread&#39;</span><span class="p">;</span>
 </pre></div>
@@ -196,7 +171,7 @@
 </li>
 <li>
 <p>
- 获取系统未读信息
+获取系统未读信息
 </p>
 <div class="highlight"><pre><span></span><span class="k">select</span> <span class="n">message</span> <span class="k">from</span> <span class="n">message</span> <span class="k">where</span> <span class="n">reveiver_id</span> <span class="o">==</span> <span class="s1">&#39;user.id&#39;</span> <span class="k">and</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;unread&#39;</span> <span class="k">and</span> <span class="n">message_type</span> <span class="o">=</span> <span class="s1">&#39;sys&#39;</span>
 </pre></div>
@@ -204,15 +179,14 @@
 </li>
 <li>
 <p>
- 获取已读信息
+获取已读信息
 </p>
 <div class="highlight"><pre><span></span><span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;read&#39;</span>
 </pre></div>
 
 </li>
 </ul>
-<h4 id="org-bc6868e96f">点对面(系统消息)</h4>
-<p>
+<h4 id="org-b7c2739d78">点对面(系统消息)</h4><p>
     点对面实现不能像<b>点对点</b>一样为每一个用户创建一条数据(如果数以十万百万计)
     具体实现看这里 <a href="http://www.cnblogs.com/grenet/archive/2010/04/09/1708008.html">http://www.cnblogs.com/grenet/archive/2010/04/09/1708008.html</a>
 </p>
@@ -224,13 +198,13 @@
 <ul>
 <li>
 <p>
- 发送私信(点对点)
+发送私信(点对点)
 </p>
 <div class="highlight"><pre><span></span><span class="c1"># 先保存消息主体内容</span>
 <span class="n">message_text</span> <span class="o">=</span> <span class="n">MessageText</span><span class="p">(</span>
     <span class="n">sender</span> <span class="o">=</span> <span class="n">sender</span><span class="p">,</span>
     <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">,</span>
-    <span class="n">message_type</span> <span class="o">=</span> <span class="n">message_type</span><span class="p">(</span><span class="n">私信</span><span class="p">)</span>
+    <span class="n">message_type</span> <span class="o">=</span> <span class="n">message_type</span><span class="p">(</span><span class="err">私信</span><span class="p">)</span>
 <span class="p">)</span>
 <span class="c1"># 保存接受方，并关联消息主体</span>
 <span class="n">message</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span>
@@ -243,7 +217,7 @@
 <ul>
 <li>
 <p>
- 获取未读信息
+获取未读信息
 </p>
 <div class="highlight"><pre><span></span><span class="n">messages</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">receiver</span> <span class="o">=</span> <span class="n">current_user</span><span class="p">,</span><span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;unread&#39;</span><span class="p">)</span>
 </pre></div>
@@ -253,20 +227,20 @@
 </li>
 <li>
 <p>
- 系统消息
+系统消息
 </p>
 <div class="highlight"><pre><span></span><span class="c1"># 只保存消息主体内容</span>
 <span class="n">message_text</span> <span class="o">=</span> <span class="n">MessageText</span><span class="p">(</span>
     <span class="n">sender</span> <span class="o">=</span> <span class="n">sender</span><span class="p">,</span>
     <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">,</span>
-    <span class="n">message_type</span> <span class="o">=</span> <span class="n">message_type</span><span class="p">(</span><span class="n">系统消息</span><span class="p">)</span>
+    <span class="n">message_type</span> <span class="o">=</span> <span class="n">message_type</span><span class="p">(</span><span class="err">系统消息</span><span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
 
 <ul>
 <li>
 <p>
- 获取未读信息
+获取未读信息
         判断 <b>message</b> 表中 <b>message_text_id</b> 是否存在于 <b>message_text_id__list</b> (receiver = current_user)
         <del>不存在</del>,标记为<b>系统未读</b>
         存在,判断是否未读
@@ -274,7 +248,7 @@
 </li>
 <li>
 <p>
- 获取具体未读信息
+获取具体未读信息
         如上<del>不存在</del>时
 </p>
 <div class="highlight"><pre><span></span><span class="c1"># 保存消息</span>
@@ -286,16 +260,14 @@
 <p>
         <b>存在</b>时,
 </p>
-<div class="highlight"><pre><span></span><span class="err">message.status = &#39;read&#39;</span>
+<div class="highlight"><pre><span></span><span class="n">message</span><span class="p">.</span><span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;read&#39;</span>
 </pre></div>
 
 </li>
 </ul>
 </li>
 </ul>
-<h3 id="org-69d2528e68">数据库设计</h3>
-<h4 id="org-c796b527b8">信息表(关联)</h4>
-<div class="highlight"><pre><span></span><span class="n">tablename</span><span class="o">:</span> <span class="n">message</span>
+<h3 id="org-bb32b8aa5a">数据库设计</h3><h4 id="org-52d14a0a2c">信息表(关联)</h4><div class="highlight"><pre><span></span><span class="n">tablename</span><span class="o">:</span> <span class="n">message</span>
 </pre></div>
 
 <table>
@@ -348,8 +320,7 @@
 <td>0(未读)</td>
 </tr>
 </table>
-<h4 id="org-4c941d2b1b">信息内容表</h4>
-<div class="highlight"><pre><span></span><span class="n">tablename</span><span class="o">:</span> <span class="n">message_text</span>
+<h4 id="org-653f55fc01">信息内容表</h4><div class="highlight"><pre><span></span><span class="n">tablename</span><span class="o">:</span> <span class="n">message_text</span>
 </pre></div>
 
 <table>
@@ -435,90 +406,54 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li>
-<p>
- <a href="#org-eb7fe1e9d7">登陆注册数据库设计</a>
-</p>
-</li>
-</ul>
+<li><a href="#org-c078b3fec4">登陆注册数据库设计</a>
 <ul>
-<li>
-<p>
- <a href="#org-f7c2eef522">用户表</a>
-</p>
-</li>
+<li><a href="#org-da793dff67">用户表</a></li>
 </ul>
+
 <ul>
-<li>
-<p>
- <a href="#org-288dac2abe">用户信息表</a>
-</p>
-</li>
+<li><a href="#org-5cd58f3ca2">用户信息表</a></li>
 </ul>
+
 <ul>
-<li>
-<p>
- <a href="#org-18cd9f3383">用户设置表</a>
-</p>
-</li>
+<li><a href="#org-8e73af91e7">用户设置表</a></li>
 </ul>
+
 <ul>
-<li>
-<p>
- <a href="#org-5bf8d232c5">用户token表</a>
-</p>
-</li>
+<li><a href="#org-56dea50958">用户token表</a></li>
 </ul>
-<ul>
-<li>
-<p>
- <a href="#org-408aa46990">数据库实现</a>
-</p>
 </li>
-</ul>
+<li><a href="#org-cd72921eeb">数据库实现</a>
 <ul>
-<li>
-<p>
- <a href="#org-f7c2eef522">用户表</a>
-</p>
-</li>
+<li><a href="#org-da793dff67">用户表</a></li>
 </ul>
+
 <ul>
-<li>
-<p>
- <a href="#org-288dac2abe">用户信息表</a>
-</p>
-</li>
+<li><a href="#org-5cd58f3ca2">用户信息表</a></li>
 </ul>
+
 <ul>
-<li>
-<p>
- <a href="#org-18cd9f3383">用户设置表</a>
-</p>
-</li>
+<li><a href="#org-8e73af91e7">用户设置表</a></li>
 </ul>
+
 <ul>
-<li>
-<p>
- <a href="#org-5bf8d232c5">用户token表</a>
-</p>
+<li><a href="#org-56dea50958">用户token表</a></li>
+</ul>
 </li>
 </ul>
 </div></div>
-<h2 id="org-eb7fe1e9d7">登陆注册数据库设计</h2>
-<p>
+<h2 id="org-c078b3fec4">登陆注册数据库设计</h2><p>
   共同字段:
 </p>
 <ul>
 <li>
 <p>
- id
+id
     主键,自增ID
 </p>
 </li>
 </ul>
-<h3 id="org-f7c2eef522">用户表</h3>
-<div class="highlight"><pre><span></span><span class="n">tablename</span><span class="o">:</span> <span class="n">user</span>
+<h3 id="org-da793dff67">用户表</h3><div class="highlight"><pre><span></span><span class="n">tablename</span><span class="o">:</span> <span class="n">user</span>
 </pre></div>
 
 <table>

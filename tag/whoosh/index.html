@@ -90,46 +90,23 @@
           <div class="entry-content">
             <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
 <ul>
-<li>
-<p>
- <a href="#org-d07133c850">Quickstart</a>
-</p>
-</li>
-</ul>
+<li><a href="#org-eb543a6ac7">Quickstart</a></li>
+<li><a href="#org-69e3065f1e">Usage</a>
 <ul>
-<li>
-<p>
- <a href="#org-0bb18642b7">Usage</a>
-</p>
-</li>
+<li><a href="#org-b7a3c63ba5">创建更新删除索引</a></li>
 </ul>
+
 <ul>
-<li>
-<p>
- <a href="#org-f8eb13e34e">创建更新删除索引</a>
-</p>
-</li>
+<li><a href="#org-20ba6581b0">自定义analyzer</a></li>
 </ul>
-<ul>
-<li>
-<p>
- <a href="#org-98bee9a16c">自定义analyzer</a>
-</p>
 </li>
-</ul>
-<ul>
-<li>
-<p>
- <a href="#org-792c81a4cf">Configure</a>
-</p>
-</li>
+<li><a href="#org-92d57d8acc">Configure</a></li>
 </ul>
 </div></div>
 <p>
 flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/Flask-WhooshAlchemy , 但试了几次都用不了,所以参考 Flask-WhooshAlchemy 自己写了一个
 </p>
-<h2 id="org-d07133c850">Quickstart</h2>
-<p>
+<h2 id="org-eb543a6ac7">Quickstart</h2><p>
   插件基于 whoosh,纯 python 编写,使用上很简单
 </p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask_msearch</span> <span class="kn">import</span> <span class="n">Search</span>
@@ -143,24 +120,22 @@ flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/
     <span class="n">__searchable__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">]</span>
 
 <span class="c1"># views.py</span>
-<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/search&quot;</span><span class="p">)</span>
+<span class="nd">@app.route</span><span class="p">(</span><span class="s2">&quot;/search&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">w_search</span><span class="p">():</span>
     <span class="n">keyword</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;keyword&#39;</span><span class="p">)</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">search</span><span class="o">.</span><span class="n">whoosh_search</span><span class="p">(</span><span class="n">Post</span><span class="p">,</span><span class="n">query</span><span class="o">=</span><span class="n">keyword</span><span class="p">,</span><span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">],</span><span class="n">limit</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
     <span class="k">return</span> <span class="s1">&#39;&#39;</span>
 </pre></div>
 
-<h2 id="org-0bb18642b7">Usage</h2>
-<h3 id="org-f8eb13e34e">创建更新删除索引</h3>
-<p>
+<h2 id="org-69e3065f1e">Usage</h2><h3 id="org-b7a3c63ba5">创建更新删除索引</h3><p>
    如果要对已存在的数据创建索引(全部)
 </p>
 <div class="highlight"><pre><span></span><span class="c1"># 创建</span>
 <span class="n">search</span><span class="o">.</span><span class="n">create_index</span><span class="p">()</span>
 <span class="c1"># 更新</span>
-<span class="n">search</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">search</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="c1"># 删除</span>
-<span class="n">search</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="n">delete</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">search</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 
 <p>
@@ -169,17 +144,15 @@ flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/
 <div class="highlight"><pre><span></span><span class="n">search</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 </pre></div>
 
-<h3 id="org-98bee9a16c">自定义analyzer</h3>
-<p>
+<h3 id="org-20ba6581b0">自定义analyzer</h3><p>
    比如使用jieba的中文分词
 </p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">jieba.analyse</span> <span class="kn">import</span> <span class="n">ChineseAnalyzer</span>
 <span class="n">search</span> <span class="o">=</span> <span class="n">Search</span><span class="p">(</span><span class="n">analyzer</span><span class="o">=</span><span class="n">ChineseAnalyzer</span><span class="p">())</span>
 </pre></div>
 
-<h2 id="org-792c81a4cf">Configure</h2>
-<div class="highlight"><pre><span></span><span class="n">WHOOSH_BASE</span> <span class="o">=</span> <span class="s1">&#39;whoosh_index&#39;</span>
-<span class="n">WHOOSH_ENABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<h2 id="org-92d57d8acc">Configure</h2><div class="highlight"><pre><span></span><span class="n">WHOOSH_BASE</span> <span class="o">=</span> <span class="s1">&#39;whoosh_index&#39;</span>
+<span class="n">WHOOSH_ENABLE</span> <span class="o">=</span> <span class="bp">True</span>
 </pre></div>
 
 <p>
