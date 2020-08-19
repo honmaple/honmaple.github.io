@@ -43,9 +43,8 @@ function toggleTheme() {
     }
     return changeTheme(themeList[index],themeCSS[themeList[index]]);
 }
-var themeList = ["black", "tree"];
+var themeList = ["tree"];
 var themeCSS = {
-    black: "/theme/css/main-black.css",
     tree: "/theme/css/main-tree.css",
 };
 var theme = getCookie('theme');

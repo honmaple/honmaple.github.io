@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>restful · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/theme/lib/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="particles-js" id="particles-js"></div>
+    <div class="scrollbar"></div>
+    <div class="wrap">
+      <div class="main">
+<nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="https://honmaple.me/categories/life/index.html" >代码人生</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/categories/coding/index.html">分享世界</a></li>
+                <li><a href="https://honmaple.me/categories/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/categories/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li ><a href="https://honmaple.me/categories/linux/index.html">字符艺术</a></li>
+          <li ><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+          <li ><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+      <li class="dropdown">
+        <a href="https://honmaple.me/archives/index.html">文章归档</a>
+        <ul class="dropdown-menu">
+          <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+          <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+          <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+        </ul>
+      </li>
+      <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>        <article>
+          <div class="entry-header">
+            <h1 class="entry-title">
+              <a href="https://honmaple.me/articles/2016/06/基于restful的flask权限管理.html" rel="bookmark" title="Permalink to 基于restful的flask权限管理">基于restful的flask权限管理</a>
+            </h1>
+<header class="entry-info">
+  <span title="2016-06-10T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    五 10 六月 2016
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/python/index.html">Python</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/python/index.html">python</a>
+        <a href="https://honmaple.me/tags/flask/index.html">flask</a>
+        <a href="https://honmaple.me/tags/restful/index.html">restful</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <h3>为什么需要restful形式的权限管理<a id="orgheadline1"></a></h3>
+<p>最近在写flask应用时使用了 <strong>restful</strong> 形式的<code>flask.views.MethodView</code>，但是在对其进行权限管理时遇到了一些问题</p>
+<p>flask文档上介绍说用</p>
+<div class="highlight"><pre><span></span><span class="n">decorators</span> <span class="o">=</span> <span class="p">[]</span>
+</pre></div>
+
+
+<p>添加装饰器,但实际使用上,比如</p>
+<ul>
+<li><strong>get</strong> 和 <strong>post</strong> 采用不同的权限</li>
+</ul>
+<blockquote>
+<p>get 不使用 login_required  <br>
+ post 需要 login_required</p>
+</blockquote>
+<p>这样就不能使用 <strong>decorators</strong> 对视图进行装饰</p>
+<ul>
+<li>
+<p><strong>post</strong> ,<strong>delete</strong>, <strong>put</strong> 都需要 login_required,但是<strong>get</strong>不需要
+    而 <strong>delete</strong> 又需要更高级别的权限,我们可以这样</p>
+<div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="n">AAA</span><span class="p">(</span><span class="n">MethodView</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="k">get</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="n">uid</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+<span class="w">        </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="nv">@login_required</span><span class="w"></span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">post</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+<span class="w">        </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="nv">@login_required</span><span class="w"></span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">put</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="n">uid</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+<span class="w">        </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="nv">@login_required</span><span class="w"></span>
+<span class="w">    </span><span class="nv">@more_required</span><span class="w"></span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="k">delete</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="n">uid</span><span class="p">)</span><span class="err">:</span><span class="w"></span>
+<span class="w">        </span><span class="p">...</span><span class="w"></span>
+</pre></div>
+
+
+<p>是不是看起来还不错, <strong>但是</strong>,如果再加上<a href="http://www.pythonhosted.org/Flask-Principal/">类似EditBlogPostPermission</a> 这样的权限管理呢?
+是不是还需要这样</p>
+<div class="highlight"><pre><span></span>@<span class="nv">login_required</span>
+<span class="nv">def</span> <span class="nv">put</span><span class="ss">(</span><span class="nv">self</span>,<span class="nv">uid</span><span class="ss">)</span>:
+    <span class="nv">permission</span> <span class="o">=</span> <span class="nv">EditBlogPostPermission</span><span class="ss">(</span><span class="nv">uid</span><span class="ss">)</span>
+    <span class="k">if</span> <span class="nv">permission</span>.<span class="nv">can</span><span class="ss">()</span>:
+        # <span class="nv">Save</span> <span class="nv">the</span> <span class="nv">edits</span> ...
+        <span class="k">return</span> <span class="nv">render_template</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">edit_post.html</span><span class="s1">&#39;</span><span class="ss">)</span>
+    ...
+</pre></div>
+
+
+<p>先不论样式丑不丑，最重要的代码的 <strong>可维护性</strong> 极差,所以我增加了如下代码</p>
+</li>
+</ul>
+<h3>怎么实现restful形式的权限管理<a id="orgheadline2"></a></h3>
+<p>同样采用装饰器实现,调用 <em>BasePermission</em> 时会自动调用 <em><strong>call</strong></em> 函数</p>
+<div class="highlight"><pre><span></span><span class="nv">class</span> <span class="nv">BasePermission</span><span class="ss">(</span><span class="nv">object</span><span class="ss">)</span>:
+
+    <span class="nv">def</span> <span class="nv">__call__</span><span class="ss">(</span><span class="nv">self</span>, <span class="nv">func</span><span class="ss">)</span>:
+        @<span class="nv">wraps</span><span class="ss">(</span><span class="nv">func</span><span class="ss">)</span>
+        <span class="nv">def</span> <span class="nv">decorator</span><span class="ss">(</span><span class="o">*</span><span class="nv">args</span>, <span class="o">**</span><span class="nv">kwargs</span><span class="ss">)</span>:
+            <span class="nv">meth</span> <span class="o">=</span> <span class="nv">getattr</span><span class="ss">(</span><span class="nv">self</span>, <span class="nv">request</span>.<span class="nv">method</span>.<span class="nv">lower</span><span class="ss">()</span>, <span class="nv">None</span><span class="ss">)</span>
+            <span class="k">if</span> <span class="nv">meth</span> <span class="nv">is</span> <span class="nv">None</span> <span class="nv">and</span> <span class="nv">request</span>.<span class="nv">method</span> <span class="o">==</span> <span class="s1">&#39;</span><span class="s">HEAD</span><span class="s1">&#39;</span>:
+                <span class="nv">meth</span> <span class="o">=</span> <span class="nv">getattr</span><span class="ss">(</span><span class="nv">self</span>, <span class="s1">&#39;</span><span class="s">get</span><span class="s1">&#39;</span>, <span class="nv">None</span><span class="ss">)</span>
+            <span class="nv">assert</span> <span class="nv">meth</span> <span class="nv">is</span> <span class="nv">not</span> <span class="nv">None</span>, <span class="s1">&#39;</span><span class="s">Unimplemented method %r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nv">request</span>.<span class="nv">method</span>
+            <span class="nv">check</span> <span class="o">=</span> <span class="nv">meth</span><span class="ss">(</span><span class="o">*</span><span class="nv">args</span>, <span class="o">**</span><span class="nv">kwargs</span><span class="ss">)</span>
+            <span class="k">if</span> <span class="nv">check</span>:
+                <span class="k">return</span> <span class="nv">check</span>
+            <span class="k">else</span>:
+                <span class="nv">pass</span>
+            <span class="k">return</span> <span class="nv">func</span><span class="ss">(</span><span class="o">*</span><span class="nv">args</span>, <span class="o">**</span><span class="nv">kwargs</span><span class="ss">)</span>
+
+        <span class="k">return</span> <span class="nv">decorator</span>
+</pre></div>
+
+
+<p>举个例子,get方式不需要用户登陆,而其它方式需要,并且put方式需要创建主题的作者才能更改</p>
+<div class="highlight"><pre><span></span><span class="nv">class</span> <span class="nv">TopicPermission</span><span class="ss">(</span><span class="nv">BasePermission</span><span class="ss">)</span>:
+    @<span class="nv">login_required</span>
+    <span class="nv">def</span> <span class="nv">post</span><span class="ss">(</span><span class="nv">self</span><span class="ss">)</span>:
+        <span class="nv">pass</span>
+
+    <span class="nv">def</span> <span class="nv">get</span><span class="ss">(</span><span class="nv">self</span>, <span class="nv">uid</span><span class="ss">)</span>:
+        <span class="nv">pass</span>
+
+    @<span class="nv">login_required</span>
+    <span class="nv">def</span> <span class="nv">put</span><span class="ss">(</span><span class="nv">self</span>, <span class="nv">uid</span><span class="ss">)</span>:
+        <span class="nv">permission</span> <span class="o">=</span> <span class="nv">EditTopicPermission</span><span class="ss">(</span><span class="nv">uid</span><span class="ss">)</span>
+        <span class="k">if</span> <span class="nv">not</span> <span class="nv">permission</span>.<span class="nv">can</span><span class="ss">()</span>:
+            <span class="nv">flash</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">你没有权限</span><span class="s1">&#39;</span><span class="ss">)</span>
+            <span class="k">return</span> <span class="nv">redirect</span><span class="ss">(</span><span class="nv">url_for</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">topic.topic</span><span class="s1">&#39;</span>, <span class="nv">uid</span><span class="o">=</span><span class="nv">uid</span><span class="ss">))</span>
+
+    @<span class="nv">login_required</span>
+    <span class="nv">def</span> <span class="nv">delete</span><span class="ss">(</span><span class="nv">self</span>,<span class="nv">uid</span><span class="ss">)</span>:
+        <span class="nv">pass</span>
+
+<span class="nv">topic_permission</span> <span class="o">=</span> <span class="nv">TopicPermission</span><span class="ss">()</span>
+</pre></div>
+
+
+<p>假设四种方式都需要同一种权限,都需要用户登陆,总不能每个函数前都加上装饰器吧
+所以稍加修改</p>
+<div class="highlight"><pre><span></span><span class="nv">decorators</span> <span class="o">=</span> <span class="ss">()</span>
+<span class="nv">def</span> <span class="nv">__call__</span><span class="ss">(</span><span class="nv">self</span>, <span class="nv">func</span><span class="ss">)</span>:
+    <span class="k">if</span> <span class="nv">self</span>.<span class="nv">decorators</span>:
+        <span class="k">for</span> <span class="nv">dec</span> <span class="nv">in</span> <span class="nv">self</span>.<span class="nv">decorators</span>:
+            <span class="k">return</span> <span class="nv">dec</span><span class="ss">(</span><span class="nv">func</span><span class="ss">)</span>
+</pre></div>
+
+
+<p>OK,这样就可以添加</p>
+<div class="highlight"><pre><span></span><span class="n">decorators</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="n">login_required</span><span class="o">]</span><span class="w"></span>
+</pre></div>
+
+
+<p>来实现四种请求方式采用同一种权限</p>
+<p>最后,你就可以在 <em>AAA</em> 这个类里添加</p>
+<div class="highlight"><pre><span></span><span class="n">decorators</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="n">topic_permission</span><span class="o">]</span><span class="w"></span>
+</pre></div>
+
+
+<p>实现restful形式的权限管理</p>
+<p>ok，就这样,可能还不完善或有一些问题，如有问题请联系我</p>
+          </div>
+        </article>
+      </div>
+    </div>
+<div class="footer">
+  <ul class="list-inline entry-social">
+    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/feeds/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+  <ul class="list-inline copyright">
+    <li class="hidden-xs">© 2015-2020 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+          <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+</div>    <div class="back-to-top back-to-top-on">
+      <i class="fa fa-hand-o-up" title="back to top"></i>
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+   window.dataLayer = window.dataLayer || [];
+   function gtag(){dataLayer.push(arguments);}
+   gtag('js', new Date());
+   gtag('config', 'UA-88401692-2');
+  </script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/theme/lib/js/script.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+           if (typeof ga !== 'undefined') {
+               ga('send', 'pageview', location.pathname + location.search);
+           }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>

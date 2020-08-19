@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>honmaple · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/theme/lib/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="particles-js" id="particles-js"></div>
+    <div class="scrollbar"></div>
+    <div class="wrap">
+      <div class="main">
+<nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="https://honmaple.me/categories/life/index.html" >代码人生</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/categories/coding/index.html">分享世界</a></li>
+                <li><a href="https://honmaple.me/categories/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/categories/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li ><a href="https://honmaple.me/categories/linux/index.html">字符艺术</a></li>
+          <li ><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+          <li ><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+      <li class="dropdown">
+        <a href="https://honmaple.me/archives/index.html">文章归档</a>
+        <ul class="dropdown-menu">
+          <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+          <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+          <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+        </ul>
+      </li>
+      <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>          <ul class="entry-list" style="margin-top:0;">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/08/tornado中session实现.html" rel="bookmark" title="Permalink to tornado中session实现">tornado中session实现</a></h1>
+<header class="entry-info">
+  <span title="2017-08-06T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    日 06 八月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/coding/index.html">coding</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/python/index.html">python</a>
+        <a href="https://honmaple.me/tags/tornado/index.html">tornado</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            
+<p>
+tornado中默认没有session的实现,虽然默认的 <b>set_secure_cookie</b> 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息
+</p>
+<p>
+注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行
+</p>
+<p>
+给出源码:
+</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
+<span class="kn">from</span> <span class="nn">redis</span> <span class="kn">import</span> <span class="n">StrictRedis</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="kn">import</span> <span class="n">timezone</span>
+
+
+<span class="k">def</span> <span class="nf">singleton</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="n">instances</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">getinstance</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">:</span>
+            <span class="n">instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/08/tornado中session实现.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/08/明明你也很爱我.html" rel="bookmark" title="Permalink to 明明你也很爱我">明明你也很爱我</a></h1>
+<header class="entry-info">
+  <span title="2017-08-02T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    三 02 八月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/love/index.html">love</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/life/index.html">life</a>
+        <a href="https://honmaple.me/tags/love/index.html">love</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            
+<div style="text-align: center;">
+<blockquote>
+<p class="verse">
+你怎么那么冷漠<br />  你怎么就不怕错过我<br />明明你也很爱我<br />  为什么爱不到结果
+</p>
+</blockquote>
+</div>
+<div style="text-align: center;">
+<blockquote>
+<p class="verse">
+咫尺层城留不住<br />久相忘<br />到此偏相忆
+</p>
+</blockquote>
+</div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/08/明明你也很爱我.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/07/手机与Linux桌面文件共享.html" rel="bookmark" title="Permalink to 手机与Linux桌面文件共享">手机与Linux桌面文件共享</a></h1>
+<header class="entry-info">
+  <span title="2017-07-30T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    日 30 七月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/ftp/index.html">ftp</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-1071f6c4b8">手机共享文件到电脑</a></li>
+<li><a href="#org-44b801057c">电脑共享文件到手机</a></li>
+</ul>
+</div></div>
+<p>
+手机: 某米
+电脑: archlinux
+环境: 同一wifi下
+</p>
+<h2 id="org-1071f6c4b8">手机共享文件到电脑</h2><p>
+  最近才发现手机可以开启ftp服务对文件进行共享,直接进入文件管理器开启就行,电脑上使用
+</p>
+<div class="highlight"><pre><span></span><span class="n">ftp</span> <span class="n">target</span>
+</pre></div>
+
+<p>
+  进行连接
+</p>
+<p>
+  注： <b>get</b> 下载 <b>put</b> 上传
+</p>
+<h2 id="org-44b801057c">电脑共享文件到手机</h2><p>
+  这里采用python搭建一个简单的web服务(python3)供手机下载文件
+</p>
+<div class="highlight"><pre><span></span><span class="o">#</span> <span class="err">首先</span> <span class="n">cd</span> <span class="err">到要共享的目录</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">http</span><span class="p">.</span><span class="n">server</span> <span class="c1">--bind 0.0.0.0</span>
+</pre></div>
+
+<p>
+  查看本机IP
+</p>
+<div class="highlight"><pre><span></span><span class="n">ifconfig</span>
+<span class="o">#</span> <span class="err">或者</span>
+<span class="n">ip</span> <span class="n">addr</span>
+</pre></div>
+
+<p>
+  <b>重要</b>: 请确保关闭防火墙,否则手机无法连接
+</p>
+<div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">systemctl …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/07/手机与Linux桌面文件共享.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/07/一个简单的数据分组算法.html" rel="bookmark" title="Permalink to 一个简单的数据分组算法">一个简单的数据分组算法</a></h1>
+<header class="entry-info">
+  <span title="2017-07-26T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    三 26 七月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/python/index.html">Python</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/python/index.html">python</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-fe464900b0">获取开始时间</a></li>
+<li><a href="#org-ed5c3660bb">时间分组</a></li>
+</ul>
+</div></div>
+<p>
+之前有这么一个需求
+</p>
+<blockquote>
+<p>
+将数据按照时间分组，比如说每5分钟为一组，或者每30分钟为一组，开始时间如果分钟数大于等于30分钟，则设置为30,如果小于30,则设置为0（也可以设置为更复杂的逻辑）
+</p>
+<p>
+当然中间还有一些数据的统计，分析和计算暂时不管
+</p>
+</blockquote>
+<h2 id="org-fe464900b0">获取开始时间</h2><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_start_date</span><span class="p">(</span><span class="n">start_date</span><span class="p">):</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">minute</span> <span class="o">&gt;=</span> <span class="mi">30</span><span class="p">:</span>
+        <span class="n">minute</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">minute</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">start_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span>
+                          <span class="mi">0</span><span class="p">)</span>
+    <span class="n">start_date</span> <span class="o">=</span> <span class="n">mktime …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/07/一个简单的数据分组算法.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/07/Linux伪总结.html" rel="bookmark" title="Permalink to Linux总结(草稿)">Linux总结(草稿)</a></h1>
+<header class="entry-info">
+  <span title="2017-07-12T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    三 12 七月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-3b8308f94f">Linux发展历史</a></li>
+<li><a href="#org-103c0447d1">Linux的最小组成</a></li>
+<li><a href="#org-6845a02c57">Linux的安装与启动</a></li>
+</ul>
+</div></div>
+<h2 id="org-3b8308f94f">Linux发展历史</h2><p>
+  Linux是由BSD发展而来，BSD又起源于UNIX。UNIX由贝尔实验室开发，
+  后来开放给各大学教学使用,其中伯克利大学通过对UNIX源码的研究以及不断的改进与扩展,
+  推出BSD,并于BSD 4.3版本加入网络模块,极大推进UNIX的发展。但后面由于版权等原因,
+  UNIX与BSD之间发生冲突与法律纠纷,直到1998年,在此期间,芬兰大学生Linus Torvalds
+  于1991年发布首个Linux版本,linux也趁UNIX与BSD纠纷之际,得到非常快速的发展
+</p>
+<h2 id="org-103c0447d1">Linux的最小组成</h2><p>
+  Linux最小由内核kernel,文件层次结构FHS,系统启动器bootloader组成,其中内存调度，
+  进程调度等由内核管理,内核可单独运行，但需要与其它组成相配合。
+</p>
+<p>
+  语言:一般有头文件与库文件,头文件为实现,库文件为声明
+</p>
+<h2 id="org-6845a02c57">Linux的安装与启动</h2><p>
+  当linux启动时，首先启动内核，内核调用init来完成引导进程，init启动时，它会在/etc/inittab内查找默认的运行级别,
+  然后运行/etc/rc …</p>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/07/Linux伪总结.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/07/celery动态添加任务.html" rel="bookmark" title="Permalink to celery动态添加任务">celery动态添加任务</a></h1>
+<header class="entry-info">
+  <span title="2017-07-09T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    日 09 七月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/celery/index.html">celery</a>
+        <a href="https://honmaple.me/tags/python/index.html">python</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            
+<p>
+celery是一个基于Python的分布式调度系统，<a href="http://docs.celeryproject.org/en/latest/">文档在这</a>,最近有个需求,想要动态的添加任务而不用重启celery服务,找了一圈没找到什么好办法(也有可能是文档没看仔细)，所以只能自己实现囉
+</p>
+<p>
+为celery动态添加任务，首先我想到的是传递一个函数进去，让某个特定任务去执行这个传递过去的函数，就像这样
+</p>
+<div class="highlight"><pre><span></span><span class="nd">@app.task</span>
+<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+
+<p>
+很可惜，会出现这样的错误
+</p>
+<div class="highlight"><pre><span></span><span class="n">kombu</span><span class="p">.</span><span class="n">exceptions</span><span class="p">.</span><span class="n">EncodeError</span><span class="p">:</span> <span class="k">Object</span> <span class="k">of</span> <span class="k">type</span> <span class="s1">&#39;function&#39;</span> <span class="k">is</span> <span class="k">not</span> <span class="n">JSON</span> <span class="k">serializable</span>
+</pre></div>
+
+<p>
+换一种序列化方式
+</p>
+<div class="highlight"><pre><span></span><span class="nd">@app.task</span><span class="p">(</span><span class="n">serializer</span><span class="o">=</span><span class="s1">&#39;pickle&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/07/celery动态添加任务.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/07/我的Linux历程.html" rel="bookmark" title="Permalink to 我的Linux历程">我的Linux历程</a></h1>
+<header class="entry-info">
+  <span title="2017-07-05T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    三 05 七月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">Linux</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-0a4f75316d">Linux</a></li>
+<li><a href="#org-1a166a561d">Linux发行版</a></li>
+<li><a href="#org-0b2b02745e">Linux历程</a></li>
+<li><a href="#org-7c97e38cc5">Linux的娱乐性</a></li>
+<li><a href="#org-c59d71288a">Linux上的实用性</a></li>
+<li><a href="#org-4c9eed7ab5">深入了解Linux</a></li>
+</ul>
+</div></div>
+<h2 id="org-0a4f75316d">Linux</h2><p>
+  是一种计算机操作系统内核,以C语言和汇编语言写成，匹配POSIX标准，以GNU通用公共许可证(GPL2)发布,最早是由林纳斯·托瓦兹开发的类UNIX系统
+</p>
+<p>
+  Linux与UNIX的区别: UNIX系统大多是与硬件配套的，而Linux则可运行在多种硬件平台上。UNIX是商业软件，而Linux自由免费。
+</p>
+<h2 id="org-1a166a561d">Linux发行版</h2><p>
+  简单的来说将Linux内核与一些系统软件，应用软件进行整合，有的发行版还包括图形界面(x11，wayland),目前所说的Linux大多代表Linux发行版
+</p>
+<h2 id="org-0b2b02745e">Linux历程</h2><p>
+  曾经在某论坛看到linux这个名词，立马装上虚拟机然后安装了我的第一个Linux版本--centos，并且装上了gnome桌面环境，随后开始了Linux折腾之旅,
+  大概是这样的 centos --&gt; kali --&gt; ubuntu --&gt; fedora --&gt; ubuntu kylin --&gt; mint --&gt; debian --&gt; fedora --&gt; archlinux ......,Linux发行版大概分为3系,
+  debain系,包括ubuntu …</p>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/07/我的Linux历程.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/06/关于网易云音乐个性推荐无法显示的问题.html" rel="bookmark" title="Permalink to 关于网易云音乐个性推荐无法显示的问题">关于网易云音乐个性推荐无法显示的问题</a></h1>
+<header class="entry-info">
+  <span title="2017-06-02T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    五 02 六月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/netease/index.html">netease</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            
+<p>
+最近在使用网易云音乐时首页的个性推荐总是无法显示，一直在<b>正在为你生成个性化推荐</b>,网上也没找到什么办法,偶然间使用
+</p>
+<div class="highlight"><pre><span></span>┌─<span class="o">[</span>jianglin<span class="o">]</span>─<span class="o">[</span>~<span class="o">]</span>
+└──╼ rm -rf .cache/netease-cloud-music/
+┌─<span class="o">[</span>jianglin<span class="o">]</span>─<span class="o">[</span>~<span class="o">]</span>
+└──╼ rm -rf .config/netease-cloud-music/
+</pre></div>
+
+<p>
+重新打开登陆后个性推荐就出现了，特此记录
+</p>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/06/关于网易云音乐个性推荐无法显示的问题.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/05/方便的切换emacs主题.html" rel="bookmark" title="Permalink to 方便的切换emacs主题">方便的切换emacs主题</a></h1>
+<header class="entry-info">
+  <span title="2017-05-23T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    二 23 五月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+        <a href="https://honmaple.me/tags/elisp/index.html">elisp</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            
+<p>
+作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，<b>M-x</b>,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了<b>hydra</b>这个插件,也想实践一下
+</p>
+<p>
+获取主题列表
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">maple-cycle-themes</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="p">(</span><span class="nv">custom-available-themes</span><span class="p">)))</span>
+</pre></div>
+
+<p>
+获取当前主题索引
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">cl-position</span> <span class="p">(</span><span class="nf">car</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="nv">custom-enabled-themes</span><span class="p">))</span> <span class="nv">maple-cycle-themes</span> <span class="nb">:test</span> <span class="ss">&#39;equal</span><span class="p">)</span>
+</pre></div>
+
+<p>
+获取下一个主题
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index</span>
+      <span class="p">(</span><span class="nf">+</span> <span class="mi">1</span> <span class="nv">maple-current-theme-index</span><span class="p">))</span>
+<span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme</span> <span class="p">(</span><span class="nf">nth</span> <span class="nv">maple-current-theme-index</span> <span class="nv">maple-cycle-themes</span><span class="p">))</span>
+</pre></div>
+
+<p>
+加载主题
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">load-theme</span> <span class="p">(</span><span class="nf">intern</span> <span class="nv">maple-current-theme</span><span class="p">)</span> <span class="no">t</span><span class="p">)</span>
+</pre></div>
+
+<p>
+最后得到这样的函数
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/cycle-theme</span> <span class="p">(</span><span class="nv">num</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/05/方便的切换emacs主题.html">阅读全文 »</a>
+          </div>
+        </article></li>
+          <li>  <ul class="entry-pagination">
+      <li class="prev"><a href="https://honmaple.me/authors/honmaple/index6.html">&laquo;</a></li>
+         <li ><a href="https://honmaple.me/authors/honmaple/index.html">1</a></li>
+         <li ><a href="https://honmaple.me/authors/honmaple/index2.html">2</a></li>
+         <li ><a href="https://honmaple.me/authors/honmaple/index3.html">3</a></li>
+         <li>......</li>
+         <li ><a href="https://honmaple.me/authors/honmaple/index6.html">6</a></li>
+         <li class="active"><a href="https://honmaple.me/authors/honmaple/index7.html">7</a></li>
+         <li ><a href="https://honmaple.me/authors/honmaple/index8.html">8</a></li>
+         <li>......</li>
+         <li ><a href="https://honmaple.me/authors/honmaple/index18.html">18</a></li>
+         <li ><a href="https://honmaple.me/authors/honmaple/index19.html">19</a></li>
+         <li ><a href="https://honmaple.me/authors/honmaple/index20.html">20</a></li>
+      <li class="next"><a href="https://honmaple.me/authors/honmaple/index8.html">&raquo;</a></li>
+  </ul>
+</li>
+          </ul>
+      </div>
+    </div>
+<div class="footer">
+  <ul class="list-inline entry-social">
+    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/feeds/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+  <ul class="list-inline copyright">
+    <li class="hidden-xs">© 2015-2020 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+          <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+</div>    <div class="back-to-top back-to-top-on">
+      <i class="fa fa-hand-o-up" title="back to top"></i>
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+   window.dataLayer = window.dataLayer || [];
+   function gtag(){dataLayer.push(arguments);}
+   gtag('js', new Date());
+   gtag('config', 'UA-88401692-2');
+  </script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/theme/lib/js/script.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+           if (typeof ga !== 'undefined') {
+               ga('send', 'pageview', location.pathname + location.search);
+           }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>

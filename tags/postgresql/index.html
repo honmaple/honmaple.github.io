@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>postgresql · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/theme/lib/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="particles-js" id="particles-js"></div>
+    <div class="scrollbar"></div>
+    <div class="wrap">
+      <div class="main">
+<nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="https://honmaple.me/categories/life/index.html" >代码人生</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/categories/coding/index.html">分享世界</a></li>
+                <li><a href="https://honmaple.me/categories/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/categories/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li ><a href="https://honmaple.me/categories/linux/index.html">字符艺术</a></li>
+          <li ><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+          <li ><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+      <li class="dropdown">
+        <a href="https://honmaple.me/archives/index.html">文章归档</a>
+        <ul class="dropdown-menu">
+          <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+          <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+          <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+        </ul>
+      </li>
+      <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>        <article>
+          <div class="entry-header">
+            <h1 class="entry-title">
+              <a href="https://honmaple.me/articles/2015/12/如何备份postgresql数据库.html" rel="bookmark" title="Permalink to 如何备份postgresql数据库">如何备份postgresql数据库</a>
+            </h1>
+<header class="entry-info">
+  <span title="2015-12-26T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    六 26 十二月 2015
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/postgresql/index.html">postgresql</a>
+        <a href="https://honmaple.me/tags/sql/index.html">sql</a>
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <p>对于网站来说数据无疑是最重要的，而养成备份数据的习惯更加重要，
+忽然想到一句经典台词  </p>
+<blockquote>
+<p>曾经有一份数据摆在我的面前，<br>
+可我没有备份，<br>
+直到数据丢失后才后悔莫及,<br>
+人世间最痛苦的事莫过于此，<br>
+如果上天能给我一次再来一次的机会，<br>
+我会对那份数据说五个字：我要备份你，<br>
+如果非要在这份备份上加一个期限，我希望是每天！</p>
+</blockquote>
+<p>进入主题,这只是对数据进行简单的备份</p>
+<h3>怎么备份数据</h3>
+<p>shell脚本</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="nv">backup_time</span><span class="o">=</span><span class="sb">`</span>date +%Y%m%d<span class="sb">`</span>
+pg_dump articledb &gt; /home/xxx/backup/article_<span class="nv">$backup_time</span>.sql
+<span class="c1"># articledb是要备份的数据库名称</span>
+<span class="nb">echo</span> <span class="s2">&quot;backup finished&quot;</span>
+</pre></div>
+</td></tr></table>
+
+<p>保存为backup_db.sh<br>
+<strong>注意</strong><br>
+xxx是数据库用户,并且是super权限<br>
+可以这样  </p>
+<div class="highlight"><pre><span></span><span class="err">$</span><span class="w"> </span><span class="n">sudo</span><span class="w"> </span><span class="o">-</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="n">u</span><span class="w"> </span><span class="n">postgres</span><span class="w"></span>
+<span class="err">$</span><span class="w"> </span><span class="o">[</span><span class="n">sudo</span><span class="o">]</span><span class="w"> </span><span class="n">xxx</span><span class="w"> </span><span class="nl">的密码</span><span class="p">:</span><span class="w"></span>
+<span class="n">postgres</span><span class="o">~</span><span class="w"> </span><span class="err">$</span><span class="w"> </span><span class="n">createuser</span><span class="w"> </span><span class="n">xxx</span><span class="w"> </span><span class="c1">--interactive </span>
+<span class="err">#</span><span class="w"> </span><span class="n">创建数据库用户</span><span class="p">,</span><span class="n">我的是archlinux</span><span class="p">,</span><span class="n">不同系统可能有所不同</span><span class="w"></span>
+</pre></div>
+
+
+<h3>定时备份数据</h3>
+<div class="highlight"><pre><span></span><span class="n">crontab</span> <span class="o">-</span><span class="n">e</span>
+</pre></div>
+
+
+<p>输入  </p>
+<div class="highlight"><pre><span></span><span class="mi">0</span> <span class="mi">22</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">xxx</span><span class="o">/</span><span class="n">backup</span><span class="o">/</span><span class="n">backup_db</span><span class="p">.</span><span class="n">sh</span>
+<span class="o">#</span><span class="err">表示每天</span><span class="mi">22</span><span class="err">点定时备份数据</span>
+</pre></div>
+
+
+<p>如果你需要在其他时间段备份数据，请查阅crontab文档</p>
+<p>ok，就这样</p>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2015/12/postgresql学习1——安装.html" rel="bookmark" title="Permalink to postgresql学习1——安装">postgresql学习1——安装</a></h1>
+<header class="entry-info">
+  <span title="2015-12-22T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    二 22 十二月 2015
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/sql/index.html">sql</a>
+        <a href="https://honmaple.me/tags/postgresql/index.html">postgresql</a>
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <p>最近从sqlite转到postgresql,虽然postgresql比sqlite更加复杂</p>
+<h3>archlinux</h3>
+<p><a href="https://wiki.archlinux.org/index.php/PostgreSQL">参考资料</a></p>
+<div class="highlight"><pre><span></span>$ sudo pacman -S postgresql
+$ sudo mkdir /var/lib/postgres/data <span class="c1">#如果已存在则可以不建立</span>
+$ sudo chmod -R postgres:postgres /var/lib/postgres/data
+由于我安装系统时没有生成en_US_UTF-8本地化文件<span class="o">(</span>如果已经生成了的就
+不必再生成<span class="o">)</span>
+$ sudo vim /etc/locale.gen <span class="c1">#找到en_US_UTF-8，注释掉</span>
+$ locale-gen
+
+然后运行
+$ sudo -i -u postgres <span class="c1">#或者使用root账户su - postgres</span>
+$ initdb --locale en_US.UTF-8 -E UTF8 -D …</pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2015/12/postgresql学习1——安装.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2015/12/postgresql学习2——使用.html" rel="bookmark" title="Permalink to postgresql学习2——使用">postgresql学习2——使用</a></h1>
+<header class="entry-info">
+  <span title="2015-12-22T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    二 22 十二月 2015
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/sql/index.html">sql</a>
+        <a href="https://honmaple.me/tags/postgresql/index.html">postgresql</a>
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <p>postgresql的简单使用</p>
+<h3>python</h3>
+<p><a href="http://www.yiibai.com/html/postgresql/2013/080998.html">参考资料</a></p>
+<h4>安装psycopg2</h4>
+<p>推荐使用venv虚拟环境  </p>
+<div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">psycopg2</span>
+</pre></div>
+
+
+<p>这个API打开一个连接到PostgreSQL数据库。如果成功打开数据库时，它返回一个连接对象  </p>
+<div class="highlight"><pre><span></span><span class="nv">psycopg2</span>.<span class="k">connect</span><span class="ss">(</span><span class="nv">database</span><span class="o">=</span><span class="s2">&quot;</span><span class="s">testdb</span><span class="s2">&quot;</span>, <span class="nv">user</span><span class="o">=</span><span class="s2">&quot;</span><span class="s">postgres</span><span class="s2">&quot;</span>, <span class="nv">password</span><span class="o">=</span><span class="s2">&quot;</span><span class="s">cohondob</span><span class="s2">&quot;</span>, <span class="nv">host</span><span class="o">=</span><span class="s2">&quot;</span><span class="s">127.0.0.1</span><span class="s2">&quot;</span>, <span class="nv">port</span><span class="o">=</span><span class="s2">&quot;</span><span class="s">5432</span><span class="s2">&quot;</span><span class="ss">)</span>
+</pre></div>
+
+
+<p>该程序创建一个光标将用于整个数据库使用Python编程。  </p>
+<div class="highlight"><pre><span></span><span class="k">connection</span><span class="p">.</span><span class="k">cursor</span><span class="p">()</span>
+</pre></div>
+
+
+<p>此例程执行SQL语句。可被参数化的SQL语句（即占位符，而不是SQL文字）。 psycopg2的模块支持占位符用％s标志  </p>
+<div class="highlight"><pre><span></span><span class="k">cursor</span><span class="p">.</span><span class="k">execute</span><span class="p">(</span><span class="k">sql</span> <span class="p">[,</span> <span class="n">optional</span> <span class="k">parameters</span><span class="p">])</span>
+</pre></div>
+
+
+<p>该程序执行SQL命令对所有参数序列或序列中的sql映射  </p>
+<div class="highlight"><pre><span></span><span class="n">curosr</span><span class="p">.</span><span class="n">executemany</span><span class="p">(</span><span class="k">sql</span><span class="p">,</span> <span class="n">seq_of_parameters</span><span class="p">)</span>
+</pre></div>
+
+
+<p>这个程序执行的存储数据库程序给定的名称。该程序预计为每一个参数，参数的顺序必须包含一个条目。  </p>
+<div class="highlight"><pre><span></span><span class="n">curosr …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2015/12/postgresql学习2——使用.html">阅读全文 »</a>
+          </div>
+        </article></li>
+          </ul>
+      </div>
+    </div>
+<div class="footer">
+  <ul class="list-inline entry-social">
+    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/feeds/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+  <ul class="list-inline copyright">
+    <li class="hidden-xs">© 2015-2020 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+          <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+</div>    <div class="back-to-top back-to-top-on">
+      <i class="fa fa-hand-o-up" title="back to top"></i>
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+   window.dataLayer = window.dataLayer || [];
+   function gtag(){dataLayer.push(arguments);}
+   gtag('js', new Date());
+   gtag('config', 'UA-88401692-2');
+  </script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/theme/lib/js/script.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+           if (typeof ga !== 'undefined') {
+               ga('send', 'pageview', location.pathname + location.search);
+           }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>

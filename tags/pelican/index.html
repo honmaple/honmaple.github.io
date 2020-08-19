@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>pelican · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/theme/lib/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="particles-js" id="particles-js"></div>
+    <div class="scrollbar"></div>
+    <div class="wrap">
+      <div class="main">
+<nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="https://honmaple.me/categories/life/index.html" >代码人生</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/categories/coding/index.html">分享世界</a></li>
+                <li><a href="https://honmaple.me/categories/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/categories/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li ><a href="https://honmaple.me/categories/linux/index.html">字符艺术</a></li>
+          <li ><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+          <li ><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+      <li class="dropdown">
+        <a href="https://honmaple.me/archives/index.html">文章归档</a>
+        <ul class="dropdown-menu">
+          <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+          <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+          <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+        </ul>
+      </li>
+      <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>        <article>
+          <div class="entry-header">
+            <h1 class="entry-title">
+              <a href="https://honmaple.me/articles/2018/06/为pelican添加子站点功能.html" rel="bookmark" title="Permalink to 为pelican添加子站点功能">为pelican添加子站点功能</a>
+            </h1>
+<header class="entry-info">
+  <span title="Updated at 2019-03-05">
+    <i class="fa fa-calendar-o"></i>
+    日 03 六月 2018
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/python/index.html">Python</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/python/index.html">python</a>
+        <a href="https://honmaple.me/tags/pelican/index.html">pelican</a>
+        <a href="https://honmaple.me/tags/i18n/index.html">i18n</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-f13fa54123">创建翻译</a></li>
+<li><a href="#org-dd800b6f6b">动态变量</a></li>
+</ul>
+</div></div>
+<h3 id="org-f13fa54123">创建翻译</h3><div class="highlight"><pre><span></span>babel-init:
+    <span class="nb">cd</span> <span class="k">$(</span>THEMEDIR<span class="k">)</span> <span class="o">&amp;&amp;</span> pybabel extract -F babel.cfg -k lazy_gettext -o messages.pot ./ <span class="o">&amp;&amp;</span> pybabel init -i messages.pot -d translations -l en
+
+babel-update:
+    <span class="nb">cd</span> <span class="k">$(</span>THEMEDIR<span class="k">)</span> <span class="o">&amp;&amp;</span> pybabel extract -F babel.cfg -k lazy_gettext -o messages.pot ./ <span class="o">&amp;&amp;</span> pybabel update -i messages.pot -d translations
+
+babel-compile:
+    <span class="nb">cd</span> <span class="k">$(</span>THEMEDIR<span class="k">)</span> <span class="o">&amp;&amp;</span> pybabel compile -d translations
+</pre></div>
+
+<h3 id="org-dd800b6f6b">动态变量</h3><p>
+   在模板里，我有一些动态变量需要翻译，比如在分类里的 <code>Python</code> 需要翻译成 <code>生活苦短</code>,但很不幸, <b>Babel</b>并不支持动态变量的翻译。
+   刚开始，在我没使用<code>i18n_subsites</code>时，我采用加载一个<code>i18n.html</code>文件
+</p>
+<div class="highlight"><pre><span></span><span class="cp">{%</span> <span class="k">macro</span> <span class="nv">gettext</span><span class="o">(</span><span class="nv">string</span><span class="o">)</span> -<span class="cp">%}</span><span class="x"></span>
+<span class="cp">{%</span> <span class="k">set</span> <span class="nv">_gettext</span><span class="o">=</span><span class="nv">dict</span><span class="o">(</span>
+    <span class="nv">python</span><span class="o">=</span><span class="s1">&#39;人生苦短&#39;</span><span class="o">,</span>
+    <span class="nv">security</span><span class="o">=</span><span class="s1">&#39;极客安全&#39;</span><span class="o">,</span>
+    <span class="nv">archives</span><span class="o">=</span><span class="s1">&#39;文章归档&#39;</span><span class="o">,</span>
+<span class="o">)</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{{</span> <span class="nv">_gettext.get</span><span class="o">(</span><span class="nv">string.lower</span><span class="o">(),</span><span class="nv">string</span><span class="o">)</span> <span class="cp">}}</span><span class="x"></span>
+<span class="cp">{%</span>- <span class="k">endmacro</span> <span class="cp">%}</span><span class="x"></span>
+</pre></div>
+
+<p>
+   类似字典的形式对部分变量进行翻译，这能够工作的很好，虽然有些麻烦。
+</p>
+<p>
+   在使用<b>Babel</b>之后，我想要把它和<code>messages.po</code>统一管理，所以采用另一种比较折中的方案: <code>jinja2 filter</code>
+</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">babel</span> <span class="kn">import</span> <span class="n">support</span>
+
+<span class="k">def</span> <span class="nf">gettrans</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">locale</span><span class="o">=</span><span class="n">DEFAULT_LANG</span><span class="p">):</span>
+    <span class="n">translations</span> <span class="o">=</span> <span class="n">support</span><span class="o">.</span><span class="n">Translations</span><span class="p">()</span>
+    <span class="n">catalog</span> <span class="o">=</span> <span class="n">support</span><span class="o">.</span><span class="n">Translations</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">THEME</span><span class="p">,</span> <span class="s2">&quot;translations&quot;</span><span class="p">)),</span> <span class="n">locale</span><span class="p">)</span>
+    <span class="n">translations</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="s1">&#39;plural&#39;</span><span class="p">):</span>
+        <span class="n">translations</span><span class="o">.</span><span class="n">plural</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">plural</span>
+    <span class="k">return</span> <span class="n">translations</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+<span class="n">JINJA_FILTERS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;gettrans&#39;</span><span class="p">:</span> <span class="n">gettrans</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>
+   这样就可以通过传递变量来获取对应的翻译, 而我所需要做的就是写好<code>messages.po</code>然后编译成<code>messages.mo</code>即可，同样为了每次使用<code>pybabel update</code> 都可以得到相同的内容，我使用了一种取巧的办法, 同样是<b>i18n.html</b>文件，把所需要国际化的可能变量全部放到一起，但不要在其它模板里<code>import</code>这个模板，这样每次更新翻译文件，<b>Babel</b> 都能自动找到并生成相同的<code>messages.po</code>文件
+</p>
+<div class="highlight"><pre><span></span><span class="cp">{%</span> <span class="k">macro</span> <span class="nv">gettrans</span><span class="o">(</span><span class="nv">string</span><span class="o">)</span> -<span class="cp">%}</span><span class="x"></span>
+<span class="x">  </span><span class="cp">{%</span> <span class="k">set</span> <span class="nv">_gettrans</span><span class="o">=[</span>
+      <span class="kp">_</span><span class="o">(</span><span class="s2">&quot;Linux&quot;</span><span class="o">),</span>
+      <span class="kp">_</span><span class="o">(</span><span class="s2">&quot;Python&quot;</span><span class="o">),</span>
+      <span class="kp">_</span><span class="o">(</span><span class="s2">&quot;Security&quot;</span><span class="o">),</span>
+      <span class="kp">_</span><span class="o">(</span><span class="s2">&quot;友链&quot;</span><span class="o">),</span>
+      <span class="kp">_</span><span class="o">(</span><span class="s2">&quot;联系&quot;</span><span class="o">)]</span> <span class="cp">%}</span><span class="x"></span>
+<span class="cp">{%</span>- <span class="k">endmacro</span> <span class="cp">%}</span><span class="x"></span>
+</pre></div>
+
+<p>
+   这种方式同样解决了我的另一个问题: 我可能在中文站点使用的是英文变量，但需要显示翻译后的中文，而在英文站点使用英文变量，显示的却同样是英文。说起来比较绕口，简单来说就是，中文站点里有一个<code>Python</code>变量,我需要显示为<code>人生苦短</code> ， 而在英文站点，则显示为 <code>Python</code>，毕竟我可以在<code>zh_CN/LC_MESSAGES/messages.po</code>写上翻译后的内容,而在<code>en/LC_MESSAGES/messages.po</code>里保持原样,很方便地做到中英文分离。
+</p>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/03/为pelican添加文章加密功能.html" rel="bookmark" title="Permalink to 为pelican添加文章加密功能">为pelican添加文章加密功能</a></h1>
+<header class="entry-info">
+  <span title="Updated at 2018-12-21">
+    <i class="fa fa-calendar-o"></i>
+    六 17 三月 2018
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/python/index.html">Python</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/python/index.html">python</a>
+        <a href="https://honmaple.me/tags/pelican/index.html">pelican</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            
+<div class="entry-encrypt">
+<div class="form-group has-feedback">
+    <input type="password" class="form-control input-sm" id="entry-decrypt-password" placeholder="请输入文章密码">
+    <i class="fa fa-key form-control-feedback entry-decrypt"></i>
+    <span class="help-block">这是一篇加密的文章，密码是蟒蛇英文</span>
+</div>
+<div class="entry-encrypt-content">
+gAAAAABarRYGOXCd2_j79QXUtNz2n72liJK5xKgPpPryozTqyos2VLQ_2IOEr8rh2yQJCoEZXViKzburcD9IumMTcvkCZ9oBfbQLx4Ub0pH3dlXvDkpyFIpdy9qDy_BSS2b-fcZLUNVQlSShxMdpezmzn--s7EOSSpV9ib-tnr8eEHkWlyLuDzfnMmtgv6YYoGOa0PaabYcHf8yt6dXWLkBo5Pt87dCFwuIvkq7ku-l5uWHz6iVMz6M9sm3VA7cxnUBFsQ5WRe5ps8ssNqtL-P0_pvbFxEIczIuZiYhiunu5WE-gxWTZCeJIfCje5o1b2tiL1-onN7XYNImdJsCuIJ81M-mk6sBM8bKlSCYBgvggBy5ezRxOG-vePUsOceg1lzicX33IJyODDHJybHuydNxKiawrWxaG65VWZg2etDI0Dn58_13uynjtaAclzBirDNVJHuzsZdYujElNR_89ngjJ21nDN-Slm2mcSGXtkz0krz8KqYUsxqHqk8foJTt7bvhEf_ovWnPNTt5hnDXqaZY6HV09magD90My7avX4Aovm_9zsbCx_hazSrQfKuZrzRYAztTSQGxItlDpo73ieofGM_vnQCBKMRqOAtByfrl8_3V5bd6x9oRfHxIVR3LqqvlpEYXAXoSv6OExc1CKP3U5DheAGBF3k9mj8ZgBR_YlHjw8mwV9sO5XgpZBclHMo0DN6TG5gP4qYGziRSWMkR-McLiktJjMJzYRHKcHJ_KYjpdc6TcsqkEAZqziTDlA-KXXN3pPE7m9azWUjkAC10prGJ0NhDY28NpptsVuWrFNJRogGZ0VS0wDbn6rCUn8mGAji3Sj8ncDhp5FwyVQ5Z1LL9OeeC7Ev6X5OVZalxdP0Q5MvS3c-AyXqcP9oJ-EVW7Fuy481sGn27iX2IjlsZoUKdtO2pFlqK1KbyWKXuV0oi5zXz_e7rIJrLWbd79lKlK-ApaUDSBAVWL07xSWMgQPesCl7BNYkAU25rQmAjM8X8e44Fqmj-v77VkPmhT6ac43S9zx3jr6Kigi9R4c6BXfoD49wFUED6eIR9dSjiKl7hruYUrtqG4pdDjpNXxWk9aQ3-X6Hi9MApb3x27UNaX_GKx2XyUsz1gTApJph6crRyZWXgCzPSby220KQVHqrk0CSMKxKnJyIlRYDdt5sP2119gNXujY7rM5StL8PbYW3l_rcGTkjUotllwaq3TL-JuHw6aDVRf-eucA5C_GZGk3tqubRBFb5obV2ioOBgR86V1zoTNMquvVkmeqZiEm4xCsu0aRWLevJzABOE-A_jD2GsaGB4IgRBRYQokpgHkMw3tJ1vnh9heW0JncZRV8gm8zogUvykhY9sha0b3v2Ch27BiBlPc74eDJF-5WNhliaRHJh4h-eY_wi2ZH1Ydzu-BCRJOdMCaM2kfU0C26GXGjLLoHFJw-Z3P9ip5vu5z1RiYqanFY9JUz3HPM4uwSAgNdWM_GQ2cxXEdullJoldA_1LDcNkmUtU037pgc8Dh4U_cPwF52jt89BW5mF-W_6RIooHx8pNMh9F9YfV0Wy1cgFSjIrlL5chbPz7Jg6auv3Tahjgbbke27XT1J0xAv_sOrjU2LI_6adNRH4poovK0jVBETtJg40r7eF-7wFdx6RVCY27Ow8AkhDCES_gowyjb0hThmH-NxxycXU5tZ6qZBNYv7qWPjkZUL_x4huc3x5AmNoc66hUab0-mNs_BFnu77zkxWU-DCxRpjCtximAMz9eFM97SOoHbPmXSnJO2FCVdgUACbJEWCrjKxtf6q6TfgRbQXcGySjOqTaTq-szxvfbI7WCOXFFA4kGMU1Je-w7S8-mt9NXlkHKsczPxMgvC8pv6pyJSCOZR2xmf2LriotS-kRKPx7VEJE4rZJr74lHliG4hzwkKPMKS4IA_rKCWZL9Up8QudMR41gVa0uT8wMXLhSr0KDESNSWmfGOMAOQbzcFLYJoMGd0rREIZ8rXjId7MrbVGe0NUEzRT7-QXl8XWjAttnQ84oTvwqKud7RHeENYpgD7BtVbb-Pas5c3TNCkPYTiihHAdwkMxVkn28M8xi89hXgUKweD0gxGDcsnvDj3p26U4F2bFHsqsB7NCDmoGhEe0uN2krsH-P997yYt5BeIZgLCHBQdjuTSxrbEHPR361cwzY0RGyzyoqX_0FH4rFMwzNaWsH0v3zIH23NQa0zbWaUf0j4QAV2iYjEVbqiPkyyBL22xD4m3L9pq5LOE4_xucR0QMAqw_He_SK3-Ey1F4le3uV3WDZMuqej2EMt9NxzqWOEesNO_6NxD6vdp2p7VlrMvzqDh1rogeKMTOzC8mZ38unl1MKqoNA_uYzfVpYL42-XLLFzrsIPSINc4i9-LWwWKCyLpkJK6iR81yFQNpaq_g8RDAmCrNUidqt4ZzmtoQ_SKbxPqq40Rlts_LQWiKds3cFVXIq0MxUtFRuDArcTZqrphuO2G2O2cTnqCx6c6VjgvKtlt-h1orCblKs-XdC
+</div>
+</div>
+
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/03/为pelican添加文章加密功能.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/10/为pelican增加上一篇下一篇功能.html" rel="bookmark" title="Permalink to 为pelican增加上一篇下一篇功能">为pelican增加上一篇下一篇功能</a></h1>
+<header class="entry-info">
+  <span title="2017-10-22T22:40:28+08:00">
+    <i class="fa fa-calendar-o"></i>
+    日 22 十月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/python/index.html">Python</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/python/index.html">python</a>
+        <a href="https://honmaple.me/tags/pelican/index.html">pelican</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            
+<p>
+功能实现很简单, <b>pelican</b>也有类似的插件实现 <a href="https://github.com/getpelican/pelican-plugins/tree/master/neighbors">https://github.com/getpelican/pelican-plugins/tree/master/neighbors</a>
+</p>
+<p>
+不过自己实现起来更爽不是吗? 而且类似<b>prev_article_in_category</b>和<b>prev_article_in_subcategory</b>的功能我并不需要
+</p>
+<p>
+首先参考<b>pelican</b>的文档,基础实现
+</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_neighbors</span><span class="p">(</span><span class="n">generator</span><span class="p">):</span>
+    <span class="o">....</span>
+
+<span class="k">def</span> <span class="nf">register</span><span class="p">():</span>
+    <span class="n">signals</span><span class="o">.</span><span class="n">article_generator_finalized</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">add_neighbors</span><span class="p">)</span>
+</pre></div>
+
+<p>
+然后在<b>generator.articles</b>列表上进行操作,为article增加<b>previous_article</b>和<b>next_article</b>对象
+</p>
+<p>
+先进行排序(按时间)
+</p>
+<div class="highlight"><pre><span></span><span class="n">articles</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">articles</span>
+<span class="n">articles</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/10/为pelican增加上一篇下一篇功能.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2015/12/使用pelican搭建个人博客.html" rel="bookmark" title="Permalink to 使用pelican搭建个人博客">使用pelican搭建个人博客</a></h1>
+<header class="entry-info">
+  <span title="2015-12-22T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    二 22 十二月 2015
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/python/index.html">python</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/python/index.html">python</a>
+        <a href="https://honmaple.me/tags/pelican/index.html">pelican</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <h2>pelican介绍</h2>
+<p>Pelican是一个用Python语言编写的静态网站生成器，支持使用restructuredText和Markdown写文章，配置灵活，扩展性强  </p>
+<h2>pelican安装</h2>
+<div class="highlight"><pre><span></span>$ sudo pip install pelican
+</pre></div>
+
+
+<p>安装markdown</p>
+<div class="highlight"><pre><span></span>$ sudo pip install markdown
+</pre></div>
+
+
+<h2>pelican使用</h2>
+<p>工具准备好了，接下来就开始使用</p>
+<div class="highlight"><pre><span></span>$ <span class="nb">cd</span> git
+$ mkdir pelican  <span class="c1">#建立一个文件夹(位置和名称随意，自己记得就行)</span>
+$ <span class="nb">cd</span> pelican
+$ pelican-quickstart
+</pre></div>
+
+
+<p>显示  (也可以直接回车默认)</p>
+<div class="highlight"><pre><span></span><span class="nv">Welcome</span> <span class="nv">to</span> <span class="nv">pelican</span><span class="o">-</span><span class="nv">quickstart</span> <span class="nv">v3</span>.<span class="mi">4</span>.<span class="mi">0</span>.
+
+<span class="nv">This</span> <span class="nv">script</span> <span class="nv">will</span> <span class="nv">help</span> <span class="nv">you</span> <span class="nv">create</span> <span class="nv">a</span> <span class="nv">new</span> <span class="nv">Pelican</span><span class="o">-</span><span class="nv">based</span> <span class="nv">website</span>.
+
+<span class="nv">Please …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2015/12/使用pelican搭建个人博客.html">阅读全文 »</a>
+          </div>
+        </article></li>
+          </ul>
+      </div>
+    </div>
+<div class="footer">
+  <ul class="list-inline entry-social">
+    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/feeds/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+  <ul class="list-inline copyright">
+    <li class="hidden-xs">© 2015-2020 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+          <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+</div>    <div class="back-to-top back-to-top-on">
+      <i class="fa fa-hand-o-up" title="back to top"></i>
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+   window.dataLayer = window.dataLayer || [];
+   function gtag(){dataLayer.push(arguments);}
+   gtag('js', new Date());
+   gtag('config', 'UA-88401692-2');
+  </script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/theme/lib/js/script.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+           if (typeof ga !== 'undefined') {
+               ga('send', 'pageview', location.pathname + location.search);
+           }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>

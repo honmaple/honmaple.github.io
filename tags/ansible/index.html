@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ansible · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/theme/lib/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="particles-js" id="particles-js"></div>
+    <div class="scrollbar"></div>
+    <div class="wrap">
+      <div class="main">
+<nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="https://honmaple.me/categories/life/index.html" >代码人生</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/categories/coding/index.html">分享世界</a></li>
+                <li><a href="https://honmaple.me/categories/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/categories/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li ><a href="https://honmaple.me/categories/linux/index.html">字符艺术</a></li>
+          <li ><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+          <li ><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+      <li class="dropdown">
+        <a href="https://honmaple.me/archives/index.html">文章归档</a>
+        <ul class="dropdown-menu">
+          <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+          <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+          <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+        </ul>
+      </li>
+      <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>        <article>
+          <div class="entry-header">
+            <h1 class="entry-title">
+              <a href="https://honmaple.me/articles/2018/09/ansible笔记.html" rel="bookmark" title="Permalink to ansible笔记">ansible笔记</a>
+            </h1>
+<header class="entry-info">
+  <span title="Updated at 2019-12-20">
+    <i class="fa fa-calendar-o"></i>
+    二 04 九月 2018
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/python/index.html">python</a>
+        <a href="https://honmaple.me/tags/ansible/index.html">ansible</a>
+        <a href="https://honmaple.me/tags/devops/index.html">devops</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-5a6bb56055">ansible动态解析inventory</a></li>
+<li><a href="#org-b75f31c6b5">ansible自定义模块传递list变量会变成字符串</a></li>
+<li><a href="#org-3f75c2cdfd">常见问题FAQ</a></li>
+</ul>
+</div></div>
+<h2 id="org-5a6bb56055">ansible动态解析inventory</h2><p>
+  <b>ansible</b>调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）
+</p>
+<p>
+  但问题是<b>ansible</b>没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可
+</p>
+<p>
+  查找源码, 根据 <code>InventoryManager</code> 传递的<b>source</b>变量找到<code>parse_sources</code>这个函数
+</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">InventoryManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">parse_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; iterate over inventory sources and parse each one to populate it&#39;&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_inventory_plugins</span><span class="p">()</span>
+        <span class="o">...</span>
+</pre></div>
+
+<p>
+  然后再根据
+</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_setup_inventory_plugins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; sets up loaded inventory plugins for usage &#39;&#39;&#39;</span>
+
+    <span class="n">inventory_loader</span> <span class="o">=</span> <span class="n">PluginLoader</span><span class="p">(</span><span class="s1">&#39;InventoryModule&#39;</span><span class="p">,</span> <span class="s1">&#39;ansible.plugins.inventory&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">DEFAULT_INVENTORY_PLUGIN_PATH</span><span class="p">,</span> <span class="s1">&#39;inventory_plugins&#39;</span><span class="p">)</span>
+    <span class="o">...</span>
+</pre></div>
+
+<p>
+  找到对应的解析<b>plugin</b>, 我使用的是<b>ini</b>格式的inventory, 所以自定义一下<code>ansible.plugins.inventory.ini.InventoryModule</code>这个模块即可
+</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.plugins.inventory.ini</span> <span class="kn">import</span> <span class="n">InventoryModule</span>
+<span class="kn">from</span> <span class="nn">ansible.inventory.data</span> <span class="kn">import</span> <span class="n">InventoryData</span>
+<span class="kn">from</span> <span class="nn">ansible.parsing.dataloader</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">ansible.module_utils._text</span> <span class="kn">import</span> <span class="n">to_text</span>
+<span class="kn">from</span> <span class="nn">ansible.template</span> <span class="kn">import</span> <span class="n">Templar</span>
+
+
+<span class="k">class</span> <span class="nc">InventoryCustomModule</span><span class="p">(</span><span class="n">InventoryModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">mine_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b_data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inventory</span> <span class="o">=</span> <span class="n">InventoryData</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">templar</span> <span class="o">=</span> <span class="n">Templar</span><span class="p">(</span><span class="n">loader</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">to_text</span><span class="p">(</span><span class="n">b_data</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;surrogate_or_strict&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">UnicodeError</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">b_data</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">line</span> <span class="ow">and</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_COMMENT_MARKERS</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to_text</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;surrogate_or_strict&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+
+<ul>
+<li>
+<p>
+<b>如何使用</b>:
+</p>
+<div class="highlight"><pre><span></span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span><span class="se">\</span>
+<span class="s1">[MY-HOST]</span>
+<span class="s1">MY_HOST-1 ansible_ssh_host=127.0.0.1</span>
+<span class="s1">MY_HOST-2 ansible_ssh_host=127.0.0.2</span>
+<span class="s1">MY_HOST-3 ansible_ssh_host=127.0.0.3</span>
+<span class="s1">MY_HOST-4 ansible_ssh_host=127.0.0.4</span>
+
+<span class="s1">[MY-HOST:vars]</span>
+<span class="s1">vip=127.0.0.10</span>
+<span class="s1">ppp=test</span>
+
+<span class="s1">[MY-HOST1]</span>
+<span class="s1">MY_HOST1-1 ansible_ssh_host=127.0.0.11</span>
+<span class="s1">MY_HOST1-2 ansible_ssh_host=127.0.0.12</span>
+
+<span class="s1">[MY-HOST:children]</span>
+<span class="s1">MY-HOST1</span>
+<span class="s1">&#39;&#39;&#39;</span>
+<span class="n">module</span> <span class="o">=</span> <span class="n">InventoryCustomModule</span><span class="p">()</span>
+<span class="n">module</span><span class="o">.</span><span class="n">mine_parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">child_groups</span><span class="p">,</span> <span class="n">group</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">hosts</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">host</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
+</pre></div>
+
+<p>
+    <b>结果</b>:
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="n">ungrouped</span><span class="p">,</span><span class="w"> </span><span class="err">[]</span><span class="p">,</span><span class="w"> </span><span class="err">{}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="ow">all</span><span class="p">,</span><span class="w"> </span><span class="o">[</span><span class="n">ungrouped</span><span class="o">]</span><span class="p">,</span><span class="w"> </span><span class="err">{}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY</span><span class="o">-</span><span class="k">HOST</span><span class="p">,</span><span class="w"> </span><span class="o">[</span><span class="n">MY-HOST1</span><span class="o">]</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;vip&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.10&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;ppp&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;test&#39;</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.2&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.3&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.4&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY</span><span class="o">-</span><span class="n">HOST1</span><span class="p">,</span><span class="w"> </span><span class="err">[]</span><span class="p">,</span><span class="w"> </span><span class="err">{}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST1</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.11&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+<span class="p">(</span><span class="n">MY_HOST1</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">u</span><span class="s1">&#39;ansible_ssh_host&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">u</span><span class="s1">&#39;127.0.0.12&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_file&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inventory_dir&#39;</span><span class="err">:</span><span class="w"> </span><span class="k">None</span><span class="err">}</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+
+<p>
+    可以看出已经没什么大的问题了, 但有一个点, <b>all</b>组下的groups列表只有<code>ungrouped</code>, 正常情况下<code>MY-HOST</code>组也应该继承<code>all</code>组, <del>可能是还需要一些其他的操作吧</del>，继续翻源码，找到了<code>InventoryData</code>的<code>reconcile_inventory</code>方法, 修改一下即可
+</p>
+<div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">InventoryCustomModule</span><span class="p">()</span>
+<span class="n">module</span><span class="o">.</span><span class="n">mine_parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="n">module</span><span class="o">.</span><span class="n">inventory</span><span class="o">.</span><span class="n">reconcile_inventory</span><span class="p">()</span>
+</pre></div>
+
+</li>
+</ul>
+<h2 id="org-b75f31c6b5">ansible自定义模块传递list变量会变成字符串</h2><p>
+  我自定义了一个模块，需要传入一个<b>list</b>变量<code>group_names</code>
+</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ansible.module_utils.basic</span> <span class="kn">import</span> <span class="n">AnsibleModule</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">AnsibleModule</span><span class="p">(</span>
+        <span class="n">argument_spec</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">group_names</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="bp">True</span>
+        <span class="p">}))</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group_names&#39;</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;group_names&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">))}</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">changed</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+<p>
+  但发现传入的变量最后变成的<code>str type</code>
+</p>
+<div class="highlight"><pre><span></span><span class="n">FAILED</span><span class="o">!</span> <span class="o">=&gt;</span> <span class="err">{</span><span class="ss">&quot;changed&quot;</span><span class="p">:</span> <span class="k">false</span><span class="p">,</span> <span class="ss">&quot;failed&quot;</span><span class="p">:</span> <span class="k">true</span><span class="p">,</span> <span class="ss">&quot;msg&quot;</span><span class="p">:</span> <span class="err">{</span><span class="ss">&quot;group_names&quot;</span><span class="p">:</span> <span class="ss">&quot;[&#39;test&#39;]&quot;</span><span class="p">,</span> <span class="ss">&quot;type&quot;</span><span class="p">:</span> <span class="ss">&quot;&lt;type &#39;str&#39;&gt;&quot;</span><span class="err">}}</span>
+</pre></div>
+
+<p>
+  最后查找资料后才知道, 传递的变量需要增加<code>type</code>参数, 否则都是<b>str</b>
+</p>
+<div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">AnsibleModule</span><span class="p">(</span>
+    <span class="n">argument_spec</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">group_names</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span>
+    <span class="p">}))</span>
+</pre></div>
+
+<h2 id="org-3f75c2cdfd">常见问题FAQ</h2><div class="highlight"><pre><span></span><span class="n">Aborting</span><span class="p">,</span> <span class="n">target</span> <span class="n">uses</span> <span class="n">selinux</span> <span class="n">but</span> <span class="n">python</span> <span class="n">bindings</span> <span class="p">(</span><span class="n">libselinux</span><span class="o">-</span><span class="n">python</span><span class="p">)</span> <span class="n">aren</span><span class="err">&#39;</span><span class="n">t</span> <span class="n">installed</span><span class="o">!</span>
+</pre></div>
+
+<p>
+  查看目标机器是否安装 <code>libselinux-python</code>
+</p>
+<div class="highlight"><pre><span></span><span class="n">yum</span> <span class="n">install</span> <span class="n">libselinux</span><span class="o">-</span><span class="n">python</span>
+</pre></div>
+
+<p>
+  修改<code>ansible.cfg</code>
+</p>
+<div class="highlight"><pre><span></span><span class="n">interpreter_python</span> <span class="o">=</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">python</span>
+</pre></div>
+
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/10/ansible快速部署加速方案.html" rel="bookmark" title="Permalink to ansible快速部署加速方案">ansible快速部署加速方案</a></h1>
+<header class="entry-info">
+  <span title="2017-10-08T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    日 08 十月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/ansible/index.html">ansible</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-ba95193840">加速</a>
+<ul>
+<li><a href="#org-c189fab022">问题</a></li>
+<li><a href="#org-3eb4797917">方案</a></li>
+</ul>
+</li>
+<li><a href="#org-d886ceb3aa">目标</a>
+<ul>
+<li><a href="#org-e1ed5e0a9a">web界面</a></li>
+<li><a href="#org-deb4a8188c">任务队列</a></li>
+</ul>
+</li>
+</ul>
+</div></div>
+<p>
+ansible是基于Python的 <b>自动化部署</b> 方案,但是目前只是通过命令行
+</p>
+<div class="highlight"><pre><span></span><span class="nv">ansible</span> <span class="o">-</span><span class="nv">i</span> <span class="nv">hosts</span> <span class="nv">all</span> <span class="o">-</span><span class="nv">a</span> <span class="s1">&#39;</span><span class="s">uptime</span><span class="s1">&#39;</span>
+# <span class="nv">or</span>
+<span class="nv">ansible</span><span class="o">-</span><span class="nv">playbook</span> <span class="o">-</span><span class="nv">i</span> <span class="nv">hosts</span> <span class="nv">playbook</span>.<span class="nv">yml</span> <span class="o">-</span><span class="nv">e</span> <span class="s1">&#39;</span><span class="s">args</span><span class="s1">&#39;</span> <span class="o">-</span><span class="nv">t</span> <span class="nv">deploy</span>
+</pre></div>
+
+<p>
+实现自动化部署.
+</p>
+<p>
+长此以往，虽然可以实现所谓的自动化，但产品业务线多且杂的情况下，项目很难维护，更不用说以文件为存储的表现形式很差,针对目前使用ansible的经验以及使用中的困难,可以针对性的提出一些解决方案
+</p>
+<h2 id="org-ba95193840">加速</h2><h3 id="org-c189fab022">问题</h3><p>
+  自动化部署其中最大的障碍就是 <b>网络</b> 的原因
+</p>
+<p>
+  其中需要通过网络上传一些模板文件,有的甚至还需要上传一些压缩包,虽然说几MB的东西很快就能上传成功，但如果把这上传文件所需要的2秒乘以上百，上千台主机呢,更不用说ansible的表现形式就是一个任务一个任务的往下执行 …</p>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/10/ansible快速部署加速方案.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/09/ansible-playbook中tasks单进程.html" rel="bookmark" title="Permalink to ansible-playbook中tasks单进程">ansible-playbook中tasks单进程</a></h1>
+<header class="entry-info">
+  <span title="2017-09-19T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    二 19 九月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/ansible/index.html">ansible</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            
+<p>
+之前有一个需求,ansible-playbook中需要某一步单步执行,也就是说在有多台服务器时,某个任务只能一台服务器执行完后,另一台服务器才能执行,否者对应集群的服务会出问题
+</p>
+<p>
+这是一个很简单的需求,ansible中也有对应的实现, <code>--fork 1</code> 或者 使用 <code>serial</code>
+</p>
+<p>
+但是如果有人忘记加 <code>--fork 1</code> 了呢，而且该任务是在子任务中，使用 <b>include</b> 加载, <code>serial</code> 关键字无法在某一特定任务中使用,只能与 <b>hosts</b> 同级
+</p>
+<p>
+所幸，在这里 <a href="https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task">https://www.bountysource.com/issues/26342862-support-for-serial-on-an-individual-task</a>找到了解决办法,使用 <b>delegate_to</b>
+</p>
+<div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">service</span> <span class="n">restart</span>
+  <span class="c1"># serial: 1 would be the proper solution here, but …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/09/ansible-playbook中tasks单进程.html">阅读全文 »</a>
+          </div>
+        </article></li>
+          </ul>
+      </div>
+    </div>
+<div class="footer">
+  <ul class="list-inline entry-social">
+    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/feeds/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+  <ul class="list-inline copyright">
+    <li class="hidden-xs">© 2015-2020 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+          <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+</div>    <div class="back-to-top back-to-top-on">
+      <i class="fa fa-hand-o-up" title="back to top"></i>
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+   window.dataLayer = window.dataLayer || [];
+   function gtag(){dataLayer.push(arguments);}
+   gtag('js', new Date());
+   gtag('config', 'UA-88401692-2');
+  </script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/theme/lib/js/script.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+           if (typeof ga !== 'undefined') {
+               ga('send', 'pageview', location.pathname + location.search);
+           }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>

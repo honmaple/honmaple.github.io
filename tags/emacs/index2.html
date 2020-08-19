@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>emacs · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
+      <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/theme/lib/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="particles-js" id="particles-js"></div>
+    <div class="scrollbar"></div>
+    <div class="wrap">
+      <div class="main">
+<nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://static.honmaple.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="https://honmaple.me/categories/life/index.html" >代码人生</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/categories/coding/index.html">分享世界</a></li>
+                <li><a href="https://honmaple.me/categories/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/categories/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li ><a href="https://honmaple.me/categories/linux/index.html">字符艺术</a></li>
+          <li ><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+          <li ><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+      <li class="dropdown">
+        <a href="https://honmaple.me/archives/index.html">文章归档</a>
+        <ul class="dropdown-menu">
+          <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+          <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+          <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+        </ul>
+      </li>
+      <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>          <ul class="entry-list" style="margin-top:0;">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/01/helm与ivy简单对比.html" rel="bookmark" title="Permalink to helm与ivy简单对比">helm与ivy简单对比</a></h1>
+<header class="entry-info">
+  <span title="Updated at 2018-01-26">
+    <i class="fa fa-calendar-o"></i>
+    六 06 一月 2018
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-a09c565927">counsel-find-file</a></li>
+<li><a href="#org-7258b58f42">tab键</a></li>
+<li><a href="#org-29b79c63ca">记忆多个按键</a></li>
+<li><a href="#org-d398bff24e">模糊搜索</a></li>
+<li><a href="#org-73fb2d5538">候选词按使用频率排序</a></li>
+<li><a href="#org-f9eb035edc">minibuffer</a></li>
+<li><a href="#org-5617ab7aed">dired中复制或重命名文件</a></li>
+<li><a href="#org-b25550811b">sudo edit</a></li>
+</ul>
+</div></div>
+<blockquote>
+<p>
+我为什么放弃ivy回到了helm
+</p>
+</blockquote>
+<p>
+说一说ivy用的不爽的地方吧
+</p>
+<h3 id="org-a09c565927">counsel-find-file</h3><p>
+   counsel-find-file作为最常用的命令,ivy竟然没有把默认的find-file进行覆写，比如我在dired中想要复制文件，我习惯使用<code>C-h</code>退回上一个目录，但即使我之前已经设置了
+</p>
+<div class="highlight"><pre><span></span><span class="nb">:map</span> <span class="nv">counsel-find-file-map</span>
+<span class="p">(</span><span class="s">&quot;C-h&quot;</span> <span class="o">.</span> <span class="nv">counsel-up-directory</span><span class="p">)</span>
+</pre></div>
+
+<p>
+   但只有在使用<code>counsel-find-file</code>时有效,类似dired中是无效的，相比较于<code>helm-find-files</code>把<code>find-file</code>进行覆写，无论何时都能使用自己自定义的按键，这很不爽
+</p>
+<h3 id="org-7258b58f42">tab键</h3><p>
+   在<b>helm</b>中，tab仅作为补全使用，想要打开选中项，则需要按一下<code>enter</code>键,而在<b>ivy</b>中 …</p>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/01/helm与ivy简单对比.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/05/方便的切换emacs主题.html" rel="bookmark" title="Permalink to 方便的切换emacs主题">方便的切换emacs主题</a></h1>
+<header class="entry-info">
+  <span title="2017-05-23T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    二 23 五月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+        <a href="https://honmaple.me/tags/elisp/index.html">elisp</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            
+<p>
+作为一个主题控，经常会切换主题，之前切换主题的方式是这样的，<b>M-x</b>,`load-theme`,选中,但是个人认为不够便捷，正好前几天发现了<b>hydra</b>这个插件,也想实践一下
+</p>
+<p>
+获取主题列表
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">maple-cycle-themes</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="p">(</span><span class="nv">custom-available-themes</span><span class="p">)))</span>
+</pre></div>
+
+<p>
+获取当前主题索引
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">cl-position</span> <span class="p">(</span><span class="nf">car</span> <span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;symbol-name</span> <span class="nv">custom-enabled-themes</span><span class="p">))</span> <span class="nv">maple-cycle-themes</span> <span class="nb">:test</span> <span class="ss">&#39;equal</span><span class="p">)</span>
+</pre></div>
+
+<p>
+获取下一个主题
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index</span>
+      <span class="p">(</span><span class="nf">+</span> <span class="mi">1</span> <span class="nv">maple-current-theme-index</span><span class="p">))</span>
+<span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme</span> <span class="p">(</span><span class="nf">nth</span> <span class="nv">maple-current-theme-index</span> <span class="nv">maple-cycle-themes</span><span class="p">))</span>
+</pre></div>
+
+<p>
+加载主题
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">load-theme</span> <span class="p">(</span><span class="nf">intern</span> <span class="nv">maple-current-theme</span><span class="p">)</span> <span class="no">t</span><span class="p">)</span>
+</pre></div>
+
+<p>
+最后得到这样的函数
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/cycle-theme</span> <span class="p">(</span><span class="nv">num</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">setq</span> <span class="nv">maple-current-theme-index …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/05/方便的切换emacs主题.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/04/emacs笔记.html" rel="bookmark" title="Permalink to emacs笔记">emacs笔记</a></h1>
+<header class="entry-info">
+  <span title="Updated at 2019-07-09">
+    <i class="fa fa-calendar-o"></i>
+    五 21 四月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-0a4f75316d">Linux</a></li>
+<li><a href="#org-392d94f818">Evil</a>
+<ul>
+<li><a href="#org-6c64378d4b">粘贴替换的时候会复制替换的文本</a></li>
+<li><a href="#org-45555830c2">自动搜索已选中的字符</a></li>
+<li><a href="#org-4988587713">evil-mc不忽略大小写</a></li>
+</ul>
+</li>
+<li><a href="#org-a5ed878cba">Font</a>
+<ul>
+<li><a href="#org-c9e48708ff">设置中英文字体</a></li>
+</ul>
+</li>
+<li><a href="#org-5985ff722c">Ivy</a>
+<ul>
+<li><a href="#org-e0255c0291">指定目录或文件进行搜索</a></li>
+<li><a href="#org-474fabcb78">查找当前目录以及子目录的某个文件</a></li>
+<li><a href="#org-11b9dd31de">当选中单词时，swiper使用已选单词进行搜索</a></li>
+</ul>
+</li>
+<li><a href="#org-e078a35843">File</a>
+<ul>
+<li><a href="#org-92975a4f96">获取文件或目录的basename</a></li>
+</ul>
+</li>
+<li><a href="#org-1bad92ca51">Elisp</a>
+<ul>
+<li><a href="#org-97cb2bd119">golang自动增加注释</a></li>
+<li><a href="#org-3d1a418e0c">增加到hook但仅调用一次</a></li>
+<li><a href="#org-71a6bf300d">迭代并获取列表索引</a></li>
+<li><a href="#org-7dacf73940">深拷贝function</a></li>
+</ul>
+</li>
+</ul>
+</div></div>
+<h2 id="org-0a4f75316d">Linux</h2><p>
+  将<b>emacs gui</b>进程放置到后台
+</p>
+<div class="highlight"><pre><span></span><span class="nv">EMACS</span><span class="o">=</span>/usr/bin/emacs
+<span class="nv">GUI</span><span class="o">=</span><span class="m">0</span>
+<span class="nv">ARGS</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
+<span class="nv">ARRAY</span><span class="o">=(</span><span class="s2">&quot;-nw&quot;</span> <span class="s2">&quot;--no-window-system&quot;</span> <span class="s2">&quot;--batch&quot;</span> <span class="s2">&quot;--help&quot;</span><span class="o">)</span>
+
+<span class="k">for</span> arg in <span class="nv">$ARGS</span><span class="p">;</span> <span class="k">do</span>
+    <span class="k">for</span> keyword in <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ARRAY</span><span class="p">[@]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span><span class="k">do …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/04/emacs笔记.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/04/emacs实现智能注释.html" rel="bookmark" title="Permalink to emacs实现智能注释">emacs实现智能注释</a></h1>
+<header class="entry-info">
+  <span title="2017-04-21T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    五 21 四月 2017
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+        <a href="https://honmaple.me/tags/elisp/index.html">elisp</a>
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            
+<p>
+之前使用emacs时遇到这么一个问题
+</p>
+<blockquote>
+<p>
+当前行存在代码折叠时,如果想要注释,必须先选中当前行,否则只能注释代码折叠块的第一行
+</p>
+</blockquote>
+<p>
+就像这样
+</p>
+<p>
+<a href="https://static.honmaple.com/images/2017/04/149274346737550.png?type=show" data-fancybox="image"><img data-src="https://static.honmaple.com/images/2017/04/149274346737550.png?type=thumb" class="lazyload" /></a>
+</p>
+<p>
+<a href="https://static.honmaple.com/images/2017/04/149274352705945.png?type=show" data-fancybox="image"><img data-src="https://static.honmaple.com/images/2017/04/149274352705945.png?type=thumb" class="lazyload" /></a>
+</p>
+<p>
+基础注释函数来源于 <b>stackoverflow</b>
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">comment-or-uncomment-region-or-line</span> <span class="p">()</span>
+  <span class="s">&quot;Comments or uncomments the region or the current line if there&#39;s no active region.&quot;</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">(</span><span class="nv">beg</span> <span class="nv">end</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">region-active-p</span><span class="p">)</span>
+        <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">region-beginning</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">region-end</span><span class="p">))</span>
+      <span class="p">(</span><span class="k">setq</span> <span class="nv">beg</span> <span class="p">(</span><span class="nf">line-beginning-position</span><span class="p">)</span> <span class="nv">end</span> <span class="p">(</span><span class="nf">line-end-position</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nv">comment-or-uncomment-region</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)))</span>
+</pre></div>
+
+<p>
+在此函数的位置上进行修改,刚开始使用
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">when</span> <span class="p">(</span><span class="nv">hs-already-hidden-p</span><span class="p">)</span>
+    <span class="p">(</span><span class="nv">evil-visual-line …</span></pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/04/emacs实现智能注释.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2016/12/emacs预览图片时禁止smooth-scrolling.html" rel="bookmark" title="Permalink to emacs预览图片时禁止smooth-scrolling">emacs预览图片时禁止smooth-scrolling</a></h1>
+<header class="entry-info">
+  <span title="2016-12-24T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    六 24 十二月 2016
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+        <a href="https://honmaple.me/tags/org-mode/index.html">org-mode</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-1feeb9a8c0">需求</a></li>
+<li><a href="#org-496158adeb">解决</a></li>
+<li><a href="#org-d73ed671f5">Footnotes</a></li>
+</ul>
+</div></div>
+<h2 id="org-1feeb9a8c0">需求</h2><p>
+  在使用 <b>org-mode</b> 写文档时，插入图片后默认不显示，想要直接在 <b>org</b>文件中预览图片，可以使用
+</p>
+<div class="highlight"><pre><span></span><span class="nv">org-toggle-inline-images</span>
+</pre></div>
+
+<p>
+  但是问题来了，开启预览模式后，移动光标跳过文件内容，找了一下
+</p>
+<p>
+  <a href="https://github.com/syl20bnr/spacemacs/issues/3824">参考链接</a><sup><a id="fnr:1" class="footref" href="#fn.1">1</a></sup>
+  那么问题来了，如何只在开启 <b>org-toggle-inline-images</b> 后关闭 <b>smooth-scrooling</b>,
+  关闭 <b>org-toggle-inline-images</b> 后开启 <b>smooth-scrooling</b>
+</p>
+<h2 id="org-496158adeb">解决</h2><p>
+  给出代码,使用 <b>defadvice</b>
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">defadvice</span> <span class="nv">org-toggle-inline-images</span> <span class="p">(</span><span class="nv">after</span> <span class="nv">org-open-at-point</span> <span class="nv">activate</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">if</span> <span class="nv">smooth-scrolling-mode</span> <span class="p">(</span><span class="nv">smooth-scrolling-mode</span> <span class="mi">-1</span><span class="p">)</span>
+        <span class="p">(</span><span class="nv">smooth-scrolling-mode</span> <span class="mi">1</span><span class="p">)))</span>
+</pre></div>
+
+<h2 id="org-d73ed671f5">Footnotes</h2><p>
+<sup><a id="fnr:1" class="footref" href="#fn.1">1</a></sup><a href="https://github.com/syl20bnr/spacemacs/issues/3824">https …</a></p>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2016/12/emacs预览图片时禁止smooth-scrolling.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2016/06/emacs解决windowns文件乱码.html" rel="bookmark" title="Permalink to emacs解决windowns文件乱码">emacs解决windowns文件乱码</a></h1>
+<header class="entry-info">
+  <span title="2016-06-22T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    三 22 六月 2016
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">1. 换系统</a></li>
+<li><a href="#orgheadline2">2. 修改language环境</a></li>
+<li><a href="#orgheadline3">3. 重新以gb2312的编码载入文件(推荐)</a></li>
+</ul>
+</div>
+</div>
+
+<p>最近在看windows文件时总是乱码，查了资料后才知道windowns下的编码为 <strong>gb2312</strong> ,
+而linux下的编码为 <strong>utf-8</strong> ,所以打开文件会乱码</p>
+<p>如何解决?</p>
+<h3>换系统<a id="orgheadline1"></a></h3>
+<p>这不是废话吗!</p>
+<h3>修改language环境<a id="orgheadline2"></a></h3>
+<p>在配置文件中加入这么一行</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">set</span><span class="o">-</span><span class="k">language</span><span class="o">-</span><span class="n">environment</span> <span class="err">&#39;</span><span class="n">Chinese</span><span class="o">-</span><span class="n">GB</span><span class="p">)</span>
+</pre></div>
+
+
+<p>重启就行,结果····打开 linux下的文件乱码</p>
+<h3>重新以gb2312的编码载入文件(推荐)<a id="orgheadline3"></a></h3>
+<p><a href="http://blog.csdn.net/pfanaya/article/details/6205640">参考这里</a></p>
+<div class="highlight"><pre><span></span><span class="n">M</span><span class="o">-</span><span class="n">x</span> <span class="n">revert</span><span class="o">-</span><span class="n">buffer</span><span class="o">-</span><span class="k">with</span><span class="o">-</span><span class="n">coding</span><span class="o">-</span><span class="k">system</span>
+</pre></div>
+
+
+<p>选择chinese-gb2312,确认载入(不需要重启)</p>
+<p>ok,是不是很简单</p>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2016/06/emacs解决windowns文件乱码.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2016/05/解决evil-escape下visual-state不能使用'jj'的问题.html" rel="bookmark" title="Permalink to 解决evil-escape下visual-state不能使用'jj'的问题">解决evil-escape下visual-state不能使用'jj'的问题</a></h1>
+<header class="entry-info">
+  <span title="2016-05-21T00:00:00+08:00">
+    <i class="fa fa-calendar-o"></i>
+    六 21 五月 2016
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content">
+            <p>在一个多月前我给 <em>evil-escape</em> 开发者提了一个issue,但是不幸的是，没人理我，人理我，理我，我·····  </p>
+<p>于是这一个多月来我使用visual-state下选择段落的方式是: <strong>跳到段落最后,按k从下往上选择</strong>,
+现如今都快成为习惯了,今天终于有人解决了我的问题,非常感谢 <strong>ZzAntares</strong></p>
+<p>之前我用</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="n">setq</span> <span class="n">evil</span><span class="o">-</span><span class="k">escape</span><span class="o">-</span><span class="n">excluded</span><span class="o">-</span><span class="n">major</span><span class="o">-</span><span class="n">modes</span> <span class="err">&#39;</span><span class="p">(</span><span class="n">dired</span><span class="o">-</span><span class="k">mode</span> <span class="n">neotree</span><span class="o">-</span><span class="k">mode</span> <span class="n">evil</span><span class="o">-</span><span class="n">visual</span><span class="o">-</span><span class="k">state</span><span class="p">))</span>
+</pre></div>
+
+
+<p>解决了'jj'在 <em>dired-mode neotree-mode</em> 下的问题,但是遗憾的是 <em>visual-state</em> 下的选择问题仍然没有解决</p>
+<p>现在终于解决了, <a href="https://github.com/syl20bnr/evil-escape/issues/66">issue</a></p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="n">setq</span> <span class="n">evil</span><span class="o">-</span><span class="k">escape</span><span class="o">-</span><span class="n">inhibit</span><span class="o">-</span><span class="n">functions</span> <span class="err">&#39;</span><span class="p">(</span><span class="n">evil</span><span class="o">-</span><span class="n">visual</span><span class="o">-</span><span class="k">state</span><span class="o">-</span><span class="n">p</span><span class="p">))</span>
+</pre></div>
+
+
+<p>ok ,就这样 …</p>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2016/05/解决evil-escape下visual-state不能使用'jj'的问题.html">阅读全文 »</a>
+          </div>
+        </article></li>
+          <li>  <ul class="entry-pagination">
+      <li class="prev"><a href="https://honmaple.me/tags/emacs/index.html">&laquo;</a></li>
+         <li ><a href="https://honmaple.me/tags/emacs/index.html">1</a></li>
+         <li class="active"><a href="https://honmaple.me/tags/emacs/index2.html">2</a></li>
+  </ul>
+</li>
+          </ul>
+      </div>
+    </div>
+<div class="footer">
+  <ul class="list-inline entry-social">
+    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/feeds/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+  <ul class="list-inline copyright">
+    <li class="hidden-xs">© 2015-2020 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+          <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+</div>    <div class="back-to-top back-to-top-on">
+      <i class="fa fa-hand-o-up" title="back to top"></i>
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+   window.dataLayer = window.dataLayer || [];
+   function gtag(){dataLayer.push(arguments);}
+   gtag('js', new Date());
+   gtag('config', 'UA-88401692-2');
+  </script>
+      <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/theme/lib/js/script.min.js"></script>
+      <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+           if (typeof ga !== 'undefined') {
+               ga('send', 'pageview', location.pathname + location.search);
+           }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>
