@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>kvm · honmaple's blog · 风落花语风落天，花落风雨花落田.</title>
       <link href="https://static.honmaple.com/static/css/lib.min.css" rel="stylesheet">
-        <link href="https://honmaple.me/theme/lib/css/style.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
   </head>
   <body>
     <div class="particles-js" id="particles-js"></div>
@@ -62,7 +62,7 @@
               <a href="https://honmaple.me/articles/2020/01/KVM笔记之磁盘扩容.html" rel="bookmark" title="Permalink to KVM笔记之磁盘扩容">KVM笔记之磁盘扩容</a>
             </h1>
 <header class="entry-info">
-  <span title="Updated at 2020-08-09">
+  <span title="Updated at 2020-12-17">
     <i class="fa fa-calendar-o"></i>
     四 09 一月 2020
   </span>
@@ -104,6 +104,7 @@
 <li><a href="#org-edd2b15cbf">启动虚拟机</a></li>
 <li><a href="#org-23d40038ff">查看磁盘大小和格式</a></li>
 <li><a href="#org-20b3a390bc">扩容磁盘</a></li>
+<li><a href="#org-0300dc05b5"><span class="todo">DONE</span>LVM磁盘扩容</a></li>
 </ul>
 </li>
 </ul>
@@ -129,6 +130,7 @@
 <li><a href="#org-a6b5e561ba">FAQ</a>
 <ul>
 <li><a href="#org-cbbcb30941">unexpected output in sfdisk --version</a></li>
+<li><a href="#org-484efec8d5">DOS partition table format cannot be used on drives for volumes larger than 2T</a></li>
 </ul>
 </li>
 <li><a href="#org-28464e090b">参考链接</a></li>
@@ -150,8 +152,8 @@ virtual size: <span class="m">2</span>.0G <span class="o">(</span><span class="m
 disk size: <span class="m">1</span>.7G
 cluster_size: <span class="m">65536</span>
 Format specific information:
-    compat: <span class="m">0</span>.10
-    refcount bits: <span class="m">16</span>
+compat: <span class="m">0</span>.10
+refcount bits: <span class="m">16</span>
 </pre></div>
 
 <p>
@@ -168,8 +170,8 @@ virtual size: 30G <span class="o">(</span><span class="m">32212254720</span> byt
 disk size: <span class="m">1</span>.7G
 cluster_size: <span class="m">65536</span>
 Format specific information:
-    compat: <span class="m">0</span>.10
-    refcount bits: <span class="m">16</span>
+compat: <span class="m">0</span>.10
+refcount bits: <span class="m">16</span>
 </pre></div>
 
 <p>
@@ -256,6 +258,136 @@ root@vm-ubuntu-base:~# df -hT <span class="p">|</span> grep /dev/vda
 
 </li>
 </ul>
+<h4 id="org-0300dc05b5"><span class="todo">DONE</span>LVM磁盘扩容</h4><p>
+    CLOSED: [2020-12-17 四 10:26]
+</p>
+<ul>
+<li>
+<p>
+State &#34;DONE&#34;       from              [2020-12-17 四 10:26]
+</p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="n">root</span><span class="nv">@jsl</span><span class="o">-</span><span class="nl">ml</span><span class="p">:</span><span class="o">~</span><span class="err">#</span><span class="w"> </span><span class="n">lsblk</span><span class="w"></span>
+<span class="n">NAME</span><span class="w">                      </span><span class="nl">MAJ</span><span class="p">:</span><span class="nf">MIN</span><span class="w"> </span><span class="n">RM</span><span class="w">  </span><span class="k">SIZE</span><span class="w"> </span><span class="n">RO</span><span class="w"> </span><span class="n">TYPE</span><span class="w"> </span><span class="n">MOUNTPOINT</span><span class="w"></span>
+<span class="n">sda</span><span class="w">                         </span><span class="mi">8</span><span class="err">:</span><span class="mi">0</span><span class="w">    </span><span class="mi">0</span><span class="w"> </span><span class="mf">14.6</span><span class="n">T</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="k">disk</span><span class="w"> </span>
+<span class="n">sdb</span><span class="w">                         </span><span class="mi">8</span><span class="err">:</span><span class="mi">16</span><span class="w">   </span><span class="mi">0</span><span class="w">  </span><span class="mf">3.5</span><span class="n">T</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="k">disk</span><span class="w"> </span>
+<span class="err">├─</span><span class="n">sdb1</span><span class="w">                      </span><span class="mi">8</span><span class="err">:</span><span class="mi">17</span><span class="w">   </span><span class="mi">0</span><span class="w">  </span><span class="mi">512</span><span class="n">M</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="n">part</span><span class="w"> </span><span class="o">/</span><span class="n">boot</span><span class="o">/</span><span class="n">efi</span><span class="w"></span>
+<span class="err">├─</span><span class="n">sdb2</span><span class="w">                      </span><span class="mi">8</span><span class="err">:</span><span class="mi">18</span><span class="w">   </span><span class="mi">0</span><span class="w">    </span><span class="mi">1</span><span class="n">G</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="n">part</span><span class="w"> </span><span class="o">/</span><span class="n">boot</span><span class="w"></span>
+<span class="err">└─</span><span class="n">sdb3</span><span class="w">                      </span><span class="mi">8</span><span class="err">:</span><span class="mi">19</span><span class="w">   </span><span class="mi">0</span><span class="w">  </span><span class="mf">3.5</span><span class="n">T</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="n">part</span><span class="w"> </span>
+<span class="w">  </span><span class="err">└─</span><span class="n">ubuntu</span><span class="c1">--vg-ubuntu--lv 253:0    0  200G  0 lvm  /</span>
+<span class="n">sdc</span><span class="w">                         </span><span class="mi">8</span><span class="err">:</span><span class="mi">32</span><span class="w">   </span><span class="mi">0</span><span class="w"> </span><span class="mf">14.6</span><span class="n">T</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="k">disk</span><span class="w"> </span>
+<span class="n">sdd</span><span class="w">                         </span><span class="mi">8</span><span class="err">:</span><span class="mi">48</span><span class="w">   </span><span class="mi">0</span><span class="w"> </span><span class="mf">14.6</span><span class="n">T</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="k">disk</span><span class="w"> </span>
+<span class="n">sr0</span><span class="w">                        </span><span class="mi">11</span><span class="err">:</span><span class="mi">0</span><span class="w">    </span><span class="mi">1</span><span class="w"> </span><span class="mi">1024</span><span class="n">M</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="n">rom</span><span class="w">  </span>
+</pre></div>
+
+<div class="highlight"><pre><span></span><span class="n">root</span><span class="nv">@jsl</span><span class="o">-</span><span class="nl">ml</span><span class="p">:</span><span class="o">~</span><span class="err">#</span><span class="w"> </span><span class="n">vgdisplay</span><span class="w"> </span>
+<span class="w">  </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="nl">sde</span><span class="p">:</span><span class="w"> </span><span class="k">open</span><span class="w"> </span><span class="nl">failed</span><span class="p">:</span><span class="w"> </span><span class="k">No</span><span class="w"> </span><span class="n">medium</span><span class="w"> </span><span class="k">found</span><span class="w"></span>
+<span class="w">  </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="nl">sde</span><span class="p">:</span><span class="w"> </span><span class="k">open</span><span class="w"> </span><span class="nl">failed</span><span class="p">:</span><span class="w"> </span><span class="k">No</span><span class="w"> </span><span class="n">medium</span><span class="w"> </span><span class="k">found</span><span class="w"></span>
+<span class="w">  </span><span class="c1">--- Volume group ---</span>
+<span class="w">  </span><span class="n">VG</span><span class="w"> </span><span class="n">Name</span><span class="w">               </span><span class="n">ubuntu</span><span class="o">-</span><span class="n">vg</span><span class="w"></span>
+<span class="w">  </span><span class="k">System</span><span class="w"> </span><span class="n">ID</span><span class="w">             </span>
+<span class="w">  </span><span class="nf">Format</span><span class="w">                </span><span class="n">lvm2</span><span class="w"></span>
+<span class="w">  </span><span class="n">Metadata</span><span class="w"> </span><span class="n">Areas</span><span class="w">        </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="n">Metadata</span><span class="w"> </span><span class="k">Sequence</span><span class="w"> </span><span class="k">No</span><span class="w">  </span><span class="mi">2</span><span class="w"></span>
+<span class="w">  </span><span class="n">VG</span><span class="w"> </span><span class="n">Access</span><span class="w">             </span><span class="k">read</span><span class="o">/</span><span class="k">write</span><span class="w"></span>
+<span class="w">  </span><span class="n">VG</span><span class="w"> </span><span class="n">Status</span><span class="w">             </span><span class="n">resizable</span><span class="w"></span>
+<span class="w">  </span><span class="nf">MAX</span><span class="w"> </span><span class="n">LV</span><span class="w">                </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="n">Cur</span><span class="w"> </span><span class="n">LV</span><span class="w">                </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="k">Open</span><span class="w"> </span><span class="n">LV</span><span class="w">               </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="nf">Max</span><span class="w"> </span><span class="n">PV</span><span class="w">                </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="n">Cur</span><span class="w"> </span><span class="n">PV</span><span class="w">                </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="n">Act</span><span class="w"> </span><span class="n">PV</span><span class="w">                </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="n">VG</span><span class="w"> </span><span class="k">Size</span><span class="w">               </span><span class="mf">3.49</span><span class="w"> </span><span class="n">TiB</span><span class="w"></span>
+<span class="w">  </span><span class="n">PE</span><span class="w"> </span><span class="k">Size</span><span class="w">               </span><span class="mf">4.00</span><span class="w"> </span><span class="n">MiB</span><span class="w"></span>
+<span class="w">  </span><span class="n">Total</span><span class="w"> </span><span class="n">PE</span><span class="w">              </span><span class="mi">915322</span><span class="w"></span>
+<span class="w">  </span><span class="n">Alloc</span><span class="w"> </span><span class="n">PE</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="k">Size</span><span class="w">       </span><span class="mi">51200</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">200.00</span><span class="w"> </span><span class="n">GiB</span><span class="w"></span>
+<span class="w">  </span><span class="k">Free</span><span class="w">  </span><span class="n">PE</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="k">Size</span><span class="w">       </span><span class="mi">864122</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="o">&lt;</span><span class="mf">3.30</span><span class="w"> </span><span class="n">TiB</span><span class="w"></span>
+<span class="w">  </span><span class="n">VG</span><span class="w"> </span><span class="n">UUID</span><span class="w">               </span><span class="n">EAgRRa</span><span class="o">-</span><span class="n">u0VB</span><span class="o">-</span><span class="mi">0</span><span class="n">MjL</span><span class="o">-</span><span class="n">gnk5</span><span class="o">-</span><span class="n">KDCC</span><span class="o">-</span><span class="n">YlYw</span><span class="o">-</span><span class="n">vAMwOS</span><span class="w"></span>
+</pre></div>
+
+<div class="highlight"><pre><span></span><span class="n">root</span><span class="nv">@jsl</span><span class="o">-</span><span class="nl">ml</span><span class="p">:</span><span class="o">~</span><span class="err">#</span><span class="w"> </span><span class="n">lvdisplay</span><span class="w"> </span>
+<span class="w">  </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="nl">sde</span><span class="p">:</span><span class="w"> </span><span class="k">open</span><span class="w"> </span><span class="nl">failed</span><span class="p">:</span><span class="w"> </span><span class="k">No</span><span class="w"> </span><span class="n">medium</span><span class="w"> </span><span class="k">found</span><span class="w"></span>
+<span class="w">  </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="nl">sde</span><span class="p">:</span><span class="w"> </span><span class="k">open</span><span class="w"> </span><span class="nl">failed</span><span class="p">:</span><span class="w"> </span><span class="k">No</span><span class="w"> </span><span class="n">medium</span><span class="w"> </span><span class="k">found</span><span class="w"></span>
+<span class="w">  </span><span class="c1">--- Logical volume ---</span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="k">Path</span><span class="w">                </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">vg</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">lv</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">Name</span><span class="w">                </span><span class="n">ubuntu</span><span class="o">-</span><span class="n">lv</span><span class="w"></span>
+<span class="w">  </span><span class="n">VG</span><span class="w"> </span><span class="n">Name</span><span class="w">                </span><span class="n">ubuntu</span><span class="o">-</span><span class="n">vg</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">UUID</span><span class="w">                </span><span class="n">PrxjnN</span><span class="o">-</span><span class="n">ELNU</span><span class="o">-</span><span class="n">peoA</span><span class="o">-</span><span class="n">JH6E</span><span class="o">-</span><span class="n">BFle</span><span class="o">-</span><span class="n">KclP</span><span class="o">-</span><span class="n">Gt07U4</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="k">Write</span><span class="w"> </span><span class="n">Access</span><span class="w">        </span><span class="k">read</span><span class="o">/</span><span class="k">write</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">Creation</span><span class="w"> </span><span class="k">host</span><span class="p">,</span><span class="w"> </span><span class="nc">time</span><span class="w"> </span><span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="p">,</span><span class="w"> </span><span class="mi">2020</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span><span class="w"> </span><span class="mi">15</span><span class="err">:</span><span class="mi">13</span><span class="err">:</span><span class="mi">07</span><span class="w"> </span><span class="o">+</span><span class="mi">0000</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">Status</span><span class="w">              </span><span class="n">available</span><span class="w"></span>
+<span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="k">open</span><span class="w">                 </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="k">Size</span><span class="w">                </span><span class="mf">200.00</span><span class="w"> </span><span class="n">GiB</span><span class="w"></span>
+<span class="w">  </span><span class="k">Current</span><span class="w"> </span><span class="n">LE</span><span class="w">             </span><span class="mi">51200</span><span class="w"></span>
+<span class="w">  </span><span class="n">Segments</span><span class="w">               </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="n">Allocation</span><span class="w">             </span><span class="n">inherit</span><span class="w"></span>
+<span class="w">  </span><span class="k">Read</span><span class="w"> </span><span class="n">ahead</span><span class="w"> </span><span class="n">sectors</span><span class="w">     </span><span class="n">auto</span><span class="w"></span>
+<span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">currently</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="k">to</span><span class="w">     </span><span class="mi">256</span><span class="w"></span>
+<span class="w">  </span><span class="n">Block</span><span class="w"> </span><span class="n">device</span><span class="w">           </span><span class="mi">253</span><span class="err">:</span><span class="mi">0</span><span class="w"></span>
+</pre></div>
+
+<div class="highlight"><pre><span></span><span class="n">root</span><span class="nv">@jsl</span><span class="o">-</span><span class="nl">ml</span><span class="p">:</span><span class="o">~</span><span class="err">#</span><span class="w"> </span><span class="n">lvcreate</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">ubuntu</span><span class="o">-</span><span class="n">lv</span><span class="o">-</span><span class="n">home</span><span class="w"> </span><span class="c1">--extents +100%FREE  ubuntu-vg</span>
+<span class="w">  </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="nl">sde</span><span class="p">:</span><span class="w"> </span><span class="k">open</span><span class="w"> </span><span class="nl">failed</span><span class="p">:</span><span class="w"> </span><span class="k">No</span><span class="w"> </span><span class="n">medium</span><span class="w"> </span><span class="k">found</span><span class="w"></span>
+<span class="w">  </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="nl">sde</span><span class="p">:</span><span class="w"> </span><span class="k">open</span><span class="w"> </span><span class="nl">failed</span><span class="p">:</span><span class="w"> </span><span class="k">No</span><span class="w"> </span><span class="n">medium</span><span class="w"> </span><span class="k">found</span><span class="w"></span>
+<span class="w">  </span><span class="n">Logical</span><span class="w"> </span><span class="n">volume</span><span class="w"> </span><span class="ss">&quot;ubuntu-lv-home&quot;</span><span class="w"> </span><span class="n">created</span><span class="p">.</span><span class="w"></span>
+
+<span class="n">root</span><span class="nv">@jsl</span><span class="o">-</span><span class="nl">ml</span><span class="p">:</span><span class="o">~</span><span class="err">#</span><span class="w"> </span><span class="n">lvdisplay</span><span class="w"> </span>
+<span class="w">  </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="nl">sde</span><span class="p">:</span><span class="w"> </span><span class="k">open</span><span class="w"> </span><span class="nl">failed</span><span class="p">:</span><span class="w"> </span><span class="k">No</span><span class="w"> </span><span class="n">medium</span><span class="w"> </span><span class="k">found</span><span class="w"></span>
+<span class="w">  </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="nl">sde</span><span class="p">:</span><span class="w"> </span><span class="k">open</span><span class="w"> </span><span class="nl">failed</span><span class="p">:</span><span class="w"> </span><span class="k">No</span><span class="w"> </span><span class="n">medium</span><span class="w"> </span><span class="k">found</span><span class="w"></span>
+<span class="w">  </span><span class="c1">--- Logical volume ---</span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="k">Path</span><span class="w">                </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">vg</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">lv</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">Name</span><span class="w">                </span><span class="n">ubuntu</span><span class="o">-</span><span class="n">lv</span><span class="w"></span>
+<span class="w">  </span><span class="n">VG</span><span class="w"> </span><span class="n">Name</span><span class="w">                </span><span class="n">ubuntu</span><span class="o">-</span><span class="n">vg</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">UUID</span><span class="w">                </span><span class="n">PrxjnN</span><span class="o">-</span><span class="n">ELNU</span><span class="o">-</span><span class="n">peoA</span><span class="o">-</span><span class="n">JH6E</span><span class="o">-</span><span class="n">BFle</span><span class="o">-</span><span class="n">KclP</span><span class="o">-</span><span class="n">Gt07U4</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="k">Write</span><span class="w"> </span><span class="n">Access</span><span class="w">        </span><span class="k">read</span><span class="o">/</span><span class="k">write</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">Creation</span><span class="w"> </span><span class="k">host</span><span class="p">,</span><span class="w"> </span><span class="nc">time</span><span class="w"> </span><span class="n">ubuntu</span><span class="o">-</span><span class="n">server</span><span class="p">,</span><span class="w"> </span><span class="mi">2020</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span><span class="w"> </span><span class="mi">15</span><span class="err">:</span><span class="mi">13</span><span class="err">:</span><span class="mi">07</span><span class="w"> </span><span class="o">+</span><span class="mi">0000</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">Status</span><span class="w">              </span><span class="n">available</span><span class="w"></span>
+<span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="k">open</span><span class="w">                 </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="k">Size</span><span class="w">                </span><span class="mf">200.00</span><span class="w"> </span><span class="n">GiB</span><span class="w"></span>
+<span class="w">  </span><span class="k">Current</span><span class="w"> </span><span class="n">LE</span><span class="w">             </span><span class="mi">51200</span><span class="w"></span>
+<span class="w">  </span><span class="n">Segments</span><span class="w">               </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="n">Allocation</span><span class="w">             </span><span class="n">inherit</span><span class="w"></span>
+<span class="w">  </span><span class="k">Read</span><span class="w"> </span><span class="n">ahead</span><span class="w"> </span><span class="n">sectors</span><span class="w">     </span><span class="n">auto</span><span class="w"></span>
+<span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">currently</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="k">to</span><span class="w">     </span><span class="mi">256</span><span class="w"></span>
+<span class="w">  </span><span class="n">Block</span><span class="w"> </span><span class="n">device</span><span class="w">           </span><span class="mi">253</span><span class="err">:</span><span class="mi">0</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">--- Logical volume ---</span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="k">Path</span><span class="w">                </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">vg</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">lv</span><span class="o">-</span><span class="n">home</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">Name</span><span class="w">                </span><span class="n">ubuntu</span><span class="o">-</span><span class="n">lv</span><span class="o">-</span><span class="n">home</span><span class="w"></span>
+<span class="w">  </span><span class="n">VG</span><span class="w"> </span><span class="n">Name</span><span class="w">                </span><span class="n">ubuntu</span><span class="o">-</span><span class="n">vg</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">UUID</span><span class="w">                </span><span class="mi">4</span><span class="n">dHuSb</span><span class="o">-</span><span class="n">yGla</span><span class="o">-</span><span class="n">pcdp</span><span class="o">-</span><span class="mi">0</span><span class="n">tfg</span><span class="o">-</span><span class="n">hnAL</span><span class="o">-</span><span class="n">j0xZ</span><span class="o">-</span><span class="n">h2aiNr</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="k">Write</span><span class="w"> </span><span class="n">Access</span><span class="w">        </span><span class="k">read</span><span class="o">/</span><span class="k">write</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">Creation</span><span class="w"> </span><span class="k">host</span><span class="p">,</span><span class="w"> </span><span class="nc">time</span><span class="w"> </span><span class="n">jsl</span><span class="o">-</span><span class="n">ml</span><span class="p">,</span><span class="w"> </span><span class="mi">2020</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">04</span><span class="w"> </span><span class="mi">09</span><span class="err">:</span><span class="mi">37</span><span class="err">:</span><span class="mi">56</span><span class="w"> </span><span class="o">+</span><span class="mi">0000</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="n">Status</span><span class="w">              </span><span class="n">available</span><span class="w"></span>
+<span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="k">open</span><span class="w">                 </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="n">LV</span><span class="w"> </span><span class="k">Size</span><span class="w">                </span><span class="o">&lt;</span><span class="mf">3.30</span><span class="w"> </span><span class="n">TiB</span><span class="w"></span>
+<span class="w">  </span><span class="k">Current</span><span class="w"> </span><span class="n">LE</span><span class="w">             </span><span class="mi">864122</span><span class="w"></span>
+<span class="w">  </span><span class="n">Segments</span><span class="w">               </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="n">Allocation</span><span class="w">             </span><span class="n">inherit</span><span class="w"></span>
+<span class="w">  </span><span class="k">Read</span><span class="w"> </span><span class="n">ahead</span><span class="w"> </span><span class="n">sectors</span><span class="w">     </span><span class="n">auto</span><span class="w"></span>
+<span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">currently</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="k">to</span><span class="w">     </span><span class="mi">256</span><span class="w"></span>
+<span class="w">  </span><span class="n">Block</span><span class="w"> </span><span class="n">device</span><span class="w">           </span><span class="mi">253</span><span class="err">:</span><span class="mi">1</span><span class="w"></span>
+</pre></div>
+
+<div class="highlight"><pre><span></span><span class="n">root</span><span class="nv">@jsl</span><span class="o">-</span><span class="nl">ml</span><span class="p">:</span><span class="o">~</span><span class="err">#</span><span class="w"> </span><span class="n">lsblk</span><span class="w"></span>
+<span class="n">NAME</span><span class="w">                            </span><span class="nl">MAJ</span><span class="p">:</span><span class="nf">MIN</span><span class="w"> </span><span class="n">RM</span><span class="w">  </span><span class="k">SIZE</span><span class="w"> </span><span class="n">RO</span><span class="w"> </span><span class="n">TYPE</span><span class="w"> </span><span class="n">MOUNTPOINT</span><span class="w"></span>
+<span class="n">sda</span><span class="w">                               </span><span class="mi">8</span><span class="err">:</span><span class="mi">0</span><span class="w">    </span><span class="mi">0</span><span class="w"> </span><span class="mf">14.6</span><span class="n">T</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="k">disk</span><span class="w"> </span>
+<span class="n">sdb</span><span class="w">                               </span><span class="mi">8</span><span class="err">:</span><span class="mi">16</span><span class="w">   </span><span class="mi">0</span><span class="w">  </span><span class="mf">3.5</span><span class="n">T</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="k">disk</span><span class="w"> </span>
+<span class="err">├─</span><span class="n">sdb1</span><span class="w">                            </span><span class="mi">8</span><span class="err">:</span><span class="mi">17</span><span class="w">   </span><span class="mi">0</span><span class="w">  </span><span class="mi">512</span><span class="n">M</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="n">part</span><span class="w"> </span><span class="o">/</span><span class="n">boot</span><span class="o">/</span><span class="n">efi</span><span class="w"></span>
+<span class="err">├─</span><span class="n">sdb2</span><span class="w">                            </span><span class="mi">8</span><span class="err">:</span><span class="mi">18</span><span class="w">   </span><span class="mi">0</span><span class="w">    </span><span class="mi">1</span><span class="n">G</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="n">part</span><span class="w"> </span><span class="o">/</span><span class="n">boot</span><span class="w"></span>
+<span class="err">└─</span><span class="n">sdb3</span><span class="w">                            </span><span class="mi">8</span><span class="err">:</span><span class="mi">19</span><span class="w">   </span><span class="mi">0</span><span class="w">  </span><span class="mf">3.5</span><span class="n">T</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="n">part</span><span class="w"> </span>
+<span class="w">  </span><span class="err">├─</span><span class="n">ubuntu</span><span class="c1">--vg-ubuntu--lv       253:0    0  200G  0 lvm  /</span>
+<span class="w">  </span><span class="err">└─</span><span class="n">ubuntu</span><span class="c1">--vg-ubuntu--lv--home 253:1    0  3.3T  0 lvm  </span>
+<span class="n">sdc</span><span class="w">                               </span><span class="mi">8</span><span class="err">:</span><span class="mi">32</span><span class="w">   </span><span class="mi">0</span><span class="w"> </span><span class="mf">14.6</span><span class="n">T</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="k">disk</span><span class="w"> </span>
+<span class="n">sdd</span><span class="w">                               </span><span class="mi">8</span><span class="err">:</span><span class="mi">48</span><span class="w">   </span><span class="mi">0</span><span class="w"> </span><span class="mf">14.6</span><span class="n">T</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="k">disk</span><span class="w"> </span>
+<span class="n">sr0</span><span class="w">                              </span><span class="mi">11</span><span class="err">:</span><span class="mi">0</span><span class="w">    </span><span class="mi">1</span><span class="w"> </span><span class="mi">1024</span><span class="n">M</span><span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="n">rom</span><span class="w">  </span>
+<span class="n">root</span><span class="nv">@jsl</span><span class="o">-</span><span class="nl">ml</span><span class="p">:</span><span class="o">~</span><span class="err">#</span><span class="w"> </span><span class="n">mkfs</span><span class="p">.</span><span class="n">ext4</span><span class="w"> </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">vg</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">lv</span><span class="o">-</span><span class="n">home</span><span class="w"></span>
+</pre></div>
+
+<div class="highlight"><pre><span></span><span class="n">root</span><span class="nv">@jsl</span><span class="o">-</span><span class="nl">ml</span><span class="p">:</span><span class="o">~</span><span class="err">#</span><span class="w"> </span><span class="n">mount</span><span class="w"> </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">vg</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">-</span><span class="n">lv</span><span class="o">-</span><span class="n">home</span><span class="w"> </span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="k">data</span><span class="w"></span>
+</pre></div>
+
 <h2 id="org-94fa03a8b3">磁盘挂载</h2><h3 id="org-36e79feb69">创建磁盘</h3><p>
    创建一块大小为 <b>100G</b>，格式为 <b>qcow2</b> 的磁盘
 </p>
@@ -273,10 +405,10 @@ virtual size: 100G <span class="o">(</span><span class="m">107374182400</span> b
 disk size: 196K
 cluster_size: <span class="m">65536</span>
 Format specific information:
-    compat: <span class="m">1</span>.1
-    lazy refcounts: <span class="nb">false</span>
-    refcount bits: <span class="m">16</span>
-    corrupt: <span class="nb">false</span>
+compat: <span class="m">1</span>.1
+lazy refcounts: <span class="nb">false</span>
+refcount bits: <span class="m">16</span>
+corrupt: <span class="nb">false</span>
 </pre></div>
 
 <h3 id="org-ee3161eca3">挂载磁盘</h3><h4 id="org-a4902b33b9">挂载命令</h4><div class="highlight"><pre><span></span>virsh attach-disk vm-ubuntu-04 /home/kvm/images/ubuntu-04-disk.qcow2 --driver qemu --subdriver qcow2 vdb --persistent
@@ -354,6 +486,56 @@ mount /dev/vdb1 /home/data
    解决方案
 </p>
 <div class="highlight"><pre><span></span><span class="nv">LANG</span><span class="o">=</span>en_US.UTF-8 growpart /dev/vda <span class="m">1</span>
+</pre></div>
+
+<h3 id="org-484efec8d5">DOS partition table format cannot be used on drives for volumes larger than 2T</h3><p>
+   在使用 <code>fdisk /dev/sdd</code> 时, 当<code>/dev/sdd</code>的大小超过2T, 会有警告
+</p>
+<div class="highlight"><pre><span></span><span class="nv">Device</span> <span class="nv">does</span> <span class="nv">not</span> <span class="nv">contain</span> <span class="nv">a</span> <span class="nv">recognized</span> <span class="nv">partition</span> <span class="nv">table</span>.
+<span class="nv">The</span> <span class="nv">size</span> <span class="nv">of</span> <span class="nv">this</span> <span class="nv">disk</span> <span class="nv">is</span> <span class="mi">14</span>.<span class="mi">6</span> <span class="nv">TiB</span> <span class="ss">(</span><span class="mi">16000900661248</span> <span class="nv">bytes</span><span class="ss">)</span>. <span class="nv">DOS</span> <span class="nv">partition</span> <span class="nv">table</span> <span class="nv">format</span> <span class="nv">cannot</span> <span class="nv">be</span> <span class="nv">used</span> <span class="nv">on</span> <span class="nv">drives</span> <span class="k">for</span> <span class="nv">volumes</span> <span class="nv">larger</span> <span class="nv">than</span> <span class="mi">2199023255040</span> <span class="nv">bytes</span> <span class="k">for</span> <span class="mi">512</span><span class="o">-</span><span class="nv">byte</span> <span class="nv">sectors</span>. <span class="nv">Use</span> <span class="nv">GUID</span> <span class="nv">partition</span> <span class="nv">table</span> <span class="nv">format</span> <span class="ss">(</span><span class="nv">GPT</span><span class="ss">)</span>.
+</pre></div>
+
+<p>
+   解决方案
+</p>
+<div class="highlight"><pre><span></span># <span class="nv">gdisk</span> <span class="o">/</span><span class="nv">dev</span><span class="o">/</span><span class="nv">sdd</span>
+
+<span class="nv">GPT</span> <span class="nv">fdisk</span> <span class="ss">(</span><span class="nv">gdisk</span><span class="ss">)</span> <span class="nv">version</span> <span class="mi">1</span>.<span class="mi">0</span>.<span class="mi">5</span>
+
+<span class="nv">Partition</span> <span class="nv">table</span> <span class="nv">scan</span>:
+  <span class="nv">MBR</span>: <span class="nv">not</span> <span class="nv">present</span>
+  <span class="nv">BSD</span>: <span class="nv">not</span> <span class="nv">present</span>
+  <span class="nv">APM</span>: <span class="nv">not</span> <span class="nv">present</span>
+  <span class="nv">GPT</span>: <span class="nv">not</span> <span class="nv">present</span>
+
+<span class="nv">Creating</span> <span class="nv">new</span> <span class="nv">GPT</span> <span class="nv">entries</span> <span class="nv">in</span> <span class="nv">memory</span>.
+
+<span class="nv">Command</span> <span class="ss">(</span>? <span class="k">for</span> <span class="nv">help</span><span class="ss">)</span>: <span class="nv">o</span>
+<span class="nv">This</span> <span class="nv">option</span> <span class="nv">deletes</span> <span class="nv">all</span> <span class="nv">partitions</span> <span class="nv">and</span> <span class="nv">creates</span> <span class="nv">a</span> <span class="nv">new</span> <span class="nv">protective</span> <span class="nv">MBR</span>.
+<span class="nv">Proceed</span>? <span class="ss">(</span><span class="nv">Y</span><span class="o">/</span><span class="nv">N</span><span class="ss">)</span>: <span class="nv">Y</span>
+
+<span class="nv">Command</span> <span class="ss">(</span>? <span class="k">for</span> <span class="nv">help</span><span class="ss">)</span>: <span class="nv">n</span>
+<span class="nv">Partition</span> <span class="nv">number</span> <span class="ss">(</span><span class="mi">1</span><span class="o">-</span><span class="mi">128</span>, <span class="nv">default</span> <span class="mi">1</span><span class="ss">)</span>: 
+<span class="nv">First</span> <span class="nv">sector</span> <span class="ss">(</span><span class="mi">34</span><span class="o">-</span><span class="mi">31251759070</span>, <span class="nv">default</span> <span class="o">=</span> <span class="mi">2048</span><span class="ss">)</span> <span class="nv">or</span> {<span class="o">+-</span>}<span class="nv">size</span>{<span class="nv">KMGTP</span>}: 
+<span class="nv">Last</span> <span class="nv">sector</span> <span class="ss">(</span><span class="mi">2048</span><span class="o">-</span><span class="mi">31251759070</span>, <span class="nv">default</span> <span class="o">=</span> <span class="mi">31251759070</span><span class="ss">)</span> <span class="nv">or</span> {<span class="o">+-</span>}<span class="nv">size</span>{<span class="nv">KMGTP</span>}: 
+<span class="nv">Current</span> <span class="nv">type</span> <span class="nv">is</span> <span class="mi">8300</span> <span class="ss">(</span><span class="nv">Linux</span> <span class="nv">filesystem</span><span class="ss">)</span>
+<span class="nv">Hex</span> <span class="nv">code</span> <span class="nv">or</span> <span class="nv">GUID</span> <span class="ss">(</span><span class="nv">L</span> <span class="nv">to</span> <span class="k">show</span> <span class="nv">codes</span>, <span class="nv">Enter</span> <span class="o">=</span> <span class="mi">8300</span><span class="ss">)</span>: 
+<span class="nv">Changed</span> <span class="nv">type</span> <span class="nv">of</span> <span class="nv">partition</span> <span class="nv">to</span> <span class="s1">&#39;</span><span class="s">Linux filesystem</span><span class="s1">&#39;</span>
+
+<span class="nv">Command</span> <span class="ss">(</span>? <span class="k">for</span> <span class="nv">help</span><span class="ss">)</span>: <span class="nv">w</span>
+
+<span class="nv">Final</span> <span class="nv">checks</span> <span class="nv">complete</span>. <span class="nv">About</span> <span class="nv">to</span> <span class="nv">write</span> <span class="nv">GPT</span> <span class="nv">data</span>. <span class="nv">THIS</span> <span class="nv">WILL</span> <span class="nv">OVERWRITE</span> <span class="nv">EXISTING</span>
+<span class="nv">PARTITIONS</span><span class="o">!!</span>
+
+<span class="k">Do</span> <span class="nv">you</span> <span class="nv">want</span> <span class="nv">to</span> <span class="nv">proceed</span>? <span class="ss">(</span><span class="nv">Y</span><span class="o">/</span><span class="nv">N</span><span class="ss">)</span>: <span class="nv">Y</span>
+<span class="nv">OK</span><span class="c1">; writing new GUID partition table (GPT) to /dev/sdd.</span>
+<span class="nv">The</span> <span class="nv">operation</span> <span class="nv">has</span> <span class="nv">completed</span> <span class="nv">successfully</span>.
+</pre></div>
+
+<p>
+   然后格式化即可
+</p>
+<div class="highlight"><pre><span></span>mkfs.ext4 /dev/sdd1
 </pre></div>
 
 <h2 id="org-28464e090b">参考链接</h2><ul>
@@ -459,7 +641,7 @@ virtual size: <span class="m">4 …</span></pre></div>
       <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
   </ul>
   <ul class="list-inline copyright">
-    <li class="hidden-xs">© 2015-2020 honmaple</li>
+    <li class="hidden-xs">© 2015-2021 honmaple</li>
     <li class="hidden-xs">·</li>
     <li>
           <a href="https://honmaple.me/pages/friends.html">友链</a>
@@ -482,7 +664,7 @@ virtual size: <span class="m">4 …</span></pre></div>
    gtag('config', 'UA-88401692-2');
   </script>
       <script src="https://static.honmaple.com/static/js/lib.min.js"></script>
-        <script src="https://honmaple.me/theme/lib/js/script.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
       <script src="https://static.honmaple.com/static/js/instantclick.min.js" data-no-instant></script>
       <script data-no-instant>
        InstantClick.on('change', function() {

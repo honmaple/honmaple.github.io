@@ -1,11 +1,9 @@
-function setCookie(name,value,expiredays)
-{
+function setCookie(name,value,expiredays) {
     var exdate=new Date();
     exdate.setDate(exdate.getDate()+expiredays);
     document.cookie=name+ "=" +escape(value)+ ((expiredays===null) ? "" : ";expires="+exdate.toGMTString() + ";path=/");
 }
-function getCookie(name)
-{
+function getCookie(name) {
     if (document.cookie.length>0) {
         start=document.cookie.indexOf(name + "=");
         if (start!=-1) {
@@ -45,7 +43,7 @@ function toggleTheme() {
 }
 var themeList = ["tree"];
 var themeCSS = {
-    tree: "/theme/css/main-tree.css",
+    tree: "/static/css/main-tree.css",
 };
 var theme = getCookie('theme');
 if (themeList.indexOf(theme) > -1) {
