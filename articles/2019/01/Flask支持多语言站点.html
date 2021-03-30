@@ -128,14 +128,14 @@ Flask的多语言国际化可以使用<b>Flask-Babel</b>插件，在此不再细
         <span class="k">return</span> <span class="n">get_view_function</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">new_url</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="n">MethodNotAllowed</span><span class="p">,</span> <span class="n">NotFound</span><span class="p">):</span>
         <span class="c1"># no match</span>
-        <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># return the view function and arguments</span>
         <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">view_functions</span><span class="p">[</span><span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="c1"># no view is associated with the endpoint</span>
-        <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="kc">None</span>
 </pre></div>
 
 <p>
@@ -149,7 +149,7 @@ Flask的多语言国际化可以使用<b>Flask-Babel</b>插件，在此不再细
         <span class="c1"># 避免故意访问</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">FUNCTION</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">FUNCTION</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">FUNCTION</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
         <span class="n">key</span> <span class="o">=</span> <span class="n">method</span> <span class="o">+</span> <span class="n">url</span>
@@ -170,7 +170,7 @@ Flask的多语言国际化可以使用<b>Flask-Babel</b>插件，在此不再细
         <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">uri</span><span class="p">,</span>
         <span class="n">request</span><span class="o">.</span><span class="n">method</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="k">if</span> <span class="n">view_function</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">view_function</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">abort</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
     <span class="c1"># 注：因为我使用Flask-Babel是根据accept_language来区别不同语言</span>
     <span class="n">request</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HTTP_ACCEPT_LANGUAGE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;en-US,en;q=0.5&quot;</span>
@@ -180,14 +180,14 @@ Flask的多语言国际化可以使用<b>Flask-Babel</b>插件，在此不再细
 <h3 id="org-028bad582c">使用url_map复制并alias路由</h3><p>
    原理同<b>Flask URL Processors</b> ，为所有的路由都额外增加<b>/en</b>前缀，并在<code>before_request</code>中匹配到以<b>/en</b>开头的请求就修改对应<b>accept_language</b>信息
 </p>
-<div class="highlight"><pre><span></span><span class="nd">@app.before_request</span>
+<div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">before_request</span>
 <span class="k">def</span> <span class="nf">before_request</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/en/&quot;</span><span class="p">):</span>
         <span class="n">request</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HTTP_ACCEPT_LANGUAGE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;en-US,en;q=0.5&quot;</span>
 
 <span class="n">url_map</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">url_map</span><span class="o">.</span><span class="n">iter_rules</span><span class="p">())</span>
 <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">url_map</span><span class="p">:</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s2">&quot;/en&quot;</span> <span class="o">+</span> <span class="n">rule</span><span class="o">.</span><span class="n">rule</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s2">&quot;/en&quot;</span> <span class="o">+</span> <span class="n">rule</span><span class="o">.</span><span class="n">rule</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
 <p>
@@ -259,16 +259,8 @@ Flask的多语言国际化可以使用<b>Flask-Babel</b>插件，在此不再细
   </article>
       </div>
     </div>
-<div class="footer">
-  <ul class="list-inline entry-social">
-    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
-      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
-      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
-  </ul>
-  <ul class="list-inline copyright">
+<div class="entry-footer">
+  <ul class="entry-footer-left">
     <li class="hidden-xs">© 2015-2021 honmaple</li>
     <li class="hidden-xs">·</li>
     <li>
@@ -280,6 +272,14 @@ Flask的多语言国际化可以使用<b>Flask-Babel</b>插件，在此不再细
           <span> | </span>
           <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
     </li>
+  </ul>
+  <ul class="entry-footer-right">
+    <li><a class="entry-switch-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
   </ul>
 </div>    <div class="back-to-top back-to-top-on">
       <i class="fa fa-hand-o-up" title="back to top"></i>

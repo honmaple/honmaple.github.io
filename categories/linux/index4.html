@@ -94,7 +94,7 @@ celery是一个基于Python的分布式调度系统，<a href="http://docs.celer
 <p>
 为celery动态添加任务，首先我想到的是传递一个函数进去，让某个特定任务去执行这个传递过去的函数，就像这样
 </p>
-<div class="highlight"><pre><span></span><span class="nd">@app.task</span>
+<div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span>
 <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
@@ -102,13 +102,13 @@ celery是一个基于Python的分布式调度系统，<a href="http://docs.celer
 <p>
 很可惜，会出现这样的错误
 </p>
-<div class="highlight"><pre><span></span><span class="n">kombu</span><span class="p">.</span><span class="n">exceptions</span><span class="p">.</span><span class="n">EncodeError</span><span class="p">:</span> <span class="k">Object</span> <span class="k">of</span> <span class="k">type</span> <span class="s1">&#39;function&#39;</span> <span class="k">is</span> <span class="k">not</span> <span class="n">JSON</span> <span class="k">serializable</span>
+<div class="highlight"><pre><span></span>kombu.exceptions.EncodeError: Object of type &#39;function&#39; is not JSON serializable
 </pre></div>
 
 <p>
 换一种序列化方式
 </p>
-<div class="highlight"><pre><span></span><span class="nd">@app.task</span><span class="p">(</span><span class="n">serializer</span><span class="o">=</span><span class="s1">&#39;pickle&#39;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">serializer</span><span class="o">=</span><span class="s1">&#39;pickle&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs …</span></pre></div>
           </div>
@@ -411,8 +411,8 @@ ps:真TM的闲着蛋疼
 <span class="nv">ARGS</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
 <span class="nv">ARRAY</span><span class="o">=(</span><span class="s2">&quot;-nw&quot;</span> <span class="s2">&quot;--no-window-system&quot;</span> <span class="s2">&quot;--batch&quot;</span> <span class="s2">&quot;--help&quot;</span><span class="o">)</span>
 
-<span class="k">for</span> arg in <span class="nv">$ARGS</span><span class="p">;</span> <span class="k">do</span>
-    <span class="k">for</span> keyword in <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ARRAY</span><span class="p">[@]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span><span class="k">do …</span></pre></div>
+<span class="k">for</span> arg <span class="k">in</span> <span class="nv">$ARGS</span><span class="p">;</span> <span class="k">do</span>
+    <span class="k">for</span> keyword <span class="k">in</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ARRAY</span><span class="p">[@]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span><span class="k">do …</span></pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/04/emacs笔记.html">阅读全文 »</a>
@@ -545,10 +545,10 @@ ps:真TM的闲着蛋疼
 <div class="highlight"><pre><span></span><span class="o">/</span><span class="nl">sudo</span><span class="p">:</span><span class="n">root</span><span class="nv">@localhost</span><span class="err">:</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="k">system</span><span class="o">/</span><span class="n">getty</span><span class="p">.</span><span class="n">target</span><span class="p">.</span><span class="n">wants</span><span class="o">/</span><span class="n">getty</span><span class="nv">@tty1</span><span class="p">.</span><span class="n">service</span><span class="w"></span>
 </pre></div>
 
-<h3 id="org-05c128eeb8">自动登陆系统(用户名密码都不用输)</h3><div class="highlight"><pre><span></span><span class="n">ExecStart</span><span class="o">=-/</span><span class="n">sbin</span><span class="o">/</span><span class="n">agetty</span> <span class="o">-</span><span class="n">a</span> <span class="n">username</span> <span class="c1">--noclear %I $TERM</span>
+<h3 id="org-05c128eeb8">自动登陆系统(用户名密码都不用输)</h3><div class="highlight"><pre><span></span>ExecStart=-/sbin/agetty -a username --noclear %I $TERM
 </pre></div>
 
-<h3 id="org-a26dbaecf5">自动登陆系统(仅输入密码)</h3><div class="highlight"><pre><span></span><span class="n">ExecStart</span><span class="o">=-/</span><span class="n">sbin</span><span class="o">/</span><span class="n">agetty</span> <span class="c1">--skip-login --login-options …</span></pre></div>
+<h3 id="org-a26dbaecf5">自动登陆系统(仅输入密码)</h3><div class="highlight"><pre><span></span>ExecStart=-/sbin/agetty --skip-login --login-options …</pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/02/修改agetty启动参数自动登陆linux.html">阅读全文 »</a>
@@ -588,13 +588,13 @@ ps:真TM的闲着蛋疼
 <p>
  移动光标快捷键
 </p>
-<div class="highlight"><pre><span></span><span class="n">ctrl</span><span class="o">+</span><span class="n">f</span>	<span class="err">向前移动一个字符</span>
-<span class="n">ctrl</span><span class="o">+</span><span class="n">b</span>	<span class="err">向后移动一个字符</span>
-<span class="n">alt</span><span class="o">+</span><span class="n">f</span>	<span class="err">向前移动一个单词</span>
-<span class="n">alt</span><span class="o">+</span><span class="n">b</span>	<span class="err">向后移动一个单词</span>
-<span class="n">ctrl</span><span class="o">+</span><span class="n">a</span>	<span class="err">移动到当前行首</span>
-<span class="n">ctrl</span><span class="o">+</span><span class="n">e</span>	<span class="err">移动到当前行尾</span>
-<span class="n">ctrl</span><span class="o">+</span><span class="n">l</span>	<span class="err">清屏，并在屏幕最上面开始一个新行</span>
+<div class="highlight"><pre><span></span>ctrl+f	向前移动一个字符
+ctrl+b	向后移动一个字符
+alt+f	向前移动一个单词
+alt+b	向后移动一个单词
+ctrl+a	移动到当前行首
+ctrl+e	移动到当前行尾
+ctrl+l	清屏，并在屏幕最上面开始一个新行
 </pre></div>
 
 </li>
@@ -602,13 +602,13 @@ ps:真TM的闲着蛋疼
 <p>
  编辑命令行快捷键
 </p>
-<div class="highlight"><pre><span></span><span class="n">ctrl</span><span class="o">+</span><span class="n">d</span>	<span class="err">删除当前的字符</span>
-<span class="n">ctrl</span><span class="o">+</span><span class="n">t</span>	<span class="err">交换当前字符和前一个字符的位置</span>
-<span class="n">alt</span><span class="o">+</span><span class="n">t</span>	<span class="err">交换当前单词和前一个单词的位置</span>
-<span class="n">alt</span><span class="o">+</span><span class="n">u</span>	<span class="err">把当前单词变成大写</span>
-<span class="n">alt</span><span class="o">+</span><span class="n">l</span>	<span class="err">把当前单词变成小写</span>
-<span class="n">alt</span><span class="o">+</span><span class="k">c</span>	<span class="err">把当前单词变成首字母大写的单词</span>
-<span class="n">ctrl</span><span class="o">+</span><span class="n">v</span>	<span class="err">添加一个特殊字符，例如，要添加一个制表符，按</span><span class="n">ctrl …</span></pre></div></li></ol>
+<div class="highlight"><pre><span></span>ctrl+d	删除当前的字符
+ctrl+t	交换当前字符和前一个字符的位置
+alt+t	交换当前单词和前一个单词的位置
+alt+u	把当前单词变成大写
+alt+l	把当前单词变成小写
+alt+c	把当前单词变成首字母大写的单词
+ctrl+v	添加一个特殊字符，例如，要添加一个制表符，按ctrl+v …</pre></div></li></ol>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/02/linux终端常用快捷键.html">阅读全文 »</a>
@@ -631,16 +631,8 @@ ps:真TM的闲着蛋疼
           </ul>
       </div>
     </div>
-<div class="footer">
-  <ul class="list-inline entry-social">
-    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
-      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
-      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
-  </ul>
-  <ul class="list-inline copyright">
+<div class="entry-footer">
+  <ul class="entry-footer-left">
     <li class="hidden-xs">© 2015-2021 honmaple</li>
     <li class="hidden-xs">·</li>
     <li>
@@ -652,6 +644,14 @@ ps:真TM的闲着蛋疼
           <span> | </span>
           <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
     </li>
+  </ul>
+  <ul class="entry-footer-right">
+    <li><a class="entry-switch-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
   </ul>
 </div>    <div class="back-to-top back-to-top-on">
       <i class="fa fa-hand-o-up" title="back to top"></i>

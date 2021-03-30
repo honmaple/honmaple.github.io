@@ -90,32 +90,32 @@
           <div class="entry-content">
             <h3>简单使用ajax</h3>
 <p><a href="http://www.w3school.com.cn/jquery/jquery_ref_ajax.asp">参考文档</a>  </p>
-<div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="nv">script</span> <span class="nv">type</span><span class="o">=</span><span class="nv">text</span><span class="o">/</span><span class="nv">javascript</span><span class="o">&gt;</span>
-$<span class="ss">(</span><span class="nv">document</span><span class="ss">)</span>.<span class="nv">ready</span><span class="ss">(</span><span class="nv">function</span><span class="ss">()</span>{
-    $<span class="ss">(</span><span class="s1">&#39;</span><span class="s">button#ajax</span><span class="s1">&#39;</span><span class="ss">)</span>.<span class="nv">click</span><span class="ss">(</span><span class="nv">function</span><span class="ss">()</span> {
-        $.<span class="nv">ajax</span> <span class="ss">(</span>{
-            <span class="nv">type</span> : <span class="s2">&quot;</span><span class="s">POST</span><span class="s2">&quot;</span>,
-            <span class="nv">url</span> : <span class="s2">&quot;</span><span class="s">{{ url_for(&#39;index.login&#39;) }}</span><span class="s2">&quot;</span>,
-            <span class="nv">data</span>:<span class="nv">JSON</span>.<span class="nv">stringify</span><span class="ss">(</span>{
-                <span class="nv">name</span>: $<span class="ss">(</span><span class="s1">&#39;</span><span class="s">input[name=&quot;name&quot;]</span><span class="s1">&#39;</span><span class="ss">)</span>.<span class="nv">val</span><span class="ss">()</span>,
-                <span class="nv">passwd</span>: $<span class="ss">(</span><span class="s1">&#39;</span><span class="s">input[name=&quot;passwd&quot;]</span><span class="s1">&#39;</span><span class="ss">)</span>.<span class="nv">val</span><span class="ss">()</span>
-            }<span class="ss">)</span>,
-            <span class="nv">contentType</span>: <span class="s1">&#39;</span><span class="s">application/json;charset=UTF-8</span><span class="s1">&#39;</span>,
-            <span class="nv">success</span>: <span class="nv">function</span><span class="ss">(</span><span class="nb">result</span><span class="ss">)</span> {
-                <span class="k">if</span> <span class="ss">(</span><span class="nb">result</span>.<span class="nv">judge</span> <span class="o">==</span> <span class="nv">true</span><span class="ss">)</span>
+<div class="highlight"><pre><span></span><span class="nt">&lt;script</span> <span class="na">type=</span><span class="s">text/javascript</span><span class="nt">&gt;</span>
+$(document).ready(function(){
+    $(&#39;button#ajax&#39;).click(function() {
+        $.ajax ({
+            type : &quot;POST&quot;,
+            url : &quot;<span class="cp">{{</span> <span class="nv">url_for</span><span class="o">(</span><span class="s1">&#39;index.login&#39;</span><span class="o">)</span> <span class="cp">}}</span>&quot;,
+            data:JSON.stringify({
+                name: $(&#39;input[name=&quot;name&quot;]&#39;).val(),
+                passwd: $(&#39;input[name=&quot;passwd&quot;]&#39;).val()
+            }),
+            contentType: &#39;application/json;charset=UTF-8&#39;,
+            success: function(result) {
+                if (result.judge == true)
                 {
-                    <span class="nv">window</span>.<span class="nv">location</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="s">/</span><span class="s1">&#39;</span><span class="c1">;</span>
+                    window.location = &#39;/&#39;;
                 }
-                <span class="k">else</span> 
+                else 
                 {
-                    $<span class="ss">(</span><span class="s2">&quot;</span><span class="s">#showerror</span><span class="s2">&quot;</span><span class="ss">)</span>.<span class="k">show</span><span class="ss">()</span><span class="c1">;</span>
-                    $<span class="ss">(</span><span class="s2">&quot;</span><span class="s">#error</span><span class="s2">&quot;</span><span class="ss">)</span>.<span class="nv">text</span><span class="ss">(</span><span class="nb">result</span>.<span class="nv">error</span><span class="ss">)</span><span class="c1">;</span>
+                    $(&quot;#showerror&quot;).show();
+                    $(&quot;#error&quot;).text(result.error);
                 }
             }
-        }<span class="ss">)</span><span class="c1">;</span>
-    }<span class="ss">)</span><span class="c1">;</span>
-}<span class="ss">)</span><span class="c1">;</span>
-<span class="o">&lt;/</span><span class="nv">script</span><span class="o">&gt;</span>
+        });
+    });
+});
+<span class="nt">&lt;/script&gt;</span>
 </pre></div>
 
 
@@ -129,29 +129,21 @@ $<span class="ss">(</span><span class="nv">document</span><span class="ss">)</sp
 
 
 <h4>在模板中使用</h4>
-<div class="highlight"><pre><span></span><span class="nv">var</span> <span class="nv">csrftoken</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="s">{{ csrf_token() }}</span><span class="s2">&quot;</span>
-    $.<span class="nv">ajaxSetup</span><span class="ss">(</span>{
-        <span class="nv">beforeSend</span>: <span class="nv">function</span><span class="ss">(</span><span class="nv">xhr</span>, <span class="nv">settings</span><span class="ss">)</span> {
-            <span class="k">if</span> <span class="ss">(</span><span class="o">!/^</span><span class="ss">(</span><span class="nv">GET</span><span class="o">|</span><span class="nv">HEAD</span><span class="o">|</span><span class="nv">OPTIONS</span><span class="o">|</span><span class="nv">TRACE</span><span class="ss">)</span>$<span class="o">/</span><span class="nv">i</span>.<span class="nv">test</span><span class="ss">(</span><span class="nv">settings</span>.<span class="nv">type</span><span class="ss">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nv">this</span>.<span class="nv">crossDomain</span><span class="ss">)</span> {
-                <span class="nv">xhr</span>.<span class="nv">setRequestHeader</span><span class="ss">(</span><span class="s2">&quot;</span><span class="s">X-CSRFToken</span><span class="s2">&quot;</span>, <span class="nv">csrftoken</span><span class="ss">)</span>
-            }
-        }
-    }<span class="ss">)</span><span class="c1">;</span>
+<div class="highlight"><pre><span></span><span class="k">var</span> <span class="n">csrftoken</span> <span class="o">=</span> <span class="s2">&quot;{{ csrf_token() }}&quot;</span>
+    <span class="o">$.</span><span class="n">ajaxSetup</span><span class="p">({</span>
+        <span class="n">beforeSend</span><span class="p">:</span> <span class="n">function</span><span class="p">(</span><span class="n">xhr</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!/^</span><span class="p">(</span><span class="n">GET</span><span class="o">|</span><span class="n">HEAD</span><span class="o">|</span><span class="n">OPTIONS</span><span class="o">|</span><span class="n">TRACE</span><span class="p">)</span><span class="o">$/</span><span class="n">i</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">type</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">this</span><span class="o">.</span><span class="n">crossDomain</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">xhr</span><span class="o">.</span><span class="n">setRequestHeader</span><span class="p">(</span><span class="s2">&quot;X-CSRFToken&quot;</span><span class="p">,</span> <span class="n">csrftoken</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
 </pre></div>
           </div>
         </article>
       </div>
     </div>
-<div class="footer">
-  <ul class="list-inline entry-social">
-    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
-      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
-      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
-  </ul>
-  <ul class="list-inline copyright">
+<div class="entry-footer">
+  <ul class="entry-footer-left">
     <li class="hidden-xs">© 2015-2021 honmaple</li>
     <li class="hidden-xs">·</li>
     <li>
@@ -163,6 +155,14 @@ $<span class="ss">(</span><span class="nv">document</span><span class="ss">)</sp
           <span> | </span>
           <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
     </li>
+  </ul>
+  <ul class="entry-footer-right">
+    <li><a class="entry-switch-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
   </ul>
 </div>    <div class="back-to-top back-to-top-on">
       <i class="fa fa-hand-o-up" title="back to top"></i>

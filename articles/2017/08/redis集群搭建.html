@@ -142,9 +142,9 @@ redis-server redis/9006/redis.conf
 <p>
   由于这个过程很简单而且重复,所以我写了一个脚本进行创建:
 </p>
-<div class="highlight"><pre><span></span><span class="nd">@cli.command</span><span class="p">()</span>
-<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--dirs&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PATH</span><span class="p">)</span>
-<span class="nd">@click.option</span><span class="p">(</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">9001</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;--dirs&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PATH</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">9001</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
@@ -152,15 +152,15 @@ redis-server redis/9006/redis.conf
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;redis.conf&#39;</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;port {0}</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;port </span><span class="si">{0}</span><span class="s1"></span>
 <span class="s1">cluster-enabled yes</span>
-<span class="s1">cluster-config-file nodes{0}.conf</span>
+<span class="s1">cluster-config-file nodes</span><span class="si">{0}</span><span class="s1">.conf</span>
 <span class="s1">cluster-node-timeout 5000</span>
 <span class="s1">appendonly yes</span>
 <span class="s1">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;redis-server {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf</span><span class="p">))</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;redis-server </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf</span><span class="p">))</span>
 </pre></div>
 
 <h2 id="org-ab1aafa27f">创建集群</h2><p>
@@ -172,8 +172,8 @@ redis-server redis/9006/redis.conf
 <p>
   或者接上面的脚本
 </p>
-<div class="highlight"><pre><span></span><span class="n">ports</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;127.0.0.1:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
-<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;ruby redis-trib.rb create --replicas 1 {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<div class="highlight"><pre><span></span><span class="n">ports</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;127.0.0.1:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;ruby redis-trib.rb create --replicas 1 </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
     <span class="n">ports</span><span class="p">)))</span>
 </pre></div>
 
@@ -292,16 +292,8 @@ redis-server redis/9006/redis.conf
   </article>
       </div>
     </div>
-<div class="footer">
-  <ul class="list-inline entry-social">
-    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
-      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
-      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
-  </ul>
-  <ul class="list-inline copyright">
+<div class="entry-footer">
+  <ul class="entry-footer-left">
     <li class="hidden-xs">© 2015-2021 honmaple</li>
     <li class="hidden-xs">·</li>
     <li>
@@ -313,6 +305,14 @@ redis-server redis/9006/redis.conf
           <span> | </span>
           <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
     </li>
+  </ul>
+  <ul class="entry-footer-right">
+    <li><a class="entry-switch-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
   </ul>
 </div>    <div class="back-to-top back-to-top-on">
       <i class="fa fa-hand-o-up" title="back to top"></i>

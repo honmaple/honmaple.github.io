@@ -24,7 +24,7 @@ $(document).ready(function(){
     $(window).on("scroll", function() {
         var offsetHeight = document.body.offsetHeight;
         var scrollHeight = document.body.scrollHeight;
-        var navbarFixed = scrollHeight > offsetHeight && scrollHeight - offsetHeight > 245;
+        var navbarFixed = scrollHeight > offsetHeight && scrollHeight - offsetHeight > 243;
         e.toggleClass("back-to-top-on", window.pageYOffset > 120);
         if (navbarFixed) {
             $(".navbar").toggleClass("navbar-fixed", window.pageYOffset > 120);
@@ -72,8 +72,8 @@ $(document).ready(function(){
         thr.appendChild(dsq);
         $(".entry-comment").parent().fadeToggle(800);
     });
-    $(".entry-theme").click(function() {
-        toggleTheme();
+    $(".entry-switch-theme").click(function() {
+        switchTheme();
     });
     $(".navbar-logo").error(function() {
         var content = '<span class="navbar-title">' + $(".navbar-logo").attr("alt") + '</span>';

@@ -149,11 +149,11 @@
 <span class="s1">         }</span>
 <span class="s1">         if (WebSocket) {</span>
 <span class="s1">             var ws = new WebSocket(&quot;ws://</span><span class="si">%s</span><span class="s1">/show&quot;);</span>
-<span class="s1">             ws.onopen = function() {};</span>
+<span class="s1">             ws.onopen = function() </span><span class="si">{}</span><span class="s1">;</span>
 <span class="s1">             ws.onmessage = function (evt) {</span>
 <span class="s1">                 addToOutput(evt.data);</span>
 <span class="s1">             };</span>
-<span class="s1">             ws.onclose = function() {};</span>
+<span class="s1">             ws.onclose = function() </span><span class="si">{}</span><span class="s1">;</span>
 <span class="s1">         } else {</span>
 <span class="s1">             alert(&quot;WebSocket not supported&quot;);</span>
 <span class="s1">         }</span>
@@ -240,7 +240,7 @@
 <span class="k">def</span> <span class="nf">create_app</span><span class="p">():</span>
     <span class="n">handlers</span> <span class="o">=</span> <span class="p">[(</span><span class="sa">r</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">AnsibleHandler</span><span class="p">),</span> <span class="p">(</span><span class="sa">r</span><span class="s1">&#39;/show&#39;</span><span class="p">,</span> <span class="n">CommandHandler</span><span class="p">)]</span>
     <span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="p">(</span>
-        <span class="n">handlers</span><span class="o">=</span><span class="n">handlers</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cookie_secret</span><span class="o">=</span><span class="s1">&#39;asdadasdadasdasdasda&#39;</span><span class="p">)</span>
+        <span class="n">handlers</span><span class="o">=</span><span class="n">handlers</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cookie_secret</span><span class="o">=</span><span class="s1">&#39;asdadasdadasdasdasda&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">app</span>
 
 
@@ -263,7 +263,7 @@
 
 <span class="k">class</span> <span class="nc">CommandHandler</span><span class="p">(</span><span class="n">WebSocketHandler</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;WebSocket opened&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WebSocket opened&quot;</span><span class="p">)</span>
         <span class="n">LISTENERS</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
@@ -280,11 +280,11 @@
                     <span class="n">fsize</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
                     <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">fsize</span> <span class="o">-</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()[</span><span class="o">-</span><span class="mi">800</span><span class="p">:]:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">write_message</span><span class="p">(</span><span class="s1">&#39;{}:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;msg&#39;</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">write_message</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;msg&#39;</span><span class="p">],</span>
                                                           <span class="n">line</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">on_close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;WebSocket closed&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WebSocket closed&quot;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">LISTENERS</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
@@ -298,14 +298,14 @@
         <span class="n">stdout_file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">where</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">LISTENERS</span><span class="p">:</span>
-            <span class="n">element</span><span class="o">.</span><span class="n">write_message</span><span class="p">(</span><span class="s1">&#39;stdout:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">write_message</span><span class="p">(</span><span class="s1">&#39;stdout:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
     <span class="n">where</span> <span class="o">=</span> <span class="n">stderr_file</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
     <span class="n">line</span> <span class="o">=</span> <span class="n">stderr_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
         <span class="n">stderr_file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">where</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">LISTENERS</span><span class="p">:</span>
-            <span class="n">element</span><span class="o">.</span><span class="n">write_message</span><span class="p">(</span><span class="s1">&#39;stderr:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">write_message</span><span class="p">(</span><span class="s1">&#39;stderr:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
@@ -400,16 +400,8 @@ tornado中默认没有session的实现,虽然默认的 <b>set_secure_cookie</b> 
           </ul>
       </div>
     </div>
-<div class="footer">
-  <ul class="list-inline entry-social">
-    <li><a class="entry-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
-      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
-      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
-      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
-  </ul>
-  <ul class="list-inline copyright">
+<div class="entry-footer">
+  <ul class="entry-footer-left">
     <li class="hidden-xs">© 2015-2021 honmaple</li>
     <li class="hidden-xs">·</li>
     <li>
@@ -421,6 +413,14 @@ tornado中默认没有session的实现,虽然默认的 <b>set_secure_cookie</b> 
           <span> | </span>
           <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
     </li>
+  </ul>
+  <ul class="entry-footer-right">
+    <li><a class="entry-switch-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
   </ul>
 </div>    <div class="back-to-top back-to-top-on">
       <i class="fa fa-hand-o-up" title="back to top"></i>
