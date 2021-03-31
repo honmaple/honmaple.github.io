@@ -18,8 +18,8 @@ function Cover() {
                 return typeof args[number] != 'undefined'? args[number]: match;
             });
         };
-    }
-    if ($(window).width() > 600) {
+    };
+    if ($(window).width() > 768) {
         $.ajax({
             type: "GET",
             url: "https://poem.honmaple.com/api/poem/random",
@@ -30,12 +30,12 @@ function Cover() {
                 var paragraphs = '<div>{0}</div>'.format(response.data.paragraphs.map(function(item) {
                     return "<p>{0}</p>".format(item);
                 }).join(""));
-                $(".entry-cover > .entry-cover-right > .entry-center").fadeOut(500, function() {
+                $(".entry-cover > .entry-cover-right").fadeOut(500, function() {
                     $(this).html(title + author + paragraphs).fadeIn(500);
                 });
             }
         });
-    }
+    };
     function scrollUp() {
         if ($(window).scrollTop() < $(window).height() && $(".entry-cover").length && !$(".entry-cover").is(":hidden")) {
             $("html, body").animate({
@@ -79,3 +79,4 @@ function Cover() {
         }
     });
 }
+Cover();
