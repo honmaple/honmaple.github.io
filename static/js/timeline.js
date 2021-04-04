@@ -22,12 +22,11 @@ $(document).ready(function(){
     }
     var template = `
       <li class="timeline-item">
-        <p class="timeline-date">
-          {0}
+        <p class="timeline-date" title="{0}">
+          {1}
         </p>
         <div class="timeline-content">
-          <span class="arrow"></span>
-          <span class="timeline-text">{1}</span>
+          <span class="timeline-text">{2}</span>
         </div>
       </li>`;
     $.get("https://honmaple.com/api/timeline",{
@@ -43,14 +42,14 @@ $(document).ready(function(){
             date = TimeFormat(item.created_at);
             title = date[0] + '年' + date[1] + '月';
             if (first_title != title) {
-                $("#timeline").append('<ul class="timeline"><h4>{0}</h4>{1}</ul>'.format(first_title,child_template));
+                $("#timeline").append('<ul class="timeline"><li class="timeline-count"><a>{0}</a>{1}</li></ul>'.format(first_title,child_template));
                 first_title = title;
                 child_template = '';
             }
-            child_template += template.format(date[1] + '月' + date[2] + '日',item.content);
+            child_template += template.format(date[1] + '月' + date[2] + '日', date[2], item.content);
         });
         if (child_template) {
-            $("#timeline").append('<ul class="timeline"><h4>{0}</h4>{1}</ul>'.format(first_title,child_template));
+            $("#timeline").append('<ul class="timeline"><li class="timeline-count"><a>{0}</a>{1}<li></ul>'.format(first_title,child_template));
         }
     }, 'json');
 });
