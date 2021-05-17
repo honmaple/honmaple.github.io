@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>时代 · 紅楓吟</title>
+    <title>GNS3笔记 · 紅楓吟</title>
       <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
   </head>
@@ -36,7 +36,7 @@
                 <li><a href="https://honmaple.me/categories/recall/index.html">我不怪你</a></li>
             </ul>
           </li>
-          <li ><a href="https://honmaple.me/categories/linux/index.html">字符艺术</a></li>
+          <li class="active"><a href="https://honmaple.me/categories/linux/index.html">字符艺术</a></li>
           <li ><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
           <li ><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
       <li class="dropdown">
@@ -58,11 +58,11 @@
   </div>
 </nav>  <article>
     <div class="entry-header">
-      <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/04/时代.html">时代</a></h1>
+      <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/05/GNS3笔记.html">GNS3笔记</a></h1>
 <header class="entry-info">
-  <span title="Updated at 2021-04-07">
+  <span title="Updated at 2021-05-17">
     <i class="fa fa-calendar-o"></i>
-    三 07 四月 2021
+    二 11 五月 2021
   </span>
     <span class="entry-info-sep hidden-xs">|</span>
     <span class="hidden-xs">
@@ -72,31 +72,88 @@
   <span class="entry-info-sep">|</span>
   <span>
     <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/categories/life/index.html">Life</a>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
   </span>
     <span class="entry-info-sep">|</span>
     <span>
       <i class="fa fa-bookmark-o"></i>
       0f
-        <a href="https://honmaple.me/tags/life/index.html">life</a>
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/gns3/index.html">gns3</a>
     </span>
 
 </header>    </div>
     <hr class="entry-hr" />
     <div class="entry-content">
-      
-<div style="text-align: center;">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-d4aed5f51a">GNS3 VM导入</a></li>
+<li><a href="#org-ea9d71540d">禁用广告与数据采集</a></li>
+</ul>
+</div></div>
+<h3 id="org-d4aed5f51a">GNS3 VM导入</h3><div class="highlight"><pre><span></span>virt-install  --name gns3  --memory <span class="m">8192</span>  --vcpus <span class="m">4</span>  --disk /home/kvm/GNS3/GNS3VM-disk001.qcow2  --disk /home/kvm/GNS3/GNS3VM-disk002.qcow2  --import --virt-type kvm --os-type linux --os-variant ubuntu18.04 --network default --graphics vnc,listen<span class="o">=</span><span class="m">0</span>.0.0.0,password<span class="o">=</span>foobar,port<span class="o">=</span><span class="m">5910</span> --noautoconsole --hvm
+</pre></div>
+
+<h3 id="org-ea9d71540d">禁用广告与数据采集</h3><ul>
+<li>
 <p>
-<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=30841464&auto=0&height=66"></iframe>
+禁用错误报告
 </p>
-</div>
-<blockquote>
-<div style="text-align: center;">
-<p class="verse">
-有时候总是忍不住思考<br />我是不是把自己隐私保护的太好<br />以至于在这个时代<br />一个最好也是最坏的时代<br />感到那么的不适应<br />...
+<p>
+     找到 <code>~/.config/GNS3/2.2/gns3_server.conf</code>, 在 <code>[Server]</code> 块中添加 
 </p>
-</div>
-</blockquote>
+<div class="highlight"><pre><span></span><span class="k">[Server]</span>
+<span class="na">...</span>
+<span class="na">report_errors</span> <span class="o">=</span> <span class="s">False</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+禁用google分析
+</p>
+<p>
+     找到 <code>/usr/local/lib/python3.8/dist-packages/gns3server/static/web-ui/index.html</code> , 注释google分析相关代码
+</p>
+<div class="highlight"><pre><span></span><span class="c">&lt;!-- &lt;script async=&quot;&quot; src=&quot;https://www.googletagmanager.com/gtag/js?id=G-5D6FZL9923&quot;&gt;&lt;/script&gt; --&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
+  <span class="nb">window</span><span class="p">.</span><span class="nx">dataLayer</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">dataLayer</span> <span class="o">||</span> <span class="p">[];</span>
+  <span class="kd">function</span> <span class="nx">gtag</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">dataLayer</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="nx">gtag</span><span class="p">(</span><span class="s1">&#39;js&#39;</span><span class="p">,</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">());</span>
+
+  <span class="c1">// gtag(&#39;config&#39;, &#39;G-5D6FZL9923&#39;);</span>
+<span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+禁用错误跟踪
+</p>
+<p>
+     找到 <code>/usr/local/lib/python3.8/dist-packages/gns3server/static/web-ui</code> 目录下的 <code>main.xxxx.js</code>
+</p>
+<div class="highlight"><pre><span></span><span class="n">sudo</span><span class="w"> </span><span class="n">sed</span><span class="w"> </span><span class="o">-</span><span class="n">i</span><span class="w"> </span><span class="s1">&#39;s%https://d8be3a98530f49eb90968ff396db326c@o19455.ingest.sentry.io/842726%%g&#39;</span><span class="w"> </span><span class="n">main</span><span class="mf">.2</span><span class="n">f0314a517dded67879c</span><span class="p">.</span><span class="n">js</span><span class="w"></span>
+</pre></div>
+
+</li>
+<li>
+<p>
+禁用广告
+</p>
+<p>
+     同样找到 <code>/usr/local/lib/python3.8/dist-packages/gns3server/static/web-ui</code> 目录下的 <code>main.xxxx.js</code>
+</p>
+<div class="highlight"><pre><span></span><span class="nt">sudo</span> <span class="nt">sed</span> <span class="nt">-i</span> <span class="s1">&#39;s%https://servedbyadbutler.com/adserve/;ID=165803;size=0x0;setID=371476;type=json;%%g&#39;</span> <span class="nt">main</span><span class="p">.</span><span class="nc">2f0314a517dded67879c</span><span class="p">.</span><span class="nc">js</span>
+</pre></div>
+
+</li>
+</ul>
+<p>
+   <b>然后重启服务即可 <code>sudo systemctl restart gns3</code></b>
+</p>
     </div>
 <div class="entry-copyright">
   <div>
@@ -107,7 +164,7 @@
   <div>
     <i class="fa fa-link"></i>
     链接:
-    <a href="https://honmaple.me/articles/2021/04/时代.html">https://honmaple.me/articles/2021/04/时代.html</a>
+    <a href="https://honmaple.me/articles/2021/05/GNS3笔记.html">https://honmaple.me/articles/2021/05/GNS3笔记.html</a>
   </div>
   <div>
     <i class="fa fa-copyright"></i>
@@ -138,15 +195,9 @@
   </div>
 </div>    <hr class="entry-hr" />
     <ul class="entry-pager">
-        <li class="previous">
-          <a href="https://honmaple.me/articles/2021/04/公共DNS.html" title="Previous article: 公共DNS">
-            <i class="fa fa-chevron-left"></i>
-            公共DNS
-          </a>
-        </li>
         <li class="next">
-          <a href="https://honmaple.me/articles/2021/03/pyenv笔记.html" title="Next article: pyenv笔记">
-            pyenv笔记
+          <a href="https://honmaple.me/articles/2021/04/公共DNS.html" title="Next article: 公共DNS">
+            公共DNS
             <i class="fa fa-chevron-right"></i>
           </a>
         </li>
@@ -155,7 +206,7 @@
         <div class="text-center">
           <a class="btn entry-read-more entry-comment">加载评论</a>
         </div>
-        <div id="comment_thread" issue-term="时代"></div>
+        <div id="comment_thread" issue-term="GNS3笔记"></div>
       </div>
   </article>
       </div>

@@ -60,7 +60,7 @@
     <div class="entry-header">
       <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/02/docker笔记.html">docker笔记</a></h1>
 <header class="entry-info">
-  <span title="Updated at 2021-03-25">
+  <span title="Updated at 2021-05-17">
     <i class="fa fa-calendar-o"></i>
     五 23 二月 2018
   </span>
@@ -100,7 +100,10 @@
 <li><a href="#org-87c839591f">docker挂载磁盘后文件不可写</a></li>
 <li><a href="#org-05f07476da">pip安装docker-compose时无法安装subprocess32</a></li>
 <li><a href="#org-93ee6c9d8e">error storing credentials - err: exit status 1</a></li>
+<li><a href="#org-df28409d8e">UnicodeEncodeError: &#39;ascii&#39; codec can&#39;t encode character &#39;\u4eac&#39; in position 14: ordinal not in range(128)</a></li>
 <li><a href="#org-d8a8ea2b2e">docker内部apt update时At least one invalid signature was encountered</a></li>
+<li><a href="#org-e9b4133dd5">docker info显示Backing Filesystem 为 &lt;unknown&gt;</a></li>
+<li><a href="#org-f14d688073">Error response from daemon: readlink /var/lib/docker/overlay2/l: invalid argument</a></li>
 </ul>
 </li>
 </ul>
@@ -231,6 +234,12 @@ yum install python-pip
 <span class="n">Error</span><span class="w"> </span><span class="n">saving</span><span class="w"> </span><span class="nl">credentials</span><span class="p">:</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="n">storing</span><span class="w"> </span><span class="n">credentials</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nl">err</span><span class="p">:</span><span class="w"> </span><span class="k">exit</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="k">out</span><span class="err">:</span><span class="w"> </span><span class="err">`</span><span class="n">Cannot</span><span class="w"> </span><span class="n">autolaunch</span><span class="w"> </span><span class="n">D</span><span class="o">-</span><span class="n">Bus</span><span class="w"> </span><span class="k">without</span><span class="w"> </span><span class="n">X11</span><span class="w"> </span><span class="err">$</span><span class="n">DISPLAY</span><span class="err">`</span><span class="w"></span>
 </pre></div>
 
+<h4 id="org-df28409d8e">UnicodeEncodeError: &#39;ascii&#39; codec can&#39;t encode character &#39;\u4eac&#39; in position 14: ordinal not in range(128)</h4><p>
+    docker 内部使用python是编码问题, 需要设置 <code>LANG</code> 环境变量
+</p>
+<div class="highlight"><pre><span></span>ENV LANG &quot;C.UTF-8&quot;
+</pre></div>
+
 <h4 id="org-d8a8ea2b2e">docker内部apt update时At least one invalid signature was encountered</h4><div class="highlight"><pre><span></span><span class="n">W</span><span class="o">:</span> <span class="n">GPG</span> <span class="n">error</span><span class="o">:</span> <span class="n">http</span><span class="o">://</span><span class="n">archive</span><span class="o">.</span><span class="na">ubuntu</span><span class="o">.</span><span class="na">com</span><span class="o">/</span><span class="n">ubuntu</span> <span class="n">bionic</span> <span class="n">InRelease</span><span class="o">:</span> <span class="n">At</span> <span class="n">least</span> <span class="n">one</span> <span class="n">invalid</span> <span class="n">signature</span> <span class="n">was</span> <span class="n">encountered</span><span class="o">.</span>
 <span class="n">E</span><span class="o">:</span> <span class="n">The</span> <span class="n">repository</span> <span class="s1">&#39;http://archive.ubuntu.com/ubuntu bionic InRelease&#39;</span> <span class="k">is</span> <span class="n">not</span> <span class="n">signed</span><span class="o">.</span>
 <span class="n">W</span><span class="o">:</span> <span class="n">GPG</span> <span class="n">error</span><span class="o">:</span> <span class="n">http</span><span class="o">://</span><span class="n">archive</span><span class="o">.</span><span class="na">ubuntu</span><span class="o">.</span><span class="na">com</span><span class="o">/</span><span class="n">ubuntu</span> <span class="n">bionic</span><span class="o">-</span><span class="n">updates</span> <span class="n">InRelease</span><span class="o">:</span> <span class="n">At</span> <span class="n">least</span> <span class="n">one</span> <span class="n">invalid</span> <span class="n">signature</span> <span class="n">was</span> <span class="n">encountered</span><span class="o">.</span>
@@ -244,6 +253,42 @@ yum install python-pip
 docker container prune
 </pre></div>
 
+<h4 id="org-e9b4133dd5">docker info显示Backing Filesystem 为 &lt;unknown&gt;</h4><blockquote>
+<p>
+    https://github.com/moby/moby/issues/40626
+</p>
+</blockquote>
+<div class="highlight"><pre><span></span><span class="n">Client</span><span class="o">:</span>
+ <span class="n">Debug</span> <span class="n">Mode</span><span class="o">:</span> <span class="kc">false</span>
+
+<span class="n">Server</span><span class="o">:</span>
+ <span class="n">Containers</span><span class="o">:</span> <span class="mi">64</span>
+  <span class="n">Running</span><span class="o">:</span> <span class="mi">59</span>
+  <span class="n">Paused</span><span class="o">:</span> <span class="mi">0</span>
+  <span class="n">Stopped</span><span class="o">:</span> <span class="mi">5</span>
+ <span class="n">Images</span><span class="o">:</span> <span class="mi">39</span>
+ <span class="n">Server</span> <span class="n">Version</span><span class="o">:</span> <span class="mf">19.03</span><span class="o">.</span><span class="mi">8</span>
+ <span class="n">Storage</span> <span class="n">Driver</span><span class="o">:</span> <span class="n">overlay2</span>
+  <span class="n">Backing</span> <span class="n">Filesystem</span><span class="o">:</span> <span class="o">&lt;</span><span class="n">unknown</span><span class="o">&gt;</span>
+  <span class="n">Supports</span> <span class="n">d_type</span><span class="o">:</span> <span class="kc">true</span>
+  <span class="o">...</span>
+</pre></div>
+
+<p>
+    需要升级docker版本
+</p>
+<div class="highlight"><pre><span></span>yum list docker-ce --showduplicates <span class="p">|</span> sort -r
+yum install docker-ce-19.03.9-3.el7 docker-ce-cli-19.03.9-3.el7
+</pre></div>
+
+<h4 id="org-f14d688073">Error response from daemon: readlink /var/lib/docker/overlay2/l: invalid argument</h4><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">root</span><span class="err">@</span><span class="n">k8s</span><span class="o">-</span><span class="n">node</span><span class="o">-</span><span class="mi">07</span> <span class="o">~</span><span class="p">]</span><span class="c1"># docker inspect registry.k8s.cloud/jsl-oms-client:dev4</span>
+<span class="p">[]</span>
+<span class="n">Error</span> <span class="n">response</span> <span class="n">from</span> <span class="n">daemon</span><span class="p">:</span> <span class="n">readlink</span> <span class="o">/</span><span class="k">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span><span class="n">overlay2</span><span class="o">/</span><span class="n">l</span><span class="p">:</span> <span class="n">invalid</span> <span class="n">argument</span>
+</pre></div>
+
+<p>
+    删除所有
+</p>
     </div>
 <div class="entry-copyright">
   <div>
