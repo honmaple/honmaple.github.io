@@ -59,8 +59,484 @@
 </nav>        <article>
           <div class="entry-header">
             <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2019/01/Flask支持多语言站点.html" rel="bookmark" title="Permalink to Flask支持多语言站点">Flask支持多语言站点</a>
+              <a href="https://honmaple.me/articles/2021/03/python2升级至python3.html" rel="bookmark" title="Permalink to python2升级至python3">python2升级至python3</a>
             </h1>
+<header class="entry-info">
+  <span title="Updated at 2021-05-22">
+    <i class="fa fa-calendar-o"></i>
+    一 22 三月 2021
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/python/index.html">Python</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/python/index.html">python</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content entry-summary">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-d27a851236">print</a></li>
+<li><a href="#org-afa6a745c8">string</a></li>
+<li><a href="#org-15ee2d8a22">比值问题</a></li>
+<li><a href="#org-15d93c4f5e">编码问题</a>
+<ul>
+<li><a href="#org-e9e5b631ff">sys.setdefaultencoding(&#39;utf-8&#39;)</a></li>
+<li><a href="#org-eeec2693dd">encode、decode</a></li>
+<li><a href="#org-fdeb3854ec">编码转换</a></li>
+</ul>
+</li>
+<li><a href="#org-93df2a25be">cmp</a></li>
+<li><a href="#org-230a7e6f09">sorted</a></li>
+<li><a href="#org-d184ca596a">Exception</a></li>
+<li><a href="#org-92f3a0ecb7">SSL</a></li>
+<li><a href="#org-b3ba106e6d">file.read</a></li>
+<li><a href="#org-62575494af">redis</a></li>
+<li><a href="#org-d4ecea242c">requests</a>
+<ul>
+<li><a href="#org-97253a665f">自定义编码请求</a>
+<ul>
+<li><a href="#org-61b08f8404">post json</a></li>
+<li><a href="#org-b22df644a4">post form</a></li>
+</ul>
+</li>
+<li><a href="#org-a34c760743">响应编码</a></li>
+<li><a href="#org-98b3cb680e">请求headers顺序</a></li>
+</ul>
+</li>
+<li><a href="#org-cbec2045b4">django</a></li>
+</ul>
+</div></div>
+<blockquote>
+<p>
+首先使用工具 <b>2to3</b> 转换
+</p>
+<pre class="src src-bash">
+2to3 fryOps -w -n
+</pre>
+</blockquote>
+<h3 id="org-d27a851236">print</h3><p>
+   https://stackoverflow.com/questions/55559825/how-to-fix-print-double-parentheses-after-2to3-conversion
+</p>
+<ul>
+<li>
+<p>
+问题:
+     如果在python2项目里使用了python3的写法，比如在 <b>python2</b> 里的 <code>print(&#34;test&#34;)</code>, 使用 <b>2to3</b> 就会转换成 
+</p>
+<div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">((</span><span class="s2">&quot;test&quot;</span><span class="p">))</span>
+</pre></div>
+
+<p>
+     所以需要找到 <code>print((</code> 并修复该转换(其实不转也没什么问题)
+</p>
+<div class="highlight"><pre><span></span>ag -Gpy <span class="s1">&#39;print((&#39;</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+修复:
+</p>
+<div class="highlight"><pre><span></span><span class="gd">- print((&quot;test&quot;))</span>
+<span class="gi">+ print(&quot;test&quot;)</span>
+</pre></div>
+
+</li>
+</ul>
+<h3 id="org-afa6a745c8">string</h3><ul>
+<li>
+<p>
+问题1:
+</p>
+<div class="highlight"><pre><span></span><span class="k">module</span> <span class="s">&#39;string&#39;</span> <span class="k">has</span> <span class="n">no</span> <span class="n">attribute</span> &#39;<span class="n">letters</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+修复:
+</p>
+<div class="highlight"><pre><span></span><span class="gd">- string.letters</span>
+<span class="gi">+ string.ascii_letters</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+问题2:
+</p>
+<div class="highlight"><pre><span></span>&#39;str&#39; object has no attribute &#39;decode&#39;
+</pre></div>
+
+</li>
+<li>
+<p>
+修复:
+</p>
+<div class="highlight"><pre><span></span><span class="gd">- str.decode(xxx)</span>
+<span class="gi">+ str.encode(xxx).decode(&#39;unicode_escape&#39;)</span>
+</pre></div>
+
+</li>
+</ul>
+<h3 id="org-15ee2d8a22">比值问题</h3><div class="highlight"><pre><span></span>slice indices must be integers or None or have an __index__ method
+</pre></div>
+
+<ul>
+<li>
+<p>
+问题:
+     python2里 <code>3/2</code> 返回的是整型 <code>1</code>
+     python3里 <code>3/2</code> 返回的是浮点型 <code>1.5</code>
+</p>
+</li>
+<li>
+<p>
+修复:
+</p>
+<div class="highlight"><pre><span></span>print(3//2)
+# 或者
+print(int(3/2))
+</pre></div>
+
+</li>
+</ul>
+<h3 id="org-15d93c4f5e">编码问题</h3><h4 id="org-e9e5b631ff">sys.setdefaultencoding(&#39;utf-8&#39;)</h4><p>
+    python2里的 <code>sys.setdefaultencoding(&#39;utf-8&#39;)</code> 需要删除
+</p>
+<h4 id="org-eeec2693dd">encode、decode</h4><ul>
+<li>
+<p>
+问题:
+</p>
+<div class="highlight"><pre><span></span><span class="nt">LookupError</span><span class="o">:</span> <span class="s1">&#39;base64&#39;</span> <span class="nt">is</span> <span class="nt">not</span> <span class="nt">a</span> <span class="nt">text</span> <span class="nt">encoding</span><span class="o">;</span> <span class="nt">use</span> <span class="nt">codecs</span><span class="p">.</span><span class="nc">encode</span><span class="o">()</span> <span class="nt">to</span> <span class="nt">handle</span> <span class="nt">arbitrary</span> <span class="nt">codecs</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+语法:
+</p>
+<ul>
+<li>
+<p>
+python2
+</p>
+<div class="highlight"><pre><span></span><span class="nv">Python</span> <span class="mi">2</span>.<span class="mi">7</span>.<span class="mi">16</span> <span class="ss">(</span><span class="nv">default</span>, <span class="nv">Dec</span> <span class="mi">21</span> <span class="mi">2020</span>, <span class="mi">23</span>:<span class="mi">00</span>:<span class="mi">36</span><span class="ss">)</span> 
+[<span class="nv">GCC</span> <span class="nv">Apple</span> <span class="nv">LLVM</span> <span class="mi">12</span>.<span class="mi">0</span>.<span class="mi">0</span> <span class="ss">(</span><span class="nv">clang</span><span class="o">-</span><span class="mi">1200</span>.<span class="mi">0</span>.<span class="mi">30</span>.<span class="mi">4</span><span class="ss">)</span> [<span class="o">+</span><span class="nv">internal</span><span class="o">-</span><span class="nv">os</span>, <span class="nv">ptrauth</span><span class="o">-</span><span class="nv">isa</span><span class="o">=</span><span class="nv">sign</span><span class="o">+</span><span class="nv">stri</span> <span class="nv">on</span> <span class="nv">darwin</span>
+<span class="nv">Type</span> <span class="s2">&quot;</span><span class="s">help</span><span class="s2">&quot;</span>, <span class="s2">&quot;</span><span class="s">copyright</span><span class="s2">&quot;</span>, <span class="s2">&quot;</span><span class="s">credits</span><span class="s2">&quot;</span> <span class="nv">or</span> <span class="s2">&quot;</span><span class="s">license</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="nv">more</span> <span class="nv">information</span>.
+<span class="o">&gt;&gt;&gt;</span> <span class="nv">a</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="s">a</span><span class="s2">&quot;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nv">a</span>.<span class="nv">encode</span><span class="ss">(</span><span class="s2">&quot;</span><span class="s">base64</span><span class="s2">&quot;</span><span class="ss">)</span>
+<span class="s1">&#39;</span><span class="s">YQ==</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nv">b</span> <span class="o">=</span> <span class="nv">a</span>.<span class="nv">encode</span><span class="ss">(</span><span class="s2">&quot;</span><span class="s">base64</span><span class="s2">&quot;</span><span class="ss">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nv">b</span>.<span class="nv">decode</span><span class="ss">(</span><span class="s2">&quot;</span><span class="s">base64</span><span class="s2">&quot;</span><span class="ss">)</span>
+<span class="s1">&#39;</span><span class="s">a</span><span class="s1">&#39;</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+python3
+</p>
+<div class="highlight"><pre><span></span><span class="nt">Python</span> <span class="nt">3</span><span class="p">.</span><span class="nc">7</span><span class="p">.</span><span class="nc">4</span> <span class="o">(</span><span class="nt">default</span><span class="o">,</span> <span class="nt">Sep</span>  <span class="nt">7</span> <span class="nt">2020</span><span class="o">,</span> <span class="nt">15</span><span class="p">:</span><span class="nd">30</span><span class="p">:</span><span class="nd">33</span><span class="o">)</span> 
+<span class="cp">[</span><span class="nx">Clang</span> <span class="mf">11.0.3</span> <span class="p">(</span><span class="nx">clang</span><span class="o">-</span><span class="mf">1103.0.32.29</span><span class="p">)</span><span class="cp">]</span> <span class="nt">on</span> <span class="nt">darwin</span>
+<span class="nt">Type</span> <span class="s2">&quot;help&quot;</span><span class="o">,</span> <span class="s2">&quot;copyright&quot;</span><span class="o">,</span> <span class="s2">&quot;credits&quot;</span> <span class="nt">or</span> <span class="s2">&quot;license&quot;</span> <span class="nt">for</span> <span class="nt">more</span> <span class="nt">information</span><span class="o">.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nt">a</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nt">a</span><span class="p">.</span><span class="nc">encode</span><span class="o">(</span><span class="s2">&quot;base64&quot;</span><span class="o">)</span>
+<span class="nt">Traceback</span> <span class="o">(</span><span class="nt">most</span> <span class="nt">recent</span> <span class="nt">call</span> <span class="nt">last</span><span class="o">):</span>
+  <span class="nt">File</span> <span class="s2">&quot;&lt;stdin&gt;&quot;</span><span class="o">,</span> <span class="nt">line</span> <span class="nt">1</span><span class="o">,</span> <span class="nt">in</span> <span class="o">&lt;</span><span class="nt">module</span><span class="o">&gt;</span>
+<span class="nt">LookupError</span><span class="o">:</span> <span class="s1">&#39;base64&#39;</span> <span class="nt">is</span> <span class="nt">not</span> <span class="nt">a</span> <span class="nt">text</span> <span class="nt">encoding</span><span class="o">;</span> <span class="nt">use</span> <span class="nt">codecs</span><span class="p">.</span><span class="nc">encode</span><span class="o">()</span> <span class="nt">to</span> <span class="nt">handle</span> <span class="nt">arbitrary</span> <span class="nt">codecs</span>
+</pre></div>
+
+</li>
+</ul>
+</li>
+<li>
+<p>
+修复:
+</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">base64</span>
+
+<span class="k">def</span> <span class="nf">b64encode</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">b64decode</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+</pre></div>
+
+<div class="highlight"><pre><span></span><span class="gd">- x.encode(&#39;base64&#39;)</span>
+<span class="gd">- x.decode(&#39;base64&#39;)</span>
+<span class="gi">+ b64encode(x)</span>
+<span class="gi">+ b64decode(x)</span>
+</pre></div>
+
+</li>
+</ul>
+<h4 id="org-fdeb3854ec">编码转换</h4><p>
+    utf-8转换为gbk
+</p>
+<ul>
+<li>
+<p>
+python2
+</p>
+<div class="highlight"><pre><span></span>&#39;hello世界&#39;.decode(&#39;utf-8&#39;).encode(&#39;gbk&#39;)
+</pre></div>
+
+</li>
+<li>
+<p>
+python3
+</p>
+<div class="highlight"><pre><span></span><span class="s1">&#39;&#39;</span>.<span class="nv">join</span><span class="ss">(</span>[<span class="nv">chr</span><span class="ss">(</span><span class="nv">i</span><span class="ss">)</span> <span class="k">for</span> <span class="nv">i</span> <span class="nv">in</span> <span class="s1">&#39;</span><span class="s">hello世界</span><span class="s1">&#39;</span>.<span class="nv">encode</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">gbk</span><span class="s1">&#39;</span><span class="ss">)</span>]<span class="ss">)</span>
+# 或者
+<span class="s1">&#39;</span><span class="s">hello世界</span><span class="s1">&#39;</span>.<span class="nv">encode</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">gbk</span><span class="s1">&#39;</span><span class="ss">)</span>.<span class="nv">decode</span><span class="ss">(</span><span class="s1">&#39;</span><span class="s">unicode_escape</span><span class="s1">&#39;</span><span class="ss">)</span>
+</pre></div>
+
+</li>
+</ul>
+<h3 id="org-93df2a25be">cmp</h3><p>
+   python3里cmp内置函数不再存在，需要自定义函数
+</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cmp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">)</span>
+</pre></div>
+
+<h3 id="org-230a7e6f09">sorted</h3><p>
+   python2里sorted有一个cmp参数，python3里统一为key参数
+</p>
+<ul>
+<li>
+<p>
+python2
+</p>
+<div class="highlight"><pre><span></span><span class="nb">sorted</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">cmp</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+python3
+</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cmp_to_key</span>
+
+<span class="nb">sorted</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">cmp_to_key</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">cmp</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+<p>
+     注意: <code>must use keyword argument for key function</code>
+</p>
+</li>
+</ul>
+<h3 id="org-d184ca596a">Exception</h3><p>
+   python3里没有 <code>.message</code>, 所以需要修改 <code>e.message</code> 为 <code>str(e)</code>
+</p>
+<h3 id="org-92f3a0ecb7">SSL</h3><ul>
+<li>
+<p>
+问题:
+</p>
+<div class="highlight"><pre><span></span>File &quot;/usr/local/lib/python3.6/dist-packages/OpenSSL/SSL.py&quot;, line 1591, in set_tlsext_host_name
+raise TypeError(&quot;name must be a byte string&quot;)
+</pre></div>
+
+</li>
+<li>
+<p>
+解决
+</p>
+<div class="highlight"><pre><span></span>- s.set_tlsext_host_name(hostname) 
++ s.set_tlsext_host_name(hostname.encode(&#39;utf-8&#39;)) 
+</pre></div>
+
+</li>
+</ul>
+<h3 id="org-b3ba106e6d">file.read</h3><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+</pre></div>
+
+<ul>
+<li>
+<p>
+python2
+</p>
+<div class="highlight"><pre><span></span>(&#39;\x7f&#39;, &lt;type &#39;str&#39;&gt;)
+(&#39;E&#39;, &lt;type &#39;str&#39;&gt;)
+(&#39;\x00&#39;, &lt;type &#39;str&#39;&gt;)
+</pre></div>
+
+</li>
+<li>
+<p>
+python3
+</p>
+<div class="highlight"><pre><span></span><span class="mf">127</span> <span class="o">&lt;</span><span class="n">class</span> <span class="err">&#39;</span><span class="nb">int</span><span class="err">&#39;</span><span class="o">&gt;</span>
+<span class="mf">69</span> <span class="o">&lt;</span><span class="n">class</span> <span class="err">&#39;</span><span class="nb">int</span><span class="err">&#39;</span><span class="o">&gt;</span>
+<span class="mf">0</span> <span class="o">&lt;</span><span class="n">class</span> <span class="err">&#39;</span><span class="nb">int</span><span class="err">&#39;</span><span class="o">&gt;</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+<b>两者之间的转换</b>
+</p>
+<div class="highlight"><pre><span></span><span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x7f</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">127</span>
+<span class="nb">chr</span><span class="p">(</span><span class="mi">127</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;</span><span class="se">\x7f</span><span class="s1">&#39;</span>
+</pre></div>
+
+</li>
+</ul>
+<h3 id="org-62575494af">redis</h3><p>
+   python3里默认取出的值是 <code>bytes</code> 类型, 需要客户端添加 =decode_responses=True= 参数, 取出的值才是 <code>str</code> 类型
+</p>
+<h3 id="org-d4ecea242c">requests</h3><h4 id="org-97253a665f">自定义编码请求</h4><p>
+    https://github.com/psf/requests/issues/4133
+</p>
+<h5 id="org-61b08f8404">post json</h5><ul>
+<li>
+<p>
+python2
+</p>
+<div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;test&#39;</span><span class="p">:</span> <span class="s1">&#39;hello世界&#39;</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;gbk&#39;</span><span class="p">)}</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json;charset=gbk&#39;</span><span class="p">}</span>
+<span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">rsp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/dynamic/test&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span><span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+python3
+</p>
+<div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;test&#39;</span><span class="p">:</span> <span class="s1">&#39;hello世界&#39;</span><span class="p">}</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json;charset=gbk&#39;</span><span class="p">}</span>
+<span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/dynamic/test&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;gbk&#39;</span><span class="p">),</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+</pre></div>
+
+</li>
+</ul>
+<h5 id="org-b22df644a4">post form</h5><ul>
+<li>
+<p>
+python2
+</p>
+<div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;test&#39;</span><span class="p">:</span> <span class="s1">&#39;hello世界&#39;</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;gbk&#39;</span><span class="p">)}</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/x-www-form-urlencoded;charset=gbk&#39;</span><span class="p">}</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/dynamic/test&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span><span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+python3
+</p>
+<div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;test&#39;</span><span class="p">:</span> <span class="s1">&#39;hello世界&#39;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;gbk&#39;</span><span class="p">)}</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/x-www-form-urlencoded;charset=gbk&#39;</span><span class="p">}</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/dynamic/test&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span><span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+</pre></div>
+
+</li>
+</ul>
+<h4 id="org-a34c760743">响应编码</h4><div class="highlight"><pre><span></span><span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+</pre></div>
+
+<ul>
+<li>
+<p>
+python2
+      <code>resp.content</code> 是 <code>str</code> 类型, <code>resp.text</code> 是 <code>unicode</code> 类型
+</p>
+</li>
+<li>
+<p>
+python3
+      <code>resp.content</code> 是 <code>bytes</code> 类型, <code>resp.text</code> 是 <code>str</code> 类型
+</p>
+</li>
+</ul>
+<h4 id="org-98b3cb680e">请求headers顺序</h4><p>
+    根源主要在 <code>requests.structures</code> 的 <code>CaseInsensitiveDict</code> 类
+</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">requests.structures</span> <span class="kn">import</span> <span class="n">CaseInsensitiveDict</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;Accept-Language&#39;</span><span class="p">:</span> <span class="s1">&#39;en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Accept-Encoding&#39;</span><span class="p">:</span> <span class="s1">&#39;gzip, deflate, sdch&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;cache&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="s1">&#39;Host1.com&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Accept&#39;</span><span class="p">:</span> <span class="s1">&#39;text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;User-Agent&#39;</span><span class="p">:</span> <span class="s1">&#39;curl/7.29.0&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Host&#39;</span><span class="p">:</span> <span class="s1">&#39;Host2.com&#39;</span>
+<span class="p">}</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">CaseInsensitiveDict</span><span class="p">()</span>
+<span class="n">r</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+</pre></div>
+
+<p>
+    不同的python版本结果会输出
+</p>
+<ul>
+<li>
+<p>
+python2
+</p>
+<div class="highlight"><pre><span></span>OrderedDict([(&#39;Accept-Language&#39;, &#39;en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4&#39;), (&#39;Accept-Encoding&#39;, &#39;gzip, deflate, sdch&#39;), (&#39;cache&#39;, 0), (&#39;Host&#39;, &#39;Host2.com&#39;), (&#39;Accept&#39;, &#39;text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8&#39;), (&#39;User-Agent&#39;, &#39;curl/7.29.0&#39;), (&#39;host&#39;, &#39;Host1.com&#39;)])
+CaseInsensitiveDict({&#39;Accept-Language&#39;: &#39;en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4&#39;, &#39;Accept-Encoding&#39;: &#39;gzip, deflate, sdch&#39;, &#39;cache&#39;: 0, &#39;Accept&#39;: &#39;text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8&#39;, &#39;User-Agent&#39;: &#39;curl/7.29.0&#39;, &#39;host&#39;: &#39;Host1.com&#39;})
+</pre></div>
+
+</li>
+<li>
+<p>
+python3
+</p>
+<div class="highlight"><pre><span></span>OrderedDict([(&#39;Accept-Language&#39;, &#39;en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4&#39;), (&#39;Accept-Encoding&#39;, &#39;gzip, deflate, sdch&#39;), (&#39;cache&#39;, 0), (&#39;host&#39;, &#39;Host1.com&#39;), (&#39;Accept&#39;, &#39;text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8&#39;), (&#39;User-Agent&#39;, &#39;curl/7.29.0&#39;), (&#39;Host&#39;, &#39;Host2.com&#39;)])
+{&#39;Accept-Language&#39;: &#39;en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4&#39;, &#39;Accept-Encoding&#39;: &#39;gzip, deflate, sdch&#39;, &#39;cache&#39;: 0, &#39;Host&#39;: &#39;Host2.com&#39;, &#39;Accept&#39;: &#39;text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8&#39;, &#39;User-Agent&#39;: &#39;curl/7.29.0&#39;}
+</pre></div>
+
+</li>
+</ul>
+<p>
+    所以如果要兼容两个版本，需要显示的传入
+</p>
+<div class="highlight"><pre><span></span><span class="n">headers</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">headers</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+
+<h3 id="org-cbec2045b4">django</h3><div class="highlight"><pre><span></span><span class="gd">- for k, v in request.GET.iterlists():</span>
+<span class="gi">+ for k, v in request.GET.lists():</span>
+</pre></div>
+
+<p>
+   并且k和v的类型在python3里默认为 <code>str</code> ， 不需要使用 <code>k.encode(&#34;utf-8&#34;)</code> 进行转换
+</p>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2019/01/Flask支持多语言站点.html" rel="bookmark" title="Permalink to Flask支持多语言站点">Flask支持多语言站点</a></h1>
 <header class="entry-info">
   <span title="Updated at 2019-07-15">
     <i class="fa fa-calendar-o"></i>
@@ -104,103 +580,12 @@ Flask的多语言国际化可以使用<b>Flask-Babel</b>插件，在此不再细
 </p>
 </blockquote>
 <p>
-实现<b>example.com/en/uri</b>可以有多种方式，除了使用<b>Flask URL Processors</b>中介绍的外，还可以
-</p>
-<h3 id="org-9b6fb96fd2">使用nginx重定向uri</h3><p>
-   这应该是各种方式里最简单的一种
-</p>
-<div class="highlight"><pre><span></span><span class="k">location</span> <span class="p">~</span> <span class="sr">^/en/</span> <span class="p">{</span>
-    <span class="kn">rewrite</span> <span class="s">^/en/(.*)</span>$ <span class="s">/</span><span class="nv">$1</span> <span class="s">last</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="k">location</span> <span class="p">=</span> <span class="s">/en</span> <span class="p">{</span>
-    <span class="kn">rewrite</span> <span class="s">^/(.*)</span>$ <span class="s">/index</span> <span class="s">last</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-
-<h3 id="org-73ba8167ca">使用uri获取对应非302响应</h3><p>
-   即增加一个url为<b>/en/&lt;path:uri&gt;</b>的路由，在此路由<b>func</b>中，根据<b>&lt;path:uri&gt;</b>信息获取已注册路由的<b>view_function</b>，不使用重定向，而是直接调用<b>view_function</b>返回实际响应
-</p>
-<div class="highlight"><pre><span></span><span class="c1"># https://stackoverflow.com/questions/38488134/get-the-flask-view-function-that-matches-a-url</span>
-<span class="k">def</span> <span class="nf">get_view_function</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">):</span>
-    <span class="n">adapter</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">url_map</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s1">&#39;localhost&#39;</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">match</span> <span class="o">=</span> <span class="n">adapter</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">RequestRedirect</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="c1"># recursively match redirects</span>
-        <span class="k">return</span> <span class="n">get_view_function</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">new_url</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
-    <span class="k">except</span> <span class="p">(</span><span class="n">MethodNotAllowed</span><span class="p">,</span> <span class="n">NotFound</span><span class="p">):</span>
-        <span class="c1"># no match</span>
-        <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="k">try</span><span class="p">:</span>
-        <span class="c1"># return the view function and arguments</span>
-        <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">view_functions</span><span class="p">[</span><span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-        <span class="c1"># no view is associated with the endpoint</span>
-        <span class="k">return</span> <span class="kc">None</span>
-</pre></div>
-
-<p>
-   提高查找对应<code>view-function</code>的性能，增加缓存到内存中
-</p>
-<div class="highlight"><pre><span></span><span class="n">FUNCTION</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-
-<span class="k">def</span> <span class="nf">view_function_cache</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">_view_function</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">):</span>
-        <span class="c1"># 避免故意访问</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">FUNCTION</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">FUNCTION</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">FUNCTION</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-
-        <span class="n">key</span> <span class="o">=</span> <span class="n">method</span> <span class="o">+</span> <span class="n">url</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">())</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">FUNCTION</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">FUNCTION</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-        <span class="n">FUNCTION</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">FUNCTION</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">_view_function</span>
-</pre></div>
-
-<p>
-   这样就可以定义<b>/en/&lt;uri&gt;</b>实际的<code>view_function</code>
-</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">redirect_en</span><span class="p">(</span><span class="n">uri</span><span class="p">):</span>
-    <span class="n">view_function</span> <span class="o">=</span> <span class="n">get_view_function</span><span class="p">(</span>
-        <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">uri</span><span class="p">,</span>
-        <span class="n">request</span><span class="o">.</span><span class="n">method</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="k">if</span> <span class="n">view_function</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">abort</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
-    <span class="c1"># 注：因为我使用Flask-Babel是根据accept_language来区别不同语言</span>
-    <span class="n">request</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HTTP_ACCEPT_LANGUAGE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;en-US,en;q=0.5&quot;</span>
-    <span class="k">return</span> <span class="n">view_function</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="o">**</span><span class="n">view_function</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-</pre></div>
-
-<h3 id="org-028bad582c">使用url_map复制并alias路由</h3><p>
-   原理同<b>Flask URL Processors</b> ，为所有的路由都额外增加<b>/en</b>前缀，并在<code>before_request</code>中匹配到以<b>/en</b>开头的请求就修改对应<b>accept_language</b>信息
-</p>
-<div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">before_request</span>
-<span class="k">def</span> <span class="nf">before_request</span><span class="p">():</span>
-    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/en/&quot;</span><span class="p">):</span>
-        <span class="n">request</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HTTP_ACCEPT_LANGUAGE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;en-US,en;q=0.5&quot;</span>
-
-<span class="n">url_map</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">url_map</span><span class="o">.</span><span class="n">iter_rules</span><span class="p">())</span>
-<span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">url_map</span><span class="p">:</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s2">&quot;/en&quot;</span> <span class="o">+</span> <span class="n">rule</span><span class="o">.</span><span class="n">rule</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-
-<p>
-   咦，感觉这种方式更简单一些，但最好还是能够对一些特殊的路由比如: <b>static</b>, <b>admin</b>, <b>subdomain</b>等进行特殊处理
-</p>
-<h3 id="org-5163b49273">演示效果</h3><p>
-   <a href="https://honmaple.com/en/article">切换成English</a>
-</p>
+实现<b>example.com/en/uri</b>可以有多种方式，除了使用<b>Flask URL …</b></p>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2019/01/Flask支持多语言站点.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/06/为pelican添加子站点功能.html" rel="bookmark" title="Permalink to 为pelican添加子站点功能">为pelican添加子站点功能</a></h1>
@@ -648,71 +1033,6 @@ flask 貌似很少全文搜索的插件,有一个 https://github.com/gyllstromk/
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/03/himawari8图片下载改进版.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2017/03/下载Himawari8拍摄的实时地球图片.html" rel="bookmark" title="Permalink to 下载Himawari8拍摄的实时地球图片">下载Himawari8拍摄的实时地球图片</a></h1>
-<header class="entry-info">
-  <span title="2017-03-22T00:00:00+08:00">
-    <i class="fa fa-calendar-o"></i>
-    三 22 三月 2017
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/categories/python/index.html">Python</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tags/python/index.html">python</a>
-        <a href="https://honmaple.me/tags/earth/index.html">earth</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content entry-summary">
-            
-<p>
-直接给出源码
-</p>
-<p>
-设置壁纸
-</p>
-<div class="highlight"><pre><span></span>feh --bg-scale /tmp/earth.png
-</pre></div>
-
-<p>
-设置桌面大小,及图片放大倍数
-</p>
-<div class="highlight"><pre><span></span><span class="n">SCALE</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
-<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
-</pre></div>
-
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
-<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">urlopen</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">import</span> <span class="nn">json</span>
-
-<span class="n">SCALE</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">1368</span>
-<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">768</span>
-
-
-<span class="k">def</span> <span class="nf">get_info</span><span class="p">():</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://himawari8-dl.nict.go.jp …</span></pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2017/03/下载Himawari8拍摄的实时地球图片.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">
