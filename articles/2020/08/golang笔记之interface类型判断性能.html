@@ -60,7 +60,7 @@
     <div class="entry-header">
       <h1 class="entry-title"><a href="https://honmaple.me/articles/2020/08/golang笔记之interface类型判断性能.html">golang笔记之interface类型判断性能</a></h1>
 <header class="entry-info">
-  <span title="Updated at 2021-05-31">
+  <span title="Updated at 2021-08-27">
     <i class="fa fa-calendar-o"></i>
     五 21 八月 2020
   </span>
@@ -106,88 +106,138 @@
     <span class="nx">a</span><span class="p">.</span><span class="nx">v</span> <span class="o">+=</span> <span class="mi">1</span>
 <span class="p">}</span>
 
-<span class="kd">type</span> <span class="nx">B</span> <span class="kd">struct</span> <span class="p">{</span>
-    <span class="nx">v</span> <span class="kt">int</span>
+<span class="kd">func</span> <span class="nx">BenchmarkTypeSwitch</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
+
+    <span class="nx">switchFunc</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">v</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+        <span class="k">switch</span> <span class="nx">v</span><span class="p">.(</span><span class="kd">type</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="nx">InterfaceA</span><span class="p">:</span>
+            <span class="nx">v</span><span class="p">.(</span><span class="nx">InterfaceA</span><span class="p">).</span><span class="nx">AA</span><span class="p">()</span>
+        <span class="k">case</span> <span class="nx">InterfaceB</span><span class="p">:</span>
+            <span class="nx">v</span><span class="p">.(</span><span class="nx">InterfaceB</span><span class="p">).</span><span class="nx">BB</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="nx">switchFunc</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">B</span><span class="p">)</span> <span class="nx">BB</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nx">b</span><span class="p">.</span><span class="nx">v</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="kd">func</span> <span class="nx">BenchmarkNormalSwitch</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
+
+    <span class="nx">switchFunc</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">A</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">v</span><span class="p">.</span><span class="nx">AA</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="nx">switchFunc</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="nx">TypeSwitch</span><span class="p">(</span><span class="nx">v</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
-    <span class="k">switch</span> <span class="nx">v</span><span class="p">.(</span><span class="kd">type</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="nx">InterfaceA</span><span class="p">:</span>
+<span class="kd">func</span> <span class="nx">BenchmarkInterfaceSwitch</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
+
+    <span class="nx">switchFunc</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">v</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
         <span class="nx">v</span><span class="p">.(</span><span class="nx">InterfaceA</span><span class="p">).</span><span class="nx">AA</span><span class="p">()</span>
-    <span class="k">case</span> <span class="nx">InterfaceB</span><span class="p">:</span>
-        <span class="nx">v</span><span class="p">.(</span><span class="nx">InterfaceB</span><span class="p">).</span><span class="nx">BB</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="nx">switchFunc</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="nx">NormalSwitch</span><span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">A</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">a</span><span class="p">.</span><span class="nx">AA</span><span class="p">()</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">InterfaceSwitch</span><span class="p">(</span><span class="nx">v</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
-    <span class="nx">v</span><span class="p">.(</span><span class="nx">InterfaceA</span><span class="p">).</span><span class="nx">AA</span><span class="p">()</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">InterfaceSwitch1</span><span class="p">(</span><span class="nx">v</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
-    <span class="nx">v</span><span class="p">.(</span><span class="o">*</span><span class="nx">A</span><span class="p">).</span><span class="nx">AA</span><span class="p">()</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">InterfaceSwitch2</span><span class="p">(</span><span class="nx">v</span> <span class="nx">InterfaceA</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">v</span><span class="p">.(</span><span class="o">*</span><span class="nx">A</span><span class="p">).</span><span class="nx">AA</span><span class="p">()</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">InterfaceSwitch3</span><span class="p">(</span><span class="nx">v</span> <span class="nx">InterfaceA</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">v</span><span class="p">.</span><span class="nx">AA</span><span class="p">()</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">Benchmark_TypeSwitch</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="nx">BenchmarkInterfaceSwitch1</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
 
+    <span class="nx">switchFunc</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">v</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+        <span class="nx">v</span><span class="p">.(</span><span class="o">*</span><span class="nx">A</span><span class="p">).</span><span class="nx">AA</span><span class="p">()</span>
+    <span class="p">}</span>
     <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
-        <span class="nx">TypeSwitch</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+        <span class="nx">switchFunc</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="nx">Benchmark_NormalSwitch</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="nx">BenchmarkInterfaceSwitch2</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
 
+    <span class="nx">switchFunc</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">v</span> <span class="nx">InterfaceA</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">v</span><span class="p">.(</span><span class="o">*</span><span class="nx">A</span><span class="p">).</span><span class="nx">AA</span><span class="p">()</span>
+    <span class="p">}</span>
     <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
-        <span class="nx">NormalSwitch</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+        <span class="nx">switchFunc</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="nx">Benchmark_InterfaceSwitch</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="nx">BenchmarkInterfaceSwitch3</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
 
+    <span class="nx">switchFunc</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">v</span> <span class="nx">InterfaceA</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">v</span><span class="p">.</span><span class="nx">AA</span><span class="p">()</span>
+    <span class="p">}</span>
     <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
-        <span class="nx">InterfaceSwitch</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+        <span class="nx">switchFunc</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="nx">Benchmark_InterfaceSwitch1</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nx">BenchmarkNormalListSwitch</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">a</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="nx">A</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">a</span> <span class="p">{</span>
+        <span class="nx">a</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
+    <span class="p">}</span>
 
+    <span class="nx">switchFunc</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">vv</span> <span class="p">[]</span><span class="o">*</span><span class="nx">A</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">vv</span> <span class="p">{</span>
+            <span class="nx">v</span><span class="p">.</span><span class="nx">AA</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
     <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
-        <span class="nx">InterfaceSwitch1</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+        <span class="nx">switchFunc</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="nx">Benchmark_InterfaceSwitch2</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nx">BenchmarkInterfaceListSwitch</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">a</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="nx">A</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">a</span> <span class="p">{</span>
+        <span class="nx">a</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
+    <span class="p">}</span>
 
+    <span class="nx">switchFunc</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">vv</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">vv</span><span class="p">.([]</span><span class="o">*</span><span class="nx">A</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">v</span><span class="p">.</span><span class="nx">AA</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
     <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
-        <span class="nx">InterfaceSwitch2</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+        <span class="nx">switchFunc</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="nx">Benchmark_InterfaceSwitch3</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nx">BenchmarkInterfaceListSwitch1</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">a</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="nx">InterfaceA</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">a</span> <span class="p">{</span>
+        <span class="nx">a</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
+    <span class="p">}</span>
 
+    <span class="nx">switchFunc</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">vv</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">vv</span><span class="p">.([]</span><span class="nx">InterfaceA</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">v</span><span class="p">.</span><span class="nx">AA</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
     <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
-        <span class="nx">InterfaceSwitch3</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+        <span class="nx">switchFunc</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">BenchmarkInterfaceListSwitch2</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">a</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="nx">InterfaceA</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">a</span> <span class="p">{</span>
+        <span class="nx">a</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nx">switchFunc</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">vv</span> <span class="p">[]</span><span class="nx">InterfaceA</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">vv</span> <span class="p">{</span>
+            <span class="nx">v</span><span class="p">.</span><span class="nx">AA</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="nx">switchFunc</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -195,15 +245,20 @@
 <div class="highlight"><pre><span></span><span class="err">└──╼</span><span class="w"> </span><span class="k">go</span><span class="w"> </span><span class="n">test</span><span class="w"> </span><span class="o">-</span><span class="n">test</span><span class="p">.</span><span class="n">bench</span><span class="o">=</span><span class="ss">&quot;.*&quot;</span><span class="w"> </span><span class="p">.</span><span class="w"></span>
 <span class="nl">goos</span><span class="p">:</span><span class="w"> </span><span class="n">darwin</span><span class="w"></span>
 <span class="nl">goarch</span><span class="p">:</span><span class="w"> </span><span class="n">amd64</span><span class="w"></span>
-<span class="nl">pkg</span><span class="p">:</span><span class="w"> </span><span class="n">maple</span><span class="o">-</span><span class="n">test1</span><span class="w"></span>
-<span class="n">Benchmark_TypeSwitch</span><span class="o">-</span><span class="mi">8</span><span class="w">         	</span><span class="mi">75504378</span><span class="w">	        </span><span class="mf">15.5</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
-<span class="n">Benchmark_NormalSwitch</span><span class="o">-</span><span class="mi">8</span><span class="w">       	</span><span class="mi">882930793</span><span class="w">	         </span><span class="mf">1.34</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
-<span class="n">Benchmark_InterfaceSwitch</span><span class="o">-</span><span class="mi">8</span><span class="w">    	</span><span class="mi">151310272</span><span class="w">	         </span><span class="mf">7.86</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
-<span class="n">Benchmark_InterfaceSwitch1</span><span class="o">-</span><span class="mi">8</span><span class="w">   	</span><span class="mi">814204568</span><span class="w">	         </span><span class="mf">1.47</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
-<span class="n">Benchmark_InterfaceSwitch2</span><span class="o">-</span><span class="mi">8</span><span class="w">   	</span><span class="mi">815701614</span><span class="w">	         </span><span class="mf">1.49</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
-<span class="n">Benchmark_InterfaceSwitch3</span><span class="o">-</span><span class="mi">8</span><span class="w">   	</span><span class="mi">694695382</span><span class="w">	         </span><span class="mf">1.69</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
+<span class="nl">pkg</span><span class="p">:</span><span class="w"> </span><span class="n">log2</span><span class="w"></span>
+<span class="nl">cpu</span><span class="p">:</span><span class="w"> </span><span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span><span class="w"> </span><span class="n">Core</span><span class="p">(</span><span class="n">TM</span><span class="p">)</span><span class="w"> </span><span class="n">i5</span><span class="o">-</span><span class="mi">8279</span><span class="n">U</span><span class="w"> </span><span class="n">CPU</span><span class="w"> </span><span class="err">@</span><span class="w"> </span><span class="mf">2.40</span><span class="n">GHz</span><span class="w"></span>
+<span class="n">BenchmarkTypeSwitch</span><span class="o">-</span><span class="mi">8</span><span class="w">                 </span><span class="mi">72261417</span><span class="w">            </span><span class="mf">16.89</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
+<span class="n">BenchmarkNormalSwitch</span><span class="o">-</span><span class="mi">8</span><span class="w">               </span><span class="mi">861871533</span><span class="w">            </span><span class="mf">1.384</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
+<span class="n">BenchmarkInterfaceSwitch</span><span class="o">-</span><span class="mi">8</span><span class="w">            </span><span class="mi">148360124</span><span class="w">            </span><span class="mf">8.370</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
+<span class="n">BenchmarkInterfaceSwitch1</span><span class="o">-</span><span class="mi">8</span><span class="w">           </span><span class="mi">780127671</span><span class="w">            </span><span class="mf">1.537</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
+<span class="n">BenchmarkInterfaceSwitch2</span><span class="o">-</span><span class="mi">8</span><span class="w">           </span><span class="mi">774663793</span><span class="w">            </span><span class="mf">1.538</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
+<span class="n">BenchmarkInterfaceSwitch3</span><span class="o">-</span><span class="mi">8</span><span class="w">           </span><span class="mi">739255111</span><span class="w">            </span><span class="mf">1.628</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
+<span class="n">BenchmarkNormalListSwitch</span><span class="o">-</span><span class="mi">8</span><span class="w">             </span><span class="mi">225832</span><span class="w">          </span><span class="mi">5346</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
+<span class="n">BenchmarkInterfaceListSwitch</span><span class="o">-</span><span class="mi">8</span><span class="w">          </span><span class="mi">252312</span><span class="w">          </span><span class="mi">4820</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
+<span class="n">BenchmarkInterfaceListSwitch1</span><span class="o">-</span><span class="mi">8</span><span class="w">          </span><span class="mi">61461</span><span class="w">         </span><span class="mi">19800</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
+<span class="n">BenchmarkInterfaceListSwitch2</span><span class="o">-</span><span class="mi">8</span><span class="w">          </span><span class="mi">60193</span><span class="w">         </span><span class="mi">20142</span><span class="w"> </span><span class="n">ns</span><span class="o">/</span><span class="n">op</span><span class="w"></span>
 <span class="n">PASS</span><span class="w"></span>
-<span class="n">ok</span><span class="w">  	</span><span class="n">maple</span><span class="o">-</span><span class="n">test1</span><span class="w">	</span><span class="mf">8.664</span><span class="n">s</span><span class="w"></span>
+<span class="n">ok</span><span class="w">    </span><span class="n">log2</span><span class="w">	</span><span class="mf">14.670</span><span class="n">s</span><span class="w"></span>
 </pre></div>
 
     </div>

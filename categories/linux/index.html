@@ -59,8 +59,176 @@
 </nav>        <article>
           <div class="entry-header">
             <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2021/06/flutter笔记之初体验.html" rel="bookmark" title="Permalink to flutter笔记之初体验">flutter笔记之初体验</a>
+              <a href="https://honmaple.me/articles/2021/08/Docker笔记之registry清理.html" rel="bookmark" title="Permalink to Docker笔记之registry清理">Docker笔记之registry清理</a>
             </h1>
+<header class="entry-info">
+  <span title="Updated at 2021-09-02">
+    <i class="fa fa-calendar-o"></i>
+    一 23 八月 2021
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/docker/index.html">docker</a>
+        <a href="https://honmaple.me/tags/registry/index.html">registry</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content entry-summary">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-b92701c913">前言</a></li>
+<li><a href="#org-4e20ec6419">清理</a>
+<ul>
+<li><a href="#org-ccd330ca3c">列出所有镜像</a></li>
+<li><a href="#org-d48c64abaa">找出分层(push次数)最多的几个镜像</a></li>
+<li><a href="#org-1d12df6e7c">删除某个镜像的untagged的数据</a></li>
+</ul>
+</li>
+<li><a href="#org-a2035894d2">参考资料</a></li>
+</ul>
+</div></div>
+<blockquote>
+<p>
+尝试了几种方式, 算是找到了一个比较方便的清理docker registry的方式
+</p>
+</blockquote>
+<h2 id="org-b92701c913">前言</h2><p>
+  两年前分给了 <b>docker registry</b> 1T的磁盘，虽然有预感磁盘空间会被用完, 没想过能够坚持这么久。
+  而且期间一直想把 <b>registry</b> 迁移到 <b>harbor</b>，也能对不同账户的权限进行分配和限制，但几百G的磁盘占用也不好迁移，所以一直被耽搁(迁移方式都准备好了 <a href="https://blog.k8s.li/docker-registry-to-harbor.html">https://blog.k8s.li/docker-registry-to-harbor.html</a>
+</p>
+<h2 id="org-4e20ec6419">清理</h2><h3 id="org-ccd330ca3c">列出所有镜像</h3><div class="highlight"><pre><span></span><span class="n">registry</span> <span class="n">garbage</span><span class="o">-</span><span class="n">collect</span> <span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span><span class="n">registry</span><span class="o">/</span><span class="n">config</span><span class="p">.</span><span class="n">yml</span> <span class="o">&gt;&gt;</span> <span class="n">res</span><span class="p">.</span><span class="n">txt</span>
+</pre></div>
+
+<h3 id="org-d48c64abaa">找出分层(push次数)最多的几个镜像</h3><div class="highlight"><pre><span></span>cat res.txt | awk -F : &#39;{print $1}&#39; | sort | uniq -c | sort -rn -k1 | head -10
+  25871 image1
+  25649 image2
+  16815 image3
+  ...
+</pre></div>
+
+<h3 id="org-1d12df6e7c">删除某个镜像的untagged的数据</h3><p>
+   注意 <code>-u</code> 参数, 仅删除 <b>untagger</b> 的数据
+</p>
+<ol>
+<li>
+<p>
+ dry-run
+</p>
+<div class="highlight"><pre><span></span><span class="n">REGISTRY_DATA_DIR</span><span class="o">=/</span><span class="k">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">registry</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span><span class="n">registry</span><span class="o">/</span><span class="n">v2</span> <span class="n">python</span> <span class="n">delete_docker_registry_image</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">image</span> <span class="n">image1</span> <span class="o">-</span><span class="n">u</span> <span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+ 实际删除(<b>需要先暂停registry</b>)
+</p>
+<div class="highlight"><pre><span></span><span class="n">REGISTRY_DATA_DIR</span><span class="o">=/</span><span class="k">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">registry</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span><span class="n">registry</span><span class="o">/</span><span class="n">v2</span> <span class="n">python</span> <span class="n">delete_docker_registry_image</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">image</span> <span class="n">image1</span> <span class="o">-</span><span class="n">u</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+ 查看磁盘占用(<b>恢复registry</b>)
+</p>
+<p>
+      发现磁盘占用的大头还是这些 <b>untagged</b> 的数据， 仅仅处理了几个分层数量最多的镜像，一下子多了几百G的空间
+</p>
+</li>
+</ol>
+<h2 id="org-a2035894d2">参考资料</h2><ul>
+<li>
+<p>
+<a href="https://zhuanlan.zhihu.com/p/48009377">https://zhuanlan.zhihu.com/p/48009377</a>
+</p>
+</li>
+<li>
+<p>
+<a href="https://github.com/burnettk/delete-docker-registry-image">https://github.com/burnettk/delete-docker-registry-image</a>
+</p>
+</li>
+</ul>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/07/K8S笔记之ingress增加验证.html" rel="bookmark" title="Permalink to K8S笔记之ingress增加验证">K8S笔记之ingress增加验证</a></h1>
+<header class="entry-info">
+  <span title="Updated at 2021-09-02">
+    <i class="fa fa-calendar-o"></i>
+    二 13 七月 2021
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/k8s/index.html">k8s</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content entry-summary">
+            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-38da7bf107">创建账户密码</a></li>
+<li><a href="#org-054894a711">修改ingress</a></li>
+<li><a href="#org-df18498bbc">Authorization请求头传递到后端server</a></li>
+<li><a href="#org-a2035894d2">参考资料</a></li>
+</ul>
+</div></div>
+<h3 id="org-38da7bf107">创建账户密码</h3><ul>
+<li>
+<p>
+生成密码
+</p>
+<div class="highlight"><pre><span></span><span class="nv">PASSWORD</span><span class="o">=</span><span class="k">$(</span>base64 &lt; /dev/urandom <span class="p">|</span> head -c8<span class="k">)</span><span class="p">;</span> <span class="nb">echo</span> <span class="s2">&quot;</span><span class="nv">$PASSWORD</span><span class="s2">&quot;</span>
+</pre></div>
+
+</li>
+<li>
+<p>
+生成hash值
+</p>
+<div class="highlight"><pre><span></span>docker run --rm --entrypoint htpasswd httpd:2 -Bbn username password &gt;&gt; auth
+</pre></div>
+
+</li>
+</ul>
+<h3 id="org-054894a711">修改ingress</h3><div class="highlight"><pre><span></span>nginx.ingress.kubernetes.io/auth-realm=&#39;Authentication Required &#39;
+nginx.ingress.kubernetes.io/auth-type=basic
+nginx.ingress.kubernetes.io/auth-secret=basic-auth …</pre></div>
+          </div>
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2021/07/K8S笔记之ingress增加验证.html">阅读全文 »</a>
+          </div>
+        </article></li>
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/06/flutter笔记之初体验.html" rel="bookmark" title="Permalink to flutter笔记之初体验">flutter笔记之初体验</a></h1>
 <header class="entry-info">
   <span title="Updated at 2021-06-06">
     <i class="fa fa-calendar-o"></i>
@@ -130,325 +298,12 @@
 </p>
 </blockquote>
 <div class="highlight"><pre><span></span>└──╼ flutter --version
-Flutter 2.2.1 • channel stable • https://github.com/flutter/flutter.git
-Framework • revision 02c026b03c (9 天前) • 2021-05-27 12:24:44 -0700
-Engine • revision 0fdb562ac8
-Tools • Dart 2.13.1
-</pre></div>
-
-</li>
-<li>
-<p>
-第一步，禁用 <b>google analytics</b>
-</p>
-<div class="highlight"><pre><span></span><span class="err">└──╼</span> <span class="n">flutter</span> <span class="n">config</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">analytics</span>
-
-  <span class="err">╔════════════════════════════════════════════════════════════════════════════╗</span>
-  <span class="err">║</span>                 <span class="n">Welcome</span> <span class="n">to</span> <span class="n">Flutter</span><span class="o">!</span> <span class="o">-</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">flutter</span><span class="o">.</span><span class="n">dev</span>                  <span class="err">║</span>
-  <span class="err">║</span>                                                                            <span class="err">║</span>
-  <span class="err">║</span> <span class="n">The</span> <span class="n">Flutter</span> <span class="k">tool</span> <span class="n">uses</span> <span class="n">Google</span> <span class="n">Analytics</span> <span class="n">to</span> <span class="n">anonymously</span> <span class="n">report</span> <span class="n">feature</span> <span class="n">usage</span> <span class="err">║</span>
-  <span class="err">║</span> <span class="n">statistics</span> <span class="ow">and</span> <span class="n">basic</span> <span class="n">crash</span> <span class="n">reports</span><span class="o">.</span> <span class="n">This</span> <span class="n">data</span> <span class="k">is</span> <span class="n">used</span> <span class="n">to</span> <span class="n">help</span> <span class="n">improve</span>      <span class="err">║</span>
-  <span class="o">......</span>
-  <span class="err">║</span> <span class="n">See</span> <span class="n">Google</span><span class="s1">&#39;s privacy policy:                                               ║</span>
-  <span class="err">║</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">policies</span><span class="o">.</span><span class="n">google</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">privacy</span>                                        <span class="err">║</span>
-  <span class="err">╚════════════════════════════════════════════════════════════════════════════╝</span>
-
-<span class="n">Analytics</span> <span class="n">reporting</span> <span class="n">disabled</span><span class="o">.</span>
-
-<span class="n">You</span> <span class="n">may</span> <span class="n">need</span> <span class="n">to</span> <span class="n">restart</span> <span class="n">any</span> <span class="n">open</span> <span class="n">editors</span> <span class="k">for</span> <span class="n">them</span> <span class="n">to</span> <span class="n">read</span> <span class="n">new</span> <span class="n">settings</span><span class="o">.</span>
-</pre></div>
-
-</li>
-<li>
-<p>
-第二步, 执行 <code>flutter doctor</code> 检查依赖环境
-</p>
-<div class="highlight"><pre><span></span><span class="err">└──╼</span> <span class="n">flutter</span> <span class="n">doctor</span>
-<span class="n">Running</span> <span class="s2">&quot;flutter pub get&quot;</span> <span class="ow">in</span> <span class="n">flutter_tools</span><span class="o">...</span>                      <span class="mf">10.6</span><span class="n">s</span>
-<span class="n">Doctor</span> <span class="n">summary</span> <span class="p">(</span><span class="n">to</span> <span class="n">see</span> <span class="n">all</span> <span class="n">details</span><span class="p">,</span> <span class="n">run</span> <span class="n">flutter</span> <span class="n">doctor</span> <span class="o">-</span><span class="n">v</span><span class="p">):</span>
-<span class="p">[</span><span class="err">✓</span><span class="p">]</span> <span class="n">Flutter</span> <span class="p">(</span><span class="n">Channel</span> <span class="n">stable</span><span class="p">,</span> <span class="mf">2.2</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="n">on</span> <span class="n">macOS</span> <span class="mf">11.3</span><span class="o">.</span><span class="mi">1</span> <span class="mf">20E241</span> <span class="n">darwin</span><span class="o">-</span><span class="n">x64</span><span class="p">,</span> <span class="n">locale</span> <span class="n">zh</span><span class="o">-</span><span class="n">Hans</span><span class="o">-</span><span class="n">CN</span><span class="p">)</span>
-<span class="p">[</span><span class="err">✗</span><span class="p">]</span> <span class="n">Android</span> <span class="n">toolchain</span> <span class="o">-</span> <span class="n">develop</span> <span class="k">for</span> <span class="n">Android</span> <span class="n">devices</span>
-    <span class="err">✗</span> <span class="n">Unable</span> <span class="n">to</span> <span class="n">locate</span> <span class="n">Android</span> <span class="n">SDK</span><span class="o">.</span>
-      <span class="n">Install</span> <span class="n">Android</span> <span class="n">Studio</span> <span class="n">from</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">developer</span><span class="o">.</span><span class="n">android</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">studio</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
-      <span class="n">On</span> <span class="n">first</span> <span class="n">launch</span> <span class="n">it</span> <span class="n">will</span> <span class="n">assist</span> <span class="n">you</span> <span class="ow">in</span> <span class="n">installing</span> <span class="n">the</span> <span class="n">Android</span> <span class="n">SDK</span> <span class="n">components</span><span class="o">.</span>
-      <span class="p">(</span><span class="ow">or</span> <span class="n">visit</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">flutter</span><span class="o">.</span><span class="n">dev</span><span class="o">/</span><span class="n">docs</span><span class="o">/</span><span class="n">get</span><span class="o">-</span><span class="n">started</span><span class="o">/</span><span class="n">install</span><span class="o">/</span><span class="n">macos</span><span class="c1">#android-setup for detailed instructions).</span>
-      <span class="n">If</span> <span class="n">the</span> <span class="n">Android</span> <span class="n">SDK</span> <span class="n">has</span> <span class="n">been</span> <span class="n">installed</span> <span class="n">to</span> <span class="n">a</span> <span class="n">custom</span> <span class="n">location</span><span class="p">,</span> <span class="n">please</span> <span class="n">use</span>
-      <span class="err">`</span><span class="n">flutter</span> <span class="n">config</span> <span class="o">--</span><span class="n">android</span><span class="o">-</span><span class="n">sdk</span><span class="err">`</span> <span class="n">to</span> <span class="n">update</span> <span class="n">to</span> <span class="n">that</span> <span class="n">location</span><span class="o">.</span>
-
-<span class="p">[</span><span class="err">✗</span><span class="p">]</span> <span class="n">Xcode</span> <span class="o">-</span> <span class="n">develop</span> <span class="k">for</span> <span class="n">iOS</span> <span class="ow">and</span> <span class="n">macOS</span>
-    <span class="err">✗</span> <span class="n">Xcode</span> <span class="n">installation</span> <span class="k">is</span> <span class="n">incomplete</span><span class="p">;</span> <span class="n">a</span> <span class="n">full</span> <span class="n">installation</span> <span class="k">is</span> <span class="n">necessary</span> <span class="k">for</span> <span class="n">iOS</span> <span class="n">development</span><span class="o">.</span>
-      <span class="n">Download</span> <span class="n">at</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">developer</span><span class="o">.</span><span class="n">apple</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">xcode</span><span class="o">/</span><span class="n">download</span><span class="o">/</span>
-      <span class="n">Or</span> <span class="n">install</span> <span class="n">Xcode</span> <span class="n">via</span> <span class="n">the</span> <span class="n">App</span> <span class="n">Store</span><span class="o">.</span>
-      <span class="n">Once</span> <span class="n">installed</span><span class="p">,</span> <span class="n">run</span><span class="p">:</span>
-        <span class="n">sudo</span> <span class="n">xcode</span><span class="o">-</span><span class="n">select</span> <span class="o">--</span><span class="n">switch</span> <span class="o">/</span><span class="n">Applications</span><span class="o">/</span><span class="n">Xcode</span><span class="o">.</span><span class="n">app</span><span class="o">/</span><span class="n">Contents</span><span class="o">/</span><span class="n">Developer</span>
-        <span class="n">sudo</span> <span class="n">xcodebuild</span> <span class="o">-</span><span class="n">runFirstLaunch</span>
-    <span class="err">✗</span> <span class="n">CocoaPods</span> <span class="ow">not</span> <span class="n">installed</span><span class="o">.</span>
-        <span class="n">CocoaPods</span> <span class="k">is</span> <span class="n">used</span> <span class="n">to</span> <span class="n">retrieve</span> <span class="n">the</span> <span class="n">iOS</span> <span class="ow">and</span> <span class="n">macOS</span> <span class="n">platform</span> <span class="n">side</span><span class="s1">&#39;s plugin code that responds to your plugin usage on the Dart side.</span>
-        <span class="n">Without</span> <span class="n">CocoaPods</span><span class="p">,</span> <span class="n">plugins</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">work</span> <span class="n">on</span> <span class="n">iOS</span> <span class="ow">or</span> <span class="n">macOS</span><span class="o">.</span>
-        <span class="n">For</span> <span class="n">more</span> <span class="n">info</span><span class="p">,</span> <span class="n">see</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">flutter</span><span class="o">.</span><span class="n">dev</span><span class="o">/</span><span class="n">platform</span><span class="o">-</span><span class="n">plugins</span>
-      <span class="n">To</span> <span class="n">install</span> <span class="n">see</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">guides</span><span class="o">.</span><span class="n">cocoapods</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">using</span><span class="o">/</span><span class="n">getting</span><span class="o">-</span><span class="n">started</span><span class="o">.</span><span class="n">html</span><span class="c1">#installation for instructions.</span>
-<span class="p">[</span><span class="err">✓</span><span class="p">]</span> <span class="n">Chrome</span> <span class="o">-</span> <span class="n">develop</span> <span class="k">for</span> <span class="n">the</span> <span class="n">web</span>
-<span class="p">[</span><span class="o">!</span><span class="p">]</span> <span class="n">Android</span> <span class="n">Studio</span> <span class="p">(</span><span class="ow">not</span> <span class="n">installed</span><span class="p">)</span>
-<span class="p">[</span><span class="err">✓</span><span class="p">]</span> <span class="n">VS</span> <span class="n">Code</span> <span class="p">(</span><span class="n">version</span> <span class="mf">1.56</span><span class="o">.</span><span class="mi">2</span><span class="p">)</span>
-<span class="p">[</span><span class="err">✓</span><span class="p">]</span> <span class="n">Connected</span> <span class="n">device</span> <span class="p">(</span><span class="mi">1</span> <span class="n">available</span><span class="p">)</span>
-
-<span class="o">!</span> <span class="n">Doctor</span> <span class="n">found</span> <span class="n">issues</span> <span class="ow">in</span> <span class="mi">3</span> <span class="n">categories</span><span class="o">.</span>
-</pre></div>
-
-</li>
-</ul>
-<h4 id="org-771fc45363">安装java</h4><ul>
-<li>
-<p>
-安装
-</p>
-<div class="highlight"><pre><span></span><span class="err">└──╼</span> <span class="n">brew</span> <span class="n">install</span> <span class="n">openjdk</span><span class="mi">@8</span>
-</pre></div>
-
-<p>
-      刚开始我安装的是 <b>openjdk@11</b>, 但在启动 <b>sdkmanager</b> 时会报
-</p>
-<div class="highlight"><pre><span></span><span class="err">└──╼</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">android</span><span class="o">-</span><span class="n">sdk</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">sdkmanager</span>
-<span class="n">Exception</span> <span class="ow">in</span> <span class="n">thread</span> <span class="s2">&quot;main&quot;</span> <span class="n">java</span><span class="o">.</span><span class="n">lang</span><span class="o">.</span><span class="n">NoClassDefFoundError</span><span class="p">:</span> <span class="n">javax</span><span class="o">/</span><span class="n">xml</span><span class="o">/</span><span class="n">bind</span><span class="o">/</span><span class="n">annotation</span><span class="o">/</span><span class="n">XmlSchema</span>
-    <span class="n">at</span> <span class="n">com</span><span class="o">.</span><span class="n">android</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">SchemaModule</span><span class="o">$</span><span class="n">SchemaModuleVersion</span><span class="o">.&lt;</span><span class="n">init</span><span class="o">&gt;</span><span class="p">(</span><span class="n">SchemaModule</span><span class="o">.</span><span class="n">java</span><span class="p">:</span><span class="mi">156</span><span class="p">)</span>
-    <span class="n">at</span> <span class="n">com</span><span class="o">.</span><span class="n">android</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">SchemaModule</span><span class="o">.&lt;</span><span class="n">init</span><span class="o">&gt;</span><span class="p">(</span><span class="n">SchemaModule</span><span class="o">.</span><span class="n">java</span><span class="p">:</span><span class="mi">75</span><span class="p">)</span>
-    <span class="n">at</span> <span class="n">com</span><span class="o">.</span><span class="n">android</span><span class="o">.</span><span class="n">sdklib</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">AndroidSdkHandler</span><span class="o">.&lt;</span><span class="n">clinit</span><span class="o">&gt;</span><span class="p">(</span><span class="n">AndroidSdkHandler</span><span class="o">.</span><span class="n">java</span><span class="p">:</span><span class="mi">81</span><span class="p">)</span>
-    <span class="n">at</span> <span class="n">com</span><span class="o">.</span><span class="n">android</span><span class="o">.</span><span class="n">sdklib</span><span class="o">.</span><span class="k">tool</span><span class="o">.</span><span class="n">sdkmanager</span><span class="o">.</span><span class="n">SdkManagerCli</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">SdkManagerCli</span><span class="o">.</span><span class="n">java</span><span class="p">:</span><span class="mi">73</span><span class="p">)</span>
-    <span class="n">at</span> <span class="n">com</span><span class="o">.</span><span class="n">android</span><span class="o">.</span><span class="n">sdklib</span><span class="o">.</span><span class="k">tool</span><span class="o">.</span><span class="n">sdkmanager</span><span class="o">.</span><span class="n">SdkManagerCli</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">SdkManagerCli</span><span class="o">.</span><span class="n">java</span><span class="p">:</span><span class="mi">48</span><span class="p">)</span>
-<span class="n">Caused</span> <span class="n">by</span><span class="p">:</span> <span class="n">java</span><span class="o">.</span><span class="n">lang</span><span class="o">.</span><span class="n">ClassNotFoundException</span><span class="p">:</span> <span class="n">javax</span><span class="o">.</span><span class="n">xml</span><span class="o">.</span><span class="n">bind</span><span class="o">.</span><span class="n">annotation</span><span class="o">.</span><span class="n">XmlSchema</span>
-    <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="n">base</span><span class="o">/</span><span class="n">jdk</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">BuiltinClassLoader</span><span class="o">.</span><span class="n">loadClass</span><span class="p">(</span><span class="n">BuiltinClassLoader</span><span class="o">.</span><span class="n">java</span><span class="p">:</span><span class="mi">581</span><span class="p">)</span>
-    <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="n">base</span><span class="o">/</span><span class="n">jdk</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">ClassLoaders</span><span class="o">$</span><span class="n">AppClassLoader</span><span class="o">.</span><span class="n">loadClass</span><span class="p">(</span><span class="n">ClassLoaders</span><span class="o">.</span><span class="n">java</span><span class="p">:</span><span class="mi">178</span><span class="p">)</span>
-    <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="n">base</span><span class="o">/</span><span class="n">java</span><span class="o">.</span><span class="n">lang</span><span class="o">.</span><span class="n">ClassLoader</span><span class="o">.</span><span class="n">loadClass</span><span class="p">(</span><span class="n">ClassLoader</span><span class="o">.</span><span class="n">java</span><span class="p">:</span><span class="mi">522</span><span class="p">)</span>
-</pre></div>
-
-<p>
-      查找网上的资料，即使设置了 <code>JAVA_OPTS</code>, 但还是有问题，所以我安装 <code>openjdk@8</code> 而不是 <code>openjdk@11</code>
-</p>
-<div class="highlight"><pre><span></span><span class="err">└──╼</span> <span class="k">export</span> <span class="n">JAVA_OPTS</span><span class="o">=</span><span class="s1">&#39;-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee&#39;</span>
-<span class="err">└──╼</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">android</span><span class="o">-</span><span class="n">sdk</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">sdkmanager</span>
-<span class="n">Error</span> <span class="n">occurred</span> <span class="n">during</span> <span class="n">initialization</span> <span class="n">of</span> <span class="n">boot</span> <span class="n">layer</span>
-<span class="n">java</span><span class="o">.</span><span class="n">lang</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">FindException</span><span class="p">:</span> <span class="n">Module</span> <span class="n">java</span><span class="o">.</span><span class="n">se</span><span class="o">.</span><span class="n">ee</span> <span class="ow">not</span> <span class="n">found</span>
-</pre></div>
-
-</li>
-<li>
-<p>
-配置环境变量
-</p>
-<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/local/opt/openjdk@8
-<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$JAVA_HOME</span>/bin:<span class="nv">$PATH</span>
-</pre></div>
-
-<p>
-      如果未设置 <code>JAVA_HOME</code> 环境变量，后续执行 <code>flutter doctor</code> 可能会报
-</p>
-<div class="highlight"><pre><span></span><span class="nv">The</span> <span class="nv">operation</span> <span class="nv">couldn</span>’<span class="nv">t</span> <span class="nv">be</span> <span class="nv">completed</span>. <span class="nv">Unable</span> <span class="nv">to</span> <span class="nv">locate</span> <span class="nv">a</span> <span class="nv">Java</span> <span class="nv">Runtime</span>.
-<span class="nv">Please</span> <span class="nv">visit</span> <span class="nv">http</span>:<span class="o">//</span><span class="nv">www</span>.<span class="nv">java</span>.<span class="nv">com</span> <span class="k">for</span> <span class="nv">information</span> <span class="nv">on</span> <span class="nv">installing</span> <span class="nv">Java</span>.
-</pre></div>
-
-</li>
-</ul>
-<h4 id="org-280148651e">安装android sdk</h4><ul>
-<li>
-<p>
-安装sdk
-</p>
-<div class="highlight"><pre><span></span>└──╼ brew install android-sdk
-</pre></div>
-
-</li>
-<li>
-<p>
-安装sdk组件
-      首先执行 <code>sdkmanager --list</code> 找到组件最新版本或者选择合适版本
-</p>
-<div class="highlight"><pre><span></span><span class="err">└──╼</span> <span class="n">sdkmanager</span> <span class="n">platform</span><span class="o">-</span><span class="n">tools</span>
-<span class="err">└──╼</span> <span class="n">sdkmanager</span> <span class="s1">&#39;platforms;android-29&#39;</span>
-<span class="err">└──╼</span> <span class="n">sdkmanager</span> <span class="s1">&#39;build-tools;31.0.0-rc4&#39;</span>
-<span class="err">└──╼</span> <span class="n">sdkmanager</span> <span class="o">--</span><span class="n">licenses</span>
-</pre></div>
-
-<p>
-      如果未执行 <code>sdkmanager --licenses</code> 并同意相关协议，在执行 <code>flutter doctor</code> 后可能会提示
-</p>
-<div class="highlight"><pre><span></span><span class="p">[</span><span class="o">!</span><span class="p">]</span> <span class="n">Android</span> <span class="n">toolchain</span> <span class="o">-</span> <span class="n">develop</span> <span class="k">for</span> <span class="n">Android</span> <span class="n">devices</span> <span class="p">(</span><span class="n">Android</span> <span class="n">SDK</span> <span class="n">version</span> <span class="mf">31.0</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">rc4</span><span class="p">)</span>
-    <span class="o">!</span> <span class="n">Some</span> <span class="n">Android</span> <span class="n">licenses</span> <span class="ow">not</span> <span class="n">accepted</span><span class="o">.</span>  <span class="n">To</span> <span class="n">resolve</span> <span class="n">this</span><span class="p">,</span> <span class="n">run</span><span class="p">:</span> <span class="n">flutter</span> <span class="n">doctor</span> <span class="o">--</span><span class="n">android</span><span class="o">-</span><span class="n">licenses</span>
-</pre></div>
-
-</li>
-<li>
-<p>
-配置环境变量
-</p>
-<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">ANDROID_SDK_ROOT</span><span class="o">=</span>/usr/local/share/android-sdk
-<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$ANDROID_SDK_ROOT</span>/tools:<span class="nv">$ANDROID_SDK_ROOT</span>/platform-tools:<span class="nv">$PATH</span>
-</pre></div>
-
-</li>
-</ul>
-<h3 id="org-c9ca88e509">初体验</h3><h4 id="org-d39a86f9e3">创建一个新的项目</h4><div class="highlight"><pre><span></span>└──╼ flutter create myapp
-└──╼ cd myapp
-</pre></div>
-
-<p>
-    注意不要在 <b>flutter sdk</b> 目录里创建项目
-</p>
-<div class="highlight"><pre><span></span>Cannot create a project within the Flutter SDK. Target directory &#39;$HOME/repo/flutter/src/myapp&#39; is within the Flutter SDK at
-&#39;$HOME/repo/flutter&#39;.
-</pre></div>
-
-<h4 id="org-ed75b1a649">配置android模拟器</h4><ul>
-<li>
-<p>
-安装模拟器
-</p>
-<div class="highlight"><pre><span></span>└──╼ sdkmanager emulator
-└──╼ sdkmanager <span class="s1">&#39;system-images;android-29;google_apis;x86_64&#39;</span>
-</pre></div>
-
-</li>
-<li>
-<p>
-创建新的android模拟器
-</p>
-<div class="highlight"><pre><span></span>└──╼ avdmanager -s create avd -n testAndroid -k <span class="s2">&quot;system-images;android-29;google_apis;x86_64&quot;</span>
-└──╼ avdmanager list avd
-</pre></div>
-
-</li>
-</ul>
-<h4 id="org-35682d5162">启动flutter项目</h4><ul>
-<li>
-<p>
-启动模拟器
-</p>
-<div class="highlight"><pre><span></span>└──╼ flutter emulators
-<span class="m">1</span> available emulator:
-
-testAndroid • testAndroid •  • android
-
-To run an emulator, run <span class="s1">&#39;flutter emulators --launch &lt;emulator id&gt;&#39;</span>.
-To create a new emulator, run <span class="s1">&#39;flutter emulators --create [--name xyz]&#39;</span>.
-
-You can find more information on managing emulators at the links below:
-https://developer.android.com/studio/run/managing-avds
-https://developer.android.com/studio/command-line/avdmanager
-└──╼ flutter emulators --launch testAndroid
-</pre></div>
-
-</li>
-<li>
-<p>
-查看可用驱动
-</p>
-<div class="highlight"><pre><span></span>└──╼ flutter devices
-<span class="m">2</span> connected devices:
-
-Android SDK built <span class="k">for</span> x86 <span class="m">64</span> <span class="o">(</span>mobile<span class="o">)</span> • emulator-5554 • android-x64    • Android <span class="m">10</span> <span class="o">(</span>API <span class="m">29</span><span class="o">)</span> <span class="o">(</span>emulator<span class="o">)</span>
-Chrome <span class="o">(</span>web<span class="o">)</span>                          • chrome        • web-javascript • Google Chrome <span class="m">90</span>.0.4430.212
-</pre></div>
-
-</li>
-<li>
-<p>
-启动项目
-</p>
-<div class="highlight"><pre><span></span>└──╼ flutter run -d emulator-5554
-</pre></div>
-
-<p>
-      <a href="https://s.libforest.com/images/2021/06/first-flutter.png" data-fancybox="image"><img data-src="https://s.libforest.com/images/2021/06/first-flutter.png" class="lazyload" /></a>
-      至此，我的第一个flutter应用体验完成。
-      很久没学习新的技术，感觉自己都快落伍了，脑子也快生锈了，很早之前就打算自己写一个私人使用的 <code>app</code>，但总抱着一招鲜吃遍天的想法，坚持着熟悉的 <code>vue web app</code>, 而且还道听途说对 <code>flutter</code> 有所怀疑，一直没实际体验过。虽然 <code>vue</code> 足够简单，搭配 <code>cordova</code> 也很方便，但毕竟属于 <code>web app</code>，每种语言或者工具应该都有自己最擅长的领域，比如 <code>vue</code> 之于 web，<code>flutter</code> 至于 移动端app，最重要的是，现在技术更新迭代太快，你不学总有人学，学而不思则罔，思而不学则殆，不思不学只会被淘汰
-</p>
-</li>
-</ul>
-<h3 id="org-a6b5e561ba">FAQ</h3><h4 id="org-a7850a05b9">启动项目报 <code>Operation timed out</code></h4><div class="highlight"><pre><span></span><span class="nv">Using</span> <span class="nv">hardware</span> <span class="nv">rendering</span> <span class="nv">with</span> <span class="nv">device</span> <span class="nv">Android</span> <span class="nv">SDK</span> <span class="nv">built</span> <span class="k">for</span> <span class="nv">x86</span> <span class="mi">64</span>. <span class="k">If</span> <span class="nv">you</span> <span class="nv">notice</span> <span class="nv">graphics</span> <span class="nv">artifacts</span>, <span class="nv">consider</span> <span class="nv">enabling</span> <span class="nv">software</span> <span class="nv">rendering</span> <span class="nv">with</span>
-<span class="s2">&quot;</span><span class="s">--enable-software-rendering</span><span class="s2">&quot;</span>.
-<span class="nv">Launching</span> <span class="nv">lib</span><span class="o">/</span><span class="nv">main</span>.<span class="nv">dart</span> <span class="nv">on</span> <span class="nv">Android</span> <span class="nv">SDK</span> <span class="nv">built</span> <span class="k">for</span> <span class="nv">x86</span> <span class="mi">64</span> <span class="nv">in</span> <span class="nv">debug</span> <span class="nv">mode</span>...
-<span class="nv">Exception</span> <span class="nv">in</span> <span class="nv">thread</span> <span class="s2">&quot;</span><span class="s">main</span><span class="s2">&quot;</span> <span class="nv">java</span>.<span class="nv">net</span>.<span class="nv">ConnectException</span>: <span class="nv">Operation</span> <span class="nv">timed</span> <span class="nv">out</span> <span class="ss">(</span><span class="nv">Connection</span> <span class="nv">timed</span> <span class="nv">out</span><span class="ss">)</span>
-        <span class="nv">at</span> <span class="nv">java</span>.<span class="nv">net</span>.<span class="nv">PlainSocketImpl</span>.<span class="nv">socketConnect</span><span class="ss">(</span><span class="nv">Native</span> <span class="nv">Method</span><span class="ss">)</span>
-        <span class="nv">at</span> <span class="nv">java</span>.<span class="nv">net</span>.<span class="nv">AbstractPlainSocketImpl</span>.<span class="nv">doConnect</span><span class="ss">(</span><span class="nv">AbstractPlainSocketImpl</span>.<span class="nv">java</span>:<span class="mi">350</span><span class="ss">)</span>
-        <span class="nv">at</span> <span class="nv">java</span>.<span class="nv">net</span>.<span class="nv">AbstractPlainSocketImpl</span>.<span class="nv">connectToAddress</span><span class="ss">(</span><span class="nv">AbstractPlainSocketImpl</span>.<span class="nv">java</span>:<span class="mi">206</span><span class="ss">)</span>
-        ......
-        <span class="nv">at</span> <span class="nv">org</span>.<span class="nv">gradle</span>.<span class="nv">wrapper</span>.<span class="nv">WrapperExecutor</span>.<span class="nv">execute</span><span class="ss">(</span><span class="nv">WrapperExecutor</span>.<span class="nv">java</span>:<span class="mi">128</span><span class="ss">)</span>
-        <span class="nv">at</span> <span class="nv">org</span>.<span class="nv">gradle</span>.<span class="nv">wrapper</span>.<span class="nv">GradleWrapperMain</span>.<span class="nv">main</span><span class="ss">(</span><span class="nv">GradleWrapperMain</span>.<span class="nv">java</span>:<span class="mi">61</span><span class="ss">)</span>
-<span class="nv">Running</span> <span class="nv">Gradle</span> <span class="nv">task</span> <span class="s1">&#39;</span><span class="s">assembleDebug</span><span class="s1">&#39;</span>...
-<span class="nv">Running</span> <span class="nv">Gradle</span> <span class="nv">task</span> <span class="s1">&#39;</span><span class="s">assembleDebug</span><span class="s1">&#39;</span>... <span class="nv">Done</span>                        <span class="mi">76</span>.<span class="mi">2</span><span class="nv">s</span>
-<span class="nv">Exception</span>: <span class="nv">Gradle</span> <span class="nv">task</span> <span class="nv">assembleDebug</span> <span class="nv">failed</span> <span class="nv">with</span> <span class="k">exit</span> <span class="nv">code</span> <span class="mi">1</span>
-</pre></div>
-
-<p>
-    这是因为无法下载 <code>gradle</code> 的包和依赖，需要科学上网或者修改为国内源
-</p>
-<ol>
-<li>
-<p>
- 修改项目目录下的 <code>android/gradle/wrapper/gradle-wrapper.properties</code> 文件
-</p>
-<div class="highlight"><pre><span></span>- distributionUrl=https\://services.gradle.org/distributions/gradle-6.7-all.zip
-+ distributionUrl=https\://mirrors.cloud.tencent.com/gradle/gradle-6.7-all.zip
-</pre></div>
-
-</li>
-<li>
-<p>
- 修改项目目录下 <code>android/build.gradle</code>
-</p>
-<div class="highlight"><pre><span></span>- google()
-- jcenter()
-+ maven { url &#39;https://maven.aliyun.com/repository/google&#39; }
-+ maven { url &#39;https://maven.aliyun.com/repository/jcenter&#39; }
-+ maven { url &#39;http://maven.aliyun.com/nexus/content/groups/public&#39; }
-</pre></div>
-
-</li>
-<li>
-<p>
- 修改 <b>flutter sdk</b> 目录下 <code>packages/flutter_tools/gradle/flutter.gradle</code>
-</p>
-<div class="highlight"><pre><span></span><span class="n">buildscript</span> <span class="p">{</span>
-     <span class="n">repositories</span> <span class="p">{</span>
-<span class="o">!</span>        <span class="o">//</span> <span class="n">google</span><span class="p">()</span>
-<span class="o">!</span>        <span class="o">//</span> <span class="n">jcenter</span><span class="p">()</span>
-<span class="o">!</span>        <span class="n">maven</span> <span class="p">{</span>
-<span class="o">!</span>            <span class="n">url</span> <span class="s1">&#39;https://maven.aliyun.com/repository/jcenter&#39;</span>
-<span class="o">!</span>        <span class="p">}</span>
-<span class="o">!</span>        <span class="n">maven</span> <span class="p">{</span>
-<span class="o">!</span>            <span class="n">url</span> <span class="s1">&#39;http://maven.aliyun.com/nexus/content/groups/public&#39;</span>
-<span class="o">!</span>        <span class="p">}</span>
-<span class="o">!</span>        <span class="n">maven</span> <span class="p">{</span>
-<span class="o">!</span>            <span class="n">url</span> <span class="s1">&#39;https://maven.aliyun.com/repository/google&#39;</span>
-<span class="o">!</span>        <span class="p">}</span>
-     <span class="p">}</span>
-     <span class="n">dependencies</span> <span class="p">{</span>
-         <span class="n">classpath</span> <span class="s1">&#39;com.android.tools.build:gradle:4.1.0&#39;</span>
-     <span class="p">}</span>
- <span class="p">}</span>
-</pre></div>
-
-</li>
-</ol>
-<h3 id="org-7862e4530c">参考文档</h3><ul>
-<li>
-<p>
-https://flutter.cn/docs/get-started/install/macos
-</p>
-</li>
-<li>
-<p>
-https://blog.csdn.net/xiuxiuxiubiubiubiu/article/details/104918561
-</p>
-</li>
-<li>
-<p>
-https://www.cnblogs.com/bluestorm/p/14761482.html
-</p>
-</li>
-</ul>
+Flutter 2.2.1 …</pre></div></li></ul>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2021/06/flutter笔记之初体验.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/05/GNS3笔记.html" rel="bookmark" title="Permalink to GNS3笔记">GNS3笔记</a></h1>
@@ -621,7 +476,7 @@ pyenv: 1.2.23
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2020/08/golang笔记之interface类型判断性能.html" rel="bookmark" title="Permalink to golang笔记之interface类型判断性能">golang笔记之interface类型判断性能</a></h1>
 <header class="entry-info">
-  <span title="Updated at 2021-05-31">
+  <span title="Updated at 2021-08-27">
     <i class="fa fa-calendar-o"></i>
     五 21 八月 2020
   </span>
@@ -667,19 +522,15 @@ pyenv: 1.2.23
     <span class="nx">a</span><span class="p">.</span><span class="nx">v</span> <span class="o">+=</span> <span class="mi">1</span>
 <span class="p">}</span>
 
-<span class="kd">type</span> <span class="nx">B</span> <span class="kd">struct</span> <span class="p">{</span>
-    <span class="nx">v</span> <span class="kt">int</span>
-<span class="p">}</span>
+<span class="kd">func</span> <span class="nx">BenchmarkTypeSwitch</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">A</span><span class="p">)</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">B</span><span class="p">)</span> <span class="nx">BB</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nx">b</span><span class="p">.</span><span class="nx">v</span> <span class="o">+=</span> <span class="mi">1</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">TypeSwitch</span><span class="p">(</span><span class="nx">v</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
-    <span class="k">switch</span> <span class="nx">v</span><span class="p">.(</span><span class="kd">type</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="nx">InterfaceA</span><span class="p">:</span>
-        <span class="nx">v</span><span class="p">.(</span><span class="nx">InterfaceA</span><span class="p">).</span><span class="nx">AA</span><span class="p">()</span>
-    <span class="k">case …</span></pre></div>
+    <span class="nx">switchFunc</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">v</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+        <span class="k">switch</span> <span class="nx">v</span><span class="p">.(</span><span class="kd">type</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="nx">InterfaceA</span><span class="p">:</span>
+            <span class="nx">v</span><span class="p">.(</span><span class="nx">InterfaceA</span><span class="p">).</span><span class="nx">AA</span><span class="p">()</span>
+        <span class="k">case</span> <span class="nx">InterfaceB</span><span class="p">:</span>
+            <span class="nx">v</span><span class="p">.(</span><span class="nx">InterfaceB …</span></pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/08/golang笔记之interface类型判断性能.html">阅读全文 »</a>
@@ -838,173 +689,6 @@ pyenv: 1.2.23
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/01/KVM笔记之磁盘扩容.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2020/01/KVM笔记之增量镜像.html" rel="bookmark" title="Permalink to KVM笔记之增量镜像">KVM笔记之增量镜像</a></h1>
-<header class="entry-info">
-  <span title="Updated at 2020-08-09">
-    <i class="fa fa-calendar-o"></i>
-    一 06 一月 2020
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tags/kvm/index.html">kvm</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content entry-summary">
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
-<ul>
-<li><a href="#org-7fd6cdfa82">增量镜像</a>
-<ul>
-<li><a href="#org-912d221749">基础环境准备</a></li>
-<li><a href="#org-9b69b8cf2d">创建增量镜像</a></li>
-<li><a href="#org-0168a908c3">创建KVM虚拟机</a>
-<ul>
-<li><a href="#org-7819125e6d">手动创建</a></li>
-<li><a href="#org-521ab0477d">使用virt-install创建</a></li>
-</ul>
-</li>
-<li><a href="#org-490b8928bc">测试增量镜像</a></li>
-</ul>
-</li>
-<li><a href="#org-f64bfae8d1"><span class="todo">TODO</span>快照与增量镜像</a></li>
-<li><a href="#org-a2035894d2">参考资料</a></li>
-</ul>
-</div></div>
-<h2 id="org-7fd6cdfa82">增量镜像</h2><p>
-  增量镜像即保持一个基础的镜像不变，在此基础镜像上安装或修改相应的服务所创建的一个单独的镜像，增量镜像类似GIT，只记录当前KVM的修改记录，这样可以节省磁盘空间，快速复制虚拟机
-</p>
-<h3 id="org-912d221749">基础环境准备</h3><ul>
-<li>
-<p>
-KVM基础环境
-</p>
-</li>
-<li>
-<p>
-基础镜像 <b>ubuntu-base.qcow2</b>
-</p>
-</li>
-</ul>
-<h3 id="org-9b69b8cf2d">创建增量镜像</h3><p>
-   首先基于基础镜像 <b>ubuntu-base.qcow2</b> 创建一个增量镜像 <b>ubuntu-test.qcow2</b>
-</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>宿主机<span class="o">)</span> <span class="c1"># qemu-img info /home/kvm/images/ubuntu-base.qcow2</span>
-image: ubuntu-base.qcow2
-file format: qcow2
-virtual size: <span class="m">4 …</span></pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/01/KVM笔记之增量镜像.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2019/07/macos初始化设置.html" rel="bookmark" title="Permalink to macos初始化设置">macos初始化设置</a></h1>
-<header class="entry-info">
-  <span title="Updated at 2021-05-22">
-    <i class="fa fa-calendar-o"></i>
-    日 28 七月 2019
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tags/macos/index.html">macos</a>
-        <a href="https://honmaple.me/tags/brew/index.html">brew</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content entry-summary">
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
-<ul>
-<li><a href="#org-72796dc253">安装homebrew</a>
-<ul>
-<li><a href="#org-082bfc23a3">切换中国源</a></li>
-<li><a href="#org-9a19d98555">恢复官方源</a></li>
-</ul>
-</li>
-<li><a href="#org-36700f4242">brew更新</a></li>
-<li><a href="#org-6694bfcab1">macos使用深色菜单栏</a></li>
-<li><a href="#org-5130519617">安装powerline字体</a></li>
-<li><a href="#org-ed5a490d63">禁止.DS_store生成</a></li>
-<li><a href="#org-d51cc3a14f">移动文件</a></li>
-<li><a href="#org-8d838c32fc">复制文本到终端出现00~xxxx01~字符</a></li>
-<li><a href="#org-5eb084abf1">查看监听端口</a></li>
-</ul>
-</div></div>
-<h3 id="org-72796dc253">安装homebrew</h3><ul>
-<li>
-<p>
-安装命令行tools
-</p>
-<div class="highlight"><pre><span></span>xcode-install
-</pre></div>
-
-<div class="highlight"><pre><span></span>curl &gt;&gt; brew_install
-</pre></div>
-
-</li>
-<li>
-<p>
-修改REPO地址
-</p>
-</li>
-<li>
-<p>
-执行安装
-</p>
-<div class="highlight"><pre><span></span>ruby brew_install
-</pre></div>
-
-</li>
-</ul>
-<p>
-   homebrew cask
-</p>
-<p>
-   使用git clone 中科大到指定目录
-</p>
-<p>
-   homebrew卸载依赖, 使用homebrew tap xxx/rmtree
-</p>
-<div class="highlight"><pre><span></span>brew rmtree emacs
-</pre></div>
-
-<p>
-   App Store 安装 QQ,微信，网易云音乐
-   Brew cask 安装 git, google-chrome …</p>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2019/07/macos初始化设置.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">
