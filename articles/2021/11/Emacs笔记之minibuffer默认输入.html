@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GNS3笔记 · 紅楓吟</title>
+    <title>Emacs笔记之minibuffer默认输入 · 紅楓吟</title>
       <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
   </head>
@@ -58,11 +58,11 @@
   </div>
 </nav>  <article>
     <div class="entry-header">
-      <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/05/GNS3笔记.html">GNS3笔记</a></h1>
+      <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/11/Emacs笔记之minibuffer默认输入.html">Emacs笔记之minibuffer默认输入</a></h1>
 <header class="entry-info">
-  <span title="Updated at 2021-11-24">
+  <span title="Updated at 2021-11-25">
     <i class="fa fa-calendar-o"></i>
-    二 11 五月 2021
+    四 25 十一月 2021
   </span>
     <span class="entry-info-sep hidden-xs">|</span>
     <span class="hidden-xs">
@@ -79,92 +79,60 @@
       <i class="fa fa-bookmark-o"></i>
       0f
         <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tags/gns3/index.html">gns3</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
     </span>
 
 </header>    </div>
     <hr class="entry-hr" />
     <div class="entry-content">
-      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
-<ul>
-<li><a href="#org-d4aed5f51a">GNS3 VM导入</a></li>
-<li><a href="#org-ea9d71540d">禁用广告与数据采集</a></li>
-<li><a href="#org-2b4c9310c8">启用basic auth</a></li>
-</ul>
-</div></div>
-<h3 id="org-d4aed5f51a">GNS3 VM导入</h3><div class="highlight"><pre><span></span>virt-install  --name gns3  --memory <span class="m">8192</span>  --vcpus <span class="m">4</span>  --disk /home/kvm/GNS3/GNS3VM-disk001.qcow2  --disk /home/kvm/GNS3/GNS3VM-disk002.qcow2  --import --virt-type kvm --os-type linux --os-variant ubuntu18.04 --network default --graphics vnc,listen<span class="o">=</span><span class="m">0</span>.0.0.0,password<span class="o">=</span>foobar,port<span class="o">=</span><span class="m">5910</span> --noautoconsole --hvm
+      
+<blockquote>
+<p>
+在使用 <b>evil-ex</b>，也就是冒号+命令时，有一个非常有趣的功能，输入冒号后，<b>minibuffer</b> 会显示上一次执行的命令，比如 <code>:wq</code>, 确认可以直接执行这个命令，但是输入任意字符，就会把原先的 <code>wq</code> 直接覆盖，接收新的命令输入
+</p>
+</blockquote>
+<p>
+我觉得这是一个非常有趣且有用的功能，像 <code>read-string</code> 函数，如果我想要一个默认的输入，可以直接使用
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">input</span> <span class="p">(</span><span class="nf">read-string</span> <span class="s">&quot;prompt: &quot;</span> <span class="s">&quot;默认内容&quot;</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
 </pre></div>
 
-<h3 id="org-ea9d71540d">禁用广告与数据采集</h3><ul>
-<li>
 <p>
-禁用错误报告
+但我想覆盖这个默认, 则需要先把 <code>默认内容</code> 删除，再输入我想要的字符, 如果不想先删除默认再输入，还可以使用
 </p>
-<p>
-     找到 <code>~/.config/GNS3/2.2/gns3_server.conf</code>, 在 <code>[Server]</code> 块中添加
-</p>
-<div class="highlight"><pre><span></span><span class="k">[Server]</span>
-<span class="na">...</span>
-<span class="na">report_errors</span> <span class="o">=</span> <span class="s">False</span>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">input</span> <span class="p">(</span><span class="nf">read-string</span> <span class="s">&quot;prompt: &quot;</span> <span class="no">nil</span> <span class="no">nil</span> <span class="s">&quot;默认内容&quot;</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
 </pre></div>
 
-</li>
-<li>
 <p>
-禁用google分析
+但是这样的话我无法看到默认的内容，当然，也许可以把默认内容追加到 <code>prompt</code> 里，我认为这样不太好看，不是吗
 </p>
-<p>
-     找到 <code>/usr/local/lib/python3.8/dist-packages/gns3server/static/web-ui/index.html</code> , 注释google分析相关代码
-</p>
-<div class="highlight"><pre><span></span><span class="c">&lt;!-- &lt;script async=&quot;&quot; src=&quot;https://www.googletagmanager.com/gtag/js?id=G-5D6FZL9923&quot;&gt;&lt;/script&gt; --&gt;</span>
-<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
-  <span class="nb">window</span><span class="p">.</span><span class="nx">dataLayer</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">dataLayer</span> <span class="o">||</span> <span class="p">[];</span>
-  <span class="kd">function</span> <span class="nx">gtag</span><span class="p">()</span> <span class="p">{</span>
-  <span class="nx">dataLayer</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);</span>
-  <span class="p">}</span>
-  <span class="nx">gtag</span><span class="p">(</span><span class="s1">&#39;js&#39;</span><span class="p">,</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">());</span>
-
-  <span class="c1">// gtag(&#39;config&#39;, &#39;G-5D6FZL9923&#39;);</span>
-<span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let*</span> <span class="p">((</span><span class="nv">default</span> <span class="s">&quot;默认内容&quot;</span><span class="p">)</span>
+       <span class="p">(</span><span class="nv">input</span> <span class="p">(</span><span class="nf">read-string</span> <span class="p">(</span><span class="nf">format</span> <span class="s">&quot;prompt (default %s): &quot;</span> <span class="nv">default</span><span class="p">)</span> <span class="no">nil</span> <span class="no">nil</span> <span class="nv">default</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
 </pre></div>
 
-</li>
-<li>
 <p>
-禁用错误跟踪
+<code>evil-ex</code> 提示我一个新的解决方式, 通过查看 <code>evil-ex</code> 源码，可以发现它是使用 <code>minibuffer-with-setup-hook</code> 和 <code>after-change-functions</code> 在<b>minibuffer</b>里插入新内容时先清理默认内容, 再插入新内容, 我照葫芦画瓢并简化了相关代码
 </p>
-<p>
-     找到 <code>/usr/local/lib/python3.8/dist-packages/gns3server/static/web-ui</code> 目录下的 <code>main.xxxx.js</code>
-</p>
-<div class="highlight"><pre><span></span><span class="n">sudo</span><span class="w"> </span><span class="n">sed</span><span class="w"> </span><span class="o">-</span><span class="n">i</span><span class="w"> </span><span class="s1">&#39;s%https://d8be3a98530f49eb90968ff396db326c@o19455.ingest.sentry.io/842726%%g&#39;</span><span class="w"> </span><span class="n">main</span><span class="mf">.2</span><span class="n">f0314a517dded67879c</span><span class="p">.</span><span class="n">js</span><span class="w"></span>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">input</span> <span class="p">(</span><span class="nv">minibuffer-with-setup-hook</span> <span class="ss">&#39;maple-input-setup</span>
+               <span class="p">(</span><span class="nf">read-string</span> <span class="s">&quot;prompt: &quot;</span> <span class="p">(</span><span class="nf">propertize</span> <span class="s">&quot;默认内容&quot;</span> <span class="ss">&#39;face</span> <span class="ss">&#39;shadow</span><span class="p">)))))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple-input-setup</span><span class="p">()</span>
+  <span class="p">(</span><span class="nv">add-hook</span> <span class="ss">&#39;after-change-functions</span> <span class="ss">&#39;maple-input-update</span> <span class="no">nil</span> <span class="no">t</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple-input-update</span><span class="p">(</span><span class="kp">&amp;optional</span> <span class="nv">beg</span> <span class="nv">end</span> <span class="nv">len</span> <span class="nf">string</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nf">string</span> <span class="p">(</span><span class="nf">buffer-substring-no-properties</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nv">delete-minibuffer-contents</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">insert</span> <span class="nf">string</span><span class="p">)</span>
+    <span class="p">(</span><span class="nv">remove-hook</span> <span class="ss">&#39;after-change-functions</span> <span class="ss">&#39;maple-input-update</span> <span class="no">t</span><span class="p">)))</span>
 </pre></div>
 
-</li>
-<li>
 <p>
-禁用广告
+OK, 就这样
 </p>
-<p>
-     同样找到 <code>/usr/local/lib/python3.8/dist-packages/gns3server/static/web-ui</code> 目录下的 <code>main.xxxx.js</code>
-</p>
-<div class="highlight"><pre><span></span><span class="nt">sudo</span> <span class="nt">sed</span> <span class="nt">-i</span> <span class="s1">&#39;s%https://servedbyadbutler.com/adserve/;ID=165803;size=0x0;setID=371476;type=json;%%g&#39;</span> <span class="nt">main</span><span class="p">.</span><span class="nc">2f0314a517dded67879c</span><span class="p">.</span><span class="nc">js</span>
-</pre></div>
-
-</li>
-</ul>
-<p>
-   <b>然后重启服务即可 <code>sudo systemctl restart gns3</code></b>
-</p>
-<h3 id="org-2b4c9310c8">启用basic auth</h3><p>
-     找到 <code>~/.config/GNS3/2.2/gns3_server.conf</code>, 在 <code>[Server]</code> 块中添加
-</p>
-<div class="highlight"><pre><span></span><span class="k">[Server]</span>
-<span class="na">...</span>
-<span class="na">auth</span> <span class="o">=</span> <span class="s">True</span>
-<span class="na">user</span> <span class="o">=</span> <span class="s">gns3</span>
-<span class="na">password</span> <span class="o">=</span> <span class="s">gns3</span>
-</pre></div>
-
     </div>
 <div class="entry-copyright">
   <div>
@@ -175,7 +143,7 @@
   <div>
     <i class="fa fa-link"></i>
     链接:
-    <a href="https://honmaple.me/articles/2021/05/GNS3笔记.html">https://honmaple.me/articles/2021/05/GNS3笔记.html</a>
+    <a href="https://honmaple.me/articles/2021/11/Emacs笔记之minibuffer默认输入.html">https://honmaple.me/articles/2021/11/Emacs笔记之minibuffer默认输入.html</a>
   </div>
   <div>
     <i class="fa fa-copyright"></i>
@@ -206,15 +174,9 @@
   </div>
 </div>    <hr class="entry-hr" />
     <ul class="entry-pager">
-        <li class="previous">
-          <a href="https://honmaple.me/articles/2021/06/flutter笔记之初体验.html" title="Previous article: flutter笔记之初体验">
-            <i class="fa fa-chevron-left"></i>
-            flutter笔记之初体验
-          </a>
-        </li>
         <li class="next">
-          <a href="https://honmaple.me/articles/2021/04/公共DNS.html" title="Next article: 公共DNS">
-            公共DNS
+          <a href="https://honmaple.me/articles/2021/08/Docker笔记之registry清理.html" title="Next article: Docker笔记之registry清理">
+            Docker笔记之registry清理
             <i class="fa fa-chevron-right"></i>
           </a>
         </li>
@@ -223,7 +185,7 @@
         <div class="text-center">
           <a class="btn entry-read-more entry-comment">加载评论</a>
         </div>
-        <div id="comment_thread" issue-term="GNS3笔记"></div>
+        <div id="comment_thread" issue-term="Emacs笔记之minibuffer默认输入"></div>
       </div>
   </article>
       </div>

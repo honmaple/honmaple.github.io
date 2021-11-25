@@ -59,8 +59,88 @@
 </nav>        <article>
           <div class="entry-header">
             <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2021/08/Docker笔记之registry清理.html" rel="bookmark" title="Permalink to Docker笔记之registry清理">Docker笔记之registry清理</a>
+              <a href="https://honmaple.me/articles/2021/11/Emacs笔记之minibuffer默认输入.html" rel="bookmark" title="Permalink to Emacs笔记之minibuffer默认输入">Emacs笔记之minibuffer默认输入</a>
             </h1>
+<header class="entry-info">
+  <span title="Updated at 2021-11-25">
+    <i class="fa fa-calendar-o"></i>
+    四 25 十一月 2021
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content entry-summary">
+            
+<blockquote>
+<p>
+在使用 <b>evil-ex</b>，也就是冒号+命令时，有一个非常有趣的功能，输入冒号后，<b>minibuffer</b> 会显示上一次执行的命令，比如 <code>:wq</code>, 确认可以直接执行这个命令，但是输入任意字符，就会把原先的 <code>wq</code> 直接覆盖，接收新的命令输入
+</p>
+</blockquote>
+<p>
+我觉得这是一个非常有趣且有用的功能，像 <code>read-string</code> 函数，如果我想要一个默认的输入，可以直接使用
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">input</span> <span class="p">(</span><span class="nf">read-string</span> <span class="s">&quot;prompt: &quot;</span> <span class="s">&quot;默认内容&quot;</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
+</pre></div>
+
+<p>
+但我想覆盖这个默认, 则需要先把 <code>默认内容</code> 删除，再输入我想要的字符, 如果不想先删除默认再输入，还可以使用
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">input</span> <span class="p">(</span><span class="nf">read-string</span> <span class="s">&quot;prompt: &quot;</span> <span class="no">nil</span> <span class="no">nil</span> <span class="s">&quot;默认内容&quot;</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
+</pre></div>
+
+<p>
+但是这样的话我无法看到默认的内容，当然，也许可以把默认内容追加到 <code>prompt</code> 里，我认为这样不太好看，不是吗
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let*</span> <span class="p">((</span><span class="nv">default</span> <span class="s">&quot;默认内容&quot;</span><span class="p">)</span>
+       <span class="p">(</span><span class="nv">input</span> <span class="p">(</span><span class="nf">read-string</span> <span class="p">(</span><span class="nf">format</span> <span class="s">&quot;prompt (default %s): &quot;</span> <span class="nv">default</span><span class="p">)</span> <span class="no">nil</span> <span class="no">nil</span> <span class="nv">default</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
+</pre></div>
+
+<p>
+<code>evil-ex</code> 提示我一个新的解决方式, 通过查看 <code>evil-ex</code> 源码，可以发现它是使用 <code>minibuffer-with-setup-hook</code> 和 <code>after-change-functions</code> 在<b>minibuffer</b>里插入新内容时先清理默认内容, 再插入新内容, 我照葫芦画瓢并简化了相关代码
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">input</span> <span class="p">(</span><span class="nv">minibuffer-with-setup-hook</span> <span class="ss">&#39;maple-input-setup</span>
+               <span class="p">(</span><span class="nf">read-string</span> <span class="s">&quot;prompt: &quot;</span> <span class="p">(</span><span class="nf">propertize</span> <span class="s">&quot;默认内容&quot;</span> <span class="ss">&#39;face</span> <span class="ss">&#39;shadow</span><span class="p">)))))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple-input-setup</span><span class="p">()</span>
+  <span class="p">(</span><span class="nv">add-hook</span> <span class="ss">&#39;after-change-functions</span> <span class="ss">&#39;maple-input-update</span> <span class="no">nil</span> <span class="no">t</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple-input-update</span><span class="p">(</span><span class="kp">&amp;optional</span> <span class="nv">beg</span> <span class="nv">end</span> <span class="nv">len</span> <span class="nf">string</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nf">string</span> <span class="p">(</span><span class="nf">buffer-substring-no-properties</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nv">delete-minibuffer-contents</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">insert</span> <span class="nf">string</span><span class="p">)</span>
+    <span class="p">(</span><span class="nv">remove-hook</span> <span class="ss">&#39;after-change-functions</span> <span class="ss">&#39;maple-input-update</span> <span class="no">t</span><span class="p">)))</span>
+</pre></div>
+
+<p>
+OK, 就这样
+</p>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/08/Docker笔记之registry清理.html" rel="bookmark" title="Permalink to Docker笔记之registry清理">Docker笔记之registry清理</a></h1>
 <header class="entry-info">
   <span title="Updated at 2021-09-02">
     <i class="fa fa-calendar-o"></i>
@@ -109,60 +189,12 @@
   两年前分给了 <b>docker registry</b> 1T的磁盘，虽然有预感磁盘空间会被用完, 没想过能够坚持这么久。
   而且期间一直想把 <b>registry</b> 迁移到 <b>harbor</b>，也能对不同账户的权限进行分配和限制，但几百G的磁盘占用也不好迁移，所以一直被耽搁(迁移方式都准备好了 <a href="https://blog.k8s.li/docker-registry-to-harbor.html">https://blog.k8s.li/docker-registry-to-harbor.html</a>
 </p>
-<h2 id="org-4e20ec6419">清理</h2><h3 id="org-ccd330ca3c">列出所有镜像</h3><div class="highlight"><pre><span></span><span class="n">registry</span> <span class="n">garbage</span><span class="o">-</span><span class="n">collect</span> <span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span><span class="n">registry</span><span class="o">/</span><span class="n">config</span><span class="p">.</span><span class="n">yml</span> <span class="o">&gt;&gt;</span> <span class="n">res</span><span class="p">.</span><span class="n">txt</span>
-</pre></div>
-
-<h3 id="org-d48c64abaa">找出分层(push次数)最多的几个镜像</h3><div class="highlight"><pre><span></span>cat res.txt | awk -F : &#39;{print $1}&#39; | sort | uniq -c | sort -rn -k1 | head -10
-  25871 image1
-  25649 image2
-  16815 image3
-  ...
-</pre></div>
-
-<h3 id="org-1d12df6e7c">删除某个镜像的untagged的数据</h3><p>
-   注意 <code>-u</code> 参数, 仅删除 <b>untagger</b> 的数据
-</p>
-<ol>
-<li>
-<p>
- dry-run
-</p>
-<div class="highlight"><pre><span></span><span class="n">REGISTRY_DATA_DIR</span><span class="o">=/</span><span class="k">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">registry</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span><span class="n">registry</span><span class="o">/</span><span class="n">v2</span> <span class="n">python</span> <span class="n">delete_docker_registry_image</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">image</span> <span class="n">image1</span> <span class="o">-</span><span class="n">u</span> <span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span>
-</pre></div>
-
-</li>
-<li>
-<p>
- 实际删除(<b>需要先暂停registry</b>)
-</p>
-<div class="highlight"><pre><span></span><span class="n">REGISTRY_DATA_DIR</span><span class="o">=/</span><span class="k">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">registry</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span><span class="n">registry</span><span class="o">/</span><span class="n">v2</span> <span class="n">python</span> <span class="n">delete_docker_registry_image</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">image</span> <span class="n">image1</span> <span class="o">-</span><span class="n">u</span>
-</pre></div>
-
-</li>
-<li>
-<p>
- 查看磁盘占用(<b>恢复registry</b>)
-</p>
-<p>
-      发现磁盘占用的大头还是这些 <b>untagged</b> 的数据， 仅仅处理了几个分层数量最多的镜像，一下子多了几百G的空间
-</p>
-</li>
-</ol>
-<h2 id="org-a2035894d2">参考资料</h2><ul>
-<li>
-<p>
-<a href="https://zhuanlan.zhihu.com/p/48009377">https://zhuanlan.zhihu.com/p/48009377</a>
-</p>
-</li>
-<li>
-<p>
-<a href="https://github.com/burnettk/delete-docker-registry-image">https://github.com/burnettk/delete-docker-registry-image</a>
-</p>
-</li>
-</ul>
+<h2 id="org-4e20ec6419">清理</h2><h3 id="org-ccd330ca3c">列出所有镜像</h3><div class="highlight"><pre><span></span><span class="n">registry</span> <span class="n">garbage</span><span class="o">-</span><span class="n">collect</span> <span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span><span class="n">registry</span><span class="o">/</span><span class="n">config</span><span class="p">.</span><span class="n">yml</span> <span class="o">&gt;&gt;</span> <span class="n">res</span><span class="p">.</span><span class="n">txt …</span></pre></div>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2021/08/Docker笔记之registry清理.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/07/K8S笔记之ingress增加验证.html" rel="bookmark" title="Permalink to K8S笔记之ingress增加验证">K8S笔记之ingress增加验证</a></h1>
@@ -308,7 +340,7 @@ Flutter 2.2.1 …</pre></div></li></ul>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/05/GNS3笔记.html" rel="bookmark" title="Permalink to GNS3笔记">GNS3笔记</a></h1>
 <header class="entry-info">
-  <span title="Updated at 2021-05-17">
+  <span title="Updated at 2021-11-24">
     <i class="fa fa-calendar-o"></i>
     二 11 五月 2021
   </span>
@@ -337,9 +369,10 @@ Flutter 2.2.1 …</pre></div></li></ul>
 <ul>
 <li><a href="#org-d4aed5f51a">GNS3 VM导入</a></li>
 <li><a href="#org-ea9d71540d">禁用广告与数据采集</a></li>
+<li><a href="#org-2b4c9310c8">启用basic auth</a></li>
 </ul>
 </div></div>
-<h3 id="org-d4aed5f51a">GNS3 VM导入</h3><div class="highlight"><pre><span></span>virt-install  --name gns3  --memory <span class="m">8192</span>  --vcpus <span class="m">4</span>  --disk /home/kvm/GNS3/GNS3VM-disk001.qcow2  --disk /home/kvm/GNS3/GNS3VM-disk002.qcow2  --import --virt-type kvm --os-type linux --os-variant ubuntu18.04 --network default --graphics vnc,listen<span class="o">=</span><span class="m">0</span>.0.0.0,password<span class="o">=</span>foobar,port<span class="o">=</span><span class="m">5910</span> --noautoconsole …</pre></div>
+<h3 id="org-d4aed5f51a">GNS3 VM导入</h3><div class="highlight"><pre><span></span>virt-install  --name gns3  --memory <span class="m">8192</span>  --vcpus <span class="m">4</span>  --disk /home/kvm/GNS3/GNS3VM-disk001.qcow2  --disk /home/kvm/GNS3/GNS3VM-disk002.qcow2  --import --virt-type kvm --os-type linux --os-variant ubuntu18.04 --network default --graphics vnc,listen<span class="o">=</span><span class="m">0</span>.0.0.0,password<span class="o">=</span>foobar,port …</pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2021/05/GNS3笔记.html">阅读全文 »</a>
@@ -605,90 +638,6 @@ pyenv: 1.2.23
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/02/K8S笔记之私有仓库搭建.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2020/01/KVM笔记之磁盘扩容.html" rel="bookmark" title="Permalink to KVM笔记之磁盘扩容">KVM笔记之磁盘扩容</a></h1>
-<header class="entry-info">
-  <span title="Updated at 2020-12-17">
-    <i class="fa fa-calendar-o"></i>
-    四 09 一月 2020
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tags/kvm/index.html">kvm</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content entry-summary">
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
-<ul>
-<li><a href="#org-5d285b7612">磁盘扩容</a>
-<ul>
-<li><a href="#org-35e40d226a">关闭KVM虚拟机</a></li>
-<li><a href="#org-20b3a390bc">扩容磁盘</a>
-<ul>
-<li><a href="#org-f9608c0b5f">查看磁盘位置</a></li>
-<li><a href="#org-dac0a691da">查看磁盘信息</a></li>
-<li><a href="#org-bb346a56be">扩容磁盘大小</a></li>
-</ul>
-</li>
-<li><a href="#org-5c63b6736f">扩容虚拟机分区</a>
-<ul>
-<li><a href="#org-edd2b15cbf">启动虚拟机</a></li>
-<li><a href="#org-23d40038ff">查看磁盘大小和格式</a></li>
-<li><a href="#org-20b3a390bc">扩容磁盘</a></li>
-<li><a href="#org-0300dc05b5"><span class="todo">DONE</span>LVM磁盘扩容</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#org-94fa03a8b3">磁盘挂载</a>
-<ul>
-<li><a href="#org-36e79feb69">创建磁盘</a></li>
-<li><a href="#org-ee3161eca3">挂载磁盘</a>
-<ul>
-<li><a href="#org-a4902b33b9">挂载命令</a></li>
-<li><a href="#org-80c2028d42">卸载命令</a></li>
-</ul>
-</li>
-<li><a href="#org-af22e5d86f">格式化磁盘</a>
-<ul>
-<li><a href="#org-eb1558edf7">格式化分区</a></li>
-<li><a href="#org-9422da9e85">格式化文件系统</a></li>
-<li><a href="#org-ee3161eca3">挂载磁盘</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#org-a6b5e561ba">FAQ</a>
-<ul>
-<li><a href="#org-cbbcb30941">unexpected output in sfdisk --version</a></li>
-<li><a href="#org-484efec8d5">DOS partition table format cannot be used on drives for volumes larger than 2T</a></li>
-</ul>
-</li>
-<li><a href="#org-28464e090b">参考链接</a></li>
-</ul>
-</div></div>
-<h2 id="org-5d285b7612">磁盘扩容</h2><h3 id="org-35e40d226a">关闭KVM虚拟机</h3><div class="highlight"><pre><span></span>virsh shutdown …</pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/01/KVM笔记之磁盘扩容.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">

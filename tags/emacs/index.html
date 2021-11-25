@@ -59,8 +59,88 @@
 </nav>        <article>
           <div class="entry-header">
             <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2019/07/elisp生成渐变XPM图片.html" rel="bookmark" title="Permalink to elisp生成渐变XPM图片">elisp生成渐变XPM图片</a>
+              <a href="https://honmaple.me/articles/2021/11/Emacs笔记之minibuffer默认输入.html" rel="bookmark" title="Permalink to Emacs笔记之minibuffer默认输入">Emacs笔记之minibuffer默认输入</a>
             </h1>
+<header class="entry-info">
+  <span title="Updated at 2021-11-25">
+    <i class="fa fa-calendar-o"></i>
+    四 25 十一月 2021
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content entry-summary">
+            
+<blockquote>
+<p>
+在使用 <b>evil-ex</b>，也就是冒号+命令时，有一个非常有趣的功能，输入冒号后，<b>minibuffer</b> 会显示上一次执行的命令，比如 <code>:wq</code>, 确认可以直接执行这个命令，但是输入任意字符，就会把原先的 <code>wq</code> 直接覆盖，接收新的命令输入
+</p>
+</blockquote>
+<p>
+我觉得这是一个非常有趣且有用的功能，像 <code>read-string</code> 函数，如果我想要一个默认的输入，可以直接使用
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">input</span> <span class="p">(</span><span class="nf">read-string</span> <span class="s">&quot;prompt: &quot;</span> <span class="s">&quot;默认内容&quot;</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
+</pre></div>
+
+<p>
+但我想覆盖这个默认, 则需要先把 <code>默认内容</code> 删除，再输入我想要的字符, 如果不想先删除默认再输入，还可以使用
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">input</span> <span class="p">(</span><span class="nf">read-string</span> <span class="s">&quot;prompt: &quot;</span> <span class="no">nil</span> <span class="no">nil</span> <span class="s">&quot;默认内容&quot;</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
+</pre></div>
+
+<p>
+但是这样的话我无法看到默认的内容，当然，也许可以把默认内容追加到 <code>prompt</code> 里，我认为这样不太好看，不是吗
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let*</span> <span class="p">((</span><span class="nv">default</span> <span class="s">&quot;默认内容&quot;</span><span class="p">)</span>
+       <span class="p">(</span><span class="nv">input</span> <span class="p">(</span><span class="nf">read-string</span> <span class="p">(</span><span class="nf">format</span> <span class="s">&quot;prompt (default %s): &quot;</span> <span class="nv">default</span><span class="p">)</span> <span class="no">nil</span> <span class="no">nil</span> <span class="nv">default</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
+</pre></div>
+
+<p>
+<code>evil-ex</code> 提示我一个新的解决方式, 通过查看 <code>evil-ex</code> 源码，可以发现它是使用 <code>minibuffer-with-setup-hook</code> 和 <code>after-change-functions</code> 在<b>minibuffer</b>里插入新内容时先清理默认内容, 再插入新内容, 我照葫芦画瓢并简化了相关代码
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">input</span> <span class="p">(</span><span class="nv">minibuffer-with-setup-hook</span> <span class="ss">&#39;maple-input-setup</span>
+               <span class="p">(</span><span class="nf">read-string</span> <span class="s">&quot;prompt: &quot;</span> <span class="p">(</span><span class="nf">propertize</span> <span class="s">&quot;默认内容&quot;</span> <span class="ss">&#39;face</span> <span class="ss">&#39;shadow</span><span class="p">)))))</span>
+  <span class="p">(</span><span class="nf">message</span> <span class="nv">input</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple-input-setup</span><span class="p">()</span>
+  <span class="p">(</span><span class="nv">add-hook</span> <span class="ss">&#39;after-change-functions</span> <span class="ss">&#39;maple-input-update</span> <span class="no">nil</span> <span class="no">t</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple-input-update</span><span class="p">(</span><span class="kp">&amp;optional</span> <span class="nv">beg</span> <span class="nv">end</span> <span class="nv">len</span> <span class="nf">string</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nf">string</span> <span class="p">(</span><span class="nf">buffer-substring-no-properties</span> <span class="nv">beg</span> <span class="nv">end</span><span class="p">)))</span>
+    <span class="p">(</span><span class="nv">delete-minibuffer-contents</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">insert</span> <span class="nf">string</span><span class="p">)</span>
+    <span class="p">(</span><span class="nv">remove-hook</span> <span class="ss">&#39;after-change-functions</span> <span class="ss">&#39;maple-input-update</span> <span class="no">t</span><span class="p">)))</span>
+</pre></div>
+
+<p>
+OK, 就这样
+</p>
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2019/07/elisp生成渐变XPM图片.html" rel="bookmark" title="Permalink to elisp生成渐变XPM图片">elisp生成渐变XPM图片</a></h1>
 <header class="entry-info">
   <span title="Updated at 2019-07-12">
     <i class="fa fa-calendar-o"></i>
@@ -112,67 +192,12 @@
    实现原理是对红(R)、绿(G)、蓝(B)三个颜色通道分别取 <b>n + 2</b> 个过渡值，<b>n</b> 为中间颜色过渡状态，所以对于<code>red</code>、<code>#000</code>、<code>#a0a0a0</code>等颜色需要转化为RGB色彩模式
 </p>
 <h3 id="org-261f6d2b0b">生成XPM图片</h3><p>
-   XPM图片格式参考 <a href="https://en.wikipedia.org/wiki/X_PixMap">https://en.wikipedia.org/wiki/X_PixMap</a>XPM3)
-</p>
-<p>
-   大概是这样的
-</p>
-<div class="highlight"><pre><span></span><span class="cm">/* XPM */</span><span class="w"></span>
-static<span class="w"> </span>char<span class="w"> </span><span class="o">*</span><span class="w"> </span>XFACE<span class="err">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">{</span><span class="w"></span>
-<span class="cm">/* &lt;Values&gt; */</span><span class="w"></span>
-<span class="cm">/* &lt;width/columns&gt; &lt;height/rows&gt; &lt;colors&gt; &lt;chars per pixel&gt;*/</span><span class="w"></span>
-<span class="s">&quot;48 4 2 1&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="cm">/* &lt;Colors&gt; */</span><span class="w"></span>
-<span class="s">&quot;a c #ffffff&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="s">&quot;b c #000000&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="cm">/* &lt;Pixels&gt; */</span><span class="w"></span>
-<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="o">,</span><span class="w"></span>
-<span class="s">&quot;abaabaababaaabaabababaabaabaababaabaaababaabaaab&quot;</span><span class="w"></span>
-<span class="err">};</span><span class="w"></span>
-</pre></div>
-
-<p>
-   渐变颜色XPM图片原理就是使用不同的字符代表不同状态的渐变颜色，当所使用的字符数越多，渐变效果越好，但同时XPM图片的宽度也就越大
-</p>
-<ul>
-<li>
-<p>
-<b>生成不同字符</b>
-</p>
-<div class="highlight"><pre><span></span><span class="c1">;; 0～9</span>
-<span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;number-to-string</span> <span class="p">(</span><span class="nv">number-sequence</span> <span class="mi">0</span> <span class="mi">9</span><span class="p">))</span>
-<span class="c1">;; a~z</span>
-<span class="p">(</span><span class="nf">mapcar</span> <span class="ss">&#39;char-to-string</span> <span class="p">(</span><span class="nv">number-sequence</span> <span class="sc">?a</span> <span class="sc">?z</span><span class="p">))</span>
-</pre></div>
-
-</li>
-<li>
-<p>
-<b>不同字符对应不同颜色</b>
-</p>
-<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">number</span> <span class="mi">-1</span><span class="p">))</span>
-  <span class="p">(</span><span class="nf">mapconcat</span>
-   <span class="p">(</span><span class="nb">lambda</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span>
-     <span class="p">(</span><span class="k">setq</span> <span class="nv">number</span> <span class="p">(</span><span class="nf">+</span> <span class="nv">number</span> <span class="mi">1</span><span class="p">))</span>
-     <span class="p">(</span><span class="nf">format</span> <span class="s">&quot;\&quot;%s c %s\&quot;,&quot;</span> <span class="p">(</span><span class="nf">nth</span> <span class="nv">number</span> <span class="nv">maple-xpm-chars</span><span class="p">)</span> <span class="p">(</span><span class="nf">apply</span> <span class="ss">&#39;color-rgb-to-hex</span> <span class="nv">x</span><span class="p">)))</span>
-   <span class="p">(</span><span class="nv">color-gradient</span>
-    <span class="p">(</span><span class="nv">color-name-to-rgb</span> <span class="nv">color1</span><span class="p">)</span>
-    <span class="p">(</span><span class="nv">color-name-to-rgb</span> <span class="nv">color2</span><span class="p">)</span> <span class="nv">width</span><span class="p">)</span> <span class="s">&quot;&quot;</span><span class="p">))</span>
-</pre></div>
-
-</li>
-</ul>
-<h3 id="org-8c98efb633">效果显示</h3><p>
-   <a href="https://static.honmaple.com/default/images/2019/07/xpm-gradient.png?type=show" data-fancybox="image"><img data-src="https://static.honmaple.com/default/images/2019/07/xpm-gradient.png?type=thumb" class="lazyload" /></a>
-</p>
-<p>
-   <a href="https://github.com/honmaple/emacs-maple-xpm">完整代码及更多XPM图片</a>
-</p>
+   XPM图片格式参考 <a href="https://en.wikipedia.org/wiki/X_PixMap">https://en.wikipedia.org/wiki/X_PixMap …</a></p>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2019/07/elisp生成渐变XPM图片.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2019/05/关于ivy的使用技巧.html" rel="bookmark" title="Permalink to 关于ivy的使用技巧">关于ivy的使用技巧</a></h1>
@@ -578,91 +603,6 @@ ivy默认的配置已经足够了，但还是可以通过一些技巧来提升�
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/01/emacs自动更新文件头.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2018/01/emacs自动添加文件头.html" rel="bookmark" title="Permalink to emacs自动添加文件头">emacs自动添加文件头</a></h1>
-<header class="entry-info">
-  <span title="Updated at 2018-03-16">
-    <i class="fa fa-calendar-o"></i>
-    一 08 一月 2018
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content entry-summary">
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
-<ul>
-<li><a href="#org-5c5debbd20">基础使用</a></li>
-<li><a href="#org-14005b59ce">自定义文件头</a></li>
-<li><a href="#org-a8cc6f507e">提取文件头公共信息</a></li>
-</ul>
-</div></div>
-<p>
-想要在emacs中添加文件头有好几种方法:
-</p>
-<ul>
-<li>
-<p>
-直接手打
-</p>
-</li>
-<li>
-<p>
-使用模板yasnippet
-</p>
-</li>
-<li>
-<p>
-使用header2
-</p>
-</li>
-<li>
-<p>
-使用内置的package <b>auto-insert</b>
-</p>
-</li>
-</ul>
-<p>
-header2可能是最方便的一种自动添加文件头的方式，但我之前使用过，想要自定义自己想要的内容很难，而且白白浪费header2的功能
-</p>
-<p>
-今天主要说一说emacs内置里<b>auto-insert</b>,使用它在创建文件时自动添加文件头信息
-</p>
-<h3 id="org-5c5debbd20">基础使用</h3><p>
-   直接<code>(auto-insert-mode)</code>
-   并且设置
-</p>
-<div class="highlight"><pre><span></span>(setq auto-insert-query nil) ;; 不提醒
-</pre></div>
-
-<h3 id="org-14005b59ce">自定义文件头</h3><div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">auto-insert-alist</span>
-      <span class="o">&#39;</span><span class="p">(((</span><span class="nv">python-mode</span> <span class="o">.</span> <span class="s">&quot;Python program&quot;</span><span class="p">)</span> <span class="no">nil</span>
-         <span class="s">&quot;#!/usr/bin/env python\n&quot;</span>
-         <span class="s">&quot;# -*- coding: utf-8 -*-\n&quot;</span>
-         <span class="s">&quot;# **************************************************************************\n&quot;</span>
-         <span class="s">&quot;# Copyright © &quot;</span> <span class="p">(</span><span class="nf">substring</span> <span class="p">(</span><span class="nf">current-time-string</span><span class="p">)</span> <span class="mi">-4</span><span class="p">)</span> <span class="s">&quot; &quot;</span> <span class="p">(</span><span class="nf">user-full-name</span><span class="p">)</span> <span class="s">&quot;\n …</span></pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2018/01/emacs自动添加文件头.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">
