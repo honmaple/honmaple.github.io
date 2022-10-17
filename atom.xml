@@ -1,5 +1,654 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>紅楓吟</title><link href="https://honmaple.me/" rel="alternate"></link><link href="https://honmaple.me/atom.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2021-11-26T09:58:55+08:00</updated><subtitle>风落花语风落天，花落风雨花落田.</subtitle><entry><title>Emacs笔记之minibuffer默认输入</title><link href="https://honmaple.me/articles/2021/11/Emacs%E7%AC%94%E8%AE%B0%E4%B9%8Bminibuffer%E9%BB%98%E8%AE%A4%E8%BE%93%E5%85%A5.html" rel="alternate"></link><published>2021-11-25T22:14:00+08:00</published><updated>2021-11-26T09:58:55+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2021-11-25:/articles/2021/11/Emacs笔记之minibuffer默认输入.html</id><summary type="html">
+<feed xmlns="http://www.w3.org/2005/Atom"><title>紅楓吟</title><link href="https://honmaple.me/" rel="alternate"></link><link href="https://honmaple.me/atom.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2022-11-02T00:52:45+08:00</updated><subtitle>风落花语风落天，花落风雨花落田.</subtitle><entry><title>Snow静态博客生成器</title><link href="https://honmaple.me/articles/2022/10/Snow%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E7%94%9F%E6%88%90%E5%99%A8.html" rel="alternate"></link><published>2022-10-16T18:44:46+08:00</published><updated>2022-11-02T00:52:45+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2022-10-16:/articles/2022/10/Snow静态博客生成器.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-061d509520"&gt;Snow&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-b4126dd347"&gt;快速开始&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-0c61da7fe0"&gt;创建一个新的站点&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-8c035e9154"&gt;创建新的文章&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-011bcf6117"&gt;编译和预览&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-1f14404d88"&gt;配置说明&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-7657e5f093"&gt;文章列表&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-8f9fcd9880"&gt;静态文件&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-3d9bbd19cc"&gt;主题&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-4c162d3988"&gt;动态页&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-ef66c90dbd"&gt;详情页&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-5e1e7daa56"&gt;列表页&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-37a7d1272c"&gt;归档页&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-bcfffa44ea"&gt;本地测试和正式发布&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id="org-061d509520"&gt;Snow&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;
+  一个&lt;b&gt;简单却可配置&lt;/b&gt;的静态博客生成器。
+ 很早之前(三年前)就想写一个静态博客生成器，但苦于一直没有时间，最近把之前写的重构了一下，让其可以支持更多的定制化配置。
+&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;
+  &lt;b&gt;至于为什么要重新写一个&lt;/b&gt;:
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 大概是因为想要把之前未完成的轮子补充完整
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 我目前使用的博客系统使用的是 &lt;b&gt;pelican&lt;/b&gt;，一个基于 &lt;b&gt;Python&lt;/b&gt; 的静态博客生成器，目前里面包括了很多我自己写的插件，比如 &lt;code&gt;Emacs org mode&lt;/code&gt; 的支持、文章加密、模版定制等，因为需要大量遍历所有文章，导致生成速度越来越慢，还有一点就是因为使用的是 &lt;b&gt;Python&lt;/b&gt;，每次本地预览时都需要切换到虚拟环境
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 我习惯使用 &lt;b&gt;Emacs …&lt;/b&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-061d509520"&gt;Snow&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-b4126dd347"&gt;快速开始&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-0c61da7fe0"&gt;创建一个新的站点&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-8c035e9154"&gt;创建新的文章&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-011bcf6117"&gt;编译和预览&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-1f14404d88"&gt;配置说明&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-7657e5f093"&gt;文章列表&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-8f9fcd9880"&gt;静态文件&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-3d9bbd19cc"&gt;主题&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-4c162d3988"&gt;动态页&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-ef66c90dbd"&gt;详情页&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-5e1e7daa56"&gt;列表页&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-37a7d1272c"&gt;归档页&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-bcfffa44ea"&gt;本地测试和正式发布&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id="org-061d509520"&gt;Snow&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;
+  一个&lt;b&gt;简单却可配置&lt;/b&gt;的静态博客生成器。
+ 很早之前(三年前)就想写一个静态博客生成器，但苦于一直没有时间，最近把之前写的重构了一下，让其可以支持更多的定制化配置。
+&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;
+  &lt;b&gt;至于为什么要重新写一个&lt;/b&gt;:
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 大概是因为想要把之前未完成的轮子补充完整
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 我目前使用的博客系统使用的是 &lt;b&gt;pelican&lt;/b&gt;，一个基于 &lt;b&gt;Python&lt;/b&gt; 的静态博客生成器，目前里面包括了很多我自己写的插件，比如 &lt;code&gt;Emacs org mode&lt;/code&gt; 的支持、文章加密、模版定制等，因为需要大量遍历所有文章，导致生成速度越来越慢，还有一点就是因为使用的是 &lt;b&gt;Python&lt;/b&gt;，每次本地预览时都需要切换到虚拟环境
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 我习惯使用 &lt;b&gt;Emacs + Org&lt;/b&gt;，除了前期的几篇文章，后面都是使用 &lt;b&gt;org mode&lt;/b&gt; 书写，之前是因为 &lt;b&gt;Python&lt;/b&gt; 没有一个好用的 &lt;b&gt;org mode&lt;/b&gt; 解析库，所以专门写了一个 &lt;code&gt;org-python&lt;/code&gt; 用来解析 &lt;b&gt;org mode&lt;/b&gt;；最近我也是完善了另一个我很早之前就写的 &lt;code&gt;org-golang&lt;/code&gt; 解析库(轮子+1)，准备趁次机会利用一下这个库
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 至于为什么不用最近几年流行的 &lt;b&gt;Hugo&lt;/b&gt;, 因为我想要保持和我使用 &lt;b&gt;Pelican&lt;/b&gt; 时一样的功能，比如文章加密，而 &lt;b&gt;hugo&lt;/b&gt; 并不支持插件，想要自定义插件必须复制大段大段的启动函数, 甚至需要修改源代码。同样我想要定制一个相同的模版，而对于使用过其它模版系统如Django，jinja2, 再来使用 &lt;b&gt;Go内置模版&lt;/b&gt; 的人来说, &lt;b&gt;hugo&lt;/b&gt; 的内置模版除了难用就是难用，这也是我此次选用 &lt;b&gt;pongo2&lt;/b&gt; 的原因
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 我的设想是提供插件的接口，并提供一个足够简单的启动函数, 在有用户需要自定义插件时只需要自己创建一个包, 使用三两行代码就能注册自定义插件并重新编译自己的snow
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="org-b4126dd347"&gt;快速开始&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;└──╼&lt;/span&gt; &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;snow&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;help&lt;/span&gt;
+&lt;span class="nl"&gt;NAME&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+   &lt;span class="n"&gt;snow&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;snow&lt;/span&gt; &lt;span class="n"&gt;is&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="k"&gt;static&lt;/span&gt; &lt;span class="n"&gt;site&lt;/span&gt; &lt;span class="n"&gt;generator&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+
+&lt;span class="nl"&gt;USAGE&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+   &lt;span class="n"&gt;snow&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;global&lt;/span&gt; &lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="n"&gt;command&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;command&lt;/span&gt; &lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;arguments&lt;/span&gt;&lt;span class="p"&gt;...]&lt;/span&gt;
+
+&lt;span class="nl"&gt;VERSION&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+   &lt;span class="mf"&gt;0.1.0&lt;/span&gt;
+
+&lt;span class="nl"&gt;COMMANDS&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+   &lt;span class="n"&gt;init&lt;/span&gt;     &lt;span class="n"&gt;init&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;new&lt;/span&gt; &lt;span class="n"&gt;site&lt;/span&gt;
+   &lt;span class="n"&gt;build&lt;/span&gt;    &lt;span class="n"&gt;build&lt;/span&gt; &lt;span class="n"&gt;and&lt;/span&gt; &lt;span class="n"&gt;output&lt;/span&gt;
+   &lt;span class="n"&gt;server&lt;/span&gt;   &lt;span class="n"&gt;server&lt;/span&gt; &lt;span class="n"&gt;local&lt;/span&gt; &lt;span class="n"&gt;files&lt;/span&gt;
+   &lt;span class="n"&gt;help&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;h&lt;/span&gt;  &lt;span class="n"&gt;Shows&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;commands&lt;/span&gt; &lt;span class="n"&gt;or&lt;/span&gt; &lt;span class="n"&gt;help&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;one&lt;/span&gt; &lt;span class="n"&gt;command&lt;/span&gt;
+
+&lt;span class="n"&gt;GLOBAL&lt;/span&gt; &lt;span class="nl"&gt;OPTIONS&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+   &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;conf&lt;/span&gt; &lt;span class="kt"&gt;FILE&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="kt"&gt;FILE&lt;/span&gt;  &lt;span class="n"&gt;load&lt;/span&gt; &lt;span class="n"&gt;configuration&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="kt"&gt;FILE&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;default&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;config.yaml&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+   &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;help&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;h&lt;/span&gt;            &lt;span class="n"&gt;show&lt;/span&gt; &lt;span class="n"&gt;help&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;default&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;false&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+   &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt;         &lt;span class="n"&gt;print&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;version&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;default&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;false&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h4 id="org-0c61da7fe0"&gt;创建一个新的站点&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;──╼ .&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nv"&gt;snow&lt;/span&gt; &lt;span class="nv"&gt;init&lt;/span&gt; &lt;span class="nv"&gt;exmaple&lt;/span&gt;.&lt;span class="nv"&gt;com&lt;/span&gt;
+&lt;span class="nv"&gt;Welcome&lt;/span&gt; &lt;span class="nv"&gt;to&lt;/span&gt; &lt;span class="nv"&gt;snow&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;.&lt;span class="mi"&gt;1&lt;/span&gt;.&lt;span class="mi"&gt;0&lt;/span&gt;.
+&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nv"&gt;Where&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; &lt;span class="nv"&gt;you&lt;/span&gt; &lt;span class="nv"&gt;want&lt;/span&gt; &lt;span class="nv"&gt;to&lt;/span&gt; &lt;span class="nv"&gt;create&lt;/span&gt; &lt;span class="nv"&gt;your&lt;/span&gt; &lt;span class="nv"&gt;new&lt;/span&gt; &lt;span class="nv"&gt;web&lt;/span&gt; &lt;span class="nv"&gt;site&lt;/span&gt;? [&lt;span class="nv"&gt;exmaple&lt;/span&gt;.&lt;span class="nv"&gt;com&lt;/span&gt;]
+&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nv"&gt;What&lt;/span&gt; &lt;span class="nv"&gt;will&lt;/span&gt; &lt;span class="nv"&gt;be&lt;/span&gt; &lt;span class="nv"&gt;the&lt;/span&gt; &lt;span class="nv"&gt;title&lt;/span&gt; &lt;span class="nv"&gt;of&lt;/span&gt; &lt;span class="nv"&gt;this&lt;/span&gt; &lt;span class="nv"&gt;web&lt;/span&gt; &lt;span class="nv"&gt;site&lt;/span&gt;? &lt;span class="nv"&gt;Custom&lt;/span&gt; &lt;span class="nv"&gt;Title&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nv"&gt;Who&lt;/span&gt; &lt;span class="nv"&gt;will&lt;/span&gt; &lt;span class="nv"&gt;be&lt;/span&gt; &lt;span class="nv"&gt;the&lt;/span&gt; &lt;span class="nv"&gt;author&lt;/span&gt; &lt;span class="nv"&gt;of&lt;/span&gt; &lt;span class="nv"&gt;this&lt;/span&gt; &lt;span class="nv"&gt;web&lt;/span&gt; &lt;span class="nv"&gt;site&lt;/span&gt;? &lt;span class="nv"&gt;snow&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nv"&gt;What&lt;/span&gt; &lt;span class="nv"&gt;is&lt;/span&gt; &lt;span class="nv"&gt;your&lt;/span&gt; &lt;span class="nv"&gt;URL&lt;/span&gt; &lt;span class="nv"&gt;prefix&lt;/span&gt;? &lt;span class="ss"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;see&lt;/span&gt; &lt;span class="nv"&gt;above&lt;/span&gt; &lt;span class="nv"&gt;example&lt;/span&gt;&lt;span class="c1"&gt;; no trailing slash) https://example.com&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h4 id="org-8c035e9154"&gt;创建新的文章&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;└──╼ cd example.com
+└──╼ mkdir -p content/posts
+└──╼ cat &amp;gt; content/posts/first-post.org &amp;lt;&amp;lt;EOF
+&amp;gt; #+TITLE: Post1
+&amp;gt; #+AUTHOR: honmaple
+&amp;gt; #+DATE: 2021-10-06 14:57:51
+&amp;gt; #+CATEGORY: Linux
+&amp;gt; #+PROPERTY: MODIFIED 2022-10-13 00:04:38
+&amp;gt; #+PROPERTY: TAGS linux
+&amp;gt;
+&amp;gt;
+&amp;gt; post1
+&amp;gt; EOF
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h4 id="org-011bcf6117"&gt;编译和预览&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;──╼ ./snow server -D
+──╼ ./snow server -D
+DEBU Writing output/posts/2021/10/Post1.html
+DEBU Writing output/categories/index.html
+DEBU Writing output/categories/linux/index.html
+DEBU Writing output/index.html
+DEBU Writing output/tags/index.html
+DEBU Writing output/tags/linux/index.html
+DEBU Writing output/authors/index.html
+DEBU Writing output/archives/index.html
+INFO Done: Processed 1 pages in 133.999021ms
+INFO Listen 127.0.0.1:8000 ...
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h3 id="org-1f14404d88"&gt;配置说明&lt;/h3&gt;&lt;h4 id="org-7657e5f093"&gt;文章列表&lt;/h4&gt;&lt;p&gt;
+   文章列表配置:
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;content_dir&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;content&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;page_dirs&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;drafts&amp;quot;&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;posts&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;page_meta&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;index&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;list.lookup&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;index.html&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;list.output&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;index{number}.html&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;page_filter&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;-drafts&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;page_orderby&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;date&lt;/span&gt;&lt;span class="nv"&gt; &lt;/span&gt;&lt;span class="s"&gt;desc,title&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;content_dir&lt;/b&gt;: 文章目录所在, 其中该目录下应该包括一系列子目录，这些子目录的名称对应为 &lt;b&gt;文章的类型&lt;/b&gt;, 比如 *content/drafts/* 目录下的文章类型为 &lt;b&gt;drafts&lt;/b&gt;, 当然也可以直接在文章文件头添加 &lt;code&gt;type: drafts&lt;/code&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;page_dirs&lt;/b&gt;: 所有类型的文章列表，当 &lt;b&gt;page_dirs&lt;/b&gt; 为空时，snow将会搜索 &lt;b&gt;content&lt;/b&gt; 目录下的所有子目录
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;page_meta&lt;/b&gt;: 文章页面元数据，所有页面的生成都和该配置有关，具体见下文
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;page_filter&lt;/b&gt;: 全局的文章列表筛选，格式见下文
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;page_orderby&lt;/b&gt;: 全局的文章列表排序
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;page_paginate&lt;/b&gt;: 全局的文章列表分页大小
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="org-8f9fcd9880"&gt;静态文件&lt;/h4&gt;&lt;p&gt;
+   静态文件配置:
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;static_exts&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;.js&amp;quot;&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;.css&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;static_dirs&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;static/&amp;quot;&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;static/css/&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;static_meta&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;static/CNAME&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;/&amp;quot;&lt;/span&gt;
+  &lt;span class="nt"&gt;static/css/main.css&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;static/css/&amp;quot;&lt;/span&gt;
+  &lt;span class="nt"&gt;theme/static&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;static/&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;output_dir&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;output&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;static_dirs&lt;/b&gt;: 静态文件目录, 该目录区分主题的静态文件static
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;static_exts&lt;/b&gt;: 静态文件扩展，不配置将会使用静态文件目录下的所有文件
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;static_meta&lt;/b&gt;: 静态文件元数据，用于指定静态文件或静态目录的保存目录, 当有多条路径时，长度优先
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+*/*: 保存到 &lt;b&gt;output&lt;/b&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;theme/static&lt;/b&gt;: 指定主题的静态文件保存目录
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="org-3d9bbd19cc"&gt;主题&lt;/h4&gt;&lt;p&gt;
+   主题配置:
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;theme&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;path&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;themes/test-theme&amp;quot;&lt;/span&gt;
+  &lt;span class="nt"&gt;engine&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;pongo2&amp;quot;&lt;/span&gt;
+  &lt;span class="nt"&gt;override&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;layouts&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;path&lt;/b&gt;: 主题目录, 内置主题: &lt;b&gt;simple&lt;/b&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;engine&lt;/b&gt;: 主题模版引擎, 当前只支持 &lt;b&gt;pongo2&lt;/b&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;override&lt;/b&gt;: 主题模版覆盖目录, 比如一个存在的主题可以增加同名的文件到 &lt;b&gt;override&lt;/b&gt; 配置的目录, snow将会优先使用该文件
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;主题目录结构&lt;/b&gt;:
+     其中 &lt;b&gt;templates&lt;/b&gt; 和 &lt;b&gt;static&lt;/b&gt; 名称不可修改
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;simple/
+├── templates
+│   ├── post.html
+│   ├── index.html
+│   ├── archives.html
+├── static
+│   ├── main.css
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="org-4c162d3988"&gt;动态页&lt;/h4&gt;&lt;p&gt;
+   在snow中所有的页面都是根据配置和主题模板进行生成, 其中动态页面分为三类:
+&lt;/p&gt;
+&lt;h5 id="org-ef66c90dbd"&gt;详情页&lt;/h5&gt;&lt;p&gt;
+    详情页的配置为 &lt;code&gt;page_meta.xxx&lt;/code&gt;, 其中 &lt;b&gt;xxx&lt;/b&gt; 必须是所有页面类型中的一种, 比如 &lt;code&gt;page_meta.posts&lt;/code&gt;, &lt;code&gt;page_meta.pages&lt;/code&gt; 等, 示例:
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;page_meta&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;posts&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;lookup&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;post.html&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;output&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;posts/{date:%Y}/{date:%m}/{slug}.html&amp;quot;&lt;/span&gt;
+  &lt;span class="nt"&gt;pages&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;lookup&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;page.html&amp;quot;&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;post.html&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;output&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;pages/{slug}.html&amp;quot;&lt;/span&gt;
+  &lt;span class="nt"&gt;drafts&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;lookup&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;post.html&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;output&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;drafts/{date:%Y}/{date:%m}/{slug}.html&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;lookup&lt;/b&gt;: 主题中查找的模版文件
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;output&lt;/b&gt;: 写入的文件路径, &lt;b&gt;slug&lt;/b&gt; 为页面标题
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;output变量&lt;/b&gt;:
+&lt;/p&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;th&gt;变量&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;{date:%Y}&lt;/td&gt;
+&lt;td&gt;创建文章的年份&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;{date:%m}&lt;/td&gt;
+&lt;td&gt;创建文章的月份&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;{date:%d}&lt;/td&gt;
+&lt;td&gt;创建文章的日期&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;{date:%H}&lt;/td&gt;
+&lt;td&gt;创建文章的小时&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;{slug}&lt;/td&gt;
+&lt;td&gt;文章标题或自定义slug&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;{filename}&lt;/td&gt;
+&lt;td&gt;文件名称(不带后缀名)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;模版变量&lt;/b&gt;:
+&lt;/p&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;th&gt;变量&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.Title&lt;/td&gt;
+&lt;td&gt;页面标题&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.URL&lt;/td&gt;
+&lt;td&gt;页面链接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.Categories&lt;/td&gt;
+&lt;td&gt;页面分类&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.Tags&lt;/td&gt;
+&lt;td&gt;页面标签&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.Authors&lt;/td&gt;
+&lt;td&gt;页面作者&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.Summary&lt;/td&gt;
+&lt;td&gt;页面简介&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.Content&lt;/td&gt;
+&lt;td&gt;页面内容&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.Meta.xxx&lt;/td&gt;
+&lt;td&gt;自定义的元数据&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.Prev&lt;/td&gt;
+&lt;td&gt;上一篇&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.Next&lt;/td&gt;
+&lt;td&gt;下一篇&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.HasPrev()&lt;/td&gt;
+&lt;td&gt;是否有上一篇&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.HasNext()&lt;/td&gt;
+&lt;td&gt;是否有下一篇&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.PrevInType&lt;/td&gt;
+&lt;td&gt;同一类型上一篇&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.NextInType&lt;/td&gt;
+&lt;td&gt;同一类型下一篇&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.HasPrevInType()&lt;/td&gt;
+&lt;td&gt;是否有同一类型上一篇&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;page.HasNextInType()&lt;/td&gt;
+&lt;td&gt;是否有同一类型下一篇&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5 id="org-5e1e7daa56"&gt;列表页&lt;/h5&gt;&lt;p&gt;
+    列表页的配置为 &lt;code&gt;page_meta.xxx.list&lt;/code&gt;, 其中 &lt;b&gt;xxx&lt;/b&gt; 可以是除页面类型以外的任意名称, 比如 &lt;code&gt;page_meta.tags.list&lt;/code&gt;, &lt;code&gt;page_meta.mycustom.list&lt;/code&gt; 等, 示例:
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;page_meta&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;index&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;list.lookup&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;index.html&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;list.output&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;index{number}.html&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;list.filter&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;-pages&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;list.paginate&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;5&lt;/span&gt;
+  &lt;span class="nt"&gt;tags&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;list.lookup&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;tag.html&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;list.output&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;tags/{slug}/index{number}.html&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;list.filter&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;-pages&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;list.groupby&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;tag&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;list.paginate&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;10&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;output&lt;/b&gt;: 列表页和详情页不同，列表页可能会根据不同的分页大小写入多个文件, 其中分页由 &lt;b&gt;output&lt;/b&gt; 中的 &lt;code&gt;{number}&lt;/code&gt; 决定, 比如上述的 &lt;code&gt;tags.list.output&lt;/code&gt;, 假如有36篇 &lt;b&gt;tag&lt;/b&gt; 为 &lt;b&gt;linux&lt;/b&gt; 的页面, 写入的文件为:
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="n"&gt;output_dir&lt;/span&gt;&lt;span class="o"&gt;]/&lt;/span&gt;&lt;span class="n"&gt;tags&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;linux&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="k"&gt;index&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="n"&gt;output_dir&lt;/span&gt;&lt;span class="o"&gt;]/&lt;/span&gt;&lt;span class="n"&gt;tags&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;linux&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;index1&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="n"&gt;output_dir&lt;/span&gt;&lt;span class="o"&gt;]/&lt;/span&gt;&lt;span class="n"&gt;tags&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;linux&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;index2&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="n"&gt;output_dir&lt;/span&gt;&lt;span class="o"&gt;]/&lt;/span&gt;&lt;span class="n"&gt;tags&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;linux&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;index3&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;
+        &lt;code&gt;{number}&lt;/code&gt; 在第一页时会自动配置成空字符串，如果需要禁止该动作，可以使用 &lt;code&gt;{number:one}&lt;/code&gt; 代替
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;groupby&lt;/b&gt;: 如果想要配置按标签或者分类进行分组, 并写入不同的分组文件，可以配置 &lt;b&gt;groupby&lt;/b&gt; 字段，目前可选: type、tag、category、author 和 date:xxx, 其中 &lt;b&gt;date:xxx&lt;/b&gt; 中的xxx为Go格式化时间格式, 比如 &lt;b&gt;date:2006&lt;/b&gt; 表示按年分组
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;filter&lt;/b&gt;: 列表显示需要提前筛选不想展示的页面，可以配置 &lt;b&gt;filter&lt;/b&gt; 字段, 格式:
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+字符串格式: &lt;code&gt;type1&lt;/code&gt; 表示只展示类型为type1的页面, &lt;code&gt;-type2&lt;/code&gt; 表示排除类型为type1的页面, 多个类型使用英文逗号分隔
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+字典格式:
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;page_meta&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;tags&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;list.filter&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;type1,-type2&amp;quot;&lt;/span&gt;
+      &lt;span class="nt"&gt;tag&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;tag1,tag2,-tag3&amp;quot;&lt;/span&gt;
+      &lt;span class="nt"&gt;author&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;author1&amp;quot;&lt;/span&gt;
+      &lt;span class="nt"&gt;category&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;category&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;
+        其中任意字段都可以使用前缀 &lt;code&gt;-&lt;/code&gt; 排除相应的页面
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;paginate&lt;/b&gt;: 分页大小, 0代表不分页，默认的分页在 &lt;b&gt;page_pagniate&lt;/b&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;模版变量&lt;/b&gt;:
+&lt;/p&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;th&gt;变量&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator.URL&lt;/td&gt;
+&lt;td&gt;分页链接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator.PageNum&lt;/td&gt;
+&lt;td&gt;当前页&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator.Total&lt;/td&gt;
+&lt;td&gt;总页数&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator.HasPrev()&lt;/td&gt;
+&lt;td&gt;是否有上一页&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator.Prev&lt;/td&gt;
+&lt;td&gt;上一页&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator.Prev.URL&lt;/td&gt;
+&lt;td&gt;上一页链接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator.HasNext()&lt;/td&gt;
+&lt;td&gt;是否有下一页&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator.Next&lt;/td&gt;
+&lt;td&gt;下一页&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator.Next.URL&lt;/td&gt;
+&lt;td&gt;下一页链接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator.All&lt;/td&gt;
+&lt;td&gt;所有页&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;paginator.List&lt;/td&gt;
+&lt;td&gt;当前页文章列表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;slug&lt;/td&gt;
+&lt;td&gt;分组key&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5 id="org-37a7d1272c"&gt;归档页&lt;/h5&gt;&lt;p&gt;
+    归档页表示所有分组页面的集合, 比如所有的标签，所有的作者或类型
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;page_meta&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;tags&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;lookup&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;tags.html&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;output&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;tags/index.html&amp;quot;&lt;/span&gt;
+  &lt;span class="nt"&gt;archives&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;lookup&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;archives.html&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;output&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;archives/index.html&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;b&gt;模版变量&lt;/b&gt;:
+&lt;/p&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;th&gt;变量&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;labels&lt;/td&gt;
+&lt;td&gt;分组列表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;pages&lt;/td&gt;
+&lt;td&gt;文章列表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="org-bcfffa44ea"&gt;本地测试和正式发布&lt;/h4&gt;&lt;p&gt;
+   snow 提供了 &lt;b&gt;mode&lt;/b&gt; 配置用于区分本地测试和正式发布
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;site&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;url&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;http://127.0.0.1:8000&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;output_dir&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;output&amp;quot;&lt;/span&gt;
+
+&lt;span class="nt"&gt;mode.publish&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;site&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;url&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;https://example.com&amp;quot;&lt;/span&gt;
+  &lt;span class="nt"&gt;output_dir&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;xxx&amp;quot;&lt;/span&gt;
+
+&lt;span class="nt"&gt;mode.develop&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;include&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;develop.yaml&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;
+   只要在构建时使用 &lt;code&gt;snow build --mode publish&lt;/code&gt; 即可覆盖本地默认配置
+&lt;/p&gt;</content><category term="Linux"></category><category term="linux"></category><category term="snow"></category></entry><entry><title>Emacs笔记之minibuffer默认输入</title><link href="https://honmaple.me/articles/2021/11/Emacs%E7%AC%94%E8%AE%B0%E4%B9%8Bminibuffer%E9%BB%98%E8%AE%A4%E8%BE%93%E5%85%A5.html" rel="alternate"></link><published>2021-11-25T22:14:00+08:00</published><updated>2022-09-20T14:52:12+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2021-11-25:/articles/2021/11/Emacs笔记之minibuffer默认输入.html</id><summary type="html">
 &lt;blockquote&gt;
 &lt;p&gt;
 在使用 &lt;b&gt;evil-ex&lt;/b&gt;，也就是冒号+命令时，有一个非常有趣的功能，输入冒号后，&lt;b&gt;minibuffer&lt;/b&gt; 会显示上一次执行的命令，比如 &lt;code&gt;:wq&lt;/code&gt;, 确认可以直接执行这个命令，但是输入任意字符，就会把原先的 &lt;code&gt;wq&lt;/code&gt; 直接覆盖，接收新的命令输入
@@ -67,7 +716,124 @@
 
 &lt;p&gt;
 OK, 就这样
-&lt;/p&gt;</content><category term="Linux"></category><category term="linux"></category><category term="emacs"></category></entry><entry><title>Docker笔记之registry清理</title><link href="https://honmaple.me/articles/2021/08/Docker%E7%AC%94%E8%AE%B0%E4%B9%8Bregistry%E6%B8%85%E7%90%86.html" rel="alternate"></link><published>2021-08-23T17:14:46+08:00</published><updated>2021-09-02T00:58:43+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2021-08-23:/articles/2021/08/Docker笔记之registry清理.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+&lt;/p&gt;</content><category term="Linux"></category><category term="linux"></category><category term="emacs"></category></entry><entry><title>Emacs自动插入更新文件头——maple-header</title><link href="https://honmaple.me/articles/2021/10/Emacs%E8%87%AA%E5%8A%A8%E6%8F%92%E5%85%A5%E6%9B%B4%E6%96%B0%E6%96%87%E4%BB%B6%E5%A4%B4%E2%80%94%E2%80%94maple-header.html" rel="alternate"></link><published>2021-10-06T14:57:51+08:00</published><updated>2022-10-17T15:20:28+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2021-10-06:/articles/2021/10/Emacs自动插入更新文件头——maple-header.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-8085f41d2c"&gt;安装&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-d8f4527311"&gt;使用quelpa&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a86cf2061d"&gt;克隆到本地&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-5d1c3526da"&gt;配置&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-e4322d0f54"&gt;基础配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-ee3b4315ed"&gt;自定义模版&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-7046b6f520"&gt;自定义更新&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-4b9374f887"&gt;相关文章&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+&lt;p&gt;
+一个简单的插件，可以在文件创建时自动插入文件头，或者文件更新时自动更新文件头信息，虽然已经用了好几年，这次把相关代码提取并精简一下做成了插件 &lt;a href="https://github.com/honmaple/emacs-maple-header"&gt;maple-header&lt;/a&gt;
+&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="org-8085f41d2c"&gt;安装&lt;/h2&gt;&lt;h3 id="org-d8f4527311"&gt;使用quelpa&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;use-package&lt;/span&gt; &lt;span class="nv"&gt;maple-header&lt;/span&gt;
+  &lt;span class="nb"&gt;:quelpa&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;:fetcher&lt;/span&gt; &lt;span class="nv"&gt;github&lt;/span&gt; &lt;span class="nb"&gt;:repo&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;honmaple/emacs-maple-header&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="nb"&gt;:hook&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;after-init&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="nv"&gt;maple-header-mode&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h3 id="org-a86cf2061d"&gt;克隆到本地&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;git clone https://github.com/honmaple/emacs-maple-header --depth=1 ~/.emacs/site-lisp/maple-header
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;use-package&lt;/span&gt; &lt;span class="nv"&gt;maple-header&lt;/span&gt;
+  &lt;span class="nb"&gt;:ensure&lt;/span&gt; &lt;span class="no"&gt;nil&lt;/span&gt;
+  &lt;span class="nb"&gt;:hook&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;after-init …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-8085f41d2c"&gt;安装&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-d8f4527311"&gt;使用quelpa&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-a86cf2061d"&gt;克隆到本地&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-5d1c3526da"&gt;配置&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="#org-e4322d0f54"&gt;基础配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-ee3b4315ed"&gt;自定义模版&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-7046b6f520"&gt;自定义更新&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-4b9374f887"&gt;相关文章&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+&lt;p&gt;
+一个简单的插件，可以在文件创建时自动插入文件头，或者文件更新时自动更新文件头信息，虽然已经用了好几年，这次把相关代码提取并精简一下做成了插件 &lt;a href="https://github.com/honmaple/emacs-maple-header"&gt;maple-header&lt;/a&gt;
+&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="org-8085f41d2c"&gt;安装&lt;/h2&gt;&lt;h3 id="org-d8f4527311"&gt;使用quelpa&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;use-package&lt;/span&gt; &lt;span class="nv"&gt;maple-header&lt;/span&gt;
+  &lt;span class="nb"&gt;:quelpa&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;:fetcher&lt;/span&gt; &lt;span class="nv"&gt;github&lt;/span&gt; &lt;span class="nb"&gt;:repo&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;honmaple/emacs-maple-header&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="nb"&gt;:hook&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;after-init&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="nv"&gt;maple-header-mode&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h3 id="org-a86cf2061d"&gt;克隆到本地&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;git clone https://github.com/honmaple/emacs-maple-header --depth=1 ~/.emacs/site-lisp/maple-header
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;use-package&lt;/span&gt; &lt;span class="nv"&gt;maple-header&lt;/span&gt;
+  &lt;span class="nb"&gt;:ensure&lt;/span&gt; &lt;span class="no"&gt;nil&lt;/span&gt;
+  &lt;span class="nb"&gt;:hook&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;after-init&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="nv"&gt;maple-header-mode&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id="org-5d1c3526da"&gt;配置&lt;/h2&gt;&lt;h3 id="org-e4322d0f54"&gt;基础配置&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;;; 更新文件头时搜索的文件函数, 9代表只会搜索前9行&lt;/span&gt;
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;maple-header:lines&lt;/span&gt; &lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="c1"&gt;;; 创建新文件时是否自动插入文件头信息&lt;/span&gt;
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;maple-header:auto-insert&lt;/span&gt; &lt;span class="no"&gt;t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="c1"&gt;;; 更新文件时是否自动更新文件头信息&lt;/span&gt;
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;maple-header:auto-update&lt;/span&gt; &lt;span class="no"&gt;t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h3 id="org-ee3b4315ed"&gt;自定义模版&lt;/h3&gt;&lt;p&gt;
+   比如我要自定义&lt;b&gt;Python&lt;/b&gt;文件的文件头
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;add-to-list&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;maple-header:auto-insert-alist&lt;/span&gt;
+             &lt;span class="o"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;python-mode&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Python program&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="no"&gt;nil&lt;/span&gt;
+               &lt;span class="s"&gt;&amp;quot;#!/usr/bin/env python\n&amp;quot;&lt;/span&gt;
+               &lt;span class="s"&gt;&amp;quot;# -*- coding: utf-8 -*-\n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h3 id="org-7046b6f520"&gt;自定义更新&lt;/h3&gt;&lt;p&gt;
+   目前内置了 &lt;b&gt;filename, email, modify&lt;/b&gt; 三个字段, 可以通过调用 &lt;b&gt;maple-header:update-xxx&lt;/b&gt; 手动更新指定的字段, 如果需要增加新的或者覆盖原字段,可以使用
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;add-to-list&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;maple-header:auto-update-alist&lt;/span&gt; &lt;span class="o"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;author&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="nv"&gt;custom-update-author&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;custom-update-author&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kp"&gt;&amp;amp;optional&lt;/span&gt; &lt;span class="nv"&gt;current-line&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;interactive&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;maple-header:update-action&lt;/span&gt;
+   &lt;span class="s"&gt;&amp;quot;.*\\(Author:\\)\\(.*\\)&amp;quot;&lt;/span&gt;
+   &lt;span class="nf"&gt;user-full-name&lt;/span&gt; &lt;span class="nv"&gt;current-line&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;
+   使用 &lt;b&gt;maple-header:update&lt;/b&gt; 会更新所有字段(包括：&lt;b&gt;filename，email，modify，author&lt;/b&gt;), 如果只需要更新部分，需要修改为
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;setq&lt;/span&gt; &lt;span class="nv"&gt;maple-header:auto-update-alist&lt;/span&gt;
+      &lt;span class="o"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;filename&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="nv"&gt;maple-header:update-filename&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;modify&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="nv"&gt;maple-header:update-modify&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id="org-4b9374f887"&gt;相关文章&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;a href="https://honmaple.me/articles/2018/01/emacs自动添加文件头.html"&gt;emacs自动添加文件头&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+&lt;a href="https://honmaple.me/articles/2018/01/emacs自动更新文件头.html"&gt;emacs自动更新文件头&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</content><category term="Linux"></category><category term="linux"></category><category term="emacs"></category></entry><entry><title>Docker笔记之registry清理</title><link href="https://honmaple.me/articles/2021/08/Docker%E7%AC%94%E8%AE%B0%E4%B9%8Bregistry%E6%B8%85%E7%90%86.html" rel="alternate"></link><published>2021-08-23T17:14:46+08:00</published><updated>2021-09-02T00:58:43+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2021-08-23:/articles/2021/08/Docker笔记之registry清理.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-b92701c913"&gt;前言&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-4e20ec6419"&gt;清理&lt;/a&gt;
@@ -255,7 +1021,7 @@ https://github.com/kubernetes/dashboard/issues/5105
 &lt;a href="https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#authentication"&gt;https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#authentication&lt;/a&gt;
 &lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;</content><category term="Linux"></category><category term="linux"></category><category term="k8s"></category></entry><entry><title>flutter笔记之初体验</title><link href="https://honmaple.me/articles/2021/06/flutter%E7%AC%94%E8%AE%B0%E4%B9%8B%E5%88%9D%E4%BD%93%E9%AA%8C.html" rel="alternate"></link><published>2021-06-05T22:58:01+08:00</published><updated>2021-06-06T18:14:08+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2021-06-05:/articles/2021/06/flutter笔记之初体验.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+&lt;/ul&gt;</content><category term="Linux"></category><category term="linux"></category><category term="k8s"></category></entry><entry><title>flutter笔记之初体验</title><link href="https://honmaple.me/articles/2021/06/flutter%E7%AC%94%E8%AE%B0%E4%B9%8B%E5%88%9D%E4%BD%93%E9%AA%8C.html" rel="alternate"></link><published>2021-06-05T22:58:01+08:00</published><updated>2022-10-10T14:52:03+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2021-06-05:/articles/2021/06/flutter笔记之初体验.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-8085f41d2c"&gt;安装&lt;/a&gt;
 &lt;ul&gt;
@@ -280,6 +1046,7 @@ https://github.com/kubernetes/dashboard/issues/5105
 &lt;li&gt;&lt;a href="#org-a6b5e561ba"&gt;FAQ&lt;/a&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-a7850a05b9"&gt;启动项目报 &lt;code&gt;Operation timed out&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-39149ffb53"&gt;Unable to locate Android SDK&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-7862e4530c"&gt;参考文档&lt;/a&gt;&lt;/li&gt;
@@ -300,11 +1067,7 @@ https://github.com/kubernetes/dashboard/issues/5105
 &lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;
-      注意：首次运行flutter，macos可能会提示无法打开dart，需要到 &lt;code&gt;系统偏好 -&amp;gt; 安全性与隐私&lt;/code&gt; 点击允许
-&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;└──╼ flutter --version
-Flutter …&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;&lt;/ul&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+      注意：首次运行flutter，macos可能会提示无法打开dart，需要到 &lt;code&gt;系统偏好 …&lt;/code&gt;&lt;/p&gt;&lt;/blockquote&gt;&lt;/li&gt;&lt;/ul&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-8085f41d2c"&gt;安装&lt;/a&gt;
 &lt;ul&gt;
@@ -329,6 +1092,7 @@ Flutter …&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;&lt;/ul&gt;</summary><content type
 &lt;li&gt;&lt;a href="#org-a6b5e561ba"&gt;FAQ&lt;/a&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-a7850a05b9"&gt;启动项目报 &lt;code&gt;Operation timed out&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#org-39149ffb53"&gt;Unable to locate Android SDK&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-7862e4530c"&gt;参考文档&lt;/a&gt;&lt;/li&gt;
@@ -730,6 +1494,27 @@ beta
 
 &lt;/li&gt;
 &lt;/ol&gt;
+&lt;h4 id="org-39149ffb53"&gt;Unable to locate Android SDK&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;└──╼&lt;/span&gt; &lt;span class="n"&gt;flutter&lt;/span&gt; &lt;span class="n"&gt;doctor&lt;/span&gt;
+&lt;span class="n"&gt;Doctor&lt;/span&gt; &lt;span class="n"&gt;summary&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;see&lt;/span&gt; &lt;span class="n"&gt;all&lt;/span&gt; &lt;span class="n"&gt;details&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;run&lt;/span&gt; &lt;span class="n"&gt;flutter&lt;/span&gt; &lt;span class="n"&gt;doctor&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="err"&gt;✓&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="n"&gt;Flutter&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Channel&lt;/span&gt; &lt;span class="n"&gt;stable&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;3.3&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt; &lt;span class="n"&gt;macOS&lt;/span&gt; &lt;span class="mf"&gt;12.5&lt;/span&gt; &lt;span class="mi"&gt;21&lt;/span&gt;&lt;span class="n"&gt;G72&lt;/span&gt; &lt;span class="n"&gt;darwin&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;x64&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;locale&lt;/span&gt; &lt;span class="n"&gt;zh&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Hans&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;CN&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="err"&gt;✗&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="n"&gt;Android&lt;/span&gt; &lt;span class="n"&gt;toolchain&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;develop&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;Android&lt;/span&gt; &lt;span class="n"&gt;devices&lt;/span&gt;
+    &lt;span class="err"&gt;✗&lt;/span&gt; &lt;span class="n"&gt;Unable&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;locate&lt;/span&gt; &lt;span class="n"&gt;Android&lt;/span&gt; &lt;span class="n"&gt;SDK&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
+      &lt;span class="n"&gt;Install&lt;/span&gt; &lt;span class="n"&gt;Android&lt;/span&gt; &lt;span class="n"&gt;Studio&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;developer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;android&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;studio&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;html&lt;/span&gt;
+      &lt;span class="n"&gt;On&lt;/span&gt; &lt;span class="n"&gt;first&lt;/span&gt; &lt;span class="n"&gt;launch&lt;/span&gt; &lt;span class="n"&gt;it&lt;/span&gt; &lt;span class="n"&gt;will&lt;/span&gt; &lt;span class="n"&gt;assist&lt;/span&gt; &lt;span class="n"&gt;you&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;installing&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;Android&lt;/span&gt; &lt;span class="n"&gt;SDK&lt;/span&gt; &lt;span class="n"&gt;components&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
+      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ow"&gt;or&lt;/span&gt; &lt;span class="n"&gt;visit&lt;/span&gt; &lt;span class="n"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;//&lt;/span&gt;&lt;span class="n"&gt;flutter&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;docs&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;started&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;macos&lt;/span&gt;&lt;span class="c1"&gt;#android-setup for detailed instructions).&lt;/span&gt;
+      &lt;span class="n"&gt;If&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;Android&lt;/span&gt; &lt;span class="n"&gt;SDK&lt;/span&gt; &lt;span class="n"&gt;has&lt;/span&gt; &lt;span class="n"&gt;been&lt;/span&gt; &lt;span class="n"&gt;installed&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;custom&lt;/span&gt; &lt;span class="n"&gt;location&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;please&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt;
+      &lt;span class="err"&gt;`&lt;/span&gt;&lt;span class="n"&gt;flutter&lt;/span&gt; &lt;span class="n"&gt;config&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;android&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;sdk&lt;/span&gt;&lt;span class="err"&gt;`&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;update&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;that&lt;/span&gt; &lt;span class="n"&gt;location&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;
+    解决:
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;└──╼ &lt;span class="nv"&gt;flutter&lt;/span&gt; &lt;span class="nv"&gt;config&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="nv"&gt;android&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nv"&gt;sdk&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nv"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nv"&gt;local&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nv"&gt;share&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nv"&gt;android&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nv"&gt;sdk&lt;/span&gt;
+&lt;span class="nv"&gt;Setting&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="s"&gt;android-sdk&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt; &lt;span class="nv"&gt;value&lt;/span&gt; &lt;span class="nv"&gt;to&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="s"&gt;/usr/local/share/android-sdk&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;.
+
+&lt;span class="nv"&gt;You&lt;/span&gt; &lt;span class="nv"&gt;may&lt;/span&gt; &lt;span class="nv"&gt;need&lt;/span&gt; &lt;span class="nv"&gt;to&lt;/span&gt; &lt;span class="nv"&gt;restart&lt;/span&gt; &lt;span class="nv"&gt;any&lt;/span&gt; &lt;span class="nv"&gt;open&lt;/span&gt; &lt;span class="nv"&gt;editors&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;them&lt;/span&gt; &lt;span class="nv"&gt;to&lt;/span&gt; &lt;span class="nv"&gt;read&lt;/span&gt; &lt;span class="nv"&gt;new&lt;/span&gt; &lt;span class="nv"&gt;settings&lt;/span&gt;.
+&lt;/pre&gt;&lt;/div&gt;
+
 &lt;h3 id="org-7862e4530c"&gt;参考文档&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
@@ -1520,242 +2305,4 @@ python3
 
 &lt;p&gt;
    并且k和v的类型在python3里默认为 &lt;code&gt;str&lt;/code&gt; ， 不需要使用 &lt;code&gt;k.encode(&amp;#34;utf-8&amp;#34;)&lt;/code&gt; 进行转换
-&lt;/p&gt;</content><category term="Python"></category><category term="python"></category></entry><entry><title>pyenv笔记</title><link href="https://honmaple.me/articles/2021/03/pyenv%E7%AC%94%E8%AE%B0.html" rel="alternate"></link><published>2021-03-18T15:29:39+08:00</published><updated>2021-03-18T15:35:51+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2021-03-18:/articles/2021/03/pyenv笔记.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-24f4878c54"&gt;常见问题&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-d698cedf5f"&gt;pyenv install 3.6.7 失败&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-d80e444474"&gt;相关日志&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-fc8e151462"&gt;解决方式&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-7862e4530c"&gt;参考文档&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-&lt;h2 id="org-24f4878c54"&gt;常见问题&lt;/h2&gt;&lt;h3 id="org-d698cedf5f"&gt;pyenv install 3.6.7 失败&lt;/h3&gt;&lt;blockquote&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-环境: macOs big Sur 11.2.2
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
-pyenv: 1.2.23
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/blockquote&gt;
-&lt;h4 id="org-d80e444474"&gt;相关日志&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;┌─&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;jianglin&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;─&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;~/&lt;/span&gt;&lt;span class="n"&gt;repo&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;golang&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;alarm&lt;/span&gt;&lt;span class="p"&gt;](&lt;/span&gt;&lt;span class="n"&gt;master&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="err"&gt;└──╼&lt;/span&gt; &lt;span class="n"&gt;pyenv&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="mf"&gt;3.6.7&lt;/span&gt;
-&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nl"&gt;build&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="n"&gt;openssl&lt;/span&gt;&lt;span class="mf"&gt;@1.1 …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-24f4878c54"&gt;常见问题&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-d698cedf5f"&gt;pyenv install 3.6.7 失败&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-d80e444474"&gt;相关日志&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-fc8e151462"&gt;解决方式&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-7862e4530c"&gt;参考文档&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-&lt;h2 id="org-24f4878c54"&gt;常见问题&lt;/h2&gt;&lt;h3 id="org-d698cedf5f"&gt;pyenv install 3.6.7 失败&lt;/h3&gt;&lt;blockquote&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-环境: macOs big Sur 11.2.2
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
-pyenv: 1.2.23
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/blockquote&gt;
-&lt;h4 id="org-d80e444474"&gt;相关日志&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;┌─&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;jianglin&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;─&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;~/&lt;/span&gt;&lt;span class="n"&gt;repo&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;golang&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;alarm&lt;/span&gt;&lt;span class="p"&gt;](&lt;/span&gt;&lt;span class="n"&gt;master&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="err"&gt;└──╼&lt;/span&gt; &lt;span class="n"&gt;pyenv&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="mf"&gt;3.6.7&lt;/span&gt;
-&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nl"&gt;build&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="n"&gt;openssl&lt;/span&gt;&lt;span class="mf"&gt;@1.1&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;homebrew&lt;/span&gt;
-&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nl"&gt;build&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="n"&gt;readline&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;homebrew&lt;/span&gt;
-&lt;span class="n"&gt;Installing&lt;/span&gt; &lt;span class="n"&gt;Python&lt;/span&gt;&lt;span class="mf"&gt;-3.6.7&lt;/span&gt;&lt;span class="p"&gt;...&lt;/span&gt;
-&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nl"&gt;build&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="n"&gt;readline&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;homebrew&lt;/span&gt;
-&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nl"&gt;build&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="n"&gt;zlib&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;xcode&lt;/span&gt; &lt;span class="n"&gt;sdk&lt;/span&gt;
-
-&lt;span class="n"&gt;BUILD&lt;/span&gt; &lt;span class="n"&gt;FAILED&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;OS&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="mf"&gt;11.2.2&lt;/span&gt; &lt;span class="n"&gt;using&lt;/span&gt; &lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt; &lt;span class="mi"&gt;20180424&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-
-&lt;span class="n"&gt;Inspect&lt;/span&gt; &lt;span class="n"&gt;or&lt;/span&gt; &lt;span class="n"&gt;clean&lt;/span&gt; &lt;span class="n"&gt;up&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;working&lt;/span&gt; &lt;span class="n"&gt;tree&lt;/span&gt; &lt;span class="n"&gt;at&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;folders&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;44&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;hnrgfyfn0fsb8lqwk_0h2jvm0000gn&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="mf"&gt;.20210318151243.78376&lt;/span&gt;
-&lt;span class="n"&gt;Results&lt;/span&gt; &lt;span class="n"&gt;logged&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;folders&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;44&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;hnrgfyfn0fsb8lqwk_0h2jvm0000gn&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="mf"&gt;.20210318151243.78376&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;
-
-&lt;span class="n"&gt;Last&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt; &lt;span class="n"&gt;log&lt;/span&gt; &lt;span class="nl"&gt;lines&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;ret&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sendfile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;in&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;out&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;offset&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;sbytes&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;sf&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;flags&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
-              &lt;span class="o"&gt;^&lt;/span&gt;
-&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Modules&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;posixmodule&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nl"&gt;c&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;10433&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;warning&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;code&lt;/span&gt; &lt;span class="n"&gt;will&lt;/span&gt; &lt;span class="n"&gt;never&lt;/span&gt; &lt;span class="n"&gt;be&lt;/span&gt; &lt;span class="n"&gt;executed&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wunreachable&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;code&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-    &lt;span class="n"&gt;Py_FatalError&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;abort() called from Python code didn&amp;#39;t abort!&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
-    &lt;span class="o"&gt;^~~~~~~~~~~~~&lt;/span&gt;
-&lt;span class="n"&gt;clang&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wno&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;unused&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wsign&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;compare&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wunreachable&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;code&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;DNDEBUG&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;g&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;fwrapv&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;O3&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wall&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Library&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Developer&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;CommandLineTools&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;SDKs&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;MacOSX&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sdk&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;include&lt;/span&gt;   &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Library&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Developer&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;CommandLineTools&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;SDKs&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;MacOSX&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sdk&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;include&lt;/span&gt;   &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;std&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;c99&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wextra&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wno&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;unused&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wno&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;unused&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;parameter&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wno&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;missing&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;field&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;initializers&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wstrict&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;prototypes&lt;/span&gt;   &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Include&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;opt&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;readline&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;include&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;opt&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;readline&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;include&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;opt&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;openssl&lt;/span&gt;&lt;span class="mf"&gt;@1.1&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;include&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Users&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;jianglin&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;repo&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pyenv&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;versions&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;3.6.7&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;include&lt;/span&gt;  &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;opt&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;readline&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;include&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;opt&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;readline&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;include&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;opt&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;openssl&lt;/span&gt;&lt;span class="mf"&gt;@1.1&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;include&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;I&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Users&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;jianglin&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;repo&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pyenv&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;versions&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;3.6.7&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;include&lt;/span&gt;   &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;DPy_BUILD_CORE&lt;/span&gt;  &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Modules&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pwdmodule&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt; &lt;span class="n"&gt;Modules&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pwdmodule&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt;
-&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;warning&lt;/span&gt; &lt;span class="n"&gt;and&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;error&lt;/span&gt; &lt;span class="n"&gt;generated&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
-&lt;span class="nl"&gt;make&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;***&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Modules&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;posixmodule&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="n"&gt;Error&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
-&lt;span class="nl"&gt;make&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;***&lt;/span&gt; &lt;span class="n"&gt;Waiting&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;unfinished&lt;/span&gt; &lt;span class="n"&gt;jobs&lt;/span&gt;&lt;span class="p"&gt;....&lt;/span&gt;
-&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;warning&lt;/span&gt; &lt;span class="n"&gt;generated&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
-&lt;span class="err"&gt;┌─&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;jianglin&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;─&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;~/&lt;/span&gt;&lt;span class="n"&gt;repo&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;golang&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;alarm&lt;/span&gt;&lt;span class="p"&gt;](&lt;/span&gt;&lt;span class="n"&gt;master&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="err"&gt;└──╼&lt;/span&gt;  &lt;span class="n"&gt;pyenv&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;patch&lt;/span&gt; &lt;span class="mf"&gt;3.6.7&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;curl&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;sSL&lt;/span&gt; &lt;span class="nl"&gt;https&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="c1"&gt;//github.com/python/cpython/commit/8ea6353.patch\?full_index\=1)&lt;/span&gt;
-&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nl"&gt;build&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="n"&gt;openssl&lt;/span&gt;&lt;span class="mf"&gt;@1.1&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;homebrew&lt;/span&gt;
-&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nl"&gt;build&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="n"&gt;readline&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;homebrew&lt;/span&gt;
-&lt;span class="n"&gt;Installing&lt;/span&gt; &lt;span class="n"&gt;Python&lt;/span&gt;&lt;span class="mf"&gt;-3.6.7&lt;/span&gt;&lt;span class="p"&gt;...&lt;/span&gt;
-&lt;span class="nl"&gt;curl&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;28&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;Operation&lt;/span&gt; &lt;span class="n"&gt;timed&lt;/span&gt; &lt;span class="k"&gt;out&lt;/span&gt; &lt;span class="n"&gt;after&lt;/span&gt; &lt;span class="mi"&gt;300188&lt;/span&gt; &lt;span class="n"&gt;milliseconds&lt;/span&gt; &lt;span class="n"&gt;with&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="k"&gt;out&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="n"&gt;bytes&lt;/span&gt; &lt;span class="n"&gt;received&lt;/span&gt;
-&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nl"&gt;build&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="n"&gt;readline&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;homebrew&lt;/span&gt;
-&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nl"&gt;build&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;use&lt;/span&gt; &lt;span class="n"&gt;zlib&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;xcode&lt;/span&gt; &lt;span class="n"&gt;sdk&lt;/span&gt;
-
-&lt;span class="n"&gt;BUILD&lt;/span&gt; &lt;span class="n"&gt;FAILED&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;OS&lt;/span&gt; &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="mf"&gt;11.2.2&lt;/span&gt; &lt;span class="n"&gt;using&lt;/span&gt; &lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt; &lt;span class="mi"&gt;20180424&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-
-&lt;span class="n"&gt;Inspect&lt;/span&gt; &lt;span class="n"&gt;or&lt;/span&gt; &lt;span class="n"&gt;clean&lt;/span&gt; &lt;span class="n"&gt;up&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;working&lt;/span&gt; &lt;span class="n"&gt;tree&lt;/span&gt; &lt;span class="n"&gt;at&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;folders&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;44&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;hnrgfyfn0fsb8lqwk_0h2jvm0000gn&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="mf"&gt;.20210318151644.86904&lt;/span&gt;
-&lt;span class="n"&gt;Results&lt;/span&gt; &lt;span class="n"&gt;logged&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;var&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;folders&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;44&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;hnrgfyfn0fsb8lqwk_0h2jvm0000gn&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;python&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;build&lt;/span&gt;&lt;span class="mf"&gt;.20210318151644.86904&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log&lt;/span&gt;
-
-&lt;span class="n"&gt;Last&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt; &lt;span class="n"&gt;log&lt;/span&gt; &lt;span class="nl"&gt;lines&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Modules&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;posixmodule&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nl"&gt;c&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;8211&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;15&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;error&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;implicit&lt;/span&gt; &lt;span class="n"&gt;declaration&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;function&lt;/span&gt; &lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="n"&gt;sendfile&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt; &lt;span class="n"&gt;is&lt;/span&gt; &lt;span class="n"&gt;invalid&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="n"&gt;C99&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Werror&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wimplicit&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;function&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;declaration&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-        &lt;span class="n"&gt;ret&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sendfile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;in&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;out&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;offset&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;sbytes&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;sf&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;flags&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
-              &lt;span class="o"&gt;^&lt;/span&gt;
-&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;Modules&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;posixmodule&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nl"&gt;c&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;10433&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;warning&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;code&lt;/span&gt; &lt;span class="n"&gt;will&lt;/span&gt; &lt;span class="n"&gt;never&lt;/span&gt; &lt;span class="n"&gt;be&lt;/span&gt; &lt;span class="n"&gt;executed&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Wunreachable&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;code&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-    &lt;span class="n"&gt;Py_FatalError&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;abort() called from Python code didn&amp;#39;t abort!&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
-    &lt;span class="o"&gt;^~~~~~~~~~~~~&lt;/span&gt;
-&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;warning&lt;/span&gt; &lt;span class="n"&gt;and&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;error&lt;/span&gt; &lt;span class="n"&gt;generated&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
-&lt;span class="nl"&gt;make&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;***&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Modules&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;posixmodule&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="n"&gt;Error&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
-&lt;span class="nl"&gt;make&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;***&lt;/span&gt; &lt;span class="n"&gt;Waiting&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;unfinished&lt;/span&gt; &lt;span class="n"&gt;jobs&lt;/span&gt;&lt;span class="p"&gt;....&lt;/span&gt;
-&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;warning&lt;/span&gt; &lt;span class="n"&gt;generated&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h4 id="org-fc8e151462"&gt;解决方式&lt;/h4&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;┌─&lt;span class="o"&gt;[&lt;/span&gt;jianglin&lt;span class="o"&gt;]&lt;/span&gt;─&lt;span class="o"&gt;[&lt;/span&gt;~/repo/golang/src/alarm&lt;span class="o"&gt;](&lt;/span&gt;master&lt;span class="o"&gt;)&lt;/span&gt;
-└──╼ &lt;span class="nv"&gt;CFLAGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;-Wno-implicit-function-declaration  pyenv install --patch &lt;span class="m"&gt;3&lt;/span&gt;.6.7 &amp;lt; &amp;lt;&lt;span class="o"&gt;(&lt;/span&gt;curl -sSL https://github.com/python/cpython/commit/8ea6353.patch&lt;span class="se"&gt;\?&lt;/span&gt;full_index&lt;span class="se"&gt;\=&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
-python-build: use openssl@1.1 from homebrew
-python-build: use readline from homebrew
-Installing Python-3.6.7...
-curl: &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;7&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; Failed to connect to github.com port &lt;span class="m"&gt;443&lt;/span&gt;: Operation timed out
-python-build: use readline from homebrew
-python-build: use zlib from xcode sdk
-Installed Python-3.6.7 to /Users/jianglin/repo/python/pyenv/versions/3.6.7
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;h4 id="org-7862e4530c"&gt;参考文档&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-https://github.com/pyenv/pyenv/issues/1737
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
-https://github.com/pyenv/pyenv/issues/1643
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;</content><category term="Linux"></category><category term="linux"></category></entry><entry><title>golang笔记之struct转map性能比较</title><link href="https://honmaple.me/articles/2020/09/golang%E7%AC%94%E8%AE%B0%E4%B9%8Bstruct%E8%BD%ACmap%E6%80%A7%E8%83%BD%E6%AF%94%E8%BE%83.html" rel="alternate"></link><published>2020-09-21T11:38:24+08:00</published><updated>2021-05-31T00:48:23+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2020-09-21:/articles/2020/09/golang笔记之struct转map性能比较.html</id><summary type="html">
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;package&lt;/span&gt; &lt;span class="nx"&gt;main&lt;/span&gt;
-
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
-    &lt;span class="s"&gt;&amp;quot;encoding/json&amp;quot;&lt;/span&gt;
-    &lt;span class="s"&gt;&amp;quot;reflect&amp;quot;&lt;/span&gt;
-    &lt;span class="s"&gt;&amp;quot;testing&amp;quot;&lt;/span&gt;
-&lt;span class="p"&gt;)&lt;/span&gt;
-
-&lt;span class="kd"&gt;type&lt;/span&gt; &lt;span class="nx"&gt;A&lt;/span&gt; &lt;span class="kd"&gt;struct&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="nx"&gt;A&lt;/span&gt; &lt;span class="kt"&gt;string&lt;/span&gt;   &lt;span class="s"&gt;`json:&amp;quot;a&amp;quot;`&lt;/span&gt;
-    &lt;span class="nx"&gt;B&lt;/span&gt; &lt;span class="kt"&gt;string&lt;/span&gt;   &lt;span class="s"&gt;`json:&amp;quot;b&amp;quot;`&lt;/span&gt;
-    &lt;span class="nx"&gt;C&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt;      &lt;span class="s"&gt;`json:&amp;quot;c&amp;quot;`&lt;/span&gt;
-    &lt;span class="nx"&gt;D&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt;      &lt;span class="s"&gt;`json:&amp;quot;d&amp;quot;`&lt;/span&gt;
-    &lt;span class="nx"&gt;E&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt; &lt;span class="s"&gt;`json:&amp;quot;e&amp;quot;`&lt;/span&gt;
-    &lt;span class="nx"&gt;F&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;    &lt;span class="s"&gt;`json:&amp;quot;f&amp;quot;`&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
-
-&lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;a&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="nx"&gt;A&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="s"&gt;&amp;quot;string&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-    &lt;span class="s"&gt;&amp;quot;test&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-    &lt;span class="mi"&gt;15&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-    &lt;span class="mi"&gt;1024&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-    &lt;span class="p"&gt;[]&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;vvv&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;ssss&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;44444&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
-    &lt;span class="p"&gt;[]&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;4012&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
-
-&lt;span class="kd"&gt;func …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;package&lt;/span&gt; &lt;span class="nx"&gt;main&lt;/span&gt;
-
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;
-    &lt;span class="s"&gt;&amp;quot;encoding/json&amp;quot;&lt;/span&gt;
-    &lt;span class="s"&gt;&amp;quot;reflect&amp;quot;&lt;/span&gt;
-    &lt;span class="s"&gt;&amp;quot;testing&amp;quot;&lt;/span&gt;
-&lt;span class="p"&gt;)&lt;/span&gt;
-
-&lt;span class="kd"&gt;type&lt;/span&gt; &lt;span class="nx"&gt;A&lt;/span&gt; &lt;span class="kd"&gt;struct&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="nx"&gt;A&lt;/span&gt; &lt;span class="kt"&gt;string&lt;/span&gt;   &lt;span class="s"&gt;`json:&amp;quot;a&amp;quot;`&lt;/span&gt;
-    &lt;span class="nx"&gt;B&lt;/span&gt; &lt;span class="kt"&gt;string&lt;/span&gt;   &lt;span class="s"&gt;`json:&amp;quot;b&amp;quot;`&lt;/span&gt;
-    &lt;span class="nx"&gt;C&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt;      &lt;span class="s"&gt;`json:&amp;quot;c&amp;quot;`&lt;/span&gt;
-    &lt;span class="nx"&gt;D&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt;      &lt;span class="s"&gt;`json:&amp;quot;d&amp;quot;`&lt;/span&gt;
-    &lt;span class="nx"&gt;E&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt; &lt;span class="s"&gt;`json:&amp;quot;e&amp;quot;`&lt;/span&gt;
-    &lt;span class="nx"&gt;F&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;    &lt;span class="s"&gt;`json:&amp;quot;f&amp;quot;`&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
-
-&lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;a&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="nx"&gt;A&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="s"&gt;&amp;quot;string&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-    &lt;span class="s"&gt;&amp;quot;test&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-    &lt;span class="mi"&gt;15&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-    &lt;span class="mi"&gt;1024&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-    &lt;span class="p"&gt;[]&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;vvv&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;ssss&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;44444&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
-    &lt;span class="p"&gt;[]&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;4012&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
-
-&lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nx"&gt;Struct2Map&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;value&lt;/span&gt; &lt;span class="kd"&gt;interface&lt;/span&gt;&lt;span class="p"&gt;{})&lt;/span&gt; &lt;span class="kd"&gt;map&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="kd"&gt;interface&lt;/span&gt;&lt;span class="p"&gt;{}&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="nx"&gt;v&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="nx"&gt;reflect&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;ValueOf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;value&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;Kind&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="nx"&gt;reflect&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;Ptr&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-        &lt;span class="nx"&gt;v&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;Elem&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-    &lt;span class="p"&gt;}&lt;/span&gt;
-    &lt;span class="nx"&gt;t&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;Type&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-
-    &lt;span class="nx"&gt;res&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="nb"&gt;make&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;map&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="kd"&gt;interface&lt;/span&gt;&lt;span class="p"&gt;{})&lt;/span&gt;
-    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt; &lt;span class="p"&gt;&amp;lt;&lt;/span&gt; &lt;span class="nx"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;NumField&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;tag&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="nx"&gt;t&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;Field&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;Tag&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;Get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;json&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt; &lt;span class="nx"&gt;tag&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nx"&gt;tag&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;-&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-            &lt;span class="nx"&gt;res&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;tag&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;Field&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;Interface&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-        &lt;span class="p"&gt;}&lt;/span&gt;
-    &lt;span class="p"&gt;}&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;res&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
-
-&lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nx"&gt;Struct2MapByJson&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;value&lt;/span&gt; &lt;span class="kd"&gt;interface&lt;/span&gt;&lt;span class="p"&gt;{})&lt;/span&gt; &lt;span class="kd"&gt;map&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="kd"&gt;interface&lt;/span&gt;&lt;span class="p"&gt;{}&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="nx"&gt;bs&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;err&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="nx"&gt;json&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;Marshal&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;value&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;err&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;nil&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-
-    &lt;span class="p"&gt;}&lt;/span&gt;
-
-    &lt;span class="nx"&gt;res&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="nb"&gt;make&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;map&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="kt"&gt;string&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="kd"&gt;interface&lt;/span&gt;&lt;span class="p"&gt;{})&lt;/span&gt;
-    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;err&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="nx"&gt;json&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;Unmarshal&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;bs&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="nx"&gt;res&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt; &lt;span class="nx"&gt;err&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;nil&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-
-    &lt;span class="p"&gt;}&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;res&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
-
-&lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nx"&gt;Benchmark_Json2Map&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;b&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="nx"&gt;testing&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;B&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt; &lt;span class="p"&gt;&amp;lt;&lt;/span&gt; &lt;span class="nx"&gt;b&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;N&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-        &lt;span class="nx"&gt;Struct2MapByJson&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="p"&gt;}&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
-
-&lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nx"&gt;Benchmark_Reflect2Map&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;b&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="nx"&gt;testing&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;B&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt; &lt;span class="o"&gt;:=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt; &lt;span class="p"&gt;&amp;lt;&lt;/span&gt; &lt;span class="nx"&gt;b&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;N&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-        &lt;span class="nx"&gt;Struct2Map&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="p"&gt;}&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;└──╼&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;go&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;bench&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="ss"&gt;&amp;quot;.*&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="nl"&gt;goos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;darwin&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="nl"&gt;goarch&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;amd64&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="nl"&gt;pkg&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;maple&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;test1&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="n"&gt;Benchmark_Json2Map&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="w"&gt;      	  &lt;/span&gt;&lt;span class="mi"&gt;241076&lt;/span&gt;&lt;span class="w"&gt;	      &lt;/span&gt;&lt;span class="mi"&gt;4672&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;ns&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;op&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="n"&gt;Benchmark_Reflect2Map&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="w"&gt;   	 &lt;/span&gt;&lt;span class="mi"&gt;1000000&lt;/span&gt;&lt;span class="w"&gt;	      &lt;/span&gt;&lt;span class="mi"&gt;1005&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;ns&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;op&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="n"&gt;PASS&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="n"&gt;ok&lt;/span&gt;&lt;span class="w"&gt;  	&lt;/span&gt;&lt;span class="n"&gt;maple&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;test1&lt;/span&gt;&lt;span class="w"&gt;	&lt;/span&gt;&lt;span class="mf"&gt;2.971&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-</content><category term="Linux"></category><category term="linux"></category><category term="golang"></category></entry></feed>
+&lt;/p&gt;</content><category term="Python"></category><category term="python"></category></entry></feed>

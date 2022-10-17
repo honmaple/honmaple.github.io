@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Emacs自动插入更新文件头——maple-header · 紅楓吟</title>
+      <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="particles-js" id="particles-js"></div>
+    <div class="scrollbar"></div>
+    <div class="wrap">
+      <div class="main">
+<nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://s.libforest.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="https://honmaple.me/categories/life/index.html" >代码人生</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/categories/coding/index.html">分享世界</a></li>
+                <li><a href="https://honmaple.me/categories/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/categories/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li class="active"><a href="https://honmaple.me/categories/linux/index.html">字符艺术</a></li>
+          <li ><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+          <li ><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+      <li class="dropdown">
+        <a href="https://honmaple.me/archives/index.html">文章归档</a>
+        <ul class="dropdown-menu">
+          <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+          <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+          <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+        </ul>
+      </li>
+      <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>  <article>
+    <div class="entry-header">
+      <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/10/Emacs自动插入更新文件头——maple-header.html">Emacs自动插入更新文件头——maple-header</a></h1>
+<header class="entry-info">
+  <span title="Updated at 2022-10-17">
+    <i class="fa fa-calendar-o"></i>
+    三 06 十月 2021
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+    </span>
+
+</header>    </div>
+    <hr class="entry-hr" />
+    <div class="entry-content">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
+<ul>
+<li><a href="#org-8085f41d2c">安装</a>
+<ul>
+<li><a href="#org-d8f4527311">使用quelpa</a></li>
+<li><a href="#org-a86cf2061d">克隆到本地</a></li>
+</ul>
+</li>
+<li><a href="#org-5d1c3526da">配置</a>
+<ul>
+<li><a href="#org-e4322d0f54">基础配置</a></li>
+<li><a href="#org-ee3b4315ed">自定义模版</a></li>
+<li><a href="#org-7046b6f520">自定义更新</a></li>
+</ul>
+</li>
+<li><a href="#org-4b9374f887">相关文章</a></li>
+</ul>
+</div></div>
+<blockquote>
+<p>
+一个简单的插件，可以在文件创建时自动插入文件头，或者文件更新时自动更新文件头信息，虽然已经用了好几年，这次把相关代码提取并精简一下做成了插件 <a href="https://github.com/honmaple/emacs-maple-header">maple-header</a>
+</p>
+</blockquote>
+<h2 id="org-8085f41d2c">安装</h2><h3 id="org-d8f4527311">使用quelpa</h3><div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">use-package</span> <span class="nv">maple-header</span>
+  <span class="nb">:quelpa</span> <span class="p">(</span><span class="nb">:fetcher</span> <span class="nv">github</span> <span class="nb">:repo</span> <span class="s">&quot;honmaple/emacs-maple-header&quot;</span><span class="p">)</span>
+  <span class="nb">:hook</span> <span class="p">(</span><span class="nv">after-init</span> <span class="o">.</span> <span class="nv">maple-header-mode</span><span class="p">))</span>
+</pre></div>
+
+<h3 id="org-a86cf2061d">克隆到本地</h3><div class="highlight"><pre><span></span>git clone https://github.com/honmaple/emacs-maple-header --depth=1 ~/.emacs/site-lisp/maple-header
+</pre></div>
+
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">use-package</span> <span class="nv">maple-header</span>
+  <span class="nb">:ensure</span> <span class="no">nil</span>
+  <span class="nb">:hook</span> <span class="p">(</span><span class="nv">after-init</span> <span class="o">.</span> <span class="nv">maple-header-mode</span><span class="p">))</span>
+</pre></div>
+
+<h2 id="org-5d1c3526da">配置</h2><h3 id="org-e4322d0f54">基础配置</h3><div class="highlight"><pre><span></span><span class="c1">;; 更新文件头时搜索的文件函数, 9代表只会搜索前9行</span>
+<span class="p">(</span><span class="k">setq</span> <span class="nv">maple-header:lines</span> <span class="mi">9</span><span class="p">)</span>
+<span class="c1">;; 创建新文件时是否自动插入文件头信息</span>
+<span class="p">(</span><span class="k">setq</span> <span class="nv">maple-header:auto-insert</span> <span class="no">t</span><span class="p">)</span>
+<span class="c1">;; 更新文件时是否自动更新文件头信息</span>
+<span class="p">(</span><span class="k">setq</span> <span class="nv">maple-header:auto-update</span> <span class="no">t</span><span class="p">)</span>
+</pre></div>
+
+<h3 id="org-ee3b4315ed">自定义模版</h3><p>
+   比如我要自定义<b>Python</b>文件的文件头
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">&#39;maple-header:auto-insert-alist</span>
+             <span class="o">&#39;</span><span class="p">((</span><span class="nv">python-mode</span> <span class="o">.</span> <span class="s">&quot;Python program&quot;</span><span class="p">)</span> <span class="no">nil</span>
+               <span class="s">&quot;#!/usr/bin/env python\n&quot;</span>
+               <span class="s">&quot;# -*- coding: utf-8 -*-\n&quot;</span><span class="p">))</span>
+</pre></div>
+
+<h3 id="org-7046b6f520">自定义更新</h3><p>
+   目前内置了 <b>filename, email, modify</b> 三个字段, 可以通过调用 <b>maple-header:update-xxx</b> 手动更新指定的字段, 如果需要增加新的或者覆盖原字段,可以使用
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">&#39;maple-header:auto-update-alist</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">author</span> <span class="o">.</span> <span class="nv">custom-update-author</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">custom-update-author</span><span class="p">(</span><span class="kp">&amp;optional</span> <span class="nv">current-line</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">interactive</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">maple-header:update-action</span>
+   <span class="s">&quot;.*\\(Author:\\)\\(.*\\)&quot;</span>
+   <span class="nf">user-full-name</span> <span class="nv">current-line</span><span class="p">))</span>
+</pre></div>
+
+<p>
+   使用 <b>maple-header:update</b> 会更新所有字段(包括：<b>filename，email，modify，author</b>), 如果只需要更新部分，需要修改为
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="k">setq</span> <span class="nv">maple-header:auto-update-alist</span>
+      <span class="o">&#39;</span><span class="p">((</span><span class="nv">filename</span> <span class="o">.</span> <span class="nv">maple-header:update-filename</span><span class="p">)</span>
+        <span class="p">(</span><span class="nv">modify</span> <span class="o">.</span> <span class="nv">maple-header:update-modify</span><span class="p">)))</span>
+</pre></div>
+
+<h2 id="org-4b9374f887">相关文章</h2><ul>
+<li>
+<p>
+<a href="https://honmaple.me/articles/2018/01/emacs自动添加文件头.html">emacs自动添加文件头</a>
+</p>
+</li>
+<li>
+<p>
+<a href="https://honmaple.me/articles/2018/01/emacs自动更新文件头.html">emacs自动更新文件头</a>
+</p>
+</li>
+</ul>
+    </div>
+<div class="entry-copyright">
+  <div>
+    <i class="fa fa-user-o"></i>
+    作者:
+    <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+  </div>
+  <div>
+    <i class="fa fa-link"></i>
+    链接:
+    <a href="https://honmaple.me/articles/2021/10/Emacs自动插入更新文件头——maple-header.html">https://honmaple.me/articles/2021/10/Emacs自动插入更新文件头——maple-header.html</a>
+  </div>
+  <div>
+    <i class="fa fa-copyright"></i>
+    版权:
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+    </a>
+  </div>
+</div>
+
+<div class="entry-honor">
+  <button class="btn" data-target="#entry-honor-content" data-toggle="collapse">赏</button>
+  <div class="collapse" id="entry-honor-content">
+    <div class="entry-honor-content">
+      <div class="entry-honor-alipay">
+        <div class="entry-honor-mask">
+          <button class="btn btn-success" data-target=".entry-honor-wechat" data-toggle="collapse">
+            <i class="fa fa-wechat"></i>
+            <span>微信</span>
+          </button>
+        </div>
+      </div>
+      <div class="entry-honor-wechat collapse">
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+    </div>
+  </div>
+</div>    <hr class="entry-hr" />
+    <ul class="entry-pager">
+        <li class="previous">
+          <a href="https://honmaple.me/articles/2021/11/Emacs笔记之minibuffer默认输入.html" title="Previous article: Emacs笔记之minibuffer默认输入">
+            <i class="fa fa-chevron-left"></i>
+            Emacs笔记之minibuffer默认输入
+          </a>
+        </li>
+        <li class="next">
+          <a href="https://honmaple.me/articles/2021/08/Docker笔记之registry清理.html" title="Next article: Docker笔记之registry清理">
+            Docker笔记之registry清理
+            <i class="fa fa-chevron-right"></i>
+          </a>
+        </li>
+    </ul>
+      <div class="comments">
+        <div class="text-center">
+          <a class="btn entry-read-more entry-comment">加载评论</a>
+        </div>
+        <div id="comment_thread" issue-term="Emacs自动插入更新文件头——maple-header"></div>
+      </div>
+  </article>
+      </div>
+    </div>
+<div class="entry-footer">
+  <ul class="entry-footer-left">
+    <li class="hidden-xs">© 2015-2022 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+          <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+          <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+  <ul class="entry-footer-right">
+    <li><a class="entry-switch-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li ><a href="https://github.com/honmaple" title="GitHub"><i class="fa fa-github"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li ><a href="https://honmaple.me/pages/contact.html" title="Envelope"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+</div>    <div class="back-to-top back-to-top-on">
+      <i class="fa fa-hand-o-up" title="back to top"></i>
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+   window.dataLayer = window.dataLayer || [];
+   function gtag(){dataLayer.push(arguments);}
+   gtag('js', new Date());
+   gtag('config', 'UA-88401692-2');
+  </script>
+      <script src="https://s.libforest.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
+      <script src="https://s.libforest.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+           if (typeof ga !== 'undefined') {
+               ga('send', 'pageview', location.pathname + location.search);
+           }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>
