@@ -81,8 +81,109 @@
 </nav>        <article>
           <div class="entry-header">
             <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2022/11/MacOS适配2K显示器.html" rel="bookmark" title="Permalink to MacOS适配2K显示器">MacOS适配2K显示器</a>
+              <a href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html" rel="bookmark" title="Permalink to Emacs笔记之修复yaml-mode的格式化问题">Emacs笔记之修复yaml-mode的格式化问题</a>
             </h1>
+<header class="entry-info">
+  <span title="Updated at 2023-02-21">
+    <i class="fa fa-calendar-o"></i>
+    二 21 二月 2023
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content entry-summary">
+            
+<p>
+一直以来 <b>yaml-mode</b> 都有一个问题，在使用 <code>(indent-region (point-min) (point-max))</code> 时已经格式好的内容总是会得到错误的缩进，比如一个简单的配置
+</p>
+<div class="highlight"><pre><span></span><span class="nt">test1</span><span class="p">:</span> <span class="s">&quot;val&quot;</span>
+<span class="nt">test2</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="s">&quot;val1&quot;</span>
+  <span class="p p-Indicator">-</span> <span class="s">&quot;val2&quot;</span>
+<span class="nt">test3</span><span class="p">:</span>
+  <span class="nt">test4</span><span class="p">:</span> <span class="s">&quot;val4&quot;</span>
+</pre></div>
+
+<p>
+在调用 <code>indent-regin</code> 后就会变成
+</p>
+<div class="highlight"><pre><span></span><span class="nt">test1</span><span class="p">:</span> <span class="s">&quot;val&quot;</span>
+<span class="nt">test2</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="s">&quot;val1&quot;</span>
+  <span class="p p-Indicator">-</span> <span class="s">&quot;val2&quot;</span>
+  <span class="nt">test3</span><span class="p">:</span>
+    <span class="nt">test4</span><span class="p">:</span> <span class="s">&quot;val4&quot;</span>
+</pre></div>
+
+<p>
+而我又总是手痒，写好的配置文件总是会忍不住 <code>indent-region</code> 一番，结果本来正确的格式立马变得各种乱七八糟，当初为了解决这个问题，还专门为 <b>yaml-mode</b> 激活了 <b>lsp-mode</b>, 并且使用 <code>lsp-format-buffer</code> 来进行处理。
+</p>
+<p>
+本来一切都还正常，但最近发现了另外一个问题，如果在 <b>org-mode</b> 中插入 <b>yaml</b> 的代码片段，调用 <code>indent-region</code> 还是还有之前的问题, <b>org-mode</b> 中又无法直接调用 <code>lsp-format-buffer</code>, 所以专门研究了一下 <b>yaml-mode</b>
+</p>
+<p>
+发现 <b>yaml-mode</b> 只是定义了 <code>indent-line-function</code> 变量，没有定义 <code>indent-region-function</code>, 导致调用 <code>indent-region</code> 时其实是逐行调用 <code>yaml-indent-line</code>, 这里面有一个计算当前缩进的 <code>yaml-compute-indentation</code> 函数，计算方式有些简单粗暴，如果上一行是一个 <b>hash key</b>, 当前行的缩进就是上一行的缩进加 <code>yaml-indent-offset</code> 的值, 这里并没有判断当前行是新建行还是已经有相关内容，如果是新建行那么缩进就是对的，如果是已有的内容就是错的，所以我修改了这一部分逻辑，如果是 <b>已有内容并且当前行的缩进小于上一行</b> 则不进行处理, 比如:
+</p>
+<div class="highlight"><pre><span></span>  <span class="p p-Indicator">-</span> <span class="s">&quot;val2&quot;</span>
+<span class="nt">test3</span><span class="p">:</span>
+</pre></div>
+
+<p>
+虽然增加的判断逻辑很简单，但至少在使用 <code>indent-region</code> 时已经格式好的内容就不会出现混乱的情况了, 也不用专门为 <b>yaml</b> 文件激活一个 <b>lsp</b> 进程。
+</p>
+<p>
+目前处理的方式还是采用 advice + letf 形式，否则需要修改很多内容，有兴趣的同道可以参考一下
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/yaml-compute-indentation</span><span class="p">()</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">ci</span> <span class="p">(</span><span class="nf">current-indentation</span><span class="p">))</span>
+        <span class="p">(</span><span class="nv">im</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-hash-key-re</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k">save-excursion</span>
+      <span class="p">(</span><span class="nf">beginning-of-line</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-document-delimiter-re</span><span class="p">)</span> <span class="mi">0</span>
+        <span class="p">(</span><span class="nf">forward-line</span> <span class="mi">-1</span><span class="p">)</span>
+        <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-blank-line-re</span><span class="p">)</span>
+                    <span class="p">(</span><span class="nf">&gt;</span> <span class="p">(</span><span class="nf">point</span><span class="p">)</span> <span class="p">(</span><span class="nf">point-min</span><span class="p">)))</span>
+          <span class="p">(</span><span class="nf">forward-line</span> <span class="mi">-1</span><span class="p">))</span>
+        <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">li</span> <span class="p">(</span><span class="nf">current-indentation</span><span class="p">)))</span>
+          <span class="c1">;; 如果上一行是hash key, 当前行不是, 或者当前行的缩进大于上一行</span>
+          <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="k">or</span> <span class="p">(</span><span class="nf">&gt;</span> <span class="nv">li</span> <span class="nv">ci</span><span class="p">)</span> <span class="p">(</span><span class="k">and</span> <span class="nv">im</span> <span class="p">(</span><span class="nf">=</span> <span class="nv">li</span> <span class="nv">ci</span><span class="p">)))</span> <span class="nv">ci</span>
+            <span class="p">(</span><span class="nf">+</span> <span class="nv">li</span>
+               <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-nested-map-re</span><span class="p">)</span> <span class="nv">yaml-indent-offset</span> <span class="mi">0</span><span class="p">)</span>
+               <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-nested-sequence-re</span><span class="p">)</span> <span class="nv">yaml-indent-offset</span> <span class="mi">0</span><span class="p">)</span>
+               <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-block-literal-re</span><span class="p">)</span> <span class="nv">yaml-indent-offset</span> <span class="mi">0</span><span class="p">))))))))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/yaml-indent-region</span><span class="p">(</span><span class="nv">func</span> <span class="kp">&amp;rest</span> <span class="nv">args</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">derived-mode-p</span> <span class="ss">&#39;yaml-mode</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">letf</span> <span class="p">(((</span><span class="nf">symbol-function</span> <span class="ss">&#39;yaml-compute-indentation</span><span class="p">)</span> <span class="ss">&#39;maple/yaml-compute-indentation</span><span class="p">))</span>
+        <span class="p">(</span><span class="nf">apply</span> <span class="nv">func</span> <span class="nv">args</span><span class="p">))</span>
+    <span class="p">(</span><span class="nf">apply</span> <span class="nv">func</span> <span class="nv">args</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="nv">advice-add</span> <span class="ss">&#39;indent-region</span> <span class="nb">:around</span> <span class="ss">&#39;maple/yaml-indent-region</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2022/11/MacOS适配2K显示器.html" rel="bookmark" title="Permalink to MacOS适配2K显示器">MacOS适配2K显示器</a></h1>
 <header class="entry-info">
   <span title="Updated at 2022-11-24">
     <i class="fa fa-calendar-o"></i>
@@ -126,37 +227,12 @@
 <div class="highlight"><pre><span></span><span class="err">──╼</span> <span class="n">brew</span> <span class="n">info</span> <span class="n">BetterDisplay</span>
 <span class="o">==&gt;</span> <span class="n">betterdisplay</span><span class="p">:</span> <span class="mf">1.3</span><span class="o">.</span><span class="mi">4</span> <span class="p">(</span><span class="n">auto_updates</span><span class="p">)</span>
 <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">betterdisplay</span><span class="o">.</span><span class="n">pro</span><span class="o">/</span>
-<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">Caskroom</span><span class="o">/</span><span class="n">betterdisplay</span><span class="o">/</span><span class="mf">1.3</span><span class="o">.</span><span class="mi">4</span> <span class="p">(</span><span class="mi">127</span><span class="n">B</span><span class="p">)</span>
-<span class="n">From</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">mirrors</span><span class="o">.</span><span class="n">ustc</span><span class="o">.</span><span class="n">edu</span><span class="o">.</span><span class="n">cn</span><span class="o">/</span><span class="n">homebrew</span><span class="o">-</span><span class="n">cask</span><span class="o">.</span><span class="n">git</span>
-<span class="o">==&gt;</span> <span class="n">Name</span>
-<span class="n">BetterDisplay</span>
-<span class="o">==&gt;</span> <span class="n">Description</span>
-<span class="n">Display</span> <span class="n">management</span> <span class="k">tool</span>
-<span class="o">==&gt;</span> <span class="n">Artifacts</span>
-<span class="n">BetterDisplay</span><span class="o">.</span><span class="n">app</span> <span class="p">(</span><span class="n">App</span><span class="p">)</span>
-<span class="o">==&gt;</span> <span class="n">Analytics</span>
-<span class="n">install</span><span class="p">:</span> <span class="mi">553</span> <span class="p">(</span><span class="mi">30</span> <span class="n">days</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span><span class="mi">329</span> <span class="p">(</span><span class="mi">90</span> <span class="n">days</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span><span class="mi">166</span> <span class="p">(</span><span class="mi">365</span> <span class="n">days</span><span class="p">)</span>
-<span class="err">──╼</span> <span class="n">brew</span> <span class="n">install</span> <span class="n">betterdisplay</span>
-</pre></div>
-
-<p>
-   安装后打开可能会提示更新，忽略即可
-</p>
-<h3 id="org-5d1c3526da">配置</h3><p>
-   在菜单栏选择 <b>betterdisplay</b> -&gt; <b>点击齿轮(设置)</b> -&gt; <b>Displays</b>, 然后选择显示器，比如我这选择 <b>AG273QG3R3B</b>, <b>Color LCD</b> 则是笔记本自带屏幕
-</p>
-<p>
-   <a href="https://s.libforest.com/images/2022/11/macos-hidpi-02.png" data-fancybox="image"><img data-src="https://s.libforest.com/images/2022/11/macos-hidpi-02.png" class="lazyload" /></a>
-</p>
-<p>
-   勾选 <code>Edit the default system configuration of this display</code> 和 <code>Set up native smooth resolution scaling</code>, 然后点击 <b>Apply Changes</b> 按钮, 输入管理员密码并且重启, 重启完成后选择 <b>系统设置</b> -&gt; <b>显示器</b>, 选择适合自己的分辨率(这里发现只能选择4种，更多分辨率可通过betterdisplay设置)
-</p>
-<p>
-   <a href="https://s.libforest.com/images/2022/11/macos-hidpi-03.png" data-fancybox="image"><img data-src="https://s.libforest.com/images/2022/11/macos-hidpi-03.png" class="lazyload" /></a>
-</p>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">Caskroom</span><span class="o">/</span><span class="n">betterdisplay</span><span class="o">/</span><span class="mf">1.3</span><span class="o">.</span><span class="mi">4</span> <span class="p">(</span><span class="mi">127</span><span class="n">B …</span></pre></div>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2022/11/MacOS适配2K显示器.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2022/11/人生中的第一台组装电脑.html" rel="bookmark" title="Permalink to 人生中的第一台组装电脑">人生中的第一台组装电脑</a></h1>
@@ -651,48 +727,6 @@ nginx.ingress.kubernetes.io/auth-secret=basic-auth …</pre></div>
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2021/06/flutter笔记之初体验.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/05/GNS3笔记.html" rel="bookmark" title="Permalink to GNS3笔记">GNS3笔记</a></h1>
-<header class="entry-info">
-  <span title="Updated at 2021-11-24">
-    <i class="fa fa-calendar-o"></i>
-    二 11 五月 2021
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tags/gns3/index.html">gns3</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content entry-summary">
-            <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents">
-<ul>
-<li><a href="#org-d4aed5f51a">GNS3 VM导入</a></li>
-<li><a href="#org-ea9d71540d">禁用广告与数据采集</a></li>
-<li><a href="#org-2b4c9310c8">启用basic auth</a></li>
-</ul>
-</div></div>
-<h3 id="org-d4aed5f51a">GNS3 VM导入</h3><div class="highlight"><pre><span></span>virt-install  --name gns3  --memory <span class="m">8192</span>  --vcpus <span class="m">4</span>  --disk /home/kvm/GNS3/GNS3VM-disk001.qcow2  --disk /home/kvm/GNS3/GNS3VM-disk002.qcow2  --import --virt-type kvm --os-type linux --os-variant ubuntu18.04 --network default --graphics vnc,listen<span class="o">=</span><span class="m">0</span>.0.0.0,password<span class="o">=</span>foobar,port …</pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2021/05/GNS3笔记.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">

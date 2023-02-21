@@ -59,8 +59,109 @@
 </nav>        <article>
           <div class="entry-header">
             <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2022/10/Snow静态博客生成器.html" rel="bookmark" title="Permalink to Snow静态博客生成器">Snow静态博客生成器</a>
+              <a href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html" rel="bookmark" title="Permalink to Emacs笔记之修复yaml-mode的格式化问题">Emacs笔记之修复yaml-mode的格式化问题</a>
             </h1>
+<header class="entry-info">
+  <span title="Updated at 2023-02-21">
+    <i class="fa fa-calendar-o"></i>
+    二 21 二月 2023
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+  <span class="entry-info-sep">|</span>
+  <span>
+    <i class="fa fa-folder-o"></i>
+    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+  </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+    </span>
+
+</header>          </div>
+          <hr class="entry-hr" />
+          <div class="entry-content entry-summary">
+            
+<p>
+一直以来 <b>yaml-mode</b> 都有一个问题，在使用 <code>(indent-region (point-min) (point-max))</code> 时已经格式好的内容总是会得到错误的缩进，比如一个简单的配置
+</p>
+<div class="highlight"><pre><span></span><span class="nt">test1</span><span class="p">:</span> <span class="s">&quot;val&quot;</span>
+<span class="nt">test2</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="s">&quot;val1&quot;</span>
+  <span class="p p-Indicator">-</span> <span class="s">&quot;val2&quot;</span>
+<span class="nt">test3</span><span class="p">:</span>
+  <span class="nt">test4</span><span class="p">:</span> <span class="s">&quot;val4&quot;</span>
+</pre></div>
+
+<p>
+在调用 <code>indent-regin</code> 后就会变成
+</p>
+<div class="highlight"><pre><span></span><span class="nt">test1</span><span class="p">:</span> <span class="s">&quot;val&quot;</span>
+<span class="nt">test2</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="s">&quot;val1&quot;</span>
+  <span class="p p-Indicator">-</span> <span class="s">&quot;val2&quot;</span>
+  <span class="nt">test3</span><span class="p">:</span>
+    <span class="nt">test4</span><span class="p">:</span> <span class="s">&quot;val4&quot;</span>
+</pre></div>
+
+<p>
+而我又总是手痒，写好的配置文件总是会忍不住 <code>indent-region</code> 一番，结果本来正确的格式立马变得各种乱七八糟，当初为了解决这个问题，还专门为 <b>yaml-mode</b> 激活了 <b>lsp-mode</b>, 并且使用 <code>lsp-format-buffer</code> 来进行处理。
+</p>
+<p>
+本来一切都还正常，但最近发现了另外一个问题，如果在 <b>org-mode</b> 中插入 <b>yaml</b> 的代码片段，调用 <code>indent-region</code> 还是还有之前的问题, <b>org-mode</b> 中又无法直接调用 <code>lsp-format-buffer</code>, 所以专门研究了一下 <b>yaml-mode</b>
+</p>
+<p>
+发现 <b>yaml-mode</b> 只是定义了 <code>indent-line-function</code> 变量，没有定义 <code>indent-region-function</code>, 导致调用 <code>indent-region</code> 时其实是逐行调用 <code>yaml-indent-line</code>, 这里面有一个计算当前缩进的 <code>yaml-compute-indentation</code> 函数，计算方式有些简单粗暴，如果上一行是一个 <b>hash key</b>, 当前行的缩进就是上一行的缩进加 <code>yaml-indent-offset</code> 的值, 这里并没有判断当前行是新建行还是已经有相关内容，如果是新建行那么缩进就是对的，如果是已有的内容就是错的，所以我修改了这一部分逻辑，如果是 <b>已有内容并且当前行的缩进小于上一行</b> 则不进行处理, 比如:
+</p>
+<div class="highlight"><pre><span></span>  <span class="p p-Indicator">-</span> <span class="s">&quot;val2&quot;</span>
+<span class="nt">test3</span><span class="p">:</span>
+</pre></div>
+
+<p>
+虽然增加的判断逻辑很简单，但至少在使用 <code>indent-region</code> 时已经格式好的内容就不会出现混乱的情况了, 也不用专门为 <b>yaml</b> 文件激活一个 <b>lsp</b> 进程。
+</p>
+<p>
+目前处理的方式还是采用 advice + letf 形式，否则需要修改很多内容，有兴趣的同道可以参考一下
+</p>
+<div class="highlight"><pre><span></span><span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/yaml-compute-indentation</span><span class="p">()</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">ci</span> <span class="p">(</span><span class="nf">current-indentation</span><span class="p">))</span>
+        <span class="p">(</span><span class="nv">im</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-hash-key-re</span><span class="p">)))</span>
+    <span class="p">(</span><span class="k">save-excursion</span>
+      <span class="p">(</span><span class="nf">beginning-of-line</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-document-delimiter-re</span><span class="p">)</span> <span class="mi">0</span>
+        <span class="p">(</span><span class="nf">forward-line</span> <span class="mi">-1</span><span class="p">)</span>
+        <span class="p">(</span><span class="k">while</span> <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-blank-line-re</span><span class="p">)</span>
+                    <span class="p">(</span><span class="nf">&gt;</span> <span class="p">(</span><span class="nf">point</span><span class="p">)</span> <span class="p">(</span><span class="nf">point-min</span><span class="p">)))</span>
+          <span class="p">(</span><span class="nf">forward-line</span> <span class="mi">-1</span><span class="p">))</span>
+        <span class="p">(</span><span class="k">let</span> <span class="p">((</span><span class="nv">li</span> <span class="p">(</span><span class="nf">current-indentation</span><span class="p">)))</span>
+          <span class="c1">;; 如果上一行是hash key, 当前行不是, 或者当前行的缩进大于上一行</span>
+          <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="k">or</span> <span class="p">(</span><span class="nf">&gt;</span> <span class="nv">li</span> <span class="nv">ci</span><span class="p">)</span> <span class="p">(</span><span class="k">and</span> <span class="nv">im</span> <span class="p">(</span><span class="nf">=</span> <span class="nv">li</span> <span class="nv">ci</span><span class="p">)))</span> <span class="nv">ci</span>
+            <span class="p">(</span><span class="nf">+</span> <span class="nv">li</span>
+               <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-nested-map-re</span><span class="p">)</span> <span class="nv">yaml-indent-offset</span> <span class="mi">0</span><span class="p">)</span>
+               <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-nested-sequence-re</span><span class="p">)</span> <span class="nv">yaml-indent-offset</span> <span class="mi">0</span><span class="p">)</span>
+               <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">looking-at</span> <span class="nv">yaml-block-literal-re</span><span class="p">)</span> <span class="nv">yaml-indent-offset</span> <span class="mi">0</span><span class="p">))))))))</span>
+
+<span class="p">(</span><span class="nb">defun</span> <span class="nv">maple/yaml-indent-region</span><span class="p">(</span><span class="nv">func</span> <span class="kp">&amp;rest</span> <span class="nv">args</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">derived-mode-p</span> <span class="ss">&#39;yaml-mode</span><span class="p">)</span>
+      <span class="p">(</span><span class="nv">letf</span> <span class="p">(((</span><span class="nf">symbol-function</span> <span class="ss">&#39;yaml-compute-indentation</span><span class="p">)</span> <span class="ss">&#39;maple/yaml-compute-indentation</span><span class="p">))</span>
+        <span class="p">(</span><span class="nf">apply</span> <span class="nv">func</span> <span class="nv">args</span><span class="p">))</span>
+    <span class="p">(</span><span class="nf">apply</span> <span class="nv">func</span> <span class="nv">args</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="nv">advice-add</span> <span class="ss">&#39;indent-region</span> <span class="nb">:around</span> <span class="ss">&#39;maple/yaml-indent-region</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </article>
+          <ul class="entry-list">
+        <li><article>
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="https://honmaple.me/articles/2022/10/Snow静态博客生成器.html" rel="bookmark" title="Permalink to Snow静态博客生成器">Snow静态博客生成器</a></h1>
 <header class="entry-info">
   <span title="Updated at 2022-11-02">
     <i class="fa fa-calendar-o"></i>
@@ -139,555 +240,12 @@
 </li>
 <li>
 <p>
- 我习惯使用 <b>Emacs + Org</b>，除了前期的几篇文章，后面都是使用 <b>org mode</b> 书写，之前是因为 <b>Python</b> 没有一个好用的 <b>org mode</b> 解析库，所以专门写了一个 <code>org-python</code> 用来解析 <b>org mode</b>；最近我也是完善了另一个我很早之前就写的 <code>org-golang</code> 解析库(轮子+1)，准备趁次机会利用一下这个库
-</p>
-</li>
-<li>
-<p>
- 至于为什么不用最近几年流行的 <b>Hugo</b>, 因为我想要保持和我使用 <b>Pelican</b> 时一样的功能，比如文章加密，而 <b>hugo</b> 并不支持插件，想要自定义插件必须复制大段大段的启动函数, 甚至需要修改源代码。同样我想要定制一个相同的模版，而对于使用过其它模版系统如Django，jinja2, 再来使用 <b>Go内置模版</b> 的人来说, <b>hugo</b> 的内置模版除了难用就是难用，这也是我此次选用 <b>pongo2</b> 的原因
-</p>
-</li>
-<li>
-<p>
- 我的设想是提供插件的接口，并提供一个足够简单的启动函数, 在有用户需要自定义插件时只需要自己创建一个包, 使用三两行代码就能注册自定义插件并重新编译自己的snow
-</p>
-</li>
-</ol>
-<h3 id="org-b4126dd347">快速开始</h3><div class="highlight"><pre><span></span><span class="err">└──╼</span> <span class="p">.</span><span class="o">/</span><span class="n">snow</span> <span class="o">--</span><span class="n">help</span>
-<span class="nl">NAME</span><span class="p">:</span>
-   <span class="n">snow</span> <span class="o">-</span> <span class="n">snow</span> <span class="n">is</span> <span class="n">a</span> <span class="k">static</span> <span class="n">site</span> <span class="n">generator</span><span class="p">.</span>
-
-<span class="nl">USAGE</span><span class="p">:</span>
-   <span class="n">snow</span> <span class="p">[</span><span class="n">global</span> <span class="n">options</span><span class="p">]</span> <span class="n">command</span> <span class="p">[</span><span class="n">command</span> <span class="n">options</span><span class="p">]</span> <span class="p">[</span><span class="n">arguments</span><span class="p">...]</span>
-
-<span class="nl">VERSION</span><span class="p">:</span>
-   <span class="mf">0.1.0</span>
-
-<span class="nl">COMMANDS</span><span class="p">:</span>
-   <span class="n">init</span>     <span class="n">init</span> <span class="n">a</span> <span class="n">new</span> <span class="n">site</span>
-   <span class="n">build</span>    <span class="n">build</span> <span class="n">and</span> <span class="n">output</span>
-   <span class="n">server</span>   <span class="n">server</span> <span class="n">local</span> <span class="n">files</span>
-   <span class="n">help</span><span class="p">,</span> <span class="n">h</span>  <span class="n">Shows</span> <span class="n">a</span> <span class="n">list</span> <span class="n">of</span> <span class="n">commands</span> <span class="n">or</span> <span class="n">help</span> <span class="k">for</span> <span class="n">one</span> <span class="n">command</span>
-
-<span class="n">GLOBAL</span> <span class="nl">OPTIONS</span><span class="p">:</span>
-   <span class="o">--</span><span class="n">conf</span> <span class="kt">FILE</span><span class="p">,</span> <span class="o">-</span><span class="n">c</span> <span class="kt">FILE</span>  <span class="n">load</span> <span class="n">configuration</span> <span class="n">from</span> <span class="kt">FILE</span> <span class="p">(</span><span class="k">default</span><span class="o">:</span> <span class="s">&quot;config.yaml&quot;</span><span class="p">)</span>
-   <span class="o">--</span><span class="n">help</span><span class="p">,</span> <span class="o">-</span><span class="n">h</span>            <span class="n">show</span> <span class="n">help</span> <span class="p">(</span><span class="k">default</span><span class="o">:</span> <span class="nb">false</span><span class="p">)</span>
-   <span class="o">--</span><span class="n">version</span><span class="p">,</span> <span class="o">-</span><span class="n">v</span>         <span class="n">print</span> <span class="n">the</span> <span class="n">version</span> <span class="p">(</span><span class="k">default</span><span class="o">:</span> <span class="nb">false</span><span class="p">)</span>
-</pre></div>
-
-<h4 id="org-5d70453384">创建新的站点</h4><div class="highlight"><pre><span></span>──╼ .<span class="o">/</span><span class="nv">snow</span> <span class="nv">init</span> <span class="nv">exmaple</span>.<span class="nv">com</span>
-<span class="nv">Welcome</span> <span class="nv">to</span> <span class="nv">snow</span> <span class="mi">0</span>.<span class="mi">1</span>.<span class="mi">0</span>.
-<span class="o">&gt;</span> <span class="nv">Where</span> <span class="k">do</span> <span class="nv">you</span> <span class="nv">want</span> <span class="nv">to</span> <span class="nv">create</span> <span class="nv">your</span> <span class="nv">new</span> <span class="nv">web</span> <span class="nv">site</span>? [<span class="nv">exmaple</span>.<span class="nv">com</span>]
-<span class="o">&gt;</span> <span class="nv">What</span> <span class="nv">will</span> <span class="nv">be</span> <span class="nv">the</span> <span class="nv">title</span> <span class="nv">of</span> <span class="nv">this</span> <span class="nv">web</span> <span class="nv">site</span>? <span class="nv">Custom</span> <span class="nv">Title</span>
-<span class="o">&gt;</span> <span class="nv">Who</span> <span class="nv">will</span> <span class="nv">be</span> <span class="nv">the</span> <span class="nv">author</span> <span class="nv">of</span> <span class="nv">this</span> <span class="nv">web</span> <span class="nv">site</span>? <span class="nv">snow</span>
-<span class="o">&gt;</span> <span class="nv">What</span> <span class="nv">is</span> <span class="nv">your</span> <span class="nv">URL</span> <span class="nv">prefix</span>? <span class="ss">(</span><span class="nv">see</span> <span class="nv">above</span> <span class="nv">example</span><span class="c1">; no trailing slash) https://example.com</span>
-</pre></div>
-
-<h4 id="org-8c035e9154">创建新的文章</h4><div class="highlight"><pre><span></span>└──╼ cd example.com
-└──╼ mkdir -p content/posts
-└──╼ cat &gt; content/posts/first-post.org &lt;&lt;EOF
-&gt; #+TITLE: Post1
-&gt; #+AUTHOR: honmaple
-&gt; #+DATE: 2021-10-06 14:57:51
-&gt; #+CATEGORY: Linux
-&gt; #+PROPERTY: MODIFIED 2022-10-13 00:04:38
-&gt; #+PROPERTY: TAGS linux
-&gt;
-&gt;
-&gt; post1
-&gt; EOF
-</pre></div>
-
-<h4 id="org-011bcf6117">编译和预览</h4><div class="highlight"><pre><span></span>──╼ ./snow server -D
-──╼ ./snow server -D
-DEBU Writing output/posts/2021/10/Post1.html
-DEBU Writing output/categories/index.html
-DEBU Writing output/categories/linux/index.html
-DEBU Writing output/index.html
-DEBU Writing output/tags/index.html
-DEBU Writing output/tags/linux/index.html
-DEBU Writing output/authors/index.html
-DEBU Writing output/archives/index.html
-INFO Done: Processed 1 pages in 133.999021ms
-INFO Listen 127.0.0.1:8000 ...
-</pre></div>
-
-<h3 id="org-1f14404d88">配置说明</h3><h4 id="org-7657e5f093">文章列表</h4><p>
-   文章列表配置:
-</p>
-<div class="highlight"><pre><span></span><span class="nt">content_dir</span><span class="p">:</span> <span class="s">&quot;content&quot;</span>
-<span class="nt">page_dirs</span><span class="p">:</span>
-  <span class="p p-Indicator">-</span> <span class="s">&quot;drafts&quot;</span>
-  <span class="p p-Indicator">-</span> <span class="s">&quot;posts&quot;</span>
-<span class="nt">page_meta</span><span class="p">:</span>
-  <span class="nt">index</span><span class="p">:</span>
-    <span class="nt">list.lookup</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;index.html&quot;</span>
-    <span class="nt">list.output</span><span class="p">:</span> <span class="s">&quot;index{number}.html&quot;</span>
-<span class="nt">page_filter</span><span class="p">:</span> <span class="s">&quot;-drafts&quot;</span>
-<span class="nt">page_orderby</span><span class="p">:</span> <span class="s">&quot;date</span><span class="nv"> </span><span class="s">desc,title&quot;</span>
-</pre></div>
-
-<ul>
-<li>
-<p>
-<b>content_dir</b>: 文章目录所在, 其中该目录下应该包括一系列子目录，这些子目录的名称对应为 <b>文章的类型</b>, 比如 *content/drafts/* 目录下的文章类型为 <b>drafts</b>, 当然也可以直接在文章文件头添加 <code>type: drafts</code>
-</p>
-</li>
-<li>
-<p>
-<b>page_dirs</b>: 所有类型的文章列表，当 <b>page_dirs</b> 为空时，snow将会搜索 <b>content</b> 目录下的所有子目录
-</p>
-</li>
-<li>
-<p>
-<b>page_meta</b>: 文章页面元数据，所有页面的生成都和该配置有关，具体见下文
-</p>
-</li>
-<li>
-<p>
-<b>page_filter</b>: 全局的文章列表筛选，格式见下文
-</p>
-</li>
-<li>
-<p>
-<b>page_orderby</b>: 全局的文章列表排序
-</p>
-</li>
-<li>
-<p>
-<b>page_paginate</b>: 全局的文章列表分页大小
-</p>
-</li>
-</ul>
-<h4 id="org-8f9fcd9880">静态文件</h4><p>
-   静态文件配置:
-</p>
-<div class="highlight"><pre><span></span><span class="nt">static_exts</span><span class="p">:</span>
-  <span class="p p-Indicator">-</span> <span class="s">&quot;.js&quot;</span>
-  <span class="p p-Indicator">-</span> <span class="s">&quot;.css&quot;</span>
-<span class="nt">static_dirs</span><span class="p">:</span>
-  <span class="p p-Indicator">-</span> <span class="s">&quot;static/&quot;</span>
-  <span class="p p-Indicator">-</span> <span class="s">&quot;static/css/&quot;</span>
-<span class="nt">static_meta</span><span class="p">:</span>
-  <span class="nt">static/CNAME</span><span class="p">:</span> <span class="s">&quot;/&quot;</span>
-  <span class="nt">static/css/main.css</span><span class="p">:</span> <span class="s">&quot;static/css/&quot;</span>
-  <span class="nt">theme/static</span><span class="p">:</span> <span class="s">&quot;static/&quot;</span>
-<span class="nt">output_dir</span><span class="p">:</span> <span class="s">&quot;output&quot;</span>
-</pre></div>
-
-<ul>
-<li>
-<p>
-<b>static_dirs</b>: 静态文件目录, 该目录区分主题的静态文件static
-</p>
-</li>
-<li>
-<p>
-<b>static_exts</b>: 静态文件扩展，不配置将会使用静态文件目录下的所有文件
-</p>
-</li>
-<li>
-<p>
-<b>static_meta</b>: 静态文件元数据，用于指定静态文件或静态目录的保存目录, 当有多条路径时，长度优先
-</p>
-<ul>
-<li>
-<p>
-*/*: 保存到 <b>output</b>
-</p>
-</li>
-<li>
-<p>
-<b>theme/static</b>: 指定主题的静态文件保存目录
-</p>
-</li>
-</ul>
-</li>
-</ul>
-<h4 id="org-3d9bbd19cc">主题</h4><p>
-   主题配置:
-</p>
-<div class="highlight"><pre><span></span><span class="nt">theme</span><span class="p">:</span>
-  <span class="nt">path</span><span class="p">:</span> <span class="s">&quot;themes/test-theme&quot;</span>
-  <span class="nt">engine</span><span class="p">:</span> <span class="s">&quot;pongo2&quot;</span>
-  <span class="nt">override</span><span class="p">:</span> <span class="s">&quot;layouts&quot;</span>
-</pre></div>
-
-<ul>
-<li>
-<p>
-<b>path</b>: 主题目录, 内置主题: <b>simple</b>
-</p>
-</li>
-<li>
-<p>
-<b>engine</b>: 主题模版引擎, 当前只支持 <b>pongo2</b>
-</p>
-</li>
-<li>
-<p>
-<b>override</b>: 主题模版覆盖目录, 比如一个存在的主题可以增加同名的文件到 <b>override</b> 配置的目录, snow将会优先使用该文件
-</p>
-</li>
-<li>
-<p>
-<b>主题目录结构</b>:
-     其中 <b>templates</b> 和 <b>static</b> 名称不可修改
-</p>
-<div class="highlight"><pre><span></span>simple/
-├── templates
-│   ├── post.html
-│   ├── index.html
-│   ├── archives.html
-├── static
-│   ├── main.css
-</pre></div>
-
-</li>
-</ul>
-<h4 id="org-4c162d3988">动态页</h4><p>
-   在snow中所有的页面都是根据配置和主题模板进行生成, 其中动态页面分为三类:
-</p>
-<h5 id="org-ef66c90dbd">详情页</h5><p>
-    详情页的配置为 <code>page_meta.xxx</code>, 其中 <b>xxx</b> 必须是所有页面类型中的一种, 比如 <code>page_meta.posts</code>, <code>page_meta.pages</code> 等, 示例:
-</p>
-<div class="highlight"><pre><span></span><span class="nt">page_meta</span><span class="p">:</span>
-  <span class="nt">posts</span><span class="p">:</span>
-    <span class="nt">lookup</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;post.html&quot;</span>
-    <span class="nt">output</span><span class="p">:</span> <span class="s">&quot;posts/{date:%Y}/{date:%m}/{slug}.html&quot;</span>
-  <span class="nt">pages</span><span class="p">:</span>
-    <span class="nt">lookup</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;page.html&quot;</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;post.html&quot;</span>
-    <span class="nt">output</span><span class="p">:</span> <span class="s">&quot;pages/{slug}.html&quot;</span>
-  <span class="nt">drafts</span><span class="p">:</span>
-    <span class="nt">lookup</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;post.html&quot;</span>
-    <span class="nt">output</span><span class="p">:</span> <span class="s">&quot;drafts/{date:%Y}/{date:%m}/{slug}.html&quot;</span>
-</pre></div>
-
-<ul>
-<li>
-<p>
-<b>lookup</b>: 主题中查找的模版文件
-</p>
-</li>
-<li>
-<p>
-<b>output</b>: 写入的文件路径, <b>slug</b> 为页面标题
-</p>
-</li>
-<li>
-<p>
-<b>output变量</b>:
-</p>
-<table>
-<tr>
-<th>变量</th>
-<th>描述</th>
-</tr>
-<tr>
-<td>{date:%Y}</td>
-<td>创建文章的年份</td>
-</tr>
-<tr>
-<td>{date:%m}</td>
-<td>创建文章的月份</td>
-</tr>
-<tr>
-<td>{date:%d}</td>
-<td>创建文章的日期</td>
-</tr>
-<tr>
-<td>{date:%H}</td>
-<td>创建文章的小时</td>
-</tr>
-<tr>
-<td>{slug}</td>
-<td>文章标题或自定义slug</td>
-</tr>
-<tr>
-<td>{filename}</td>
-<td>文件名称(不带后缀名)</td>
-</tr>
-</table>
-</li>
-<li>
-<p>
-<b>模版变量</b>:
-</p>
-<table>
-<tr>
-<th>变量</th>
-<th>描述</th>
-</tr>
-<tr>
-<td>page</td>
-<td></td>
-</tr>
-<tr>
-<td>page.Title</td>
-<td>页面标题</td>
-</tr>
-<tr>
-<td>page.URL</td>
-<td>页面链接</td>
-</tr>
-<tr>
-<td>page.Categories</td>
-<td>页面分类</td>
-</tr>
-<tr>
-<td>page.Tags</td>
-<td>页面标签</td>
-</tr>
-<tr>
-<td>page.Authors</td>
-<td>页面作者</td>
-</tr>
-<tr>
-<td>page.Summary</td>
-<td>页面简介</td>
-</tr>
-<tr>
-<td>page.Content</td>
-<td>页面内容</td>
-</tr>
-<tr>
-<td>page.Meta.xxx</td>
-<td>自定义的元数据</td>
-</tr>
-<tr>
-<td>page.Prev</td>
-<td>上一篇</td>
-</tr>
-<tr>
-<td>page.Next</td>
-<td>下一篇</td>
-</tr>
-<tr>
-<td>page.HasPrev()</td>
-<td>是否有上一篇</td>
-</tr>
-<tr>
-<td>page.HasNext()</td>
-<td>是否有下一篇</td>
-</tr>
-<tr>
-<td>page.PrevInType</td>
-<td>同一类型上一篇</td>
-</tr>
-<tr>
-<td>page.NextInType</td>
-<td>同一类型下一篇</td>
-</tr>
-<tr>
-<td>page.HasPrevInType()</td>
-<td>是否有同一类型上一篇</td>
-</tr>
-<tr>
-<td>page.HasNextInType()</td>
-<td>是否有同一类型下一篇</td>
-</tr>
-</table>
-</li>
-</ul>
-<h5 id="org-5e1e7daa56">列表页</h5><p>
-    列表页的配置为 <code>page_meta.xxx.list</code>, 其中 <b>xxx</b> 可以是除页面类型以外的任意名称, 比如 <code>page_meta.tags.list</code>, <code>page_meta.mycustom.list</code> 等, 示例:
-</p>
-<div class="highlight"><pre><span></span><span class="nt">page_meta</span><span class="p">:</span>
-  <span class="nt">index</span><span class="p">:</span>
-    <span class="nt">list.lookup</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;index.html&quot;</span>
-    <span class="nt">list.output</span><span class="p">:</span> <span class="s">&quot;index{number}.html&quot;</span>
-    <span class="nt">list.filter</span><span class="p">:</span> <span class="s">&quot;-pages&quot;</span>
-    <span class="nt">list.paginate</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5</span>
-  <span class="nt">tags</span><span class="p">:</span>
-    <span class="nt">list.lookup</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;tag.html&quot;</span>
-    <span class="nt">list.output</span><span class="p">:</span> <span class="s">&quot;tags/{slug}/index{number}.html&quot;</span>
-    <span class="nt">list.filter</span><span class="p">:</span> <span class="s">&quot;-pages&quot;</span>
-    <span class="nt">list.groupby</span><span class="p">:</span> <span class="s">&quot;tag&quot;</span>
-    <span class="nt">list.paginate</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
-</pre></div>
-
-<ul>
-<li>
-<p>
-<b>output</b>: 列表页和详情页不同，列表页可能会根据不同的分页大小写入多个文件, 其中分页由 <b>output</b> 中的 <code>{number}</code> 决定, 比如上述的 <code>tags.list.output</code>, 假如有36篇 <b>tag</b> 为 <b>linux</b> 的页面, 写入的文件为:
-</p>
-<div class="highlight"><pre><span></span><span class="o">[</span><span class="n">output_dir</span><span class="o">]/</span><span class="n">tags</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="k">index</span><span class="p">.</span><span class="n">html</span><span class="w"></span>
-<span class="o">[</span><span class="n">output_dir</span><span class="o">]/</span><span class="n">tags</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">index1</span><span class="p">.</span><span class="n">html</span><span class="w"></span>
-<span class="o">[</span><span class="n">output_dir</span><span class="o">]/</span><span class="n">tags</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">index2</span><span class="p">.</span><span class="n">html</span><span class="w"></span>
-<span class="o">[</span><span class="n">output_dir</span><span class="o">]/</span><span class="n">tags</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">index3</span><span class="p">.</span><span class="n">html</span><span class="w"></span>
-</pre></div>
-
-<p>
-        <code>{number}</code> 在第一页时会自动配置成空字符串，如果需要禁止该动作，可以使用 <code>{number:one}</code> 代替
-</p>
-</li>
-<li>
-<p>
-<b>groupby</b>: 如果想要配置按标签或者分类进行分组, 并写入不同的分组文件，可以配置 <b>groupby</b> 字段，目前可选: type、tag、category、author 和 date:xxx, 其中 <b>date:xxx</b> 中的xxx为Go格式化时间格式, 比如 <b>date:2006</b> 表示按年分组
-</p>
-</li>
-<li>
-<p>
-<b>filter</b>: 列表显示需要提前筛选不想展示的页面，可以配置 <b>filter</b> 字段, 格式:
-</p>
-<ul>
-<li>
-<p>
-字符串格式: <code>type1</code> 表示只展示类型为type1的页面, <code>-type2</code> 表示排除类型为type1的页面, 多个类型使用英文逗号分隔
-</p>
-</li>
-<li>
-<p>
-字典格式:
-</p>
-<div class="highlight"><pre><span></span><span class="nt">page_meta</span><span class="p">:</span>
-  <span class="nt">tags</span><span class="p">:</span>
-    <span class="nt">list.filter</span><span class="p">:</span>
-      <span class="nt">type</span><span class="p">:</span> <span class="s">&quot;type1,-type2&quot;</span>
-      <span class="nt">tag</span><span class="p">:</span> <span class="s">&quot;tag1,tag2,-tag3&quot;</span>
-      <span class="nt">author</span><span class="p">:</span> <span class="s">&quot;author1&quot;</span>
-      <span class="nt">category</span><span class="p">:</span> <span class="s">&quot;category&quot;</span>
-</pre></div>
-
-<p>
-        其中任意字段都可以使用前缀 <code>-</code> 排除相应的页面
-</p>
-</li>
-</ul>
-</li>
-<li>
-<p>
-<b>paginate</b>: 分页大小, 0代表不分页，默认的分页在 <b>page_pagniate</b>
-</p>
-</li>
-<li>
-<p>
-<b>模版变量</b>:
-</p>
-<table>
-<tr>
-<th>变量</th>
-<th>描述</th>
-</tr>
-<tr>
-<td>paginator</td>
-<td></td>
-</tr>
-<tr>
-<td>paginator.URL</td>
-<td>分页链接</td>
-</tr>
-<tr>
-<td>paginator.PageNum</td>
-<td>当前页</td>
-</tr>
-<tr>
-<td>paginator.Total</td>
-<td>总页数</td>
-</tr>
-<tr>
-<td>paginator.HasPrev()</td>
-<td>是否有上一页</td>
-</tr>
-<tr>
-<td>paginator.Prev</td>
-<td>上一页</td>
-</tr>
-<tr>
-<td>paginator.Prev.URL</td>
-<td>上一页链接</td>
-</tr>
-<tr>
-<td>paginator.HasNext()</td>
-<td>是否有下一页</td>
-</tr>
-<tr>
-<td>paginator.Next</td>
-<td>下一页</td>
-</tr>
-<tr>
-<td>paginator.Next.URL</td>
-<td>下一页链接</td>
-</tr>
-<tr>
-<td>paginator.All</td>
-<td>所有页</td>
-</tr>
-<tr>
-<td>paginator.List</td>
-<td>当前页文章列表</td>
-</tr>
-<tr>
-<td>slug</td>
-<td>分组key</td>
-</tr>
-</table>
-</li>
-</ul>
-<h5 id="org-37a7d1272c">归档页</h5><p>
-    归档页表示所有分组页面的集合, 比如所有的标签，所有的作者或类型
-</p>
-<div class="highlight"><pre><span></span><span class="nt">page_meta</span><span class="p">:</span>
-  <span class="nt">tags</span><span class="p">:</span>
-    <span class="nt">lookup</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;tags.html&quot;</span>
-    <span class="nt">output</span><span class="p">:</span> <span class="s">&quot;tags/index.html&quot;</span>
-  <span class="nt">archives</span><span class="p">:</span>
-    <span class="nt">lookup</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;archives.html&quot;</span>
-    <span class="nt">output</span><span class="p">:</span> <span class="s">&quot;archives/index.html&quot;</span>
-</pre></div>
-
-<ul>
-<li>
-<p>
-<b>模版变量</b>:
-</p>
-<table>
-<tr>
-<th>变量</th>
-<th>描述</th>
-</tr>
-<tr>
-<td>labels</td>
-<td>分组列表</td>
-</tr>
-<tr>
-<td>pages</td>
-<td>文章列表</td>
-</tr>
-</table>
-</li>
-</ul>
-<h4 id="org-bcfffa44ea">本地测试和正式发布</h4><p>
-   snow 提供了 <b>mode</b> 配置用于区分本地测试和正式发布
-</p>
-<div class="highlight"><pre><span></span><span class="nt">site</span><span class="p">:</span>
-  <span class="nt">url</span><span class="p">:</span> <span class="s">&quot;http://127.0.0.1:8000&quot;</span>
-<span class="nt">output_dir</span><span class="p">:</span> <span class="s">&quot;output&quot;</span>
-
-<span class="nt">mode.publish</span><span class="p">:</span>
-  <span class="nt">site</span><span class="p">:</span>
-    <span class="nt">url</span><span class="p">:</span> <span class="s">&quot;https://example.com&quot;</span>
-  <span class="nt">output_dir</span><span class="p">:</span> <span class="s">&quot;xxx&quot;</span>
-
-<span class="nt">mode.develop</span><span class="p">:</span>
-  <span class="nt">include</span><span class="p">:</span> <span class="s">&quot;develop.yaml&quot;</span>
-</pre></div>
-
-<p>
-   只要在构建时使用 <code>snow build --mode publish</code> 即可覆盖本地默认配置
-</p>
+ 我习惯使用 <b>Emacs …</b></p></li></ol>
           </div>
-        </article>
-          <ul class="entry-list">
+          <div class="text-center">
+            <a class="btn entry-read-more" href="https://honmaple.me/articles/2022/10/Snow静态博客生成器.html">阅读全文 »</a>
+          </div>
+        </article></li>
         <li><article>
           <div class="entry-header">
             <h1 class="entry-title"><a href="https://honmaple.me/articles/2021/11/Emacs笔记之minibuffer默认输入.html" rel="bookmark" title="Permalink to Emacs笔记之minibuffer默认输入">Emacs笔记之minibuffer默认输入</a></h1>
@@ -1118,68 +676,6 @@ pyenv: 1.2.23
           </div>
           <div class="text-center">
             <a class="btn entry-read-more" href="https://honmaple.me/articles/2021/03/pyenv笔记.html">阅读全文 »</a>
-          </div>
-        </article></li>
-        <li><article>
-          <div class="entry-header">
-            <h1 class="entry-title"><a href="https://honmaple.me/articles/2020/09/golang笔记之struct转map性能比较.html" rel="bookmark" title="Permalink to golang笔记之struct转map性能比较">golang笔记之struct转map性能比较</a></h1>
-<header class="entry-info">
-  <span title="Updated at 2021-05-31">
-    <i class="fa fa-calendar-o"></i>
-    一 21 九月 2020
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-    </span>
-  <span class="entry-info-sep">|</span>
-  <span>
-    <i class="fa fa-folder-o"></i>
-    In <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
-  </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tags/golang/index.html">golang</a>
-    </span>
-
-</header>          </div>
-          <hr class="entry-hr" />
-          <div class="entry-content entry-summary">
-            
-<div class="highlight"><pre><span></span><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-    <span class="s">&quot;encoding/json&quot;</span>
-    <span class="s">&quot;reflect&quot;</span>
-    <span class="s">&quot;testing&quot;</span>
-<span class="p">)</span>
-
-<span class="kd">type</span> <span class="nx">A</span> <span class="kd">struct</span> <span class="p">{</span>
-    <span class="nx">A</span> <span class="kt">string</span>   <span class="s">`json:&quot;a&quot;`</span>
-    <span class="nx">B</span> <span class="kt">string</span>   <span class="s">`json:&quot;b&quot;`</span>
-    <span class="nx">C</span> <span class="kt">int</span>      <span class="s">`json:&quot;c&quot;`</span>
-    <span class="nx">D</span> <span class="kt">int</span>      <span class="s">`json:&quot;d&quot;`</span>
-    <span class="nx">E</span> <span class="p">[]</span><span class="kt">string</span> <span class="s">`json:&quot;e&quot;`</span>
-    <span class="nx">F</span> <span class="p">[]</span><span class="kt">int</span>    <span class="s">`json:&quot;f&quot;`</span>
-<span class="p">}</span>
-
-<span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">A</span><span class="p">{</span>
-    <span class="s">&quot;string&quot;</span><span class="p">,</span>
-    <span class="s">&quot;test&quot;</span><span class="p">,</span>
-    <span class="mi">15</span><span class="p">,</span>
-    <span class="mi">1024</span><span class="p">,</span>
-    <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&quot;vvv&quot;</span><span class="p">,</span> <span class="s">&quot;ssss&quot;</span><span class="p">,</span> <span class="s">&quot;44444&quot;</span><span class="p">},</span>
-    <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">100</span><span class="p">,</span> <span class="mi">4012</span><span class="p">},</span>
-<span class="p">}</span>
-
-<span class="kd">func …</span></pre></div>
-          </div>
-          <div class="text-center">
-            <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/09/golang笔记之struct转map性能比较.html">阅读全文 »</a>
           </div>
         </article></li>
           <li>  <ul class="entry-pagination">

@@ -1,5 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>紅楓吟</title><link href="https://honmaple.me/" rel="alternate"></link><link href="https://honmaple.me/atom.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2022-12-12T13:31:59+08:00</updated><subtitle>风落花语风落天，花落风雨花落田.</subtitle><entry><title>MacOS适配2K显示器</title><link href="https://honmaple.me/articles/2022/11/MacOS%E9%80%82%E9%85%8D2K%E6%98%BE%E7%A4%BA%E5%99%A8.html" rel="alternate"></link><published>2022-11-24T17:19:45+08:00</published><updated>2022-11-24T18:13:59+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2022-11-24:/articles/2022/11/MacOS适配2K显示器.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>紅楓吟</title><link href="https://honmaple.me/" rel="alternate"></link><link href="https://honmaple.me/atom.xml" rel="self"></link><id>https://honmaple.me/</id><updated>2023-02-21T18:20:10+08:00</updated><subtitle>风落花语风落天，花落风雨花落田.</subtitle><entry><title>Emacs笔记之修复yaml-mode的格式化问题</title><link href="https://honmaple.me/articles/2023/02/Emacs%E7%AC%94%E8%AE%B0%E4%B9%8B%E4%BF%AE%E5%A4%8Dyaml-mode%E7%9A%84%E6%A0%BC%E5%BC%8F%E5%8C%96%E9%97%AE%E9%A2%98.html" rel="alternate"></link><published>2023-02-21T17:18:40+08:00</published><updated>2023-02-21T18:20:10+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2023-02-21:/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html</id><summary type="html">
+&lt;p&gt;
+一直以来 &lt;b&gt;yaml-mode&lt;/b&gt; 都有一个问题，在使用 &lt;code&gt;(indent-region (point-min) (point-max))&lt;/code&gt; 时已经格式好的内容总是会得到错误的缩进，比如一个简单的配置
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;test1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;test2&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val1&amp;quot;&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val2&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;test3&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;test4&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val4&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;
+在调用 &lt;code&gt;indent-regin&lt;/code&gt; 后就会变成
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;test1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;test2&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val1&amp;quot;&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val2&amp;quot;&lt;/span&gt;
+  &lt;span class="nt"&gt;test3&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;test4&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val4&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;
+而我又总是手痒，写好的配置文件总是会忍不住 &lt;code&gt;indent-region&lt;/code&gt; 一番，结果本来正确的格式立马变得各种乱七八糟，当初为了解决这个问题，还专门为 &lt;b&gt;yaml-mode&lt;/b&gt; 激活了 &lt;b&gt;lsp-mode&lt;/b&gt;, 并且使用 &lt;code&gt;lsp-format-buffer&lt;/code&gt; 来进行处理。
+&lt;/p&gt;
+&lt;p&gt;
+本来一切都还正常，但最近发现了另外一个问题，如果在 &lt;b&gt;org-mode&lt;/b&gt; 中插入 &lt;b&gt;yaml&lt;/b&gt; 的代码片段，调用 …&lt;/p&gt;</summary><content type="html">
+&lt;p&gt;
+一直以来 &lt;b&gt;yaml-mode&lt;/b&gt; 都有一个问题，在使用 &lt;code&gt;(indent-region (point-min) (point-max))&lt;/code&gt; 时已经格式好的内容总是会得到错误的缩进，比如一个简单的配置
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;test1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;test2&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val1&amp;quot;&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val2&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;test3&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;test4&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val4&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;
+在调用 &lt;code&gt;indent-regin&lt;/code&gt; 后就会变成
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;test1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;test2&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val1&amp;quot;&lt;/span&gt;
+  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val2&amp;quot;&lt;/span&gt;
+  &lt;span class="nt"&gt;test3&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;test4&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val4&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;
+而我又总是手痒，写好的配置文件总是会忍不住 &lt;code&gt;indent-region&lt;/code&gt; 一番，结果本来正确的格式立马变得各种乱七八糟，当初为了解决这个问题，还专门为 &lt;b&gt;yaml-mode&lt;/b&gt; 激活了 &lt;b&gt;lsp-mode&lt;/b&gt;, 并且使用 &lt;code&gt;lsp-format-buffer&lt;/code&gt; 来进行处理。
+&lt;/p&gt;
+&lt;p&gt;
+本来一切都还正常，但最近发现了另外一个问题，如果在 &lt;b&gt;org-mode&lt;/b&gt; 中插入 &lt;b&gt;yaml&lt;/b&gt; 的代码片段，调用 &lt;code&gt;indent-region&lt;/code&gt; 还是还有之前的问题, &lt;b&gt;org-mode&lt;/b&gt; 中又无法直接调用 &lt;code&gt;lsp-format-buffer&lt;/code&gt;, 所以专门研究了一下 &lt;b&gt;yaml-mode&lt;/b&gt;
+&lt;/p&gt;
+&lt;p&gt;
+发现 &lt;b&gt;yaml-mode&lt;/b&gt; 只是定义了 &lt;code&gt;indent-line-function&lt;/code&gt; 变量，没有定义 &lt;code&gt;indent-region-function&lt;/code&gt;, 导致调用 &lt;code&gt;indent-region&lt;/code&gt; 时其实是逐行调用 &lt;code&gt;yaml-indent-line&lt;/code&gt;, 这里面有一个计算当前缩进的 &lt;code&gt;yaml-compute-indentation&lt;/code&gt; 函数，计算方式有些简单粗暴，如果上一行是一个 &lt;b&gt;hash key&lt;/b&gt;, 当前行的缩进就是上一行的缩进加 &lt;code&gt;yaml-indent-offset&lt;/code&gt; 的值, 这里并没有判断当前行是新建行还是已经有相关内容，如果是新建行那么缩进就是对的，如果是已有的内容就是错的，所以我修改了这一部分逻辑，如果是 &lt;b&gt;已有内容并且当前行的缩进小于上一行&lt;/b&gt; 则不进行处理, 比如:
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;val2&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;test3&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;
+虽然增加的判断逻辑很简单，但至少在使用 &lt;code&gt;indent-region&lt;/code&gt; 时已经格式好的内容就不会出现混乱的情况了, 也不用专门为 &lt;b&gt;yaml&lt;/b&gt; 文件激活一个 &lt;b&gt;lsp&lt;/b&gt; 进程。
+&lt;/p&gt;
+&lt;p&gt;
+目前处理的方式还是采用 advice + letf 形式，否则需要修改很多内容，有兴趣的同道可以参考一下
+&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/yaml-compute-indentation&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;ci&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;current-indentation&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;im&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;looking-at&lt;/span&gt; &lt;span class="nv"&gt;yaml-hash-key-re&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;save-excursion&lt;/span&gt;
+      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;beginning-of-line&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;looking-at&lt;/span&gt; &lt;span class="nv"&gt;yaml-document-delimiter-re&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;forward-line&lt;/span&gt; &lt;span class="mi"&gt;-1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;and&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;looking-at&lt;/span&gt; &lt;span class="nv"&gt;yaml-blank-line-re&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;point&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;point-min&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+          &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;forward-line&lt;/span&gt; &lt;span class="mi"&gt;-1&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nv"&gt;li&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;current-indentation&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+          &lt;span class="c1"&gt;;; 如果上一行是hash key, 当前行不是, 或者当前行的缩进大于上一行&lt;/span&gt;
+          &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;or&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nv"&gt;li&lt;/span&gt; &lt;span class="nv"&gt;ci&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;and&lt;/span&gt; &lt;span class="nv"&gt;im&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;=&lt;/span&gt; &lt;span class="nv"&gt;li&lt;/span&gt; &lt;span class="nv"&gt;ci&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt; &lt;span class="nv"&gt;ci&lt;/span&gt;
+            &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;+&lt;/span&gt; &lt;span class="nv"&gt;li&lt;/span&gt;
+               &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;looking-at&lt;/span&gt; &lt;span class="nv"&gt;yaml-nested-map-re&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;yaml-indent-offset&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+               &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;looking-at&lt;/span&gt; &lt;span class="nv"&gt;yaml-nested-sequence-re&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;yaml-indent-offset&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+               &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;looking-at&lt;/span&gt; &lt;span class="nv"&gt;yaml-block-literal-re&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;yaml-indent-offset&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;))))))))&lt;/span&gt;
+
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;defun&lt;/span&gt; &lt;span class="nv"&gt;maple/yaml-indent-region&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;func&lt;/span&gt; &lt;span class="kp"&gt;&amp;amp;rest&lt;/span&gt; &lt;span class="nv"&gt;args&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;derived-mode-p&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;yaml-mode&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;letf&lt;/span&gt; &lt;span class="p"&gt;(((&lt;/span&gt;&lt;span class="nf"&gt;symbol-function&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;yaml-compute-indentation&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;maple/yaml-compute-indentation&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;apply&lt;/span&gt; &lt;span class="nv"&gt;func&lt;/span&gt; &lt;span class="nv"&gt;args&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nf"&gt;apply&lt;/span&gt; &lt;span class="nv"&gt;func&lt;/span&gt; &lt;span class="nv"&gt;args&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;advice-add&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;indent-region&lt;/span&gt; &lt;span class="nb"&gt;:around&lt;/span&gt; &lt;span class="ss"&gt;&amp;#39;maple/yaml-indent-region&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+</content><category term="Linux"></category><category term="linux"></category><category term="emacs"></category></entry><entry><title>MacOS适配2K显示器</title><link href="https://honmaple.me/articles/2022/11/MacOS%E9%80%82%E9%85%8D2K%E6%98%BE%E7%A4%BA%E5%99%A8.html" rel="alternate"></link><published>2022-11-24T17:19:45+08:00</published><updated>2022-11-24T18:13:59+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2022-11-24:/articles/2022/11/MacOS适配2K显示器.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="#org-8085f41d2c"&gt;安装&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#org-5d1c3526da"&gt;配置&lt;/a&gt;&lt;/li&gt;
@@ -1934,163 +2029,4 @@ https://www.cnblogs.com/bluestorm/p/14761482.html
 &lt;span class="na"&gt;user&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;gns3&lt;/span&gt;
 &lt;span class="na"&gt;password&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;gns3&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
-</content><category term="Linux"></category><category term="linux"></category><category term="gns3"></category></entry><entry><title>公共DNS</title><link href="https://honmaple.me/articles/2021/04/%E5%85%AC%E5%85%B1DNS.html" rel="alternate"></link><published>2021-04-14T11:32:29+08:00</published><updated>2021-04-14T11:37:52+08:00</updated><author><name>honmaple</name></author><id>tag:honmaple.me,2021-04-14:/articles/2021/04/公共DNS.html</id><summary type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-330a907ea5"&gt;百度DNS&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-82b80e957f"&gt;IPv4&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-c66df75ab7"&gt;IPv6&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-e1b0874646"&gt;阿里DNS&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-82b80e957f"&gt;IPv4&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-c66df75ab7"&gt;IPv6&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-a277f55be1"&gt;DoH/DoT地址&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-e0699f1abf"&gt;谷歌DNS&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-82b80e957f"&gt;IPv4&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-c66df75ab7"&gt;IPv6&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-&lt;h2 id="org-330a907ea5"&gt;百度DNS&lt;/h2&gt;&lt;h3 id="org-82b80e957f"&gt;IPv4&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-180.76.76.76 
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id="org-c66df75ab7"&gt;IPv6&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-2400:da00::6666
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="org-e1b0874646"&gt;阿里DNS&lt;/h2&gt;&lt;h3 id="org-82b80e957f"&gt;IPv4&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-223.5.5.5
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
-223.6.6.6
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id="org-c66df75ab7"&gt;IPv6&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-2400:3200::1
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
-2400:3200:baba::1
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id="org-a277f55be1"&gt;DoH/DoT地址&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-dns.alidns.com
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="org-e0699f1abf"&gt;谷歌DNS&lt;/h2&gt;&lt;h3 id="org-82b80e957f"&gt;IPv4 …&lt;/h3&gt;</summary><content type="html">&lt;div id="table-of-contents"&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id="text-table-of-contents"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-330a907ea5"&gt;百度DNS&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-82b80e957f"&gt;IPv4&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-c66df75ab7"&gt;IPv6&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-e1b0874646"&gt;阿里DNS&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-82b80e957f"&gt;IPv4&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-c66df75ab7"&gt;IPv6&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-a277f55be1"&gt;DoH/DoT地址&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-e0699f1abf"&gt;谷歌DNS&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="#org-82b80e957f"&gt;IPv4&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#org-c66df75ab7"&gt;IPv6&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;
-&lt;h2 id="org-330a907ea5"&gt;百度DNS&lt;/h2&gt;&lt;h3 id="org-82b80e957f"&gt;IPv4&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-180.76.76.76 
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id="org-c66df75ab7"&gt;IPv6&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-2400:da00::6666
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="org-e1b0874646"&gt;阿里DNS&lt;/h2&gt;&lt;h3 id="org-82b80e957f"&gt;IPv4&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-223.5.5.5
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
-223.6.6.6
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id="org-c66df75ab7"&gt;IPv6&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-2400:3200::1
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
-2400:3200:baba::1
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id="org-a277f55be1"&gt;DoH/DoT地址&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-dns.alidns.com
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="org-e0699f1abf"&gt;谷歌DNS&lt;/h2&gt;&lt;h3 id="org-82b80e957f"&gt;IPv4&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-8.8.8.8
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
-8.8.4.4
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id="org-c66df75ab7"&gt;IPv6&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-2001:4860:4860::8888
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
-2001:4860:4860::8844
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;</content><category term="Life"></category><category term="dns"></category></entry></feed>
+</content><category term="Linux"></category><category term="linux"></category><category term="gns3"></category></entry></feed>
