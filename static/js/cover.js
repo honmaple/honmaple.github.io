@@ -56,7 +56,7 @@ function Cover() {
     $(window).on('wheel', function(event) {
         if (event.originalEvent.deltaY > 0) {
             scrollDown();
-        }else {
+        } else {
             scrollUp();
         }
     });
@@ -79,4 +79,5 @@ function Cover() {
         }
     });
 }
+
 Cover();
