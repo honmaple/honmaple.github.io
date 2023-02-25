@@ -5,13 +5,13 @@
   <link href="https://honmaple.me/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me/index.html"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Tue, 21 Feb 2023 18:20:10 +0800</updated>
+    <updated>Fri, 24 Feb 2023 08:12:37 +0800</updated>
   <id>https://honmaple.me</id>
     <entry xml:lang="zh">
       <title>Emacs笔记之修复yaml-mode的格式化问题</title>
       <link href="" rel="alternate"></link>
       <published>Tue, 21 Feb 2023 17:18:40 +0800</published>
-      <updated>Tue, 21 Feb 2023 18:20:10 +0800</updated>
+      <updated>Fri, 24 Feb 2023 08:12:37 +0800</updated>
       <author>
         <name>honmaple</name>
       </author>
@@ -100,6 +100,194 @@ test3:&lt;/pre&gt;
     (&lt;span style=&quot;color:#a6e22e&quot;&gt;apply&lt;/span&gt; func args)))
 
 (advice-add &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;indent-region&lt;/span&gt; :around &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;maple/yaml-indent-region&lt;/span&gt;)&lt;/pre&gt;</content>
+        <category term="Linux/Emacs"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>静态博客中的shortcode实现</title>
+      <link href="" rel="alternate"></link>
+      <published>Tue, 07 Feb 2023 15:57:51 +0800</published>
+      <updated>Sun, 26 Feb 2023 01:12:18 +0800</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/02/静态博客中的shortcode实现.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/02/静态博客中的shortcode实现.html</id>
+      <summary type="html">
+&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
+&lt;p&gt;
+   &lt;b&gt;shortcode&lt;/b&gt;,直译过来就是 &lt;b&gt;短代码&lt;/b&gt;。 熟悉 &lt;b&gt;hugo&lt;/b&gt; 的人对此也一定有所了解，&lt;b&gt;shortcode&lt;/b&gt; 允许用户使用部分关键参数就可以在文章内部插入设置好的HTML模版内容，而不用写大段的HTML代码，比如插入指定视频或者音乐,使用 &lt;b&gt;shortcode&lt;/b&gt; 之前需要使用 &lt;b&gt;iframe&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;iframe&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;frameborder&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;no&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;border&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;0&amp;#34;&lt;/span&gt;
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;marginwidth&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;0&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;marginheight&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;0&amp;#34;&lt;/span&gt;
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;width&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;330&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;height&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;86&lt;/span&gt;
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;//music.163.com...&lt;/span&gt;&lt;/pre&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;前言&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;实现方式&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;Markdown渲染&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;查找HTML标签&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;替换HTML&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;结尾&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
+&lt;p&gt;
+   &lt;b&gt;shortcode&lt;/b&gt;,直译过来就是 &lt;b&gt;短代码&lt;/b&gt;。 熟悉 &lt;b&gt;hugo&lt;/b&gt; 的人对此也一定有所了解，&lt;b&gt;shortcode&lt;/b&gt; 允许用户使用部分关键参数就可以在文章内部插入设置好的HTML模版内容，而不用写大段的HTML代码，比如插入指定视频或者音乐,使用 &lt;b&gt;shortcode&lt;/b&gt; 之前需要使用 &lt;b&gt;iframe&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;iframe&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;frameborder&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;no&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;border&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;0&amp;#34;&lt;/span&gt;
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;marginwidth&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;0&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;marginheight&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;0&amp;#34;&lt;/span&gt;
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;width&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;330&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;height&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;86&lt;/span&gt;
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;//music.163.com/outchain/player?type=2&amp;amp;id=xxx&amp;amp;auto=0&amp;amp;height=66&amp;#34;&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;iframe&lt;/span&gt;&amp;gt;&lt;/pre&gt;
+
+&lt;p&gt;
+   而使用 &lt;b&gt;shortcode&lt;/b&gt; 后就可以只用指定关键的 &lt;b&gt;id&lt;/b&gt; 参数
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{{&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;163music&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;xxx&lt;/span&gt;&amp;gt;}}&lt;/pre&gt;
+&lt;p&gt;
+   当网易云音乐的分享代码更新后，可以直接更新 &lt;b&gt;shortcode&lt;/b&gt; 代码, 而不是搜索替换每一篇包括该iframe代码的文章, 同时 &lt;b&gt;shortcode&lt;/b&gt; 也可以扩展 &lt;b&gt;Markdown&lt;/b&gt; 的功能，比如文本的居中，居左，居右
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{{&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;align&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;left&lt;/span&gt;&amp;gt;}}
+  文本内容
+  {{&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;align&lt;/span&gt;&amp;gt;}}&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;实现方式&lt;/h2&gt;
+&lt;p&gt;
+   而想要在静态博客中实现 &lt;b&gt;shortcode&lt;/b&gt; 功能, 目前有两种方式
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 方式一: 修改 &lt;b&gt;Markdown&lt;/b&gt; 解析器, 在静态生成器解析文章内容时就可以对 &lt;b&gt;shortcode&lt;/b&gt; 进行解析，并将 &lt;b&gt;shortcode&lt;/b&gt; 替换成写好的模版，至少，我看到 &lt;b&gt;hugo&lt;/b&gt; 就是这么实现的
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 方式二: 如果不想修改 &lt;b&gt;Markdown&lt;/b&gt; 解析器，还可以直接修改生成好的 &lt;b&gt;HTML&lt;/b&gt; 内容，这种方式实现原理很简单，&lt;b&gt;Markdown允许插入HTML代码&lt;/b&gt;, 那么我们就可以直接在文章中写一个
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;shortcode&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;_name&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;163music&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;id&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;xxx&amp;#34;&lt;/span&gt; /&amp;gt;&lt;/pre&gt;
+&lt;p&gt;
+     然后在现有的 &lt;b&gt;Markdown&lt;/b&gt; 解析库解析文章并生成 &lt;b&gt;HTML&lt;/b&gt; 后再次对HTML内容进行解析，目前主流语言都有现成的库很方便地解析HTML内容, 下面以 &lt;b&gt;Go&lt;/b&gt; 为例
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;heading-2.1&quot;&gt;Markdown渲染&lt;/h3&gt;
+&lt;p&gt;
+    比如有一篇文章，我想要添加网易云音乐的某首歌到文章内部，当使用现有的Markdown库对内容进行渲染
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#f92672&quot;&gt;package&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;main&lt;/span&gt;
+
+&lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; (
+    &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;github.com/russross/blackfriday/v2&amp;#34;&lt;/span&gt;
+)
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;func&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;main&lt;/span&gt;() {
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;content&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;:=&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;`&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;# Hello World
+&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;lt;shortcode _name=&amp;#34;163music&amp;#34; id=&amp;#34;xxx&amp;#34; /&amp;gt;
+&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;This is one of my favorite **music**.
+&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;  &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;`&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;d&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;:=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;blackfriday&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Run&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;content&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;fmt&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Println&lt;/span&gt;(string(&lt;span style=&quot;color:#a6e22e&quot;&gt;d&lt;/span&gt;))
+}&lt;/pre&gt;
+
+&lt;p&gt;
+    输出结果
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;h1&lt;/span&gt;&amp;gt;Hello World&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;h1&lt;/span&gt;&amp;gt;
+
+&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt;&amp;gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;shortcode&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;_name&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;163music&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;id&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;xxx&amp;#34;&lt;/span&gt; /&amp;gt;
+  This is one of my favorite &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;strong&lt;/span&gt;&amp;gt;music&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;strong&lt;/span&gt;&amp;gt;.&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt;&amp;gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;heading-2.2&quot;&gt;查找HTML标签&lt;/h3&gt;
+&lt;p&gt;
+    可以使用 &lt;code&gt;golang.org/x/net/html&lt;/code&gt; 对HTML内容进行解析, 并查找到 &lt;b&gt;shortcode&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#f92672&quot;&gt;package&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;main&lt;/span&gt;
+
+&lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; (
+    &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;bytes&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;github.com/russross/blackfriday/v2&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;golang.org/x/net/html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;text/template&amp;#34;&lt;/span&gt;
+)
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;func&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;main&lt;/span&gt;() {
+    &lt;span style=&quot;color:#75715e&quot;&gt;// ...
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;    &lt;span style=&quot;color:#66d9ef&quot;&gt;var&lt;/span&gt; (
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;w&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;bytes&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Buffer&lt;/span&gt;
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;z&lt;/span&gt; = &lt;span style=&quot;color:#a6e22e&quot;&gt;html&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;NewTokenizer&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;bytes&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;NewReader&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;d&lt;/span&gt;))
+    )
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;for&lt;/span&gt; {
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;next&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;:=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;z&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Next&lt;/span&gt;()
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;next&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;==&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;html&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;ErrorToken&lt;/span&gt; {
+            &lt;span style=&quot;color:#66d9ef&quot;&gt;break&lt;/span&gt;
+        }
+
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;token&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;:=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;z&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Token&lt;/span&gt;()
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;switch&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;next&lt;/span&gt; {
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;case&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;html&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;StartTagToken&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;html&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;SelfClosingTagToken&lt;/span&gt;:
+            &lt;span style=&quot;color:#75715e&quot;&gt;// 找到shortcode标签
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;            &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;token&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Data&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;==&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;shortcode&amp;#34;&lt;/span&gt; {
+
+            }
+        }
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;w&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;WriteString&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;token&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;String&lt;/span&gt;())
+    }
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;fmt&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Println&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;w&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;String&lt;/span&gt;())
+}&lt;/pre&gt;
+
+&lt;h3 id=&quot;heading-2.3&quot;&gt;替换HTML&lt;/h3&gt;
+&lt;p&gt;
+    首先把需要替换的 &lt;b&gt;iframe&lt;/b&gt; 转换成模版
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;replace&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;:=&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;`&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;lt;iframe
+&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;frameborder=&amp;#34;no&amp;#34; border=&amp;#34;0&amp;#34;
+&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;marginwidth=&amp;#34;0&amp;#34; marginheight=&amp;#34;0&amp;#34;
+&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;width=330 height=86
+&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;src=&amp;#34;//music.163.com/outchain/player?type=2&amp;amp;id=&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;{{&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;.id&lt;/span&gt; &lt;span style=&quot;color:#75715e&quot;&gt;}}&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;amp;auto=0&amp;amp;height=66&amp;#34;&amp;gt;&amp;lt;/iframe&amp;gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;`&lt;/span&gt;
+
+&lt;span style=&quot;color:#a6e22e&quot;&gt;tmpl&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;err&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;:=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;template&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;New&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;test&amp;#34;&lt;/span&gt;).&lt;span style=&quot;color:#a6e22e&quot;&gt;Parse&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;replace&lt;/span&gt;)
+&lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;err&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;!=&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; {
+    panic(&lt;span style=&quot;color:#a6e22e&quot;&gt;err&lt;/span&gt;)
+}&lt;/pre&gt;
+
+&lt;p&gt;
+    然后根据标签参数替换原来的HTML
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;// 获取该标签的参数
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;attrs&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;:=&lt;/span&gt; make(&lt;span style=&quot;color:#66d9ef&quot;&gt;map&lt;/span&gt;[&lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;]&lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;)
+&lt;span style=&quot;color:#66d9ef&quot;&gt;for&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;_&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;attr&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;:=&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;range&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;token&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Attr&lt;/span&gt; {
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;attrs&lt;/span&gt;[&lt;span style=&quot;color:#a6e22e&quot;&gt;attr&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Key&lt;/span&gt;] = &lt;span style=&quot;color:#a6e22e&quot;&gt;attr&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Val&lt;/span&gt;
+}
+&lt;span style=&quot;color:#75715e&quot;&gt;// 确认是163music
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;attrs&lt;/span&gt;[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;_name&amp;#34;&lt;/span&gt;] &lt;span style=&quot;color:#f92672&quot;&gt;==&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;163music&amp;#34;&lt;/span&gt; {
+    &lt;span style=&quot;color:#75715e&quot;&gt;// 获取替换的内容
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;    &lt;span style=&quot;color:#66d9ef&quot;&gt;var&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;buf&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;bytes&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Buffer&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;err&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;:=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;tmpl&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Execute&lt;/span&gt;(&lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;buf&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;attrs&lt;/span&gt;)
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;err&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;!=&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; {
+        panic(&lt;span style=&quot;color:#a6e22e&quot;&gt;err&lt;/span&gt;)
+    }
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;w&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;WriteString&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;buf&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;String&lt;/span&gt;())
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;continue&lt;/span&gt;
+}&lt;/pre&gt;
+
+&lt;p&gt;
+    最后的输出结果
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;h1&lt;/span&gt;&amp;gt;Hello World&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;h1&lt;/span&gt;&amp;gt;
+
+&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt;&amp;gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;iframe&lt;/span&gt;
+     &lt;span style=&quot;color:#a6e22e&quot;&gt;frameborder&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;no&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;border&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;0&amp;#34;&lt;/span&gt;
+     &lt;span style=&quot;color:#a6e22e&quot;&gt;marginwidth&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;0&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;marginheight&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;0&amp;#34;&lt;/span&gt;
+     &lt;span style=&quot;color:#a6e22e&quot;&gt;width&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;330&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;height&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;86&lt;/span&gt;
+     &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;//music.163.com/outchain/player?type=2&amp;amp;id=xxx&amp;amp;auto=0&amp;amp;height=66&amp;#34;&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;iframe&lt;/span&gt;&amp;gt;
+  This is one of my favorite &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;strong&lt;/span&gt;&amp;gt;music&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;strong&lt;/span&gt;&amp;gt;.&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt;&amp;gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;结尾&lt;/h2&gt;
+&lt;p&gt;
+   目前&lt;a href=&quot;https://github.com/honmaple/snow&quot;&gt;snow&lt;/a&gt;的 &lt;b&gt;shortcode&lt;/b&gt; 功能就是根据第二种方式实现的，具体可以参考 &lt;a href=&quot;https://github.com/honmaple/snow/blob/master/builder/hook/shortcode/shortcode.go&quot;&gt;hooks/shortcode/shortcode.go&lt;/a&gt;, 利用此特性甚至还可以实现类似 &lt;b&gt;Hugo&lt;/b&gt; 中的 &lt;b&gt;Markdown Render Hook&lt;/b&gt; 功能,用于自定义 &lt;code&gt;img&lt;/code&gt;, &lt;code&gt;a&lt;/code&gt; 等标签
+&lt;/p&gt;</content>
         <category term="Linux"></category>
     </entry>
     <entry xml:lang="zh">
@@ -1104,7 +1292,7 @@ INFO Listen 127.0.0.1:8000 ...&lt;/pre&gt;
       <title>Emacs笔记之minibuffer默认输入</title>
       <link href="" rel="alternate"></link>
       <published>Thu, 25 Nov 2021 22:14:00 +0800</published>
-      <updated>Tue, 20 Sep 2022 14:52:12 +0800</updated>
+      <updated>Fri, 24 Feb 2023 08:12:33 +0800</updated>
       <author>
         <name>honmaple</name>
       </author>
@@ -1169,13 +1357,13 @@ INFO Listen 127.0.0.1:8000 ...&lt;/pre&gt;
 &lt;p&gt;
 OK, 就这样
 &lt;/p&gt;</content>
-        <category term="Linux"></category>
+        <category term="Linux/Emacs"></category>
     </entry>
     <entry xml:lang="zh">
       <title>Emacs自动插入更新文件头——maple-header</title>
       <link href="" rel="alternate"></link>
       <published>Wed, 06 Oct 2021 14:57:51 +0800</published>
-      <updated>Mon, 17 Oct 2022 15:20:28 +0800</updated>
+      <updated>Fri, 24 Feb 2023 08:12:43 +0800</updated>
       <author>
         <name>honmaple</name>
       </author>
@@ -1275,7 +1463,7 @@ OK, 就这样
  &lt;a href=&quot;https://honmaple.me/articles/2018/01/emacs自动更新文件头.html&quot;&gt;emacs自动更新文件头&lt;/a&gt;
 &lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</content>
-        <category term="Linux"></category>
+        <category term="Linux/Emacs"></category>
     </entry>
     <entry xml:lang="zh">
       <title>Docker笔记之registry清理</title>
@@ -1915,97 +2103,6 @@ You may need to restart any open editors for them to read new settings.&lt;/pre&
  &lt;a href=&quot;www.cnblogs.com/bluestorm/p/14761482.html&quot;&gt;www.cnblogs.com/bluestorm/p/14761482.html&lt;/a&gt;
 &lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</content>
-        <category term="Linux"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>GNS3笔记</title>
-      <link href="" rel="alternate"></link>
-      <published>Tue, 11 May 2021 14:48:06 +0800</published>
-      <updated>Wed, 24 Nov 2021 17:05:14 +0800</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2021/05/GNS3笔记.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2021/05/GNS3笔记.html</id>
-      <summary type="html">
-&lt;h2 id=&quot;heading-1&quot;&gt;GNS3 VM导入&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;virt-install  --name gns3  --memory &lt;span style=&quot;color:#ae81ff&quot;&gt;8192&lt;/span&gt;  --vcpus &lt;span style=&quot;color:#ae81ff&quot;&gt;4&lt;/span&gt;  --disk /home/kvm/GNS3/GNS3VM-disk001.qcow2  --disk /home/kvm/GNS3/GNS3VM-disk002.qcow2  --import --virt-type kvm --os-type linux --os-variant ubuntu18.04 --network default --graphics vnc,listen&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;0.0.0.0,password&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;foobar,port...&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;GNS3 VM导入&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;禁用广告与数据采集&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;启用basic auth&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;GNS3 VM导入&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;virt-install  --name gns3  --memory &lt;span style=&quot;color:#ae81ff&quot;&gt;8192&lt;/span&gt;  --vcpus &lt;span style=&quot;color:#ae81ff&quot;&gt;4&lt;/span&gt;  --disk /home/kvm/GNS3/GNS3VM-disk001.qcow2  --disk /home/kvm/GNS3/GNS3VM-disk002.qcow2  --import --virt-type kvm --os-type linux --os-variant ubuntu18.04 --network default --graphics vnc,listen&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;0.0.0.0,password&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;foobar,port&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;5910&lt;/span&gt; --noautoconsole --hvm&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;禁用广告与数据采集&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 禁用错误报告
-&lt;/p&gt;
-
-&lt;p&gt;
-     找到 &lt;code&gt;~/.config/GNS3/2.2/gns3_server.conf&lt;/code&gt;, 在 &lt;code&gt;[Server]&lt;/code&gt; 块中添加
-&lt;/p&gt;
-&lt;pre class=&quot;src src-example&quot;&gt;[Server]
-...
-report_errors = False&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 禁用google分析
-&lt;/p&gt;
-
-&lt;p&gt;
-     找到 &lt;code&gt;/usr/local/lib/python3.8/dist-packages/gns3server/static/web-ui/index.html&lt;/code&gt; , 注释google分析相关代码
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&amp;lt;!--&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt; &amp;lt;script async=&amp;#34;&amp;#34; src=&amp;#34;https://www.googletagmanager.com/gtag/js?id=G&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;-&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;5D6FZL9923&amp;#34;&amp;gt;&amp;lt;/script&amp;gt; &lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;--&amp;gt;&lt;/span&gt;
-&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt;&amp;gt;
-  window.&lt;span style=&quot;color:#a6e22e&quot;&gt;dataLayer&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; window.&lt;span style=&quot;color:#a6e22e&quot;&gt;dataLayer&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;||&lt;/span&gt; [];
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;gtag&lt;/span&gt;() {
-  &lt;span style=&quot;color:#a6e22e&quot;&gt;dataLayer&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;push&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;arguments&lt;/span&gt;);
-  }
-  &lt;span style=&quot;color:#a6e22e&quot;&gt;gtag&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;js&amp;#39;&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;new&lt;/span&gt; Date());
-
-  &lt;span style=&quot;color:#75715e&quot;&gt;// gtag(&amp;#39;config&amp;#39;, &amp;#39;G-5D6FZL9923&amp;#39;);
-&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 禁用错误跟踪
-&lt;/p&gt;
-
-&lt;p&gt;
-     找到 &lt;code&gt;/usr/local/lib/python3.8/dist-packages/gns3server/static/web-ui&lt;/code&gt; 目录下的 &lt;code&gt;main.xxxx.js&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre class=&quot;src src-example&quot;&gt;sudo sed -i &amp;#39;s%https://d8be3a98530f49eb90968ff396db326c@o19455.ingest.sentry.io/842726%%g&amp;#39; main.2f0314a517dded67879c.js&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 禁用广告
-&lt;/p&gt;
-
-&lt;p&gt;
-     同样找到 &lt;code&gt;/usr/local/lib/python3.8/dist-packages/gns3server/static/web-ui&lt;/code&gt; 目录下的 &lt;code&gt;main.xxxx.js&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre class=&quot;src src-example&quot;&gt;sudo sed -i &amp;#39;s%https://servedbyadbutler.com/adserve/;ID=165803;size=0x0;setID=371476;type=json;%%g&amp;#39; main.2f0314a517dded67879c.js&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-   &lt;b&gt;然后重启服务即可 &lt;code&gt;sudo systemctl restart gns3&lt;/code&gt;&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;启用basic auth&lt;/h2&gt;
-&lt;p&gt;
-     找到 &lt;code&gt;~/.config/GNS3/2.2/gns3_server.conf&lt;/code&gt;, 在 &lt;code&gt;[Server]&lt;/code&gt; 块中添加
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;[Server]
-...
-auth = True
-user = gns3
-password = gns3&lt;/pre&gt;</content>
         <category term="Linux"></category>
     </entry>
 </feed>

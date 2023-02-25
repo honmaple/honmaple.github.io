@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>静态博客中的shortcode实现 · 紅楓吟</title>
+      <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="scrollbar"></div>
+
+    <div class="wrap">
+      <div class="main"><nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://s.libforest.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="https://honmaple.me/categories/life/index.html">代码人生</a>
+              <ul class="dropdown-menu">
+                  <li><a href="https://honmaple.me/categories/life/love/index.html">你不懂我</a></li>
+                  <li><a href="https://honmaple.me/categories/life/coding/index.html">分享世界</a></li>
+                  <li><a href="https://honmaple.me/categories/life/recall/index.html">我不怪你</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="https://honmaple.me/categories/linux/index.html">字符艺术</a>
+              <ul class="dropdown-menu">
+                  <li><a href="https://honmaple.me/categories/linux/emacs/index.html">Emacs</a></li>
+              </ul>
+            </li>
+            <li><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+            <li><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+          <li class="dropdown">
+            <a href="https://honmaple.me/archives/index.html">文章归档</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+                <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+                <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+            </ul>
+          </li>
+          <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>
+
+  <article>
+    <div class="entry-header">
+      <h1 class="entry-title"><a href="https://honmaple.me/articles/2023/02/静态博客中的shortcode实现.html">静态博客中的shortcode实现</a></h1><header class="entry-info">
+  <span title="Updated at 2023-02-26">
+    <i class="fa fa-calendar-o"></i>
+    2023-02-07 Tue
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By
+        <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-folder-o"></i>
+      In
+        <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/golang/index.html">golang</a>
+    </span>
+</header>
+
+    </div>
+    <hr class="entry-hr" />
+    <div class="entry-content">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">前言</a></li>
+<li><a href="#heading-2">实现方式</a>
+<ul>
+<li><a href="#heading-2.1">Markdown渲染</a></li>
+<li><a href="#heading-2.2">查找HTML标签</a></li>
+<li><a href="#heading-2.3">替换HTML</a></li>
+</ul></li>
+<li><a href="#heading-3">结尾</a></li>
+</ul></div></div>
+
+<h2 id="heading-1">前言</h2>
+<p>
+   <b>shortcode</b>,直译过来就是 <b>短代码</b>。 熟悉 <b>hugo</b> 的人对此也一定有所了解，<b>shortcode</b> 允许用户使用部分关键参数就可以在文章内部插入设置好的HTML模版内容，而不用写大段的HTML代码，比如插入指定视频或者音乐,使用 <b>shortcode</b> 之前需要使用 <b>iframe</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">iframe</span> <span style="color:#a6e22e">frameborder</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;no&#34;</span> <span style="color:#a6e22e">border</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0&#34;</span>
+        <span style="color:#a6e22e">marginwidth</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0&#34;</span> <span style="color:#a6e22e">marginheight</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0&#34;</span>
+        <span style="color:#a6e22e">width</span><span style="color:#f92672">=</span><span style="color:#e6db74">330</span> <span style="color:#a6e22e">height</span><span style="color:#f92672">=</span><span style="color:#e6db74">86</span>
+        <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;//music.163.com/outchain/player?type=2&amp;id=xxx&amp;auto=0&amp;height=66&#34;</span>&gt;&lt;/<span style="color:#f92672">iframe</span>&gt;</pre>
+
+<p>
+   而使用 <b>shortcode</b> 后就可以只用指定关键的 <b>id</b> 参数
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">{{&lt;<span style="color:#f92672">163music</span> <span style="color:#a6e22e">xxx</span>&gt;}}</pre>
+<p>
+   当网易云音乐的分享代码更新后，可以直接更新 <b>shortcode</b> 代码, 而不是搜索替换每一篇包括该iframe代码的文章, 同时 <b>shortcode</b> 也可以扩展 <b>Markdown</b> 的功能，比如文本的居中，居左，居右
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">{{&lt;<span style="color:#f92672">align</span> <span style="color:#a6e22e">left</span>&gt;}}
+  文本内容
+  {{&lt;/<span style="color:#f92672">align</span>&gt;}}</pre>
+
+<h2 id="heading-2">实现方式</h2>
+<p>
+   而想要在静态博客中实现 <b>shortcode</b> 功能, 目前有两种方式
+</p>
+<ul>
+<li>
+<p>
+ 方式一: 修改 <b>Markdown</b> 解析器, 在静态生成器解析文章内容时就可以对 <b>shortcode</b> 进行解析，并将 <b>shortcode</b> 替换成写好的模版，至少，我看到 <b>hugo</b> 就是这么实现的
+</p></li>
+<li>
+<p>
+ 方式二: 如果不想修改 <b>Markdown</b> 解析器，还可以直接修改生成好的 <b>HTML</b> 内容，这种方式实现原理很简单，<b>Markdown允许插入HTML代码</b>, 那么我们就可以直接在文章中写一个
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">shortcode</span> <span style="color:#a6e22e">_name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;163music&#34;</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xxx&#34;</span> /&gt;</pre>
+<p>
+     然后在现有的 <b>Markdown</b> 解析库解析文章并生成 <b>HTML</b> 后再次对HTML内容进行解析，目前主流语言都有现成的库很方便地解析HTML内容, 下面以 <b>Go</b> 为例
+</p>
+</li>
+</ul>
+<h3 id="heading-2.1">Markdown渲染</h3>
+<p>
+    比如有一篇文章，我想要添加网易云音乐的某首歌到文章内部，当使用现有的Markdown库对内容进行渲染
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+    <span style="color:#e6db74">&#34;github.com/russross/blackfriday/v2&#34;</span>
+)
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#a6e22e">content</span> <span style="color:#f92672">:=</span> <span style="color:#e6db74">`</span><span style="color:#e6db74"># Hello World
+</span><span style="color:#e6db74">&lt;shortcode _name=&#34;163music&#34; id=&#34;xxx&#34; /&gt;
+</span><span style="color:#e6db74">This is one of my favorite **music**.
+</span><span style="color:#e6db74">  </span><span style="color:#e6db74">`</span>
+    <span style="color:#a6e22e">d</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">blackfriday</span>.<span style="color:#a6e22e">Run</span>(<span style="color:#a6e22e">content</span>)
+    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(string(<span style="color:#a6e22e">d</span>))
+}</pre>
+
+<p>
+    输出结果
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">h1</span>&gt;Hello World&lt;/<span style="color:#f92672">h1</span>&gt;
+
+&lt;<span style="color:#f92672">p</span>&gt;&lt;<span style="color:#f92672">shortcode</span> <span style="color:#a6e22e">_name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;163music&#34;</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xxx&#34;</span> /&gt;
+  This is one of my favorite &lt;<span style="color:#f92672">strong</span>&gt;music&lt;/<span style="color:#f92672">strong</span>&gt;.&lt;/<span style="color:#f92672">p</span>&gt;</pre>
+
+<h3 id="heading-2.2">查找HTML标签</h3>
+<p>
+    可以使用 <code>golang.org/x/net/html</code> 对HTML内容进行解析, 并查找到 <b>shortcode</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+    <span style="color:#e6db74">&#34;bytes&#34;</span>
+    <span style="color:#e6db74">&#34;fmt&#34;</span>
+    <span style="color:#e6db74">&#34;github.com/russross/blackfriday/v2&#34;</span>
+    <span style="color:#e6db74">&#34;golang.org/x/net/html&#34;</span>
+    <span style="color:#e6db74">&#34;text/template&#34;</span>
+)
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">var</span> (
+        <span style="color:#a6e22e">w</span> <span style="color:#a6e22e">bytes</span>.<span style="color:#a6e22e">Buffer</span>
+        <span style="color:#a6e22e">z</span> = <span style="color:#a6e22e">html</span>.<span style="color:#a6e22e">NewTokenizer</span>(<span style="color:#a6e22e">bytes</span>.<span style="color:#a6e22e">NewReader</span>(<span style="color:#a6e22e">d</span>))
+    )
+    <span style="color:#66d9ef">for</span> {
+        <span style="color:#a6e22e">next</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">z</span>.<span style="color:#a6e22e">Next</span>()
+        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">next</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">html</span>.<span style="color:#a6e22e">ErrorToken</span> {
+            <span style="color:#66d9ef">break</span>
+        }
+
+        <span style="color:#a6e22e">token</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">z</span>.<span style="color:#a6e22e">Token</span>()
+        <span style="color:#66d9ef">switch</span> <span style="color:#a6e22e">next</span> {
+        <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">html</span>.<span style="color:#a6e22e">StartTagToken</span>, <span style="color:#a6e22e">html</span>.<span style="color:#a6e22e">SelfClosingTagToken</span>:
+            <span style="color:#75715e">// 找到shortcode标签
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">token</span>.<span style="color:#a6e22e">Data</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;shortcode&#34;</span> {
+
+            }
+        }
+        <span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">WriteString</span>(<span style="color:#a6e22e">token</span>.<span style="color:#a6e22e">String</span>())
+    }
+    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">String</span>())
+}</pre>
+
+<h3 id="heading-2.3">替换HTML</h3>
+<p>
+    首先把需要替换的 <b>iframe</b> 转换成模版
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#a6e22e">replace</span> <span style="color:#f92672">:=</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">&lt;iframe
+</span><span style="color:#e6db74">frameborder=&#34;no&#34; border=&#34;0&#34;
+</span><span style="color:#e6db74">marginwidth=&#34;0&#34; marginheight=&#34;0&#34;
+</span><span style="color:#e6db74">width=330 height=86
+</span><span style="color:#e6db74">src=&#34;//music.163.com/outchain/player?type=2&amp;id=</span><span style="color:#75715e">{{</span> <span style="color:#a6e22e">.id</span> <span style="color:#75715e">}}</span><span style="color:#e6db74">&amp;auto=0&amp;height=66&#34;&gt;&lt;/iframe&gt;</span><span style="color:#e6db74">`</span>
+
+<span style="color:#a6e22e">tmpl</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">template</span>.<span style="color:#a6e22e">New</span>(<span style="color:#e6db74">&#34;test&#34;</span>).<span style="color:#a6e22e">Parse</span>(<span style="color:#a6e22e">replace</span>)
+<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+    panic(<span style="color:#a6e22e">err</span>)
+}</pre>
+
+<p>
+    然后根据标签参数替换原来的HTML
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e">// 获取该标签的参数
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">attrs</span> <span style="color:#f92672">:=</span> make(<span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">string</span>)
+<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">attr</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">token</span>.<span style="color:#a6e22e">Attr</span> {
+    <span style="color:#a6e22e">attrs</span>[<span style="color:#a6e22e">attr</span>.<span style="color:#a6e22e">Key</span>] = <span style="color:#a6e22e">attr</span>.<span style="color:#a6e22e">Val</span>
+}
+<span style="color:#75715e">// 确认是163music
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">if</span> <span style="color:#a6e22e">attrs</span>[<span style="color:#e6db74">&#34;_name&#34;</span>] <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;163music&#34;</span> {
+    <span style="color:#75715e">// 获取替换的内容
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">buf</span> <span style="color:#a6e22e">bytes</span>.<span style="color:#a6e22e">Buffer</span>
+    <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">tmpl</span>.<span style="color:#a6e22e">Execute</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">buf</span>, <span style="color:#a6e22e">attrs</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        panic(<span style="color:#a6e22e">err</span>)
+    }
+    <span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">WriteString</span>(<span style="color:#a6e22e">buf</span>.<span style="color:#a6e22e">String</span>())
+    <span style="color:#66d9ef">continue</span>
+}</pre>
+
+<p>
+    最后的输出结果
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">h1</span>&gt;Hello World&lt;/<span style="color:#f92672">h1</span>&gt;
+
+&lt;<span style="color:#f92672">p</span>&gt;&lt;<span style="color:#f92672">iframe</span>
+     <span style="color:#a6e22e">frameborder</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;no&#34;</span> <span style="color:#a6e22e">border</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0&#34;</span>
+     <span style="color:#a6e22e">marginwidth</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0&#34;</span> <span style="color:#a6e22e">marginheight</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0&#34;</span>
+     <span style="color:#a6e22e">width</span><span style="color:#f92672">=</span><span style="color:#e6db74">330</span> <span style="color:#a6e22e">height</span><span style="color:#f92672">=</span><span style="color:#e6db74">86</span>
+     <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;//music.163.com/outchain/player?type=2&amp;id=xxx&amp;auto=0&amp;height=66&#34;</span>&gt;&lt;/<span style="color:#f92672">iframe</span>&gt;
+  This is one of my favorite &lt;<span style="color:#f92672">strong</span>&gt;music&lt;/<span style="color:#f92672">strong</span>&gt;.&lt;/<span style="color:#f92672">p</span>&gt;</pre>
+
+<h2 id="heading-3">结尾</h2>
+<p>
+   目前<a href="https://github.com/honmaple/snow">snow</a>的 <b>shortcode</b> 功能就是根据第二种方式实现的，具体可以参考 <a href="https://github.com/honmaple/snow/blob/master/builder/hook/shortcode/shortcode.go">hooks/shortcode/shortcode.go</a>, 利用此特性甚至还可以实现类似 <b>Hugo</b> 中的 <b>Markdown Render Hook</b> 功能,用于自定义 <code>img</code>, <code>a</code> 等标签
+</p>
+    </div><div class="entry-copyright">
+      <div>
+        <i class="fa fa-user-o"></i>
+        作者:
+          <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+      </div>
+  <div>
+    <i class="fa fa-link"></i>
+    链接:
+    <a href="https://honmaple.me/articles/2023/02/静态博客中的shortcode实现.html">https://honmaple.me/articles/2023/02/静态博客中的shortcode实现.html</a>
+  </div>
+  <div>
+    <i class="fa fa-copyright"></i>
+    版权:
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+    </a>
+  </div>
+</div>
+
+<div class="entry-honor">
+  <button class="btn" data-target="#entry-honor-content" data-toggle="collapse">赏</button>
+  <div class="collapse" id="entry-honor-content">
+    <div class="entry-honor-content">
+      <div class="entry-honor-alipay">
+        <div class="entry-honor-mask">
+          <button class="btn btn-success" data-target=".entry-honor-wechat" data-toggle="collapse">
+            <i class="fa fa-wechat"></i>
+            <span>微信</span>
+          </button>
+        </div>
+      </div>
+      <div class="entry-honor-wechat collapse">
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+    </div>
+  </div>
+</div>
+
+    <hr class="entry-hr" />
+    <ul class="entry-pager">
+        <li class="previous">
+          <a href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html" title="Previous article: Emacs笔记之修复yaml-mode的格式化问题">
+            <i class="fa fa-chevron-left"></i>
+            Emacs笔记之修复yaml-mode的格式化问题
+          </a>
+        </li>
+        <li class="next">
+          <a href="https://honmaple.me/articles/2022/11/MacOS适配2K显示器.html" title="Next article: MacOS适配2K显示器">
+            MacOS适配2K显示器
+            <i class="fa fa-chevron-right"></i>
+          </a>
+        </li>
+    </ul>
+  <div class="comments">
+    <div class="text-center">
+      <a class="btn entry-read-more entry-comment">加载评论</a>
+    </div>
+    <div id="comment_thread" issue-term="静态博客中的shortcode实现"></div>
+  </div>
+
+  </article>
+      </div>
+    </div><div class="entry-footer">
+  <ul class="entry-footer-left">
+    <li class="hidden-xs">© 2015-2023 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+        <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+  <ul class="entry-footer-right">
+    <li><a class="entry-switch-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/pages/music.html" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>
+      <li><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li><a href="https://honmaple.me/pages/contact.html" title="Contact"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+</div>
+<div class="back-to-top back-to-top-on">
+  <i class="fa fa-hand-o-up" title="back to top"></i>
+</div>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'UA-88401692-2');
+  </script>
+
+
+      <script src="https://s.libforest.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
+      <script src="https://s.libforest.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+         if (typeof ga !== 'undefined') {
+           ga('send', 'pageview', location.pathname + location.search);
+         }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>
