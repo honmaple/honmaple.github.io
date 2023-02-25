@@ -5,19 +5,31 @@
   <link href="https://honmaple.me/categories/linux/emacs/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Fri, 24 Feb 2023 08:12:37 +0800</updated>
+    <updated>Sun, 26 Feb 2023 01:28:12 +0800</updated>
   <id>https://honmaple.me</id>
     <entry xml:lang="zh">
       <title>Emacs笔记之修复yaml-mode的格式化问题</title>
       <link href="" rel="alternate"></link>
       <published>Tue, 21 Feb 2023 17:18:40 +0800</published>
-      <updated>Fri, 24 Feb 2023 08:12:37 +0800</updated>
+      <updated>Sun, 26 Feb 2023 01:28:12 +0800</updated>
       <author>
         <name>honmaple</name>
       </author>
       <link rel="alternate" href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html" type="text/html"/>
       <id>https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html</id>
       <summary type="html">
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;更新时间&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;备注&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;2023-02-26&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;增加更多判断逻辑, 比如上一行是列表，当前行也是列表，则按正常缩进计算&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+
 &lt;p&gt;
 一直以来 &lt;b&gt;yaml-mode&lt;/b&gt; 都有一个问题，在使用 &lt;code&gt;(indent-region (point-min) (point-max))&lt;/code&gt; 时已经格式好的内容总是会得到错误的缩进，比如一个简单的配置
 &lt;/p&gt;
@@ -32,11 +44,20 @@
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;test1&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;val&amp;#34;&lt;/span&gt;
 &lt;span style=&quot;color:#66d9ef&quot;&gt;test2&lt;/span&gt;:
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;val1&amp;#34;&lt;/span&gt;
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;val2&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;test3&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;test4&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;val4&amp;#34;...&lt;/span&gt;&lt;/pre&gt;</summary>
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;val1...&lt;/span&gt;&lt;/pre&gt;</summary>
       <content type="html">
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;更新时间&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;备注&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;2023-02-26&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;增加更多判断逻辑, 比如上一行是列表，当前行也是列表，则按正常缩进计算&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+
 &lt;p&gt;
 一直以来 &lt;b&gt;yaml-mode&lt;/b&gt; 都有一个问题，在使用 &lt;code&gt;(indent-region (point-min) (point-max))&lt;/code&gt; 时已经格式好的内容总是会得到错误的缩进，比如一个简单的配置
 &lt;/p&gt;
@@ -77,7 +98,8 @@ test3:&lt;/pre&gt;
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/yaml-compute-indentation()
   (let ((ci (&lt;span style=&quot;color:#a6e22e&quot;&gt;current-indentation&lt;/span&gt;))
-        (im (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-hash-key-re)))
+        (cm (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-hash-key-re))
+        (cl (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;^&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;*-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;+.*$&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))
     (save-excursion
       (&lt;span style=&quot;color:#a6e22e&quot;&gt;beginning-of-line&lt;/span&gt;)
       (if (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-document-delimiter-re) &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;
@@ -85,9 +107,16 @@ test3:&lt;/pre&gt;
         (while (and (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-blank-line-re)
                     (&lt;span style=&quot;color:#a6e22e&quot;&gt;&amp;gt;&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;point&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;point-min&lt;/span&gt;)))
           (&lt;span style=&quot;color:#a6e22e&quot;&gt;forward-line&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;-1&lt;/span&gt;))
-        (let ((li (&lt;span style=&quot;color:#a6e22e&quot;&gt;current-indentation&lt;/span&gt;)))
-          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行是hash key, 当前行不是, 或者当前行的缩进大于上一行&lt;/span&gt;
-          (if (or (&lt;span style=&quot;color:#a6e22e&quot;&gt;&amp;gt;&lt;/span&gt; li ci) (and im (&lt;span style=&quot;color:#a6e22e&quot;&gt;=&lt;/span&gt; li ci))) ci
+        (let ((li (&lt;span style=&quot;color:#a6e22e&quot;&gt;current-indentation&lt;/span&gt;))
+              (ll (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;^&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;*-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;+.*$&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进大于当前行, 上一行是列表，当前行也是是列表 - 正常缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进大于当前行, 上一行和当前行有一个不是列表 - 原有缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进等于当前行, 上一行是字典，当前行是列表 - 正常缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进等于当前行, 上一行是字典，当前行是不是列表 - 原有缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进小于当前行, 上一行是字典 - 正常缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进小于当前行, 上一行是列表，当前行也是列表 - 正常缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进小于当前行, 上一行是列表，当前行是字典 - 错误/正常缩进&lt;/span&gt;
+          (if (or (and (&lt;span style=&quot;color:#a6e22e&quot;&gt;&amp;gt;&lt;/span&gt; li ci) (or (not cl) (not ll))) (and (&lt;span style=&quot;color:#a6e22e&quot;&gt;=&lt;/span&gt; li ci) cm (not ll))) ci
             (&lt;span style=&quot;color:#a6e22e&quot;&gt;+&lt;/span&gt; li
                (if (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-nested-map-re) yaml-indent-offset &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;)
                (if (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-nested-sequence-re) yaml-indent-offset &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;)

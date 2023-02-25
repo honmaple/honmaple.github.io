@@ -90,7 +90,7 @@
             <h1 class="entry-title">
               <a href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html" rel="bookmark" title="Permalink to Emacs笔记之修复yaml-mode的格式化问题">Emacs笔记之修复yaml-mode的格式化问题</a>
             </h1><header class="entry-info">
-  <span title="Updated at 2023-02-24">
+  <span title="Updated at 2023-02-26">
     <i class="fa fa-calendar-o"></i>
     2023-02-21 Tue
   </span>
@@ -119,6 +119,18 @@
           <hr class="entry-hr" />
             <div class="entry-content entry-summary">
               
+<table>
+<tr>
+<td class="align-">更新时间</td>
+<td class="align-">备注</td>
+</tr>
+
+<tr>
+<td class="align-">2023-02-26</td>
+<td class="align-">增加更多判断逻辑, 比如上一行是列表，当前行也是列表，则按正常缩进计算</td>
+</tr>
+</table>
+
 <p>
 一直以来 <b>yaml-mode</b> 都有一个问题，在使用 <code>(indent-region (point-min) (point-max))</code> 时已经格式好的内容总是会得到错误的缩进，比如一个简单的配置
 </p>
@@ -159,7 +171,8 @@ test3:</pre>
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">(defun maple/yaml-compute-indentation()
   (let ((ci (<span style="color:#a6e22e">current-indentation</span>))
-        (im (<span style="color:#a6e22e">looking-at</span> yaml-hash-key-re)))
+        (cm (<span style="color:#a6e22e">looking-at</span> yaml-hash-key-re))
+        (cl (<span style="color:#a6e22e">looking-at</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">^</span><span style="color:#e6db74">\s</span><span style="color:#e6db74">*-</span><span style="color:#e6db74">\s</span><span style="color:#e6db74">+.*$</span><span style="color:#e6db74">&#34;</span>)))
     (save-excursion
       (<span style="color:#a6e22e">beginning-of-line</span>)
       (if (<span style="color:#a6e22e">looking-at</span> yaml-document-delimiter-re) <span style="color:#ae81ff">0</span>
@@ -167,9 +180,16 @@ test3:</pre>
         (while (and (<span style="color:#a6e22e">looking-at</span> yaml-blank-line-re)
                     (<span style="color:#a6e22e">&gt;</span> (<span style="color:#a6e22e">point</span>) (<span style="color:#a6e22e">point-min</span>)))
           (<span style="color:#a6e22e">forward-line</span> <span style="color:#ae81ff">-1</span>))
-        (let ((li (<span style="color:#a6e22e">current-indentation</span>)))
-          <span style="color:#75715e">;; 如果上一行是hash key, 当前行不是, 或者当前行的缩进大于上一行</span>
-          (if (or (<span style="color:#a6e22e">&gt;</span> li ci) (and im (<span style="color:#a6e22e">=</span> li ci))) ci
+        (let ((li (<span style="color:#a6e22e">current-indentation</span>))
+              (ll (<span style="color:#a6e22e">looking-at</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">^</span><span style="color:#e6db74">\s</span><span style="color:#e6db74">*-</span><span style="color:#e6db74">\s</span><span style="color:#e6db74">+.*$</span><span style="color:#e6db74">&#34;</span>)))
+          <span style="color:#75715e">;; 如果上一行的缩进大于当前行, 上一行是列表，当前行也是是列表 - 正常缩进</span>
+          <span style="color:#75715e">;; 如果上一行的缩进大于当前行, 上一行和当前行有一个不是列表 - 原有缩进</span>
+          <span style="color:#75715e">;; 如果上一行的缩进等于当前行, 上一行是字典，当前行是列表 - 正常缩进</span>
+          <span style="color:#75715e">;; 如果上一行的缩进等于当前行, 上一行是字典，当前行是不是列表 - 原有缩进</span>
+          <span style="color:#75715e">;; 如果上一行的缩进小于当前行, 上一行是字典 - 正常缩进</span>
+          <span style="color:#75715e">;; 如果上一行的缩进小于当前行, 上一行是列表，当前行也是列表 - 正常缩进</span>
+          <span style="color:#75715e">;; 如果上一行的缩进小于当前行, 上一行是列表，当前行是字典 - 错误/正常缩进</span>
+          (if (or (and (<span style="color:#a6e22e">&gt;</span> li ci) (or (not cl) (not ll))) (and (<span style="color:#a6e22e">=</span> li ci) cm (not ll))) ci
             (<span style="color:#a6e22e">+</span> li
                (if (<span style="color:#a6e22e">looking-at</span> yaml-nested-map-re) yaml-indent-offset <span style="color:#ae81ff">0</span>)
                (if (<span style="color:#a6e22e">looking-at</span> yaml-nested-sequence-re) yaml-indent-offset <span style="color:#ae81ff">0</span>)
@@ -383,7 +403,7 @@ From: https...</pre>
             <h1 class="entry-title">
               <a href="https://honmaple.me/articles/2022/10/Snow静态博客生成器.html" rel="bookmark" title="Permalink to Snow静态博客生成器">Snow静态博客生成器</a>
             </h1><header class="entry-info">
-  <span title="Updated at 2022-11-02">
+  <span title="Updated at 2023-02-26">
     <i class="fa fa-calendar-o"></i>
     2022-10-16 Sun
   </span>
@@ -412,16 +432,14 @@ From: https...</pre>
           <hr class="entry-hr" />
             <div class="entry-content entry-summary">
               
-<h1 id="heading-1">Snow</h1>
 <blockquote>
 <p>
-  一个<b>简单却可配置</b>的静态博客生成器。
- 很早之前(三年前)就想写一个静态博客生成器，但苦于一直没有时间，最近把之前写的重构了一下，让其可以支持更多的定制化配置。
+一个<b>简单却可配置</b>的静态博客生成器。
+很早之前(三年前)就想写一个静态博客生成器，但苦于一直没有时间，最近把之前写的重构了一下，让其可以支持更多的定制化配置。
 </p>
-</blockquote>
 
 <p>
-  <b>至于为什么要重新写一个</b>:
+<b>至于为什么要重新写一个</b>:
 </p>
 <ol>
 <li>
@@ -434,7 +452,7 @@ From: https...</pre>
 </p></li>
 <li>
 <p>
- 我习惯使用 <b>Emacs + Org</b>，除了前期的几篇文章，后面都是使用 <b>org mode</b> 书写，之前是因为 <b>Python</b> 没有一个好用的 <b>org mode</b> 解析库，所以专门写了一个 <code>org-python</code> 用来解析...</p></li></ol>
+ 我习惯使用 <b>Emacs + Org</b>，除了前期的几篇文章，后面都是使用 <b>org mode</b> 书写，之前是因为 <b>Python</b> 没有一个好用的 <b>org mode</b> 解析库，所以专门写了一个 <code>org-python</code> 用来解析 <b>org...</b></p></li></ol></blockquote>
             </div>
             <div class="text-center">
               <a class="btn entry-read-more" href="https://honmaple.me/articles/2022/10/Snow静态博客生成器.html">阅读全文 »</a>

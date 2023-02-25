@@ -5,19 +5,31 @@
   <link href="https://honmaple.me/categories/linux/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Fri, 24 Feb 2023 08:12:37 +0800</updated>
+    <updated>Sun, 26 Feb 2023 01:28:12 +0800</updated>
   <id>https://honmaple.me</id>
     <entry xml:lang="zh">
       <title>Emacs笔记之修复yaml-mode的格式化问题</title>
       <link href="" rel="alternate"></link>
       <published>Tue, 21 Feb 2023 17:18:40 +0800</published>
-      <updated>Fri, 24 Feb 2023 08:12:37 +0800</updated>
+      <updated>Sun, 26 Feb 2023 01:28:12 +0800</updated>
       <author>
         <name>honmaple</name>
       </author>
       <link rel="alternate" href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html" type="text/html"/>
       <id>https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html</id>
       <summary type="html">
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;更新时间&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;备注&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;2023-02-26&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;增加更多判断逻辑, 比如上一行是列表，当前行也是列表，则按正常缩进计算&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+
 &lt;p&gt;
 一直以来 &lt;b&gt;yaml-mode&lt;/b&gt; 都有一个问题，在使用 &lt;code&gt;(indent-region (point-min) (point-max))&lt;/code&gt; 时已经格式好的内容总是会得到错误的缩进，比如一个简单的配置
 &lt;/p&gt;
@@ -32,11 +44,20 @@
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;test1&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;val&amp;#34;&lt;/span&gt;
 &lt;span style=&quot;color:#66d9ef&quot;&gt;test2&lt;/span&gt;:
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;val1&amp;#34;&lt;/span&gt;
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;val2&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;test3&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;test4&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;val4&amp;#34;...&lt;/span&gt;&lt;/pre&gt;</summary>
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;val1...&lt;/span&gt;&lt;/pre&gt;</summary>
       <content type="html">
+&lt;table&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;更新时间&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;备注&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;2023-02-26&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;增加更多判断逻辑, 比如上一行是列表，当前行也是列表，则按正常缩进计算&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+
 &lt;p&gt;
 一直以来 &lt;b&gt;yaml-mode&lt;/b&gt; 都有一个问题，在使用 &lt;code&gt;(indent-region (point-min) (point-max))&lt;/code&gt; 时已经格式好的内容总是会得到错误的缩进，比如一个简单的配置
 &lt;/p&gt;
@@ -77,7 +98,8 @@ test3:&lt;/pre&gt;
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/yaml-compute-indentation()
   (let ((ci (&lt;span style=&quot;color:#a6e22e&quot;&gt;current-indentation&lt;/span&gt;))
-        (im (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-hash-key-re)))
+        (cm (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-hash-key-re))
+        (cl (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;^&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;*-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;+.*$&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))
     (save-excursion
       (&lt;span style=&quot;color:#a6e22e&quot;&gt;beginning-of-line&lt;/span&gt;)
       (if (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-document-delimiter-re) &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;
@@ -85,9 +107,16 @@ test3:&lt;/pre&gt;
         (while (and (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-blank-line-re)
                     (&lt;span style=&quot;color:#a6e22e&quot;&gt;&amp;gt;&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;point&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;point-min&lt;/span&gt;)))
           (&lt;span style=&quot;color:#a6e22e&quot;&gt;forward-line&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;-1&lt;/span&gt;))
-        (let ((li (&lt;span style=&quot;color:#a6e22e&quot;&gt;current-indentation&lt;/span&gt;)))
-          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行是hash key, 当前行不是, 或者当前行的缩进大于上一行&lt;/span&gt;
-          (if (or (&lt;span style=&quot;color:#a6e22e&quot;&gt;&amp;gt;&lt;/span&gt; li ci) (and im (&lt;span style=&quot;color:#a6e22e&quot;&gt;=&lt;/span&gt; li ci))) ci
+        (let ((li (&lt;span style=&quot;color:#a6e22e&quot;&gt;current-indentation&lt;/span&gt;))
+              (ll (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;^&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;*-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;+.*$&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进大于当前行, 上一行是列表，当前行也是是列表 - 正常缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进大于当前行, 上一行和当前行有一个不是列表 - 原有缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进等于当前行, 上一行是字典，当前行是列表 - 正常缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进等于当前行, 上一行是字典，当前行是不是列表 - 原有缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进小于当前行, 上一行是字典 - 正常缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进小于当前行, 上一行是列表，当前行也是列表 - 正常缩进&lt;/span&gt;
+          &lt;span style=&quot;color:#75715e&quot;&gt;;; 如果上一行的缩进小于当前行, 上一行是列表，当前行是字典 - 错误/正常缩进&lt;/span&gt;
+          (if (or (and (&lt;span style=&quot;color:#a6e22e&quot;&gt;&amp;gt;&lt;/span&gt; li ci) (or (not cl) (not ll))) (and (&lt;span style=&quot;color:#a6e22e&quot;&gt;=&lt;/span&gt; li ci) cm (not ll))) ci
             (&lt;span style=&quot;color:#a6e22e&quot;&gt;+&lt;/span&gt; li
                (if (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-nested-map-re) yaml-indent-offset &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;)
                (if (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; yaml-nested-sequence-re) yaml-indent-offset &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;)
@@ -294,23 +323,21 @@ test3:&lt;/pre&gt;
       <title>Snow静态博客生成器</title>
       <link href="" rel="alternate"></link>
       <published>Sun, 16 Oct 2022 18:44:46 +0800</published>
-      <updated>Wed, 02 Nov 2022 11:20:24 +0800</updated>
+      <updated>Sun, 26 Feb 2023 02:56:40 +0800</updated>
       <author>
         <name>honmaple</name>
       </author>
       <link rel="alternate" href="https://honmaple.me/articles/2022/10/Snow静态博客生成器.html" type="text/html"/>
       <id>https://honmaple.me/articles/2022/10/Snow静态博客生成器.html</id>
       <summary type="html">
-&lt;h1 id=&quot;heading-1&quot;&gt;Snow&lt;/h1&gt;
 &lt;blockquote&gt;
 &lt;p&gt;
-  一个&lt;b&gt;简单却可配置&lt;/b&gt;的静态博客生成器。
- 很早之前(三年前)就想写一个静态博客生成器，但苦于一直没有时间，最近把之前写的重构了一下，让其可以支持更多的定制化配置。
+一个&lt;b&gt;简单却可配置&lt;/b&gt;的静态博客生成器。
+很早之前(三年前)就想写一个静态博客生成器，但苦于一直没有时间，最近把之前写的重构了一下，让其可以支持更多的定制化配置。
 &lt;/p&gt;
-&lt;/blockquote&gt;
 
 &lt;p&gt;
-  &lt;b&gt;至于为什么要重新写一个&lt;/b&gt;:
+&lt;b&gt;至于为什么要重新写一个&lt;/b&gt;:
 &lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -323,42 +350,71 @@ test3:&lt;/pre&gt;
 &lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 我习惯使用 &lt;b&gt;Emacs + Org&lt;/b&gt;，除了前期的几篇文章，后面都是使用 &lt;b&gt;org mode&lt;/b&gt; 书写，之前是因为 &lt;b&gt;Python&lt;/b&gt; 没有一个好用的 &lt;b&gt;org mode&lt;/b&gt; 解析库，所以专门写了一个 &lt;code&gt;org-python&lt;/code&gt; 用来解析...&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;</summary>
+ 我习惯使用 &lt;b&gt;Emacs + Org&lt;/b&gt;，除了前期的几篇文章，后面都是使用 &lt;b&gt;org mode&lt;/b&gt; 书写，之前是因为 &lt;b&gt;Python&lt;/b&gt; 没有一个好用的 &lt;b&gt;org mode&lt;/b&gt; 解析库，所以专门写了一个 &lt;code&gt;org-python&lt;/code&gt; 用来解析 &lt;b&gt;org...&lt;/b&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/blockquote&gt;</summary>
       <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;Snow&lt;/a&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;快速开始&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;快速开始&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1.1&quot;&gt;创建新的站点&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1.2&quot;&gt;创建新的文章&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1.3&quot;&gt;编译和预览&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;创建新的站点&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;编译和预览&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;配置说明&lt;/a&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;内容&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2.1&quot;&gt;文章列表&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2.2&quot;&gt;静态文件&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2.3&quot;&gt;主题&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2.4&quot;&gt;动态页&lt;/a&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;Section&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2.4.1&quot;&gt;详情页&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2.4.2&quot;&gt;列表页&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2.4.3&quot;&gt;归档页&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1.1&quot;&gt;配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1.2&quot;&gt;路径变量(&lt;b&gt;sections.xxx.path&lt;/b&gt;)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1.3&quot;&gt;模版变量(&lt;b&gt;sections.xxx.template&lt;/b&gt;)&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2.5&quot;&gt;本地测试和正式发布&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;Page&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2.1&quot;&gt;配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2.2&quot;&gt;路径变量(&lt;b&gt;sections.xxx.page_path&lt;/b&gt;)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2.3&quot;&gt;模版变量(&lt;b&gt;sections.xxx.page_template&lt;/b&gt;)&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;Draft&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;Taxonomy&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.4.1&quot;&gt;配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.4.2&quot;&gt;路径变量&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.4.3&quot;&gt;模版变量&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.5&quot;&gt;Archive&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.6&quot;&gt;Pagination&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.6.1&quot;&gt;路径变量&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.6.2&quot;&gt;模版变量&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.7&quot;&gt;Static&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.8&quot;&gt;Formats&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.8.1&quot;&gt;配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.8.2&quot;&gt;模版变量&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.9&quot;&gt;theme&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.9.1&quot;&gt;主题目录结构&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.9.2&quot;&gt;配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.9.3&quot;&gt;&lt;span class=&quot;todo&quot;&gt;TODO&lt;/span&gt;默认配置&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.10&quot;&gt;hook&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.10.1&quot;&gt;i18n&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.10.2&quot;&gt;encrypt&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.10.3&quot;&gt;shortcode&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.10.4&quot;&gt;assets&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.11&quot;&gt;本地测试和正式发布&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;h1 id=&quot;heading-1&quot;&gt;Snow&lt;/h1&gt;
 &lt;blockquote&gt;
 &lt;p&gt;
-  一个&lt;b&gt;简单却可配置&lt;/b&gt;的静态博客生成器。
- 很早之前(三年前)就想写一个静态博客生成器，但苦于一直没有时间，最近把之前写的重构了一下，让其可以支持更多的定制化配置。
+一个&lt;b&gt;简单却可配置&lt;/b&gt;的静态博客生成器。
+很早之前(三年前)就想写一个静态博客生成器，但苦于一直没有时间，最近把之前写的重构了一下，让其可以支持更多的定制化配置。
 &lt;/p&gt;
-&lt;/blockquote&gt;
 
 &lt;p&gt;
-  &lt;b&gt;至于为什么要重新写一个&lt;/b&gt;:
+&lt;b&gt;至于为什么要重新写一个&lt;/b&gt;:
 &lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -380,10 +436,11 @@ test3:&lt;/pre&gt;
 &lt;li&gt;
 &lt;p&gt;
  我的设想是提供插件的接口，并提供一个足够简单的启动函数, 在有用户需要自定义插件时只需要自己创建一个包, 使用三两行代码就能注册自定义插件并重新编译自己的snow
-&lt;/p&gt;
-&lt;/li&gt;
+&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
-&lt;h2 id=&quot;heading-1.1&quot;&gt;快速开始&lt;/h2&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;快速开始&lt;/h2&gt;
 &lt;pre class=&quot;src src-example&quot;&gt;└──╼ ./snow --help
 NAME:
    snow - snow is a static site generator.
@@ -404,193 +461,148 @@ GLOBAL OPTIONS:
    --conf FILE, -c FILE  load configuration from FILE (default: &amp;#34;config.yaml&amp;#34;)
    --help, -h            show help (default: false)
    --version, -v         print the version (default: false)&lt;/pre&gt;
-&lt;h3 id=&quot;heading-1.1.1&quot;&gt;创建新的站点&lt;/h3&gt;
-&lt;pre class=&quot;src src-example&quot;&gt;──╼ ./snow init exmaple.com
+&lt;h3 id=&quot;heading-1.1&quot;&gt;创建新的站点&lt;/h3&gt;
+&lt;pre class=&quot;src src-example&quot;&gt;──╼ ./snow init
 Welcome to snow 0.1.0.
-&amp;gt; Where do you want to create your new web site? [exmaple.com]
-&amp;gt; What will be the title of this web site? Custom Title
-&amp;gt; Who will be the author of this web site? snow
-&amp;gt; What is your URL prefix? (see above example; no trailing slash) https://example.com&lt;/pre&gt;
+&amp;gt; Where do you want to create your new web site? [.] mysnow
+&amp;gt; What will be the title of this web site? [snow]
+&amp;gt; Who will be the author of this web site?
+The input is required
+&amp;gt; Who will be the author of this web site? honmaple
+&amp;gt; What is your URL prefix? (no trailing slash) [http://127.0.0.1:8000]
+&amp;gt; Do you want to create first page? [Y/n]&lt;/pre&gt;
 
-&lt;h3 id=&quot;heading-1.1.2&quot;&gt;创建新的文章&lt;/h3&gt;
-&lt;pre class=&quot;src src-example&quot;&gt;└──╼ cd example.com
-└──╼ mkdir -p content/posts
-└──╼ cat &amp;gt; content/posts/first-post.org &amp;lt;&lt;eof&gt; #+TITLE: Post1
-&amp;gt; #+AUTHOR: honmaple
-&amp;gt; #+DATE: 2021-10-06 14:57:51
-&amp;gt; #+CATEGORY: Linux
-&amp;gt; #+PROPERTY: MODIFIED 2022-10-13 00:04:38
-&amp;gt; #+PROPERTY: TAGS linux
-&amp;gt;
-&amp;gt;
-&amp;gt; post1
-&amp;gt; EOF&lt;/pre&gt;
-
-&lt;h3 id=&quot;heading-1.1.3&quot;&gt;编译和预览&lt;/h3&gt;
-&lt;pre class=&quot;src src-example&quot;&gt;──╼ ./snow server -D
-──╼ ./snow server -D
-DEBU Writing output/posts/2021/10/Post1.html
+&lt;h3 id=&quot;heading-1.2&quot;&gt;编译和预览&lt;/h3&gt;
+&lt;pre class=&quot;src src-example&quot;&gt;└──╼ cd mysnow
+└──╼ ../snow server -D
+DEBU Copying @theme/static/css/main.css to output/static/css/main.css
+INFO Done: Static Processed 1 static files in 588.705µs
 DEBU Writing output/categories/index.html
-DEBU Writing output/categories/linux/index.html
-DEBU Writing output/index.html
-DEBU Writing output/tags/index.html
-DEBU Writing output/tags/linux/index.html
 DEBU Writing output/authors/index.html
-DEBU Writing output/archives/index.html
-INFO Done: Processed 1 pages in 133.999021ms
-INFO Listen 127.0.0.1:8000 ...&lt;/pre&gt;
+DEBU Writing output/tags/index.html
+DEBU Writing output/posts/index.html
+DEBU Writing output/authors/snow/index.html
+DEBU Writing output/tags/snow/index.html
+DEBU Writing output/categories/linux/index.html
+DEBU Writing output/tags/linux/index.html
+DEBU Writing output/tags/emacs/index.html
+DEBU Writing output/categories/linux/emacs/index.html
+INFO Done: Page Processed 1 normal pages, 0 hidden pages, 0 section pages in 10.087804ms
+INFO Done: Section Processed 1 posts in 10.1831ms
+INFO Done: Taxonomy Processed 1 authors, 3 tags, 1 categories in 10.18788ms&lt;/pre&gt;
 
-&lt;h2 id=&quot;heading-1.2&quot;&gt;配置说明&lt;/h2&gt;
-&lt;h3 id=&quot;heading-1.2.1&quot;&gt;文章列表&lt;/h3&gt;
-&lt;p&gt;
-   文章列表配置:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;content_dir&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;content&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;page_dirs&lt;/span&gt;:
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;drafts&amp;#34;&lt;/span&gt;
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;posts&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;page_meta&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;index&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.lookup&lt;/span&gt;:
-      - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;index.html&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.output&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;index{number}.html&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;page_filter&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;-drafts&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;page_orderby&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;date desc,title&amp;#34;&lt;/span&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;content_dir&lt;/b&gt;: 文章目录所在, 其中该目录下应该包括一系列子目录，这些子目录的名称对应为 &lt;b&gt;文章的类型&lt;/b&gt;, 比如 &lt;b&gt;content/drafts/&lt;/b&gt; 目录下的文章类型为 &lt;b&gt;drafts&lt;/b&gt;, 当然也可以直接在文章文件头添加 &lt;code&gt;type: drafts&lt;/code&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;page_dirs&lt;/b&gt;: 所有类型的文章列表，当 &lt;b&gt;page_dirs&lt;/b&gt; 为空时，snow将会搜索 &lt;b&gt;content&lt;/b&gt; 目录下的所有子目录
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;page_meta&lt;/b&gt;: 文章页面元数据，所有页面的生成都和该配置有关，具体见下文
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;page_filter&lt;/b&gt;: 全局的文章列表筛选，格式见下文
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;page_orderby&lt;/b&gt;: 全局的文章列表排序
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;page_paginate&lt;/b&gt;: 全局的文章列表分页大小
-&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;heading-1.2.2&quot;&gt;静态文件&lt;/h3&gt;
-&lt;p&gt;
-   静态文件配置:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;static_exts&lt;/span&gt;:
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;.js&amp;#34;&lt;/span&gt;
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;.css&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;static_dirs&lt;/span&gt;:
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;static/&amp;#34;&lt;/span&gt;
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;static/css/&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;static_meta&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;static/CNAME&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;/&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;static/css/main.css&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;static/css/&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;theme/static&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;static/&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;output_dir&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;output&amp;#34;&lt;/span&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;static_dirs&lt;/b&gt;: 静态文件目录, 该目录区分主题的静态文件static
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;static_exts&lt;/b&gt;: 静态文件扩展，不配置将会使用静态文件目录下的所有文件
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;static_meta&lt;/b&gt;: 静态文件元数据，用于指定静态文件或静态目录的保存目录, 当有多条路径时，长度优先
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;/&lt;/b&gt;: 保存到 &lt;b&gt;output&lt;/b&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;theme/static&lt;/b&gt;: 指定主题的静态文件保存目录
-&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;heading-1.2.3&quot;&gt;主题&lt;/h3&gt;
-&lt;p&gt;
-   主题配置:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;theme&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;themes/test-theme&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;engine&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;pongo2&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;override&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;layouts&amp;#34;&lt;/span&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;path&lt;/b&gt;: 主题目录, 内置主题: &lt;b&gt;simple&lt;/b&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;engine&lt;/b&gt;: 主题模版引擎, 当前只支持 &lt;b&gt;pongo2&lt;/b&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;override&lt;/b&gt;: 主题模版覆盖目录, 比如一个存在的主题可以增加同名的文件到 &lt;b&gt;override&lt;/b&gt; 配置的目录, snow将会优先使用该文件
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;主题目录结构&lt;/b&gt;:
-     其中 &lt;b&gt;templates&lt;/b&gt; 和 &lt;b&gt;static&lt;/b&gt; 名称不可修改
-&lt;/p&gt;
-&lt;pre class=&quot;src src-example&quot;&gt;simple/
-├── templates
-│   ├── post.html
-│   ├── index.html
-│   ├── archives.html
-├── static
-│   ├── main.css&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;heading-1.2.4&quot;&gt;动态页&lt;/h3&gt;
-&lt;p&gt;
-   在snow中所有的页面都是根据配置和主题模板进行生成, 其中动态页面分为三类:
-&lt;/p&gt;
-&lt;h4 id=&quot;heading-1.2.4.1&quot;&gt;详情页&lt;/h4&gt;
-&lt;p&gt;
-    详情页的配置为 &lt;code&gt;page_meta.xxx&lt;/code&gt;, 其中 &lt;b&gt;xxx&lt;/b&gt; 必须是所有页面类型中的一种, 比如 &lt;code&gt;page_meta.posts&lt;/code&gt;, &lt;code&gt;page_meta.pages&lt;/code&gt; 等, 示例:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;page_meta&lt;/span&gt;:
+&lt;h2 id=&quot;heading-2&quot;&gt;内容&lt;/h2&gt;
+&lt;h3 id=&quot;heading-2.1&quot;&gt;Section&lt;/h3&gt;
+&lt;pre class=&quot;src src-example&quot;&gt;content/
+├── drafts            // &amp;lt;- http://127.0.0.1:8000/drafts/index.html
+│   └── draft1.org    // &amp;lt;- http://127.0.0.1:8000/drafts/index.html
+├── pages             // no url, because sections.pages.path is &amp;#34;&amp;#34;
+│   └── 404.org       // &amp;lt;- http://127.0.0.1:8000/404.html
+└── posts             // &amp;lt;- http://127.0.0.1:8000/posts/index.html
+    ├── post1.org     // &amp;lt;- http://127.0.0.1:8000/posts/2022/02/post1.html
+    └── subposts      // &amp;lt;- http://127.0.0.1:8000/posts/subposts/index.html
+        └── post2.org // &amp;lt;- http://127.0.0.1:8000/posts/2023/02/post2.html&lt;/pre&gt;
+&lt;h4 id=&quot;heading-2.1.1&quot;&gt;配置&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;sections&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;_default&lt;/span&gt;:
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 页面中文章的默认排序, 多字段使用逗号分隔&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;orderby&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;date desc&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 文章筛选，主要用于分页前&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;filter&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 页面中文章默认分页, path必须使用{number}变量, 0表示不分页&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;paginate&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;10&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 分页路径&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;paginate_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{name}{number}{extension}&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 分页前筛选pages&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;paginate_filter&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 生成路径, 为空表示禁止生成相关页面&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{section}/index.html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 使用的模版&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;template&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;section.html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 当前section下所有文章生成路径&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;page_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{section}/{slug}/index.html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 文章使用的模版&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;page_template&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;post.html&amp;#34;&lt;/span&gt;
   &lt;span style=&quot;color:#66d9ef&quot;&gt;posts&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;lookup&lt;/span&gt;:
-      - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;post.html&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;output&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;posts/{date:%Y}/{date:%m}/{slug}.html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;page_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;posts/{date:%Y}/{date:%m}/{slug}.html&amp;#34;&lt;/span&gt;
   &lt;span style=&quot;color:#66d9ef&quot;&gt;pages&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;lookup&lt;/span&gt;:
-      - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;page.html&amp;#34;&lt;/span&gt;
-      - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;post.html&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;output&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;pages/{slug}.html&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;drafts&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;lookup&lt;/span&gt;:
-      - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;post.html&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;output&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;drafts/{date:%Y}/{date:%m}/{slug}.html&amp;#34;&lt;/span&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;pages/about&lt;/span&gt;:
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 自定义pages/about下的文章生成路径，同时继承pages.path不会生成所有页面&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;page_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{slug}/index.html&amp;#34;&lt;/span&gt;&lt;/pre&gt;
 &lt;p&gt;
- &lt;b&gt;lookup&lt;/b&gt;: 主题中查找的模版文件
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;output&lt;/b&gt;: 写入的文件路径, &lt;b&gt;slug&lt;/b&gt; 为页面标题
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;output变量&lt;/b&gt;:
+     &lt;b&gt;filter&lt;/b&gt; 格式(下同):
 &lt;/p&gt;
+&lt;pre class=&quot;src src-example&quot;&gt;&amp;#39;emacs&amp;#39; in tags and not draft or weight &amp;gt; 1&lt;/pre&gt;
+&lt;p&gt;
+     其中 &lt;b&gt;tags&lt;/b&gt;, &lt;b&gt;draft&lt;/b&gt; 等都是page元数据
+&lt;/p&gt;
+
+&lt;h4 id=&quot;heading-2.1.2&quot;&gt;路径变量(&lt;b&gt;sections.xxx.path&lt;/b&gt;)&lt;/h4&gt;
+&lt;table&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;变量&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;描述&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;{section}&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;section名称&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;{section:slug}&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;section slug, 中国 -&amp;gt; zhong-guo&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;h4 id=&quot;heading-2.1.3&quot;&gt;模版变量(&lt;b&gt;sections.xxx.template&lt;/b&gt;)&lt;/h4&gt;
+&lt;table&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;变量&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;描述&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;section&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;section.Title&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;section标题&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;section.Path&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;section相对链接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;section.Permalink&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;section绝对链接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;section.Content&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;section内容&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;section.Pages&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;当前section下的文章列表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;section.Children&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;子section&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;section.Parent&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;父section&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;h3 id=&quot;heading-2.2&quot;&gt;Page&lt;/h3&gt;
+&lt;h4 id=&quot;heading-2.2.1&quot;&gt;配置&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;# 文章目录所在, 其中该目录下应该包括一系列子目录，这些子目录的名称对应为 *文章的类型*, 比如 *content/drafts/* 目录下的文章类型为 *drafts*, 当然也可以直接在文章文件头添加 =type: drafts=&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;content_dir&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;content&amp;#34;&lt;/span&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;heading-2.2.2&quot;&gt;路径变量(&lt;b&gt;sections.xxx.page_path&lt;/b&gt;)&lt;/h4&gt;
 &lt;table&gt;
 
 &lt;tr&gt;
@@ -615,6 +627,10 @@ INFO Listen 127.0.0.1:8000 ...&lt;/pre&gt;
 &lt;td class=&quot;align-&quot;&gt;创建文章的小时&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;{lang}&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;文章语言&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
 &lt;td class=&quot;align-&quot;&gt;{slug}&lt;/td&gt;
 &lt;td class=&quot;align-&quot;&gt;文章标题或自定义slug&lt;/td&gt;
 &lt;/tr&gt;
@@ -623,11 +639,8 @@ INFO Listen 127.0.0.1:8000 ...&lt;/pre&gt;
 &lt;td class=&quot;align-&quot;&gt;文件名称(不带后缀名)&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;模版变量&lt;/b&gt;:
-&lt;/p&gt;
+
+&lt;h4 id=&quot;heading-2.2.3&quot;&gt;模版变量(&lt;b&gt;sections.xxx.page_template&lt;/b&gt;)&lt;/h4&gt;
 &lt;table&gt;
 
 &lt;tr&gt;
@@ -644,20 +657,28 @@ INFO Listen 127.0.0.1:8000 ...&lt;/pre&gt;
 &lt;td class=&quot;align-&quot;&gt;页面标题&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td class=&quot;align-&quot;&gt;page.URL&lt;/td&gt;
-&lt;td class=&quot;align-&quot;&gt;页面链接&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;page.Lang&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;页面语言&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td class=&quot;align-&quot;&gt;page.Categories&lt;/td&gt;
-&lt;td class=&quot;align-&quot;&gt;页面分类&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;page.Date&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;页面创建时间&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td class=&quot;align-&quot;&gt;page.Tags&lt;/td&gt;
-&lt;td class=&quot;align-&quot;&gt;页面标签&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;page.Modified&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;页面修改时间&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td class=&quot;align-&quot;&gt;page.Authors&lt;/td&gt;
-&lt;td class=&quot;align-&quot;&gt;页面作者&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;page.Aliases&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;页面其它链接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;page.Path&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;页面相对链接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;page.Permalink&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;页面绝对链接&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td class=&quot;align-&quot;&gt;page.Summary&lt;/td&gt;
@@ -704,74 +725,241 @@ INFO Listen 127.0.0.1:8000 ...&lt;/pre&gt;
 &lt;td class=&quot;align-&quot;&gt;是否有同一类型下一篇&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
+
+&lt;h3 id=&quot;heading-2.3&quot;&gt;Draft&lt;/h3&gt;
+&lt;p&gt;
+    默认草稿标志为 &lt;code&gt;draft: true&lt;/code&gt;, 也可以将所有草稿放入同一个 &lt;b&gt;drafts&lt;/b&gt; 目录, 然后就可以在构建时增加筛选条件
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 排除草稿
+&lt;/p&gt;
+&lt;pre class=&quot;src src-example&quot;&gt;snow build -F &amp;#39;not draft&amp;#39;&lt;/pre&gt;
+&lt;p&gt;
+      或者
+&lt;/p&gt;
+&lt;pre class=&quot;src src-example&quot;&gt;snow build --filter &amp;#39;type != &amp;#34;drafts&amp;#34;&amp;#39;&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 包括草稿
+&lt;/p&gt;
+&lt;pre class=&quot;src src-example&quot;&gt;snow build -F &amp;#39;not draft or draft = true&amp;#39;&lt;/pre&gt;
+&lt;p&gt;
+      默认筛选条件可以写入配置 &lt;code&gt;build_filter&lt;/code&gt;
+&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h4 id=&quot;heading-1.2.4.2&quot;&gt;列表页&lt;/h4&gt;
-&lt;p&gt;
-    列表页的配置为 &lt;code&gt;page_meta.xxx.list&lt;/code&gt;, 其中 &lt;b&gt;xxx&lt;/b&gt; 可以是除页面类型以外的任意名称, 比如 &lt;code&gt;page_meta.tags.list&lt;/code&gt;, &lt;code&gt;page_meta.mycustom.list&lt;/code&gt; 等, 示例:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;page_meta&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;index&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.lookup&lt;/span&gt;:
-      - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;index.html&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.output&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;index{number}.html&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.filter&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;-pages&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.paginate&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;5&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;tags&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.lookup&lt;/span&gt;:
-      - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;tag.html&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.output&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;tags/{slug}/index{number}.html&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.filter&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;-pages&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.groupby&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;tag&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.paginate&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;10&lt;/span&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;heading-2.4&quot;&gt;Taxonomy&lt;/h3&gt;
+&lt;h4 id=&quot;heading-2.4.1&quot;&gt;配置&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;taxonomies&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;_default&lt;/span&gt;:
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{taxonomy}/index.html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# terms排序, 可选name,count&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;orderby&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;template&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{taxonomy}/list.html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;term_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{taxonomy}/{term:slug}/index.html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;term_template&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{taxonomy}/single.html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 文章列表筛选&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;term_filter&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 文章列表排序&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;term_orderby&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;date desc&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 文章列表分页&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;term_paginate&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;term_paginate_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;term_paginate_filter&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;categories&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;authors&lt;/span&gt;:
+  tags:&lt;/pre&gt;
+
+&lt;h4 id=&quot;heading-2.4.2&quot;&gt;路径变量&lt;/h4&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- &lt;b&gt;output&lt;/b&gt;: 列表页和详情页不同，列表页可能会根据不同的分页大小写入多个文件, 其中分页由 &lt;b&gt;output&lt;/b&gt; 中的 &lt;code&gt;{number}&lt;/code&gt; 决定, 比如上述的 &lt;code&gt;tags.list.output&lt;/code&gt;, 假如有36篇 &lt;b&gt;tag&lt;/b&gt; 为 &lt;b&gt;linux&lt;/b&gt; 的页面, 写入的文件为:
+ &lt;b&gt;taxonomies.xxx.path&lt;/b&gt;
 &lt;/p&gt;
-&lt;pre class=&quot;src src-example&quot;&gt;[output_dir]/tags/linux/index.html
-[output_dir]/tags/linux/index1.html
-[output_dir]/tags/linux/index2.html
-[output_dir]/tags/linux/index3.html&lt;/pre&gt;
-&lt;p&gt;
-        &lt;code&gt;{number}&lt;/code&gt; 在第一页时会自动配置成空字符串，如果需要禁止该动作，可以使用 &lt;code&gt;{number:one}&lt;/code&gt; 代替
-&lt;/p&gt;&lt;/li&gt;
+&lt;table&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;变量&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;描述&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;{taxonomy}&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;分类系统名称&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- &lt;b&gt;groupby&lt;/b&gt;: 如果想要配置按标签或者分类进行分组, 并写入不同的分组文件，可以配置 &lt;b&gt;groupby&lt;/b&gt; 字段，目前可选: type、tag、category、author 和 date:xxx, 其中 &lt;b&gt;date:xxx&lt;/b&gt; 中的xxx为Go格式化时间格式, 比如 &lt;b&gt;date:2006&lt;/b&gt; 表示按年分组
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;filter&lt;/b&gt;: 列表显示需要提前筛选不想展示的页面，可以配置 &lt;b&gt;filter&lt;/b&gt; 字段, 格式:
+ &lt;b&gt;taxonomies.xxx.term_path&lt;/b&gt;
 &lt;/p&gt;
+&lt;table&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;变量&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;描述&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;{taxonomy}&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;分类系统名称&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;{term}&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;分类具体名称&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;{term:slug}&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;分类slug&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&quot;heading-2.4.3&quot;&gt;模版变量&lt;/h4&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
- 字符串格式: &lt;code&gt;type1&lt;/code&gt; 表示只展示类型为type1的页面, &lt;code&gt;-type2&lt;/code&gt; 表示排除类型为type1的页面, 多个类型使用英文逗号分隔
+ &lt;b&gt;taxonomies.xxx.template&lt;/b&gt;
+&lt;/p&gt;
+&lt;table&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;变量&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;描述&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;taxonomy&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;taxonomy.Name&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;分类系统名称, 如:categories,tags,authors&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;taxonomy.Terms&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;taxonomies.xxx.term_template&lt;/b&gt;
+&lt;/p&gt;
+&lt;table&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;变量&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;描述&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;term&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;term.Name&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;分类名称&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;term.Path&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;相对链接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;term.Permalink&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;绝对链接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;term.List&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;文章列表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;term.Children&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;子分类&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;heading-2.5&quot;&gt;Archive&lt;/h3&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;taxonomies&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;date:2006/01&lt;/span&gt;:
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;archives/index.html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;template&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;archives.html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;term_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;archives/{term}/index.html&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;term_template&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;period_archives.html&amp;#34;&lt;/span&gt;&lt;/pre&gt;
+&lt;p&gt;
+    归档页面类似分类系统，其它 &lt;b&gt;date:2006/01&lt;/b&gt; 表示按年月归档, 并生成链接 &lt;b&gt;/archives/2022/10/index.html&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.6&quot;&gt;Pagination&lt;/h3&gt;
+&lt;h4 id=&quot;heading-2.6.1&quot;&gt;路径变量&lt;/h4&gt;
+&lt;table&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;变量&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;描述&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;{name}&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;路径名称&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;{extension}&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;路径扩展&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;{number}&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;页码, 第一页为空&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;{number:one}&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;页码, 第一页为&amp;#34;1&amp;#34;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 示例一:
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;section/index.html&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;paginate_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{name}{number}{extension}&amp;#34;&lt;/span&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 第一页: &lt;code&gt;section/index.html&lt;/code&gt;
 &lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 字典格式:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;page_meta&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;tags&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;list.filter&lt;/span&gt;:
-      &lt;span style=&quot;color:#66d9ef&quot;&gt;type&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;type1,-type2&amp;#34;&lt;/span&gt;
-      &lt;span style=&quot;color:#66d9ef&quot;&gt;tag&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;tag1,tag2,-tag3&amp;#34;&lt;/span&gt;
-      &lt;span style=&quot;color:#66d9ef&quot;&gt;author&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;author1&amp;#34;&lt;/span&gt;
-      &lt;span style=&quot;color:#66d9ef&quot;&gt;category&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;category&amp;#34;&lt;/span&gt;&lt;/pre&gt;
+ 第二页: &lt;code&gt;section/index2.html&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
 &lt;p&gt;
-        其中任意字段都可以使用前缀 &lt;code&gt;-&lt;/code&gt; 排除相应的页面
+ 第三页: &lt;code&gt;section/index3.html&lt;/code&gt;
 &lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- &lt;b&gt;paginate&lt;/b&gt;: 分页大小, 0代表不分页，默认的分页在 &lt;b&gt;page_pagniate&lt;/b&gt;
+ 示例二:
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;section/index.html&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;paginate_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;page/{number:one}{extension}&amp;#34;&lt;/span&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 第一页: &lt;code&gt;section/page/1.html&lt;/code&gt;
 &lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- &lt;b&gt;模版变量&lt;/b&gt;:
-&lt;/p&gt;
+ 第二页: &lt;code&gt;section/page/2.html&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 第三页: &lt;code&gt;section/page/3.html&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&quot;heading-2.6.2&quot;&gt;模版变量&lt;/h4&gt;
 &lt;table&gt;
 
 &lt;tr&gt;
@@ -827,31 +1015,52 @@ INFO Listen 127.0.0.1:8000 ...&lt;/pre&gt;
 &lt;td class=&quot;align-&quot;&gt;paginator.List&lt;/td&gt;
 &lt;td class=&quot;align-&quot;&gt;当前页文章列表&lt;/td&gt;
 &lt;/tr&gt;
-&lt;tr&gt;
-&lt;td class=&quot;align-&quot;&gt;slug&lt;/td&gt;
-&lt;td class=&quot;align-&quot;&gt;分组key&lt;/td&gt;
-&lt;/tr&gt;
 &lt;/table&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&quot;heading-1.2.4.3&quot;&gt;归档页&lt;/h4&gt;
+
+&lt;h3 id=&quot;heading-2.7&quot;&gt;Static&lt;/h3&gt;
 &lt;p&gt;
-    归档页表示所有分组页面的集合, 比如所有的标签，所有的作者或类型
+    静态文件配置:
 &lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;page_meta&lt;/span&gt;:
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;# 静态文件目录, 该目录区分主题的静态文件static&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;static_dirs&lt;/span&gt;:
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;static/&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#75715e&quot;&gt;# 静态文件扩展，不配置将会使用静态文件目录下的所有文件&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;static_exts&lt;/span&gt;:
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;.js&amp;#34;&lt;/span&gt;
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;.css&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#75715e&quot;&gt;# 静态文件路径，用于指定静态文件或静态目录的保存目录, 当有多条路径时，长度优先.&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;static_paths&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;static/CNAME&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;/&amp;#34;&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;static/css/main.css&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;static/css/&amp;#34;&lt;/span&gt;
+  &lt;span style=&quot;color:#75715e&quot;&gt;# 以@theme开头代表主题中的静态文件，即{theme.name}/static&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;&amp;#34;@theme/static&amp;#34;: &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;static/&amp;#34;&lt;/span&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;heading-2.8&quot;&gt;Formats&lt;/h3&gt;
+&lt;p&gt;
+    可以生成 &lt;b&gt;rss&lt;/b&gt;，&lt;b&gt;atom&lt;/b&gt; 或者其它任意格式(需要自定义模版)
+&lt;/p&gt;
+&lt;h4 id=&quot;heading-2.8.1&quot;&gt;配置&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;# 设置rss格式的默认值&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;formats.rss&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;template&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;_internal/rss.xml&amp;#34;&lt;/span&gt;
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;formats.atom&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;template&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;_internal/atom.xml&amp;#34;&lt;/span&gt;
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;sections&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;_default&lt;/span&gt;:
+    &lt;span style=&quot;color:#75715e&quot;&gt;# rss生成路径, 模版将会使用默认模版&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;formats.rss.path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{section:slug}/index.xml&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 为空时禁止生成&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;formats.atom.path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;taxonomies&lt;/span&gt;:
   &lt;span style=&quot;color:#66d9ef&quot;&gt;tags&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;lookup&lt;/span&gt;:
-      - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;tags.html&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;output&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;tags/index.html&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;archives&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;lookup&lt;/span&gt;:
-      - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;archives.html&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;output&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;archives/index.html&amp;#34;&lt;/span&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;模版变量&lt;/b&gt;:
-&lt;/p&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;formats.atom&lt;/span&gt;:
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;tags/{term:slug}/index.xml&amp;#34;&lt;/span&gt;
+      &lt;span style=&quot;color:#75715e&quot;&gt;# 自定义模版&lt;/span&gt;
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;template&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;custom.atom.xml&amp;#34;&lt;/span&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;heading-2.8.2&quot;&gt;模版变量&lt;/h4&gt;
 &lt;table&gt;
 
 &lt;tr&gt;
@@ -860,33 +1069,152 @@ INFO Listen 127.0.0.1:8000 ...&lt;/pre&gt;
 &lt;/tr&gt;
 
 &lt;tr&gt;
-&lt;td class=&quot;align-&quot;&gt;labels&lt;/td&gt;
-&lt;td class=&quot;align-&quot;&gt;分组列表&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;section&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;仅生成section 有效&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td class=&quot;align-&quot;&gt;term&lt;/td&gt;
+&lt;td class=&quot;align-&quot;&gt;仅生成taxonomy term 有效&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td class=&quot;align-&quot;&gt;pages&lt;/td&gt;
 &lt;td class=&quot;align-&quot;&gt;文章列表&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
+
+&lt;h3 id=&quot;heading-2.9&quot;&gt;theme&lt;/h3&gt;
+&lt;h4 id=&quot;heading-2.9.1&quot;&gt;主题目录结构&lt;/h4&gt;
+&lt;p&gt;
+     其中 &lt;b&gt;templates&lt;/b&gt; 和 &lt;b&gt;static&lt;/b&gt; 名称不可修改
+&lt;/p&gt;
+&lt;pre class=&quot;src src-example&quot;&gt;simple/
+├── templates
+│   ├── post.html
+│   ├── index.html
+│   ├── archives.html
+├── static
+│   ├── main.css&lt;/pre&gt;
+&lt;h4 id=&quot;heading-2.9.2&quot;&gt;配置&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;theme&lt;/span&gt;:
+  &lt;span style=&quot;color:#75715e&quot;&gt;# 主题名称, 未设置将使用默认主题&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;test-theme&amp;#34;&lt;/span&gt;
+  &lt;span style=&quot;color:#75715e&quot;&gt;# 主题模版覆盖, 增加同名的文件到 *override* 配置的目录, snow将会优先使用该文件&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;override&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;layouts&amp;#34;&lt;/span&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;heading-2.9.3&quot;&gt;&lt;span class=&quot;todo&quot;&gt;TODO&lt;/span&gt;默认配置&lt;/h4&gt;
+
+&lt;h3 id=&quot;heading-2.10&quot;&gt;hook&lt;/h3&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;hooks&lt;/span&gt;:
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;i18n&amp;#34;&lt;/span&gt;
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;assets&amp;#34;&lt;/span&gt;
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;encrypt&amp;#34;&lt;/span&gt;
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;shortcode&amp;#34;&lt;/span&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;heading-2.10.1&quot;&gt;i18n&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 模版
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{% i18n &amp;#34;tags&amp;#34; %}
+{% T &amp;#34;tags %d&amp;#34; 12 %}
+{{ i18n(&amp;#34;authors&amp;#34;) }}
+{{ T(&amp;#34;authors&amp;#34;) }}
+{{ _(&amp;#34;authors %f&amp;#34;, 3.14) }}&lt;/pre&gt;
+&lt;p&gt;
+       甚至可以直接使用变量
+       {{ _(term.Name) }}
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 翻译文件
+       默认会加载主题下 &lt;b&gt;i18n&lt;/b&gt; 目录下的文件
+&lt;/p&gt;
+&lt;pre class=&quot;src src-example&quot;&gt;i18n
+├── en.yaml
+└── zh.yaml&lt;/pre&gt;
+&lt;p&gt;
+       文件内容
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;---
+- &lt;span style=&quot;color:#66d9ef&quot;&gt;id&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;authors&amp;#34;&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;tr&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;作者&amp;#34;&lt;/span&gt;
+- &lt;span style=&quot;color:#66d9ef&quot;&gt;id&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;tags&amp;#34;&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;tr&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;标签&amp;#34;&lt;/span&gt;&lt;/pre&gt;
+
+&lt;p&gt;
+       也可以自定义文件位置或翻译内容覆盖主题原有的翻译
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;languages.en&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;translations&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;i18n/en.yaml&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;languages.zh&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;translations&lt;/span&gt;:
+    - &lt;span style=&quot;color:#66d9ef&quot;&gt;id&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;authors&amp;#34;&lt;/span&gt;
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;tr&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;作者&amp;#34;&lt;/span&gt;&lt;/pre&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&quot;heading-1.2.5&quot;&gt;本地测试和正式发布&lt;/h3&gt;
+&lt;h4 id=&quot;heading-2.10.2&quot;&gt;encrypt&lt;/h4&gt;
 &lt;p&gt;
-   snow 提供了 &lt;b&gt;mode&lt;/b&gt; 配置用于区分本地测试和正式发布
+     内容加密, 需要一个密码
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{{ page.Content | encrypt:&amp;#34;123456&amp;#34; }}&lt;/pre&gt;
+
+&lt;h4 id=&quot;heading-2.10.3&quot;&gt;shortcode&lt;/h4&gt;
+&lt;p&gt;
+     用于快速插入已有模版, 示例:
+&lt;/p&gt;
+&lt;pre class=&quot;src src-example&quot;&gt;&amp;lt;shortcode _name=&amp;#34;encrypt&amp;#34; password=&amp;#34;1234567&amp;#34;&amp;gt;
+hello *markdown*
+&amp;lt;/shortcode&amp;gt;
+
+&amp;lt;shortcode _name=&amp;#34;gist&amp;#34; author=&amp;#34;spf13&amp;#34; id=&amp;#34;7896402&amp;#34; /&amp;gt;&lt;/pre&gt;
+
+&lt;p&gt;
+     可以自定义 &lt;b&gt;shortcode&lt;/b&gt; 到主题的 &lt;code&gt;templates/shortcodes&lt;/code&gt; 目录下, 目前内置 &lt;b&gt;gist&lt;/b&gt;, &lt;b&gt;encrypt&lt;/b&gt;
+&lt;/p&gt;
+&lt;h4 id=&quot;heading-2.10.4&quot;&gt;assets&lt;/h4&gt;
+&lt;p&gt;
+     静态文件处理
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;params&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;assets&lt;/span&gt;:
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;css&lt;/span&gt;:
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;files&lt;/span&gt;:
+        - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;@theme/static/scss/main.scss&amp;#34;&lt;/span&gt;
+        - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;@theme/static/scss/entry.scss&amp;#34;&lt;/span&gt;
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;filters&lt;/span&gt;:
+        - &lt;span style=&quot;color:#66d9ef&quot;&gt;libscss&lt;/span&gt;:
+            &lt;span style=&quot;color:#66d9ef&quot;&gt;path&lt;/span&gt;: [&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;@theme/static/scss/&amp;#34;&lt;/span&gt;]
+        - &lt;span style=&quot;color:#66d9ef&quot;&gt;cssmin&lt;/span&gt;:
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;output&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;static/lib.min.css&amp;#34;&lt;/span&gt;&lt;/pre&gt;
+
+&lt;p&gt;
+     模版文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{% assets files=&amp;#34;css/style.scss&amp;#34; filters=&amp;#34;libsass,cssmin&amp;#34; output=&amp;#34;css/style.min.css&amp;#34; %}
+&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;link&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;rel&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;stylesheet&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;href&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{{ config.site.url }}/{{ asset_url }}&amp;#34;&lt;/span&gt;&amp;gt;
+{% endassets %}
+
+{% assets css %}
+&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;link&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;rel&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;stylesheet&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;href&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{{ config.site.url }}/{{ asset_url }}&amp;#34;&lt;/span&gt;&amp;gt;
+{% endassets %}&lt;/pre&gt;
+
+&lt;h3 id=&quot;heading-2.11&quot;&gt;本地测试和正式发布&lt;/h3&gt;
+&lt;p&gt;
+    snow 提供了 &lt;b&gt;mode&lt;/b&gt; 配置用于区分本地测试和正式发布
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;site&lt;/span&gt;:
   &lt;span style=&quot;color:#66d9ef&quot;&gt;url&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;http://127.0.0.1:8000&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;output_dir&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;output&amp;#34;&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;output_dir&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;output&amp;#34;&lt;/span&gt;
 
 &lt;span style=&quot;color:#66d9ef&quot;&gt;mode.publish&lt;/span&gt;:
   &lt;span style=&quot;color:#66d9ef&quot;&gt;site&lt;/span&gt;:
     &lt;span style=&quot;color:#66d9ef&quot;&gt;url&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;https://example.com&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;output_dir&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;xxx&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;output_dir&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;xxx&amp;#34;&lt;/span&gt;
 
 &lt;span style=&quot;color:#66d9ef&quot;&gt;mode.develop&lt;/span&gt;:
   &lt;span style=&quot;color:#66d9ef&quot;&gt;include&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;develop.yaml&amp;#34;&lt;/span&gt;&lt;/pre&gt;
 &lt;p&gt;
-   只要在构建时使用 &lt;code&gt;snow build --mode publish&lt;/code&gt; 即可覆盖本地默认配置
+    只要在构建时使用 &lt;code&gt;snow build --mode publish&lt;/code&gt; 即可覆盖本地默认配置
 &lt;/p&gt;</content>
         <category term="Linux"></category>
     </entry>
@@ -1417,9 +1745,9 @@ Doctor summary (to see all details, run flutter doctor -v):
 &lt;/p&gt;
 &lt;pre class=&quot;src src-example&quot;&gt;└──╼ /usr/local/share/android-sdk/tools/bin/sdkmanager
 Exception in thread &amp;#34;main&amp;#34; java.lang.NoClassDefFoundError: javax/xml/bind/annotation/XmlSchema
-    at com.android.repository.api.SchemaModule$SchemaModuleVersion.&lt;init&gt;(SchemaModule.java:156)
-    at com.android.repository.api.SchemaModule.&lt;init&gt;(SchemaModule.java:75)
-    at com.android.sdklib.repository.AndroidSdkHandler.&lt;clinit&gt;(AndroidSdkHandler.java:81)
+    at com.android.repository.api.SchemaModule$SchemaModuleVersion.&amp;lt;init&amp;gt;(SchemaModule.java:156)
+    at com.android.repository.api.SchemaModule.&amp;lt;init&amp;gt;(SchemaModule.java:75)
+    at com.android.sdklib.repository.AndroidSdkHandler.&amp;lt;clinit&amp;gt;(AndroidSdkHandler.java:81)
     at com.android.sdklib.tool.sdkmanager.SdkManagerCli.main(SdkManagerCli.java:73)
     at com.android.sdklib.tool.sdkmanager.SdkManagerCli.main(SdkManagerCli.java:48)
 Caused by: java.lang.ClassNotFoundException: javax.xml.bind.annotation.XmlSchema
