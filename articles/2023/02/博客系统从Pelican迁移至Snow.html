@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>博客系统从Pelican迁移至Snow · 紅楓吟</title>
+      <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="scrollbar"></div>
+
+    <div class="wrap">
+      <div class="main"><nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://s.libforest.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="https://honmaple.me/categories/life/index.html">代码人生</a>
+              <ul class="dropdown-menu">
+                  <li><a href="https://honmaple.me/categories/life/coding/index.html">分享世界</a></li>
+                  <li><a href="https://honmaple.me/categories/life/love/index.html">你不懂我</a></li>
+                  <li><a href="https://honmaple.me/categories/life/recall/index.html">我不怪你</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="https://honmaple.me/categories/linux/index.html">字符艺术</a>
+              <ul class="dropdown-menu">
+                  <li><a href="https://honmaple.me/categories/linux/emacs/index.html">Emacs</a></li>
+              </ul>
+            </li>
+            <li><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+            <li><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+          <li class="dropdown">
+            <a href="https://honmaple.me/archives/index.html">文章归档</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+                <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+                <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+            </ul>
+          </li>
+          <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>
+
+  <article>
+    <div class="entry-header">
+      <h1 class="entry-title"><a href="https://honmaple.me/articles/2023/02/博客系统从Pelican迁移至Snow.html">博客系统从Pelican迁移至Snow</a></h1><header class="entry-info">
+  <span title="Updated at 2023-03-05">
+    <i class="fa fa-calendar-o"></i>
+    2023-02-19 Sun
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By
+        <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-folder-o"></i>
+      In
+        <a href="https://honmaple.me/categories/life/index.html">Life</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/life/index.html">life</a>
+        <a href="https://honmaple.me/tags/pelican/index.html">pelican</a>
+        <a href="https://honmaple.me/tags/snow/index.html">snow</a>
+    </span>
+</header>
+
+    </div>
+    <hr class="entry-hr" />
+    <div class="entry-content">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">迁移列表</a></li>
+<li><a href="#heading-2">内容文件</a>
+<ul>
+<li><a href="#heading-2.1">文件头</a>
+<ul>
+<li><a href="#heading-2.1.1"><code>.md</code> 和 <code>.org</code></a></li>
+<li><a href="#heading-2.1.2"><code>.html</code></a></li>
+</ul></li>
+<li><a href="#heading-2.2">忽略文件</a></li>
+</ul></li>
+<li><a href="#heading-3">静态文件</a>
+<ul>
+<li><a href="#heading-3.1">favicon.ico</a></li>
+<li><a href="#heading-3.2">scss/css/js</a></li>
+</ul></li>
+<li><a href="#heading-4">配置文件</a></li>
+<li><a href="#heading-5">主题文件</a>
+<ul>
+<li><a href="#heading-5.1">分类功能</a></li>
+<li><a href="#heading-5.2">子分类功能</a></li>
+<li><a href="#heading-5.3">搜索功能</a></li>
+<li><a href="#heading-5.4">加密功能</a></li>
+</ul></li>
+</ul></div></div>
+
+<blockquote>
+<p>
+上一次迁移博客系统还是在上一次。。。
+哈哈，不开玩笑，上次迁移大概还是在七年前(2015.10), 不知不觉我的博客也建立快八年时间，如果算上动态博客可能都快十年了，虽然也没写多少篇(其实本地草稿都攒了快200篇了, 也没好好整理), 但好歹可以记录自己的生活和想法，之前使用的博客系统是基于 <code>Python</code> 的 <code>Pelican</code>, 此次将博客迁移至 <a href="https://github.com/honmaple.com/snow">snow</a> —— <b>一个轻量，简洁的基于Go开发的静态博客生成器</b>
+</p>
+</blockquote>
+
+<h2 id="heading-1">迁移列表</h2>
+<ul>
+<li>
+<p><code>[X]</code>
+ 内容文件(.md、.org、.html)
+</p></li>
+<li>
+<p><code>[X]</code>
+ 静态文件(.css、.js、.scss等)
+</p></li>
+<li>
+<p><code>[X]</code>
+ 配置文件(pelicanconf.py -&gt; config.yaml)
+</p></li>
+<li>
+<p><code>[X]</code>
+ 主题文件
+</p>
+<ul>
+<li>
+<p><code>[X]</code>
+ 分类功能(子分类)
+</p></li>
+<li>
+<p><code>[X]</code>
+ 搜索功能
+</p></li>
+<li>
+<p><code>[X]</code>
+ 加密功能
+</p>
+</li>
+</ul></li>
+</ul>
+<h2 id="heading-2">内容文件</h2>
+<p>
+   由于 <code>Snow</code> 是我自己开发的, 功能上的实现本身就基于我原有的文件内容, 比如 <code>markdown</code> 和 <code>orgmode</code> 的支持，所以迁移上也很简单，有的甚至不用修改原有的内容
+</p>
+<h3 id="heading-2.1">文件头</h3>
+<p>
+    原来的 <code>Pelican</code> 使用三种文件头形式:
+</p>
+<h4 id="heading-2.1.1"><code>.md</code> 和 <code>.org</code></h4>
+<ul>
+<li>
+<p>
+ <code>.md</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">Title: 使用pelican搭建个人博客
+Author: honmaple
+Date: 2015-12-22
+Category: Python
+Tags: python,pelican
+Slug: 使用pelican搭建个人博客
+
+## pelican介绍</pre></li>
+<li>
+<p>
+ <code>.org</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e">#+TITLE</span><span style="color:#75715e">: 私人密码库Bitwarden搭建</span>
+<span style="color:#75715e">#+AUTHOR</span><span style="color:#75715e">: honmaple</span>
+<span style="color:#75715e">#+DATE</span><span style="color:#75715e">: 2022-05-29 16:21:15</span>
+<span style="color:#75715e">#+CATEGORY</span><span style="color:#75715e">: Linux</span>
+<span style="color:#75715e">#+PROPERTY</span><span style="color:#75715e">: MODIFIED 2022-05-29 16:27:05</span>
+<span style="color:#75715e">#+PROPERTY</span><span style="color:#75715e">: TAGS linux,bitwarden</span>
+<span style="color:#75715e">#+PROPERTY</span><span style="color:#75715e">: SLUG 私人密码库Bitwarden搭建</span></pre>
+</li>
+</ul>
+<p>
+     在 <code>Pelican</code> 中的 <code>Author</code> 和 <code>Category</code> 是固定字段，如果需要指定多个可以使用英文逗号分隔，而在 <code>Snow</code> 中这两个字段是可选或者说是可配置的，无法知道指定的字段是一个列表还是一个完整的单词，所以这里需要修改为
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#f92672">- Category: Linux
+</span><span style="color:#f92672"></span><span style="color:#a6e22e">+ categories: [Linux]
+</span></pre>
+<p>
+     或者
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#f92672">- #+PROPERTY: TAGS linux,bitwarden
+</span><span style="color:#f92672"></span><span style="color:#a6e22e">+ #+PROPERTY: TAGS [linux,bitwarden]
+</span></pre>
+<p>
+     而在 <code>markdown</code> 中，因为 <code>Snow</code> 支持类似 <code>Hugo</code> 的文件头，如果想要一次性修改好，可以直接改成 <code>yaml</code> 或者 <code>toml</code> 格式
+</p>
+<ul>
+<li>
+<p>
+ <code>yaml</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">---
+categories:
+  <span style="color:#66d9ef">-</span> Linux
+...
+---</pre></li>
+<li>
+<p>
+ <code>toml</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">+++
+categories = [&#34;Linux&#34;]
+...
++++</pre>
+</li>
+</ul>
+<p>
+     除了修改原来的文件外，我还在 <code>Snow</code> 中内置了一个 <code>pelican</code> 插件，只要在配置里添加
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">hooks</span>:
+  - pelican
+...</pre>
+<p>
+     就能将 <code>Category</code> 字段转成 <code>categories</code> 列表, <code>Author</code> 转成 <code>authors</code> 列表, <code>Tags</code> 转成 <code>tags</code> 列表, 这样就不用修改原来的文件
+</p>
+
+<h4 id="heading-2.1.2"><code>.html</code></h4>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">html</span>&gt;
+  &lt;<span style="color:#f92672">head</span>&gt;
+    &lt;<span style="color:#f92672">title</span>&gt;Project&lt;/<span style="color:#f92672">title</span>&gt;
+    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;tags&#34;</span> <span style="color:#a6e22e">content</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;随意写写&#34;</span> /&gt;
+    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;date&#34;</span> <span style="color:#a6e22e">content</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;2015-12-22&#34;</span> /&gt;
+    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;category&#34;</span> <span style="color:#a6e22e">content</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Life&#34;</span> /&gt;
+    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;authors&#34;</span> <span style="color:#a6e22e">content</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;honmaple&#34;</span> /&gt;
+    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;slug&#34;</span> <span style="color:#a6e22e">content</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;project&#34;</span> /&gt;
+    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;custom_css&#34;</span> <span style="color:#a6e22e">content</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/static/css/project.css&#34;</span> /&gt;
+    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;custom_js&#34;</span> <span style="color:#a6e22e">content</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.bootcss.com/geopattern/1.2.3/js/geopattern.min.js&#34;</span> /&gt;
+    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;custom_js&#34;</span> <span style="color:#a6e22e">content</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/static/js/project.js&#34;</span> /&gt;
+  &lt;/<span style="color:#f92672">head</span>&gt;
+  &lt;<span style="color:#f92672">body</span>&gt;
+    ...
+  &lt;/<span style="color:#f92672">body</span>&gt;
+&lt;/<span style="color:#f92672">html</span>&gt;</pre>
+
+<p>
+     在 <code>html</code> 文件中，原来的 <code>stylesheets</code> 和 <code>javascripts</code> 两个字段主要用于自定义css和js，也是利用我开发的一个pelican插件，把多条记录合并成一个列表，在 <code>Snow</code> 中，不用开发新的插件，但需要修改原来的内容
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#f92672">- &lt;meta name=&#34;custom_css&#34; content=&#34;/static/css/project.css&#34; /&gt;
+</span><span style="color:#f92672"></span><span style="color:#f92672">- &lt;meta name=&#34;custom_js&#34; content=&#34;https://cdn.bootcss.com/geopattern/1.2.3/js/geopattern.min.js&#34; /&gt;
+</span><span style="color:#f92672"></span><span style="color:#f92672">- &lt;meta name=&#34;custom_js&#34; content=&#34;/static/js/project.js&#34; /&gt;
+</span><span style="color:#f92672"></span><span style="color:#a6e22e">+ &lt;link type=&#34;text/css&#34; href=&#34;/static/css/project.css&#34; rel=&#34;stylesheet&#34;/&gt;
+</span><span style="color:#a6e22e"></span><span style="color:#a6e22e">+ &lt;script type=&#34;text/javascript&#34; src=&#34;https://cdn.bootcss.com/geopattern/1.2.3/js/geopattern.min.js&#34;&gt;&lt;/script&gt;
+</span><span style="color:#a6e22e"></span><span style="color:#a6e22e">+ &lt;script type=&#34;text/javascript&#34; src=&#34;/static/js/project.js&#34;&gt;&lt;/script&gt;
+</span></pre>
+<p>
+     这样就能得到两个类型为列表的变量 <code>custom_css</code> 和 <code>custom_js</code>
+</p>
+
+<h3 id="heading-2.2">忽略文件</h3>
+<p>
+    <code>Pelican</code> 可以单独指定 <code>content/posts</code> 和 <code>content/pages</code>, 而在 <code>Snow</code> 中 无法指定 <code>content</code> 目录下的部分目录，但可以设置忽略文件, 这有两种方式
+</p>
+<ul>
+<li>
+<p>
+ 在需要忽略的目录下新建一个 <code>_index.md</code>, 并指定 <code>ingore_files</code> 字段
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">---
+# 忽略整个目录
+ignore_files: [&#34;*&#34;]
+# 忽略目录下的README.md和所有js文件
+ignore_files:
+  <span style="color:#66d9ef">-</span> README.md
+  <span style="color:#66d9ef">-</span> *.js
+---</pre></li>
+<li>
+<p>
+ 在配置里设置 <code>sections.{目录名}.ignore_files</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">sections</span>:
+  <span style="color:#66d9ef">drafts</span>:
+    <span style="color:#75715e"># 忽略{content_dir}/drafts目录</span>
+    <span style="color:#66d9ef">ignore_files</span>: [<span style="color:#e6db74">&#34;*&#34;</span>]</pre></li>
+</ul>
+<h2 id="heading-3">静态文件</h2>
+<h3 id="heading-3.1">favicon.ico</h3>
+<p>
+    在 <code>Pelican</code> 中，类似 <code>favicon.ico</code>、<code>robots.txt</code>、<code>CNAME</code> 这些不需要修改的文件我原来是放到 <code>content/extra</code> 目录，但在 <code>Snow</code> 中，<code>content</code> 目录下的所有文件都会视为页面文件或者页面的资源文件, 所以需要把extra目录下的文件移动到static目录下，并设置
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">static_dirs</span>:
+  - <span style="color:#e6db74">&#34;static/favicon.ico&#34;</span>
+  - <span style="color:#e6db74">&#34;static/CNAME&#34;</span>
+  - <span style="color:#e6db74">&#34;static/README.md&#34;</span>
+  - <span style="color:#e6db74">&#34;static/robots.txt&#34;</span>
+  - <span style="color:#e6db74">&#34;content/pages/css&#34;</span>
+<span style="color:#66d9ef">static_paths</span>:
+  <span style="color:#66d9ef">&#34;static&#34;: </span><span style="color:#e6db74">&#34;/&#34;</span>
+  <span style="color:#66d9ef">&#34;content/pages/css&#34;: </span><span style="color:#e6db74">&#34;static/css/&#34;</span></pre>
+
+<h3 id="heading-3.2">scss/css/js</h3>
+<p>
+    在 Python 中有一个专门处理静态文件的 <a href="https://webassets.readthedocs.io/en/latest/">webassets</a>，在 Pelican 中也有一个插件<a href="https://github.com/pelican-plugins/webassets">https://github.com/pelican-plugins/webassets</a>, 而在 <code>Snow</code> 中同样支持静态文件的处理, 比如编译并压缩scss文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">params.assets.css</span>:
+  <span style="color:#66d9ef">files</span>:
+    - <span style="color:#e6db74">&#34;@theme/static/scss/common.scss&#34;</span>
+    - <span style="color:#e6db74">&#34;@theme/static/scss/entry.scss&#34;</span>
+    - <span style="color:#e6db74">&#34;@theme/static/scss/entry-tree.scss&#34;</span>
+  <span style="color:#66d9ef">filters</span>:
+    - <span style="color:#66d9ef">libscss</span>:
+        <span style="color:#66d9ef">path</span>: [<span style="color:#e6db74">&#34;themes/snow/static/scss/&#34;</span>]
+    - <span style="color:#66d9ef">cssmin</span>:
+  <span style="color:#66d9ef">output</span>: <span style="color:#e6db74">&#34;static/lib/css/style.min.css&#34;</span></pre>
+<p>
+    其中 <code>filters</code> 支持 libscss,cssmin,jsmin(js处理有些问题，不要使用)
+</p>
+
+<p>
+    然后就可以在模版里使用
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">{%- assets &#34;css&#34; %}
+&lt;<span style="color:#f92672">link</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ config.site.url }}/{{ asset_url }}&#34;</span> <span style="color:#a6e22e">rel</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;stylesheet&#34;</span>&gt;
+{%- endassets %}</pre>
+
+<h2 id="heading-4">配置文件</h2>
+<p>
+   <code>Pelican</code> 使用 <code>pelicanconf.py</code>, 而 <code>Snow</code> 使用 <code>config.yaml</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">site</span>:
+  <span style="color:#66d9ef">url</span>: <span style="color:#e6db74">&#34;http://127.0.0.1:8000&#34;</span>
+  <span style="color:#66d9ef">title</span>: <span style="color:#e6db74">&#34;紅楓吟&#34;</span>
+  <span style="color:#66d9ef">subtitle</span>: <span style="color:#e6db74">&#34;风落花语风落天，花落风雨花落田.&#34;</span>
+  <span style="color:#66d9ef">language</span>: <span style="color:#e6db74">&#34;zh&#34;</span>
+  <span style="color:#66d9ef">author</span>: <span style="color:#e6db74">&#34;honmaple&#34;</span>
+  <span style="color:#66d9ef">logo_name</span>: <span style="color:#e6db74">&#34;楓&#34;</span>
+
+<span style="color:#66d9ef">mode.publish</span>:
+  <span style="color:#66d9ef">site</span>:
+    <span style="color:#66d9ef">url</span>: <span style="color:#e6db74">&#34;https://honmaple.me&#34;</span></pre>
+
+<h2 id="heading-5">主题文件</h2>
+<p>
+   <code>Snow</code> 的模版系统使用的是 <a href="https://github.com/flosch/pongo2">https://github.com/flosch/pongo2</a>, 从 <code>Pelican</code> 使用的 <code>jinja2</code> 迁移到 <code>pongo2</code> 除了相关变量的修改和各种大写外，还有部分区别
+</p>
+<ul>
+<li>
+<p>
+ loop: pongo2 使用的是 <code>forloop</code>, 计数使用的 <code>forloop.Counter</code>, 从1开始
+</p></li>
+<li>
+<p>
+ marco: pongo2 想要加载并调用文件内的函数，需要添加 <code>export</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">{%- macro archive_list(pages) export %}
+...</pre></li>
+<li>
+<p>
+ super: pongo2 使用的是 <code>block.Super</code>
+</p></li>
+</ul>
+<h3 id="heading-5.1">分类功能</h3>
+<p>
+    在 <code>Pelican</code> 中，可以使用 <code>page.tags[0].url</code> 获取标签路径，而在 <code>Snow</code> 中想要获取标签路径, 需要使用 <code>get_taxonomy_url</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">{%- for name in page.Meta.Get(&#34;tags&#34;) %}
+&lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ get_taxonomy_url(&#34;</span><span style="color:#a6e22e">tags</span><span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#a6e22e">name</span><span style="color:#960050;background-color:#1e0010">)</span> <span style="color:#960050;background-color:#1e0010">}</span><span style="color:#960050;background-color:#1e0010">}</span><span style="color:#960050;background-color:#1e0010">&#34;</span>&gt;{{ name }}&lt;/<span style="color:#f92672">a</span>&gt;
+{%- endfor %}</pre>
+
+<h3 id="heading-5.2">子分类功能</h3>
+<p>
+    原来的子分类是用我写的一个插件实现的，使用的是 <code>.</code> 作为分隔，如 <code>Category: Life.Coding</code>, 在 <code>Snow</code> 中原生支持子分类, 只需要把 <code>.</code> 改成 <code>/</code>, 比如 <code>Python/Flask</code> 和 <code>Python/Ansible/Jinja2</code> 会创建如下分类系统
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">- Categories
+  - Python
+    - Flask
+    - Ansible
+      - Jinja2</pre>
+<p>
+    我的博客导航栏的实现就是基于该功能
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">{%- set categories = get_taxonomy(&#34;categories&#34;) %}
+{%- if categories %}
+  {%- for term in categories.Terms %}
+    {%- if term.Children %}
+      &lt;<span style="color:#f92672">li</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;dropdown&#34;</span>&gt;
+        &lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ term.Permalink }}&#34;</span>&gt;{{ _(term.Name) }}&lt;/<span style="color:#f92672">a</span>&gt;
+        &lt;<span style="color:#f92672">ul</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;dropdown-menu&#34;</span>&gt;
+          {%- for child in term.Children %}
+            &lt;<span style="color:#f92672">li</span>&gt;&lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ child.Permalink }}&#34;</span>&gt;{{ _(child.Name) }}&lt;/<span style="color:#f92672">a</span>&gt;&lt;/<span style="color:#f92672">li</span>&gt;
+          {%- endfor %}
+        &lt;/<span style="color:#f92672">ul</span>&gt;
+      &lt;/<span style="color:#f92672">li</span>&gt;
+    {%- else %}
+      &lt;<span style="color:#f92672">li</span>&gt;&lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ term.Permalink }}&#34;</span>&gt;{{ _(term.Name) }}&lt;/<span style="color:#f92672">a</span>&gt;&lt;/<span style="color:#f92672">li</span>&gt;
+    {%- endif %}
+  {%- endfor %}
+{%- endif %}</pre>
+
+<h3 id="heading-5.3">搜索功能</h3>
+<p>
+    <code>Snow</code> 本身没有自带搜索，但可以输出 json 文件
+</p>
+<ul>
+<li>
+<p>
+ <code>search.md</code>
+      首先在 <code>{content_dir}</code> 目录下新建 <code>search.md</code> 文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">---
+title: Search
+path: search.html
+template: search.html
+filter: type=&#34;posts&#34;
+paginate: 0
+section: true
+formats:
+  json:
+    path: &#34;index.json&#34;
+    template: &#34;search.json&#34;
+---</pre>
+<p>
+      然后在字段 <code>formats</code> 指定格式，路径和模版
+</p></li>
+<li>
+<p>
+ <code>search.json</code>
+      在 <code>{theme}/templates</code> 目录下或者 <code>templates</code> (配置文件同级目录下) 建立
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">{{- scratch.Set(&#34;newjson&#34;, slice()) | slient }}
+{%- for page in pages %}
+{{- scratch.Add(&#34;newjson&#34;, dict(&#34;index&#34;, forloop.Counter - 1, &#34;permalink&#34;, page.Permalink, &#34;summary&#34;, page.Summary, &#34;title&#34;, page.Title, &#34;content&#34;, page.Content | striptags)) | slient }}
+{%- endfor %}
+{{- scratch.JSON(&#34;newjson&#34;) | safe }}</pre>
+<p>
+      当写入到 <code>/index.json</code> 后就可以利用其它的搜索库比如 <code>lunr</code> 来进行搜索
+</p></li>
+</ul>
+<h3 id="heading-5.4">加密功能</h3>
+<p>
+    文章加密也是我不用 <code>Hugo</code> 的一个重要原因，我不希望使用 <code>snow build</code> 之前还需要使用另外的程序对内容进行一个预处理，所以在 <code>Snow</code> 中，我内置了一个名为 <code>encrypt</code> 的插件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">hooks</span>:
+  - encrypt
+...</pre>
+<p>
+    注册插件后就可以在内容文件里使用 <code>encrypt</code> 的 shortcode代码，或者在模版里使用 <code>encrypt</code> 函数
+</p>
+<ul>
+<li>
+<p>
+ 全局加密:
+      只要在文件头添加 <code>passowd: xxx,hello world</code>, 其中 <code>xxx</code> 是输入的密码，<code>hello world</code> 是显示的描述信息
+</p></li>
+<li>
+<p>
+ 局部加密:
+      使用 shortcode 进行加密
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">shortcode</span> <span style="color:#a6e22e">_name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;encrypt&#34;</span> <span style="color:#a6e22e">password</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xxx&#34;</span> <span style="color:#a6e22e">description</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;hello world&#34;</span>&gt;
+...
+&lt;/<span style="color:#f92672">shortcode</span>&gt;</pre></li>
+<li>
+<p>
+ 模版加密:
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">div</span>&gt;
+  {{ page.Content | encrypt:&#34;xxx&#34; }}
+&lt;/<span style="color:#f92672">div</span>&gt;</pre></li>
+</ul>
+<p>
+    示例：<a href="https://honmaple.me/articles/2018/03/%E4%B8%BApelican%E6%B7%BB%E5%8A%A0%E6%96%87%E7%AB%A0%E5%8A%A0%E5%AF%86%E5%8A%9F%E8%83%BD.html">为pelican添加文章加密功能</a>
+</p>
+    </div><div class="entry-copyright">
+      <div>
+        <i class="fa fa-user-o"></i>
+        作者:
+          <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+      </div>
+  <div>
+    <i class="fa fa-link"></i>
+    链接:
+    <a href="https://honmaple.me/articles/2023/02/博客系统从Pelican迁移至Snow.html">https://honmaple.me/articles/2023/02/博客系统从Pelican迁移至Snow.html</a>
+  </div>
+  <div>
+    <i class="fa fa-copyright"></i>
+    版权:
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+    </a>
+  </div>
+</div>
+
+<div class="entry-honor">
+  <button class="btn" data-target="#entry-honor-content" data-toggle="collapse">赏</button>
+  <div class="collapse" id="entry-honor-content">
+    <div class="entry-honor-content">
+      <div class="entry-honor-alipay">
+        <div class="entry-honor-mask">
+          <button class="btn btn-success" data-target=".entry-honor-wechat" data-toggle="collapse">
+            <i class="fa fa-wechat"></i>
+            <span>微信</span>
+          </button>
+        </div>
+      </div>
+      <div class="entry-honor-wechat collapse">
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+    </div>
+  </div>
+</div>
+
+    <hr class="entry-hr" />
+    <ul class="entry-pager">
+        <li class="previous">
+          <a href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html" title="Previous article: Emacs笔记之修复yaml-mode的格式化问题">
+            <i class="fa fa-chevron-left"></i>
+            Emacs笔记之修复yaml-mode的格式化问题
+          </a>
+        </li>
+        <li class="next">
+          <a href="https://honmaple.me/articles/2023/02/静态博客中的shortcode实现.html" title="Next article: 静态博客中的shortcode实现">
+            静态博客中的shortcode实现
+            <i class="fa fa-chevron-right"></i>
+          </a>
+        </li>
+    </ul>
+  <div class="comments">
+    <div class="text-center">
+      <a class="btn entry-read-more entry-comment">加载评论</a>
+    </div>
+    <div id="comment_thread" issue-term="博客系统从Pelican迁移至Snow"></div>
+  </div>
+
+  </article>
+      </div>
+    </div><div class="entry-footer">
+  <ul class="entry-footer-left">
+    <li class="hidden-xs">© 2015-2023 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+        <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+  <ul class="entry-footer-right">
+    <li><a class="entry-switch-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+      <li><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/pages/music.html" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>
+      <li><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li><a href="https://honmaple.me/pages/contact.html" title="Contact"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+</div>
+<div class="back-to-top back-to-top-on">
+  <i class="fa fa-hand-o-up" title="back to top"></i>
+</div>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'UA-88401692-2');
+  </script>
+
+
+      <script src="https://s.libforest.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
+      <script src="https://s.libforest.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+         if (typeof ga !== 'undefined') {
+           ga('send', 'pageview', location.pathname + location.search);
+         }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>
