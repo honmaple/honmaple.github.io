@@ -7,6 +7,7 @@
     <title>紅楓吟 · 风落花语风落天，花落风雨花落田.</title>
       <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+    <script src="https://honmaple.me/static/js/theme.js"></script>
   </head>
   <body>
     <div class="scrollbar"></div>
@@ -88,6 +89,300 @@
         <article>
           <div class="entry-header">
             <h1 class="entry-title">
+              <a href="https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html" rel="bookmark" title="Permalink to 使用Github Actions自动打包Go项目">使用Github Actions自动打包Go项目</a>
+            </h1><header class="entry-info">
+  <span title="Updated at 2023-03-06">
+    <i class="fa fa-calendar-o"></i>
+    2023-03-06 Mon
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By
+        <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-folder-o"></i>
+      In
+        <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/go/index.html">go</a>
+        <a href="https://honmaple.me/tags/github/index.html">github</a>
+    </span>
+</header>
+
+          </div>
+          <hr class="entry-hr" />
+            <div class="entry-content entry-summary">
+              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">前言</a></li>
+<li><a href="#heading-2">快速开始(Quickstart)</a></li>
+<li><a href="#heading-3">多平台编译(Cross Compile)</a>
+<ul>
+<li><a href="#heading-3.1">交叉编译</a></li>
+<li><a href="#heading-3.2">跨平台编译</a></li>
+</ul></li>
+<li><a href="#heading-4">发布(Release)</a></li>
+<li><a href="#heading-5">FAQ</a>
+<ul>
+<li><a href="#heading-5.1">version `GLIBC_2.33&#39; not found</a></li>
+</ul></li>
+</ul></div></div>
+
+<h2 id="heading-1">前言</h2>
+<p>
+   如果用过 <b>Gitlab Ci</b>, 相信对此也非常熟悉，<b>GitHub Actions</b> 是 <b>GitHub</b> 推出的持续集成（Continuous Integration，简称 CI）服务，它提供了整套虚拟服务器环境，基于它可以进行构建、测试、打包、部署项目等等操作
+</p>
+
+<h2 id="heading-2">快速开始(Quickstart)</h2>
+<p>
+   在自己的 <code>Github</code> 仓库中找到 <code>Actions</code> 标签页
+   
+<a href="https://s.libforest.com/images/2023/03/github-actions-01.png?show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/03/github-actions-01.png?thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   点击 <code>Configure</code>, 此时会生成一个 <code>.github/workflow/go.yml</code> 文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e"># This workflow will build a golang project</span>
+<span style="color:#75715e"># For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go</span>
+
+<span style="color:#66d9ef">name</span>: Go
+
+<span style="color:#66d9ef">on</span>:
+  <span style="color:#66d9ef">push</span>:
+    <span style="color:#66d9ef">branches</span>: [ <span style="color:#e6db74">&#34;master&#34;</span> ]
+  <span style="color:#66d9ef">pull_request</span>:
+    <span style="color:#66d9ef">branches</span>: [ <span style="color:#e6db74">&#34;master&#34;</span> ]
+
+<span style="color:#66d9ef">jobs</span>:
+
+  <span style="color:#66d9ef">build</span>:
+    <span style="color:#66d9ef">runs-on</span>: ubuntu-latest
+    <span style="color:#66d9ef">steps</span>:
+      - <span style="color:#66d9ef">uses</span>: actions/checkout@v3
+        - <span style="color:#66d9ef">name</span>: Set up Go
+          <span style="color:#66d9ef">uses</span>: actions/setup-go@v3
+        <span style="color:#66d9ef">with</span>:
+          <span style="color:#66d9ef">go-version</span>: <span style="color:#ae81ff">1.19</span>
+      - <span style="color:#66d9ef">name</span>: Build
+        <span style="color:#66d9ef">run</span>: go build -v ./...
+      - <span style="color:#66d9ef">name</span>: Test
+        <span style="color:#66d9ef">run</span>: go test -v ./...</pre>
+
+<h2 id="heading-3">多平台编译(Cross Compile)</h2>
+<h3 id="heading-3.1">交叉编译</h3>
+<p>
+    对于非 <code>CGO</code> 项目，<code>Go</code> 提供了一种十分方便的方式来进行交叉编译，只需要指定 <code>GOOS</code> 和 <code>GOARCH</code> 环境变量
+</p>
+<ul>
+<li>
+<p>
+  Mac下编译Linux, Windows平台的64位可执行程序：
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>linux GOARCH<span style="color:#f92672">=</span>amd64 go build .
+$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>windows GOARCH<span style="color:#f92672">=</span>amd64 go build .</pre></li>
+<li>
+<p>
+ Linux下编译Mac, Windows平台的64位可执行程序：
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>darwin GOARCH<span style="color:#f92672">=</span>amd64 go build .
+$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>windows GOARCH<span style="color:#f92672">=</span>amd64 go build .</pre>
+</li>
+</ul>
+<p>
+    同样的，我们可以在 <code>Gtihub Actions</code> 中设置环境变量来编译非 <code>CGO</code> 项目，这里需要使用 <code>matrix</code> 策略，让我们基于不同的参数创建并行的任务，比如编译Go时指定不同的环境变量
+</p>
+
+<ul>
+<li>
+<p>
+ 首先编写任务
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">jobs</span>:
+  <span style="color:#66d9ef">build</span>:
+    <span style="color:#66d9ef">strategy</span>:
+      <span style="color:#66d9ef">matrix</span>:
+        <span style="color:#66d9ef">goos</span>: [linux, darwin]
+        <span style="color:#66d9ef">goarch</span>: [amd64]
+
+    <span style="color:#66d9ef">runs-on</span>: ubuntu-latest
+
+    <span style="color:#66d9ef">steps</span>:
+      - <span style="color:#66d9ef">name</span>: Checkout
+        <span style="color:#66d9ef">uses</span>: actions/checkout@v3
+      - <span style="color:#66d9ef">name</span>: Set up Go
+        <span style="color:#66d9ef">uses</span>: actions/setup-go@v3
+        <span style="color:#66d9ef">with</span>:
+          <span style="color:#66d9ef">go-version</span>: <span style="color:#ae81ff">1.19</span>
+      - <span style="color:#66d9ef">name</span>: Download dependencies
+        <span style="color:#66d9ef">run</span>: go mod download
+      - <span style="color:#66d9ef">name</span>: Build
+        <span style="color:#66d9ef">run</span>: go build -v -o snow .
+        <span style="color:#75715e"># 指定编译时的环境变量</span>
+        <span style="color:#66d9ef">env</span>:
+          <span style="color:#66d9ef">GOOS</span>: ${{ matrix.goos }}
+          <span style="color:#66d9ef">GOARCH</span>: ${{ matrix.goarch }}
+          <span style="color:#66d9ef">CGO_ENABLED</span>: <span style="color:#ae81ff">0</span></pre>
+<p>
+      这样就创建了 <code>GOOS=linux GOARCH=amd64</code> 和 <code>GOOS=darwin GOARCH=amd64</code> 的两个任务, 当 <code>goarch</code> 增加一个 <code>arm</code> 的参数后，会组合成四个任务, 如果需要指定或者排除某个选项，可以使用 <code>include</code> 或者 <code>exclude</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">matrix</span>:
+  <span style="color:#66d9ef">goos</span>: [linux, darwin]
+  <span style="color:#66d9ef">goarch</span>: [amd64, arm]
+  <span style="color:#75715e"># 只包括linux编译选项</span>
+  <span style="color:#66d9ef">include</span>:
+    - <span style="color:#66d9ef">goos</span>: linux
+      <span style="color:#66d9ef">goarch</span>: amd64
+    - <span style="color:#66d9ef">goos</span>: linux
+      <span style="color:#66d9ef">goarch</span>: arm
+  <span style="color:#75715e"># 排除所有关于arm的编译选项</span>
+  <span style="color:#66d9ef">exclude</span>:
+    - <span style="color:#66d9ef">goarch</span>: arm</pre></li>
+<li>
+<p>
+ 然后执行 <code>git push</code>, 这样就能在 <code>Github</code> 的 <code>Actions</code> 标签页看到执行结果
+</p>
+</li>
+</ul>
+<h3 id="heading-3.2">跨平台编译</h3>
+<p>
+    如果是非 <code>CGO</code> 项目，可以使用Go内置的交叉编译，但如果是 <code>CGO</code> 项目，上述的交叉编译大概率会失败(相关问题:<a href="https://github.com/wellington/go-libsass/issues/67">go-libsass</a>)， 所以我们需要基于不同的平台来进行编译，幸运的是，<code>Github Actions</code> 对此支持的非常好,
+</p>
+
+<ul>
+<li>
+<p>
+ 编写新任务
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">jobs</span>:
+  <span style="color:#66d9ef">build</span>:
+    <span style="color:#66d9ef">strategy</span>:
+      <span style="color:#66d9ef">matrix</span>:
+        <span style="color:#66d9ef">build</span>: [macos, linux]
+        <span style="color:#66d9ef">include</span>:
+          - <span style="color:#66d9ef">build</span>: macos
+            <span style="color:#66d9ef">os</span>: macos-latest
+          - <span style="color:#66d9ef">build</span>: linux
+            <span style="color:#66d9ef">os</span>: ubuntu<span style="color:#ae81ff">-18.04</span>
+    <span style="color:#66d9ef">runs-on</span>: ${{ matrix.os }}
+    <span style="color:#66d9ef">steps</span>:
+      - <span style="color:#66d9ef">name</span>: Checkout
+        <span style="color:#66d9ef">uses</span>: actions/checkout@v3
+      - <span style="color:#66d9ef">name</span>: Set up Go
+        <span style="color:#66d9ef">uses</span>: actions/setup-go@v3
+        <span style="color:#66d9ef">with</span>:
+          <span style="color:#66d9ef">go-version</span>: <span style="color:#ae81ff">1.19</span>
+      - <span style="color:#66d9ef">name</span>: Download dependencies
+        <span style="color:#66d9ef">run</span>: go mod download
+      - <span style="color:#66d9ef">name</span>: Build
+        <span style="color:#66d9ef">run</span>: go build -v -o snow .
+        <span style="color:#66d9ef">env</span>:
+          <span style="color:#66d9ef">CGO_ENABLED</span>: <span style="color:#ae81ff">1</span></pre>
+<p>
+      注意 <code>runs-on</code> 使用的 <code>matrix.os</code> 变量, 它允许我们分别使用 <code>ubuntu-18.04</code> 和 <code>macos-latest</code> 两个平台进行编译，这时不用指定 <code>GOOS</code> 和 <code>GOARCH</code> 参数
+</p></li>
+<li>
+<p>
+ 执行 <code>git push</code>, 可以看到执行结果
+      
+<a href="https://s.libforest.com/images/2023/03/github-actions-02.png?show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/03/github-actions-02.png?thumb" class="lazyload" />
+</a>
+</p>
+</li>
+</ul>
+<h2 id="heading-4">发布(Release)</h2>
+<p>
+   当编译好一个二进制文件后，需要发布到 <code>Github</code> 的 <code>Release</code> 页，这时就需要添加新的任务, 目前官方的<a href="https://github.com/actions/create-release">actions/create-release</a>已经无人维护，所以此次选择另外一个<a href="https://github.com/ncipollo/release-action">ncipollo/release-action</a>
+</p>
+
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">name</span>: Release
+
+<span style="color:#66d9ef">on</span>:
+  <span style="color:#75715e"># 只在预发布时才执行</span>
+  <span style="color:#66d9ef">release</span>:
+    <span style="color:#66d9ef">types</span>: [prereleased]
+
+<span style="color:#66d9ef">jobs</span>:
+  <span style="color:#66d9ef">build</span>:
+    <span style="color:#66d9ef">strategy</span>:
+      <span style="color:#66d9ef">matrix</span>:
+        <span style="color:#66d9ef">build</span>: [macos, linux]
+        <span style="color:#66d9ef">include</span>:
+          - <span style="color:#66d9ef">build</span>: macos
+            <span style="color:#66d9ef">os</span>: macos-latest
+            <span style="color:#66d9ef">archive-name</span>: darwin.tar.gz
+          - <span style="color:#66d9ef">build</span>: linux
+            <span style="color:#66d9ef">os</span>: ubuntu-latest
+            <span style="color:#66d9ef">archive-name</span>: linux.tar.gz
+
+    <span style="color:#75715e"># 需要设置写权限才能自动发布</span>
+    <span style="color:#66d9ef">permissions</span>:
+      <span style="color:#66d9ef">contents</span>: write
+
+    <span style="color:#66d9ef">steps</span>:
+      ...
+      <span style="color:#75715e"># 把二进制文件打包成压缩文件</span>
+      - <span style="color:#66d9ef">name</span>: Prepare Packaging
+        <span style="color:#66d9ef">run</span>: tar zcvf snow-${{ matrix.archive-name }}.tar.gz snow LICENSE
+
+      <span style="color:#75715e"># 上传附件</span>
+      - <span style="color:#66d9ef">name</span>: Upload Artifacts
+        <span style="color:#66d9ef">uses</span>: actions/upload-artifact@v3
+        <span style="color:#66d9ef">with</span>:
+          <span style="color:#66d9ef">name</span>: snow-${{ matrix.archive-name }}.tar.gz
+          <span style="color:#66d9ef">path</span>: snow-${{ matrix.archive-name }}.tar.gz
+
+      <span style="color:#75715e"># 发布release版本</span>
+      - <span style="color:#66d9ef">name</span>: Release version
+        <span style="color:#66d9ef">uses</span>: ncipollo/release-action@v1
+        <span style="color:#66d9ef">if</span>: github.event_name == <span style="color:#e6db74">&#39;release&#39;</span>
+        <span style="color:#66d9ef">with</span>:
+          <span style="color:#66d9ef">allowUpdates</span>: <span style="color:#66d9ef">true</span>
+          <span style="color:#66d9ef">artifacts</span>: snow-${{ matrix.archive-name }}.tar.gz
+          <span style="color:#66d9ef">token</span>: ${{ secrets.GITHUB_TOKEN }}</pre>
+
+<p>
+   当 <code>Github Actions</code> 执行完成后，就能在 <code>Release</code> 页看到我们发布的 <code>Package</code>
+   
+<a href="https://s.libforest.com/images/2023/03/github-actions-03.png?show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/03/github-actions-03.png?thumb" class="lazyload" />
+</a>
+</p>
+
+<h2 id="heading-5">FAQ</h2>
+<h3 id="heading-5.1">version `GLIBC_2.33&#39; not found</h3>
+<p>
+    使用 <code>Github Actions</code> 发布一个新的版本，下载到本地执行时报错
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.33&#39; not found (required by ./snow)
+./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.34&#39; not found (required by ./snow)
+./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.32&#39; not found (required by ./snow)
+./snow: /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.29&#39; not found (required by ./snow)</pre>
+<p>
+    这是由于使用的 <code>ubuntu</code> 版本太高导致, 降低版本即可
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">include:
+...
+<span style="color:#f92672">-   os: ubuntu-latest
+</span><span style="color:#f92672"></span><span style="color:#a6e22e">+   os: ubuntu-18.04
+</span></pre>
+            </div>
+        </article>
+      </li>
+      <li>
+        <article>
+          <div class="entry-header">
+            <h1 class="entry-title">
               <a href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html" rel="bookmark" title="Permalink to Emacs笔记之修复yaml-mode的格式化问题">Emacs笔记之修复yaml-mode的格式化问题</a>
             </h1><header class="entry-info">
   <span title="Updated at 2023-02-26">
@@ -145,63 +440,10 @@
 </p>
 <pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">test1</span>: <span style="color:#e6db74">&#34;val&#34;</span>
 <span style="color:#66d9ef">test2</span>:
-  - <span style="color:#e6db74">&#34;val1&#34;</span>
-  - <span style="color:#e6db74">&#34;val2&#34;</span>
-  <span style="color:#66d9ef">test3</span>:
-    <span style="color:#66d9ef">test4</span>: <span style="color:#e6db74">&#34;val4&#34;</span></pre>
-<p>
-而我又总是手痒，写好的配置文件总是会忍不住 <code>indent-region</code> 一番，结果本来正确的格式立马变得各种乱七八糟，当初为了解决这个问题，还专门为 <b>yaml-mode</b> 激活了 <b>lsp-mode</b>, 并且使用 <code>lsp-format-buffer</code> 来进行处理。
-</p>
-
-<p>
-本来一切都还正常，但最近发现了另外一个问题，如果在 <b>org-mode</b> 中插入 <b>yaml</b> 的代码片段，调用 <code>indent-region</code> 还是还有之前的问题, <b>org-mode</b> 中又无法直接调用 <code>lsp-format-buffer</code>, 所以专门研究了一下 <b>yaml-mode</b>
-</p>
-
-<p>
-发现 <b>yaml-mode</b> 只是定义了 <code>indent-line-function</code> 变量，没有定义 <code>indent-region-function</code>, 导致调用 <code>indent-region</code> 时其实是逐行调用 <code>yaml-indent-line</code>, 这里面有一个计算当前缩进的 <code>yaml-compute-indentation</code> 函数，计算方式有些简单粗暴，如果上一行是一个 <b>hash key</b>, 当前行的缩进就是上一行的缩进加 <code>yaml-indent-offset</code> 的值, 这里并没有判断当前行是新建行还是已经有相关内容，如果是新建行那么缩进就是对的，如果是已有的内容就是错的，所以我修改了这一部分逻辑，如果是 <b>已有内容并且当前行的缩进小于上一行</b> 则不进行处理, 比如:
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">  - <span style="color:#e6db74">&#34;val2&#34;</span>
-test3:</pre>
-<p>
-虽然增加的判断逻辑很简单，但至少在使用 <code>indent-region</code> 时已经格式好的内容就不会出现混乱的情况了, 也不用专门为 <b>yaml</b> 文件激活一个 <b>lsp</b> 进程。
-</p>
-
-<p>
-目前处理的方式还是采用 advice + letf 形式，否则需要修改很多内容，有兴趣的同道可以参考一下
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">(defun maple/yaml-compute-indentation()
-  (let ((ci (<span style="color:#a6e22e">current-indentation</span>))
-        (cm (<span style="color:#a6e22e">looking-at</span> yaml-hash-key-re))
-        (cl (<span style="color:#a6e22e">looking-at</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">^</span><span style="color:#e6db74">\s</span><span style="color:#e6db74">*-</span><span style="color:#e6db74">\s</span><span style="color:#e6db74">+.*$</span><span style="color:#e6db74">&#34;</span>)))
-    (save-excursion
-      (<span style="color:#a6e22e">beginning-of-line</span>)
-      (if (<span style="color:#a6e22e">looking-at</span> yaml-document-delimiter-re) <span style="color:#ae81ff">0</span>
-        (<span style="color:#a6e22e">forward-line</span> <span style="color:#ae81ff">-1</span>)
-        (while (and (<span style="color:#a6e22e">looking-at</span> yaml-blank-line-re)
-                    (<span style="color:#a6e22e">&gt;</span> (<span style="color:#a6e22e">point</span>) (<span style="color:#a6e22e">point-min</span>)))
-          (<span style="color:#a6e22e">forward-line</span> <span style="color:#ae81ff">-1</span>))
-        (let ((li (<span style="color:#a6e22e">current-indentation</span>))
-              (ll (<span style="color:#a6e22e">looking-at</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">^</span><span style="color:#e6db74">\s</span><span style="color:#e6db74">*-</span><span style="color:#e6db74">\s</span><span style="color:#e6db74">+.*$</span><span style="color:#e6db74">&#34;</span>)))
-          <span style="color:#75715e">;; 如果上一行的缩进大于当前行, 上一行是列表，当前行也是是列表 - 正常缩进</span>
-          <span style="color:#75715e">;; 如果上一行的缩进大于当前行, 上一行和当前行有一个不是列表 - 原有缩进</span>
-          <span style="color:#75715e">;; 如果上一行的缩进等于当前行, 上一行是字典，当前行是列表 - 正常缩进</span>
-          <span style="color:#75715e">;; 如果上一行的缩进等于当前行, 上一行是字典，当前行是不是列表 - 原有缩进</span>
-          <span style="color:#75715e">;; 如果上一行的缩进小于当前行, 上一行是字典 - 正常缩进</span>
-          <span style="color:#75715e">;; 如果上一行的缩进小于当前行, 上一行是列表，当前行也是列表 - 正常缩进</span>
-          <span style="color:#75715e">;; 如果上一行的缩进小于当前行, 上一行是列表，当前行是字典 - 错误/正常缩进</span>
-          (if (or (and (<span style="color:#a6e22e">&gt;</span> li ci) (or (not cl) (not ll))) (and (<span style="color:#a6e22e">=</span> li ci) cm (not ll))) ci
-            (<span style="color:#a6e22e">+</span> li
-               (if (<span style="color:#a6e22e">looking-at</span> yaml-nested-map-re) yaml-indent-offset <span style="color:#ae81ff">0</span>)
-               (if (<span style="color:#a6e22e">looking-at</span> yaml-nested-sequence-re) yaml-indent-offset <span style="color:#ae81ff">0</span>)
-               (if (<span style="color:#a6e22e">looking-at</span> yaml-block-literal-re) yaml-indent-offset <span style="color:#ae81ff">0</span>))))))))
-
-(defun maple/yaml-indent-region(func <span style="color:#66d9ef">&amp;rest</span> args)
-  (if (derived-mode-p <span style="color:#e6db74">&#39;yaml-mode</span>)
-      (letf (((<span style="color:#a6e22e">symbol-function</span> <span style="color:#e6db74">&#39;yaml-compute-indentation</span>) <span style="color:#e6db74">&#39;maple/yaml-compute-indentation</span>))
-        (<span style="color:#a6e22e">apply</span> func args))
-    (<span style="color:#a6e22e">apply</span> func args)))
-
-(advice-add <span style="color:#e6db74">&#39;indent-region</span> :around <span style="color:#e6db74">&#39;maple/yaml-indent-region</span>)</pre>
+  - <span style="color:#e6db74">&#34;val1...</span></pre>
+            </div>
+            <div class="text-center">
+              <a class="btn entry-read-more" href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html">阅读全文 »</a>
             </div>
         </article>
       </li>
@@ -781,7 +1023,7 @@ nginx.ingress...</pre>
             <h1 class="entry-title">
               <a href="https://honmaple.me/articles/2021/06/flutter笔记之初体验.html" rel="bookmark" title="Permalink to flutter笔记之初体验">flutter笔记之初体验</a>
             </h1><header class="entry-info">
-  <span title="Updated at 2022-10-10">
+  <span title="Updated at 2023-03-07">
     <i class="fa fa-calendar-o"></i>
     2021-06-05 Sat
   </span>
@@ -995,7 +1237,7 @@ Framework • revision 02c026b03c (9...</pre></li></ul>
             <h1 class="entry-title">
               <a href="https://honmaple.me/articles/2021/04/时代.html" rel="bookmark" title="Permalink to 时代">时代</a>
             </h1><header class="entry-info">
-  <span title="Updated at 2021-04-07">
+  <span title="Updated at 2023-03-08">
     <i class="fa fa-calendar-o"></i>
     2021-04-07 Wed
   </span>
@@ -1024,7 +1266,17 @@ Framework • revision 02c026b03c (9...</pre></li></ul>
             <div class="entry-content entry-summary">
               
 <div style="text-align:center;">
-<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&amp;id=30841464&amp;auto=0&amp;height=66"></iframe>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+<link rel="stylesheet" href="/static/css/aplayer.css" />
+<style type="text/css" media="screen">
+ .aplayer {
+     max-width: 480px;
+     margin: 0 auto;
+ }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+  <meting-js server="netease" type="song" id="30841464"></meting-js>
 </div>
 
 <blockquote>
@@ -1034,7 +1286,6 @@ Framework • revision 02c026b03c (9...</pre></li></ul>
 </p>
 </div>
 </blockquote>
-
             </div>
             <div class="text-center">
               <a class="btn entry-read-more" href="https://honmaple.me/articles/2021/04/时代.html">阅读全文 »</a>
@@ -1358,84 +1609,6 @@ Installing...</pre>
             </div>
         </article>
       </li>
-      <li>
-        <article>
-          <div class="entry-header">
-            <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2020/02/K8S笔记之私有仓库搭建.html" rel="bookmark" title="Permalink to K8S笔记之私有仓库搭建">K8S笔记之私有仓库搭建</a>
-            </h1><header class="entry-info">
-  <span title="Updated at 2020-08-09">
-    <i class="fa fa-calendar-o"></i>
-    2020-02-20 Thu
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By
-        <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-    </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-folder-o"></i>
-      In
-        <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
-    </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tags/k8s/index.html">k8s</a>
-    </span>
-</header>
-
-          </div>
-          <hr class="entry-hr" />
-            <div class="entry-content entry-summary">
-              
-<h1 id="heading-1">创建PV</h1>
-<p>
-  关于PV的创建参考 《K8S笔记之持久化存储》
-</p>
-
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">apiVersion</span>: v1
-<span style="color:#66d9ef">kind</span>: PersistentVolumeClaim
-<span style="color:#66d9ef">metadata</span>:
-  <span style="color:#66d9ef">name</span>: docker-claim
-<span style="color:#66d9ef">spec</span>:
-  <span style="color:#66d9ef">accessModes</span>:
-    - ReadWriteOnce
-  <span style="color:#66d9ef">resources</span>:
-    <span style="color:#66d9ef">requests</span>:
-      <span style="color:#66d9ef">storage</span>: 80Gi
-  <span style="color:#66d9ef">storageClassName</span>: local-volume</pre>
-
-<h1 id="heading-2">搭建仓库</h1>
-<p>
-  Docker 私有化仓库的搭建可参考官方文档, 并且将相关的配置转化为K8S所需要的yaml文件
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">---
-<span style="color:#66d9ef">apiVersion</span>: v1
-<span style="color:#66d9ef">kind</span>: ReplicationController
-<span style="color:#66d9ef">metadata</span>:
-  <span style="color:#66d9ef">name</span>: registry
-  <span style="color:#66d9ef">namespace</span>: default
-  <span style="color:#66d9ef">labels</span>:
-    <span style="color:#66d9ef">k8s-app</span>: registry
-<span style="color:#66d9ef">spec</span>:
-  <span style="color:#66d9ef">replicas</span>: <span style="color:#ae81ff">1</span>
-  <span style="color:#66d9ef">selector</span>:
-    <span style="color:#66d9ef">k8s-app</span>: registry
-  <span style="color:#66d9ef">template</span>:
-    <span style="color:#66d9ef">metadata</span>:
-      <span style="color:#66d9ef">labels</span>:
-        <span style="color:#66d9ef">k8s...</span></pre>
-            </div>
-            <div class="text-center">
-              <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/02/K8S笔记之私有仓库搭建.html">阅读全文 »</a>
-            </div>
-        </article>
-      </li>
       <li><ul class="entry-pagination">
         <li class="active"><a href="https://honmaple.me/index.html">1</a></li>
         <li><a href="https://honmaple.me/index2.html">2</a></li>
@@ -1454,17 +1627,17 @@ Installing...</pre>
     <li class="hidden-xs">© 2015-2023 honmaple</li>
     <li class="hidden-xs">·</li>
     <li>
-        <a href="https://honmaple.me/pages/friends.html">友链</a>
+        <a href="https://honmaple.me/pages/friends.html" data-no-instant>友链</a>
           <span> | </span>
-        <a href="https://honmaple.me/pages/contact.html">联系</a>
+        <a href="https://honmaple.me/pages/contact.html" data-no-instant>联系</a>
           <span> | </span>
-        <a href="https://honmaple.me/pages/project.html">项目</a>
+        <a href="https://honmaple.me/pages/project.html" data-no-instant>项目</a>
           <span> | </span>
-        <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+        <a href="https://honmaple.me/pages/timeline.html" data-no-instant>时间轴</a>
     </li>
   </ul>
   <ul class="entry-footer-right">
-    <li><a class="entry-switch-theme" title="Moon"><i class="fa fa-moon-o"></i></a></li>
+    <li><a class="entry-switch-theme" title="切换主题" onclick="switchTheme()"><i class="fa fa-moon-o"></i></a></li>
       <li><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
       <li class="hidden-xs"><a href="https://honmaple.me/pages/music.html" title="Feed"><i class="fa fa-feed"></i></a></li>
       <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>

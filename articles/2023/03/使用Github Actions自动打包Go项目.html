@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>使用Github Actions自动打包Go项目 · 紅楓吟</title>
+      <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+    <script src="https://honmaple.me/static/js/theme.js"></script>
+  </head>
+  <body>
+    <div class="scrollbar"></div>
+
+    <div class="wrap">
+      <div class="main"><nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://s.libforest.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="https://honmaple.me/categories/life/index.html">代码人生</a>
+              <ul class="dropdown-menu">
+                  <li><a href="https://honmaple.me/categories/life/coding/index.html">分享世界</a></li>
+                  <li><a href="https://honmaple.me/categories/life/love/index.html">你不懂我</a></li>
+                  <li><a href="https://honmaple.me/categories/life/recall/index.html">我不怪你</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="https://honmaple.me/categories/linux/index.html">字符艺术</a>
+              <ul class="dropdown-menu">
+                  <li><a href="https://honmaple.me/categories/linux/emacs/index.html">Emacs</a></li>
+              </ul>
+            </li>
+            <li><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+            <li><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+          <li class="dropdown">
+            <a href="https://honmaple.me/archives/index.html">文章归档</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+                <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+                <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+            </ul>
+          </li>
+          <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>
+
+  <article>
+    <div class="entry-header">
+      <h1 class="entry-title"><a href="https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html">使用Github Actions自动打包Go项目</a></h1><header class="entry-info">
+  <span title="Updated at 2023-03-06">
+    <i class="fa fa-calendar-o"></i>
+    2023-03-06 Mon
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By
+        <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-folder-o"></i>
+      In
+        <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/go/index.html">go</a>
+        <a href="https://honmaple.me/tags/github/index.html">github</a>
+    </span>
+</header>
+
+    </div>
+    <hr class="entry-hr" />
+    <div class="entry-content">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">前言</a></li>
+<li><a href="#heading-2">快速开始(Quickstart)</a></li>
+<li><a href="#heading-3">多平台编译(Cross Compile)</a>
+<ul>
+<li><a href="#heading-3.1">交叉编译</a></li>
+<li><a href="#heading-3.2">跨平台编译</a></li>
+</ul></li>
+<li><a href="#heading-4">发布(Release)</a></li>
+<li><a href="#heading-5">FAQ</a>
+<ul>
+<li><a href="#heading-5.1">version `GLIBC_2.33&#39; not found</a></li>
+</ul></li>
+</ul></div></div>
+
+<h2 id="heading-1">前言</h2>
+<p>
+   如果用过 <b>Gitlab Ci</b>, 相信对此也非常熟悉，<b>GitHub Actions</b> 是 <b>GitHub</b> 推出的持续集成（Continuous Integration，简称 CI）服务，它提供了整套虚拟服务器环境，基于它可以进行构建、测试、打包、部署项目等等操作
+</p>
+
+<h2 id="heading-2">快速开始(Quickstart)</h2>
+<p>
+   在自己的 <code>Github</code> 仓库中找到 <code>Actions</code> 标签页
+   
+<a href="https://s.libforest.com/images/2023/03/github-actions-01.png?show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/03/github-actions-01.png?thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   点击 <code>Configure</code>, 此时会生成一个 <code>.github/workflow/go.yml</code> 文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e"># This workflow will build a golang project</span>
+<span style="color:#75715e"># For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go</span>
+
+<span style="color:#66d9ef">name</span>: Go
+
+<span style="color:#66d9ef">on</span>:
+  <span style="color:#66d9ef">push</span>:
+    <span style="color:#66d9ef">branches</span>: [ <span style="color:#e6db74">&#34;master&#34;</span> ]
+  <span style="color:#66d9ef">pull_request</span>:
+    <span style="color:#66d9ef">branches</span>: [ <span style="color:#e6db74">&#34;master&#34;</span> ]
+
+<span style="color:#66d9ef">jobs</span>:
+
+  <span style="color:#66d9ef">build</span>:
+    <span style="color:#66d9ef">runs-on</span>: ubuntu-latest
+    <span style="color:#66d9ef">steps</span>:
+      - <span style="color:#66d9ef">uses</span>: actions/checkout@v3
+        - <span style="color:#66d9ef">name</span>: Set up Go
+          <span style="color:#66d9ef">uses</span>: actions/setup-go@v3
+        <span style="color:#66d9ef">with</span>:
+          <span style="color:#66d9ef">go-version</span>: <span style="color:#ae81ff">1.19</span>
+      - <span style="color:#66d9ef">name</span>: Build
+        <span style="color:#66d9ef">run</span>: go build -v ./...
+      - <span style="color:#66d9ef">name</span>: Test
+        <span style="color:#66d9ef">run</span>: go test -v ./...</pre>
+
+<h2 id="heading-3">多平台编译(Cross Compile)</h2>
+<h3 id="heading-3.1">交叉编译</h3>
+<p>
+    对于非 <code>CGO</code> 项目，<code>Go</code> 提供了一种十分方便的方式来进行交叉编译，只需要指定 <code>GOOS</code> 和 <code>GOARCH</code> 环境变量
+</p>
+<ul>
+<li>
+<p>
+  Mac下编译Linux, Windows平台的64位可执行程序：
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>linux GOARCH<span style="color:#f92672">=</span>amd64 go build .
+$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>windows GOARCH<span style="color:#f92672">=</span>amd64 go build .</pre></li>
+<li>
+<p>
+ Linux下编译Mac, Windows平台的64位可执行程序：
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>darwin GOARCH<span style="color:#f92672">=</span>amd64 go build .
+$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>windows GOARCH<span style="color:#f92672">=</span>amd64 go build .</pre>
+</li>
+</ul>
+<p>
+    同样的，我们可以在 <code>Gtihub Actions</code> 中设置环境变量来编译非 <code>CGO</code> 项目，这里需要使用 <code>matrix</code> 策略，让我们基于不同的参数创建并行的任务，比如编译Go时指定不同的环境变量
+</p>
+
+<ul>
+<li>
+<p>
+ 首先编写任务
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">jobs</span>:
+  <span style="color:#66d9ef">build</span>:
+    <span style="color:#66d9ef">strategy</span>:
+      <span style="color:#66d9ef">matrix</span>:
+        <span style="color:#66d9ef">goos</span>: [linux, darwin]
+        <span style="color:#66d9ef">goarch</span>: [amd64]
+
+    <span style="color:#66d9ef">runs-on</span>: ubuntu-latest
+
+    <span style="color:#66d9ef">steps</span>:
+      - <span style="color:#66d9ef">name</span>: Checkout
+        <span style="color:#66d9ef">uses</span>: actions/checkout@v3
+      - <span style="color:#66d9ef">name</span>: Set up Go
+        <span style="color:#66d9ef">uses</span>: actions/setup-go@v3
+        <span style="color:#66d9ef">with</span>:
+          <span style="color:#66d9ef">go-version</span>: <span style="color:#ae81ff">1.19</span>
+      - <span style="color:#66d9ef">name</span>: Download dependencies
+        <span style="color:#66d9ef">run</span>: go mod download
+      - <span style="color:#66d9ef">name</span>: Build
+        <span style="color:#66d9ef">run</span>: go build -v -o snow .
+        <span style="color:#75715e"># 指定编译时的环境变量</span>
+        <span style="color:#66d9ef">env</span>:
+          <span style="color:#66d9ef">GOOS</span>: ${{ matrix.goos }}
+          <span style="color:#66d9ef">GOARCH</span>: ${{ matrix.goarch }}
+          <span style="color:#66d9ef">CGO_ENABLED</span>: <span style="color:#ae81ff">0</span></pre>
+<p>
+      这样就创建了 <code>GOOS=linux GOARCH=amd64</code> 和 <code>GOOS=darwin GOARCH=amd64</code> 的两个任务, 当 <code>goarch</code> 增加一个 <code>arm</code> 的参数后，会组合成四个任务, 如果需要指定或者排除某个选项，可以使用 <code>include</code> 或者 <code>exclude</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">matrix</span>:
+  <span style="color:#66d9ef">goos</span>: [linux, darwin]
+  <span style="color:#66d9ef">goarch</span>: [amd64, arm]
+  <span style="color:#75715e"># 只包括linux编译选项</span>
+  <span style="color:#66d9ef">include</span>:
+    - <span style="color:#66d9ef">goos</span>: linux
+      <span style="color:#66d9ef">goarch</span>: amd64
+    - <span style="color:#66d9ef">goos</span>: linux
+      <span style="color:#66d9ef">goarch</span>: arm
+  <span style="color:#75715e"># 排除所有关于arm的编译选项</span>
+  <span style="color:#66d9ef">exclude</span>:
+    - <span style="color:#66d9ef">goarch</span>: arm</pre></li>
+<li>
+<p>
+ 然后执行 <code>git push</code>, 这样就能在 <code>Github</code> 的 <code>Actions</code> 标签页看到执行结果
+</p>
+</li>
+</ul>
+<h3 id="heading-3.2">跨平台编译</h3>
+<p>
+    如果是非 <code>CGO</code> 项目，可以使用Go内置的交叉编译，但如果是 <code>CGO</code> 项目，上述的交叉编译大概率会失败(相关问题:<a href="https://github.com/wellington/go-libsass/issues/67">go-libsass</a>)， 所以我们需要基于不同的平台来进行编译，幸运的是，<code>Github Actions</code> 对此支持的非常好,
+</p>
+
+<ul>
+<li>
+<p>
+ 编写新任务
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">jobs</span>:
+  <span style="color:#66d9ef">build</span>:
+    <span style="color:#66d9ef">strategy</span>:
+      <span style="color:#66d9ef">matrix</span>:
+        <span style="color:#66d9ef">build</span>: [macos, linux]
+        <span style="color:#66d9ef">include</span>:
+          - <span style="color:#66d9ef">build</span>: macos
+            <span style="color:#66d9ef">os</span>: macos-latest
+          - <span style="color:#66d9ef">build</span>: linux
+            <span style="color:#66d9ef">os</span>: ubuntu<span style="color:#ae81ff">-18.04</span>
+    <span style="color:#66d9ef">runs-on</span>: ${{ matrix.os }}
+    <span style="color:#66d9ef">steps</span>:
+      - <span style="color:#66d9ef">name</span>: Checkout
+        <span style="color:#66d9ef">uses</span>: actions/checkout@v3
+      - <span style="color:#66d9ef">name</span>: Set up Go
+        <span style="color:#66d9ef">uses</span>: actions/setup-go@v3
+        <span style="color:#66d9ef">with</span>:
+          <span style="color:#66d9ef">go-version</span>: <span style="color:#ae81ff">1.19</span>
+      - <span style="color:#66d9ef">name</span>: Download dependencies
+        <span style="color:#66d9ef">run</span>: go mod download
+      - <span style="color:#66d9ef">name</span>: Build
+        <span style="color:#66d9ef">run</span>: go build -v -o snow .
+        <span style="color:#66d9ef">env</span>:
+          <span style="color:#66d9ef">CGO_ENABLED</span>: <span style="color:#ae81ff">1</span></pre>
+<p>
+      注意 <code>runs-on</code> 使用的 <code>matrix.os</code> 变量, 它允许我们分别使用 <code>ubuntu-18.04</code> 和 <code>macos-latest</code> 两个平台进行编译，这时不用指定 <code>GOOS</code> 和 <code>GOARCH</code> 参数
+</p></li>
+<li>
+<p>
+ 执行 <code>git push</code>, 可以看到执行结果
+      
+<a href="https://s.libforest.com/images/2023/03/github-actions-02.png?show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/03/github-actions-02.png?thumb" class="lazyload" />
+</a>
+</p>
+</li>
+</ul>
+<h2 id="heading-4">发布(Release)</h2>
+<p>
+   当编译好一个二进制文件后，需要发布到 <code>Github</code> 的 <code>Release</code> 页，这时就需要添加新的任务, 目前官方的<a href="https://github.com/actions/create-release">actions/create-release</a>已经无人维护，所以此次选择另外一个<a href="https://github.com/ncipollo/release-action">ncipollo/release-action</a>
+</p>
+
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">name</span>: Release
+
+<span style="color:#66d9ef">on</span>:
+  <span style="color:#75715e"># 只在预发布时才执行</span>
+  <span style="color:#66d9ef">release</span>:
+    <span style="color:#66d9ef">types</span>: [prereleased]
+
+<span style="color:#66d9ef">jobs</span>:
+  <span style="color:#66d9ef">build</span>:
+    <span style="color:#66d9ef">strategy</span>:
+      <span style="color:#66d9ef">matrix</span>:
+        <span style="color:#66d9ef">build</span>: [macos, linux]
+        <span style="color:#66d9ef">include</span>:
+          - <span style="color:#66d9ef">build</span>: macos
+            <span style="color:#66d9ef">os</span>: macos-latest
+            <span style="color:#66d9ef">archive-name</span>: darwin.tar.gz
+          - <span style="color:#66d9ef">build</span>: linux
+            <span style="color:#66d9ef">os</span>: ubuntu-latest
+            <span style="color:#66d9ef">archive-name</span>: linux.tar.gz
+
+    <span style="color:#75715e"># 需要设置写权限才能自动发布</span>
+    <span style="color:#66d9ef">permissions</span>:
+      <span style="color:#66d9ef">contents</span>: write
+
+    <span style="color:#66d9ef">steps</span>:
+      ...
+      <span style="color:#75715e"># 把二进制文件打包成压缩文件</span>
+      - <span style="color:#66d9ef">name</span>: Prepare Packaging
+        <span style="color:#66d9ef">run</span>: tar zcvf snow-${{ matrix.archive-name }}.tar.gz snow LICENSE
+
+      <span style="color:#75715e"># 上传附件</span>
+      - <span style="color:#66d9ef">name</span>: Upload Artifacts
+        <span style="color:#66d9ef">uses</span>: actions/upload-artifact@v3
+        <span style="color:#66d9ef">with</span>:
+          <span style="color:#66d9ef">name</span>: snow-${{ matrix.archive-name }}.tar.gz
+          <span style="color:#66d9ef">path</span>: snow-${{ matrix.archive-name }}.tar.gz
+
+      <span style="color:#75715e"># 发布release版本</span>
+      - <span style="color:#66d9ef">name</span>: Release version
+        <span style="color:#66d9ef">uses</span>: ncipollo/release-action@v1
+        <span style="color:#66d9ef">if</span>: github.event_name == <span style="color:#e6db74">&#39;release&#39;</span>
+        <span style="color:#66d9ef">with</span>:
+          <span style="color:#66d9ef">allowUpdates</span>: <span style="color:#66d9ef">true</span>
+          <span style="color:#66d9ef">artifacts</span>: snow-${{ matrix.archive-name }}.tar.gz
+          <span style="color:#66d9ef">token</span>: ${{ secrets.GITHUB_TOKEN }}</pre>
+
+<p>
+   当 <code>Github Actions</code> 执行完成后，就能在 <code>Release</code> 页看到我们发布的 <code>Package</code>
+   
+<a href="https://s.libforest.com/images/2023/03/github-actions-03.png?show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/03/github-actions-03.png?thumb" class="lazyload" />
+</a>
+</p>
+
+<h2 id="heading-5">FAQ</h2>
+<h3 id="heading-5.1">version `GLIBC_2.33&#39; not found</h3>
+<p>
+    使用 <code>Github Actions</code> 发布一个新的版本，下载到本地执行时报错
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.33&#39; not found (required by ./snow)
+./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.34&#39; not found (required by ./snow)
+./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.32&#39; not found (required by ./snow)
+./snow: /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.29&#39; not found (required by ./snow)</pre>
+<p>
+    这是由于使用的 <code>ubuntu</code> 版本太高导致, 降低版本即可
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">include:
+...
+<span style="color:#f92672">-   os: ubuntu-latest
+</span><span style="color:#f92672"></span><span style="color:#a6e22e">+   os: ubuntu-18.04
+</span></pre>
+    </div><div class="entry-copyright">
+      <div>
+        <i class="fa fa-user-o"></i>
+        作者:
+          <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+      </div>
+  <div>
+    <i class="fa fa-link"></i>
+    链接:
+    <a href="https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html">https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html</a>
+  </div>
+  <div>
+    <i class="fa fa-copyright"></i>
+    版权:
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+    </a>
+  </div>
+</div>
+
+<div class="entry-honor">
+  <button class="btn" data-target="#entry-honor-content" data-toggle="collapse">赏</button>
+  <div class="collapse" id="entry-honor-content">
+    <div class="entry-honor-content">
+      <div class="entry-honor-alipay">
+        <div class="entry-honor-mask">
+          <button class="btn btn-success" data-target=".entry-honor-wechat" data-toggle="collapse">
+            <i class="fa fa-wechat"></i>
+            <span>微信</span>
+          </button>
+        </div>
+      </div>
+      <div class="entry-honor-wechat collapse">
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+    </div>
+  </div>
+</div>
+
+    <hr class="entry-hr" />
+    <ul class="entry-pager">
+        <li class="next">
+          <a href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html" title="Next article: Emacs笔记之修复yaml-mode的格式化问题">
+            Emacs笔记之修复yaml-mode的格式化问题
+            <i class="fa fa-chevron-right"></i>
+          </a>
+        </li>
+    </ul>
+  <div class="comments">
+    <div class="text-center">
+      <a class="btn entry-read-more entry-comment">加载评论</a>
+    </div>
+    <div id="comment_thread" issue-term="使用Github Actions自动打包Go项目"></div>
+  </div>
+
+  </article>
+      </div>
+    </div><div class="entry-footer">
+  <ul class="entry-footer-left">
+    <li class="hidden-xs">© 2015-2023 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+        <a href="https://honmaple.me/pages/friends.html" data-no-instant>友链</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/contact.html" data-no-instant>联系</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/project.html" data-no-instant>项目</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/timeline.html" data-no-instant>时间轴</a>
+    </li>
+  </ul>
+  <ul class="entry-footer-right">
+    <li><a class="entry-switch-theme" title="切换主题" onclick="switchTheme()"><i class="fa fa-moon-o"></i></a></li>
+      <li><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/pages/music.html" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>
+      <li><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li><a href="https://honmaple.me/pages/contact.html" title="Contact"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+</div>
+<div class="back-to-top back-to-top-on">
+  <i class="fa fa-hand-o-up" title="back to top"></i>
+</div>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'UA-88401692-2');
+  </script>
+
+
+      <script src="https://s.libforest.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
+      <script src="https://s.libforest.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+         if (typeof ga !== 'undefined') {
+           ga('send', 'pageview', location.pathname + location.search);
+         }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>

@@ -5,8 +5,296 @@
   <link href="https://honmaple.me/categories/linux/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Sun, 26 Feb 2023 01:28:12 +0000</updated>
+    <updated>Mon, 06 Mar 2023 20:23:31 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>使用Github Actions自动打包Go项目</title>
+      <link href="" rel="alternate"></link>
+      <published>Mon, 06 Mar 2023 02:22:23 +0000</published>
+      <updated>Mon, 06 Mar 2023 20:23:31 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html</id>
+      <summary type="html">
+&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
+&lt;p&gt;
+   如果用过 &lt;b&gt;Gitlab Ci&lt;/b&gt;, 相信对此也非常熟悉，&lt;b&gt;GitHub Actions&lt;/b&gt; 是 &lt;b&gt;GitHub&lt;/b&gt; 推出的持续集成（Continuous Integration，简称 CI）服务，它提供了整套虚拟服务器环境，基于它可以进行构建、测试、打包、部署项目等等操作
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;快速开始(Quickstart)&lt;/h2&gt;
+&lt;p&gt;
+   在自己的 &lt;code&gt;Github&lt;/code&gt; 仓库中找到 &lt;code&gt;Actions&lt;/code&gt; 标签页
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/03/github-actions-01.png?show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/github-actions-01.png?thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   点击 &lt;code&gt;Configure&lt;/code&gt;, 此时会生成一个 &lt;code&gt;.github/workflow/go.yml&lt;/code&gt; 文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;# This workflow will build a golang project&lt;/span&gt;
+&lt;span style=&quot;color:#75715e&quot;&gt;# For more information see: https://docs.github...&lt;/span&gt;&lt;/pre&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;前言&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;快速开始(Quickstart)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;多平台编译(Cross Compile)&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.1&quot;&gt;交叉编译&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.2&quot;&gt;跨平台编译&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;发布(Release)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;FAQ&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-5.1&quot;&gt;version `GLIBC_2.33&amp;#39; not found&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
+&lt;p&gt;
+   如果用过 &lt;b&gt;Gitlab Ci&lt;/b&gt;, 相信对此也非常熟悉，&lt;b&gt;GitHub Actions&lt;/b&gt; 是 &lt;b&gt;GitHub&lt;/b&gt; 推出的持续集成（Continuous Integration，简称 CI）服务，它提供了整套虚拟服务器环境，基于它可以进行构建、测试、打包、部署项目等等操作
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;快速开始(Quickstart)&lt;/h2&gt;
+&lt;p&gt;
+   在自己的 &lt;code&gt;Github&lt;/code&gt; 仓库中找到 &lt;code&gt;Actions&lt;/code&gt; 标签页
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/03/github-actions-01.png?show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/github-actions-01.png?thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   点击 &lt;code&gt;Configure&lt;/code&gt;, 此时会生成一个 &lt;code&gt;.github/workflow/go.yml&lt;/code&gt; 文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;# This workflow will build a golang project&lt;/span&gt;
+&lt;span style=&quot;color:#75715e&quot;&gt;# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go&lt;/span&gt;
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Go
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;on&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;push&lt;/span&gt;:
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;branches&lt;/span&gt;: [ &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;master&amp;#34;&lt;/span&gt; ]
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;pull_request&lt;/span&gt;:
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;branches&lt;/span&gt;: [ &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;master&amp;#34;&lt;/span&gt; ]
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;jobs&lt;/span&gt;:
+
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;:
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;runs-on&lt;/span&gt;: ubuntu-latest
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;steps&lt;/span&gt;:
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/checkout@v3
+        - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Set up Go
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/setup-go@v3
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;with&lt;/span&gt;:
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;go-version&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1.19&lt;/span&gt;
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Build
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go build -v ./...
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Test
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go test -v ./...&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;多平台编译(Cross Compile)&lt;/h2&gt;
+&lt;h3 id=&quot;heading-3.1&quot;&gt;交叉编译&lt;/h3&gt;
+&lt;p&gt;
+    对于非 &lt;code&gt;CGO&lt;/code&gt; 项目，&lt;code&gt;Go&lt;/code&gt; 提供了一种十分方便的方式来进行交叉编译，只需要指定 &lt;code&gt;GOOS&lt;/code&gt; 和 &lt;code&gt;GOARCH&lt;/code&gt; 环境变量
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+  Mac下编译Linux, Windows平台的64位可执行程序：
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ CGO_ENABLED&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; GOOS&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;linux GOARCH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;amd64 go build .
+$ CGO_ENABLED&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; GOOS&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;windows GOARCH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;amd64 go build .&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ Linux下编译Mac, Windows平台的64位可执行程序：
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ CGO_ENABLED&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; GOOS&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;darwin GOARCH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;amd64 go build .
+$ CGO_ENABLED&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; GOOS&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;windows GOARCH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;amd64 go build .&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+    同样的，我们可以在 &lt;code&gt;Gtihub Actions&lt;/code&gt; 中设置环境变量来编译非 &lt;code&gt;CGO&lt;/code&gt; 项目，这里需要使用 &lt;code&gt;matrix&lt;/code&gt; 策略，让我们基于不同的参数创建并行的任务，比如编译Go时指定不同的环境变量
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 首先编写任务
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;jobs&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;:
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;strategy&lt;/span&gt;:
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;matrix&lt;/span&gt;:
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;goos&lt;/span&gt;: [linux, darwin]
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;goarch&lt;/span&gt;: [amd64]
+
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;runs-on&lt;/span&gt;: ubuntu-latest
+
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;steps&lt;/span&gt;:
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Checkout
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/checkout@v3
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Set up Go
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/setup-go@v3
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;with&lt;/span&gt;:
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;go-version&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1.19&lt;/span&gt;
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Download dependencies
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go mod download
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Build
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go build -v -o snow .
+        &lt;span style=&quot;color:#75715e&quot;&gt;# 指定编译时的环境变量&lt;/span&gt;
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;env&lt;/span&gt;:
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;GOOS&lt;/span&gt;: ${{ matrix.goos }}
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;GOARCH&lt;/span&gt;: ${{ matrix.goarch }}
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;CGO_ENABLED&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;&lt;/pre&gt;
+&lt;p&gt;
+      这样就创建了 &lt;code&gt;GOOS=linux GOARCH=amd64&lt;/code&gt; 和 &lt;code&gt;GOOS=darwin GOARCH=amd64&lt;/code&gt; 的两个任务, 当 &lt;code&gt;goarch&lt;/code&gt; 增加一个 &lt;code&gt;arm&lt;/code&gt; 的参数后，会组合成四个任务, 如果需要指定或者排除某个选项，可以使用 &lt;code&gt;include&lt;/code&gt; 或者 &lt;code&gt;exclude&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;matrix&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;goos&lt;/span&gt;: [linux, darwin]
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;goarch&lt;/span&gt;: [amd64, arm]
+  &lt;span style=&quot;color:#75715e&quot;&gt;# 只包括linux编译选项&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;include&lt;/span&gt;:
+    - &lt;span style=&quot;color:#66d9ef&quot;&gt;goos&lt;/span&gt;: linux
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;goarch&lt;/span&gt;: amd64
+    - &lt;span style=&quot;color:#66d9ef&quot;&gt;goos&lt;/span&gt;: linux
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;goarch&lt;/span&gt;: arm
+  &lt;span style=&quot;color:#75715e&quot;&gt;# 排除所有关于arm的编译选项&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;exclude&lt;/span&gt;:
+    - &lt;span style=&quot;color:#66d9ef&quot;&gt;goarch&lt;/span&gt;: arm&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 然后执行 &lt;code&gt;git push&lt;/code&gt;, 这样就能在 &lt;code&gt;Github&lt;/code&gt; 的 &lt;code&gt;Actions&lt;/code&gt; 标签页看到执行结果
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;heading-3.2&quot;&gt;跨平台编译&lt;/h3&gt;
+&lt;p&gt;
+    如果是非 &lt;code&gt;CGO&lt;/code&gt; 项目，可以使用Go内置的交叉编译，但如果是 &lt;code&gt;CGO&lt;/code&gt; 项目，上述的交叉编译大概率会失败(相关问题:&lt;a href=&quot;https://github.com/wellington/go-libsass/issues/67&quot;&gt;go-libsass&lt;/a&gt;)， 所以我们需要基于不同的平台来进行编译，幸运的是，&lt;code&gt;Github Actions&lt;/code&gt; 对此支持的非常好,
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 编写新任务
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;jobs&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;:
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;strategy&lt;/span&gt;:
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;matrix&lt;/span&gt;:
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: [macos, linux]
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;include&lt;/span&gt;:
+          - &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: macos
+            &lt;span style=&quot;color:#66d9ef&quot;&gt;os&lt;/span&gt;: macos-latest
+          - &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: linux
+            &lt;span style=&quot;color:#66d9ef&quot;&gt;os&lt;/span&gt;: ubuntu&lt;span style=&quot;color:#ae81ff&quot;&gt;-18.04&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;runs-on&lt;/span&gt;: ${{ matrix.os }}
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;steps&lt;/span&gt;:
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Checkout
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/checkout@v3
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Set up Go
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/setup-go@v3
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;with&lt;/span&gt;:
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;go-version&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1.19&lt;/span&gt;
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Download dependencies
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go mod download
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Build
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go build -v -o snow .
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;env&lt;/span&gt;:
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;CGO_ENABLED&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;&lt;/pre&gt;
+&lt;p&gt;
+      注意 &lt;code&gt;runs-on&lt;/code&gt; 使用的 &lt;code&gt;matrix.os&lt;/code&gt; 变量, 它允许我们分别使用 &lt;code&gt;ubuntu-18.04&lt;/code&gt; 和 &lt;code&gt;macos-latest&lt;/code&gt; 两个平台进行编译，这时不用指定 &lt;code&gt;GOOS&lt;/code&gt; 和 &lt;code&gt;GOARCH&lt;/code&gt; 参数
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 执行 &lt;code&gt;git push&lt;/code&gt;, 可以看到执行结果
+      
+&lt;a href=&quot;https://s.libforest.com/images/2023/03/github-actions-02.png?show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/github-actions-02.png?thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-4&quot;&gt;发布(Release)&lt;/h2&gt;
+&lt;p&gt;
+   当编译好一个二进制文件后，需要发布到 &lt;code&gt;Github&lt;/code&gt; 的 &lt;code&gt;Release&lt;/code&gt; 页，这时就需要添加新的任务, 目前官方的&lt;a href=&quot;https://github.com/actions/create-release&quot;&gt;actions/create-release&lt;/a&gt;已经无人维护，所以此次选择另外一个&lt;a href=&quot;https://github.com/ncipollo/release-action&quot;&gt;ncipollo/release-action&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Release
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;on&lt;/span&gt;:
+  &lt;span style=&quot;color:#75715e&quot;&gt;# 只在预发布时才执行&lt;/span&gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;release&lt;/span&gt;:
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;types&lt;/span&gt;: [prereleased]
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;jobs&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;:
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;strategy&lt;/span&gt;:
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;matrix&lt;/span&gt;:
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: [macos, linux]
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;include&lt;/span&gt;:
+          - &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: macos
+            &lt;span style=&quot;color:#66d9ef&quot;&gt;os&lt;/span&gt;: macos-latest
+            &lt;span style=&quot;color:#66d9ef&quot;&gt;archive-name&lt;/span&gt;: darwin.tar.gz
+          - &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: linux
+            &lt;span style=&quot;color:#66d9ef&quot;&gt;os&lt;/span&gt;: ubuntu-latest
+            &lt;span style=&quot;color:#66d9ef&quot;&gt;archive-name&lt;/span&gt;: linux.tar.gz
+
+    &lt;span style=&quot;color:#75715e&quot;&gt;# 需要设置写权限才能自动发布&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;permissions&lt;/span&gt;:
+      &lt;span style=&quot;color:#66d9ef&quot;&gt;contents&lt;/span&gt;: write
+
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;steps&lt;/span&gt;:
+      ...
+      &lt;span style=&quot;color:#75715e&quot;&gt;# 把二进制文件打包成压缩文件&lt;/span&gt;
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Prepare Packaging
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: tar zcvf snow-${{ matrix.archive-name }}.tar.gz snow LICENSE
+
+      &lt;span style=&quot;color:#75715e&quot;&gt;# 上传附件&lt;/span&gt;
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Upload Artifacts
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/upload-artifact@v3
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;with&lt;/span&gt;:
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: snow-${{ matrix.archive-name }}.tar.gz
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;path&lt;/span&gt;: snow-${{ matrix.archive-name }}.tar.gz
+
+      &lt;span style=&quot;color:#75715e&quot;&gt;# 发布release版本&lt;/span&gt;
+      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Release version
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: ncipollo/release-action@v1
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt;: github.event_name == &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;release&amp;#39;&lt;/span&gt;
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;with&lt;/span&gt;:
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;allowUpdates&lt;/span&gt;: &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;artifacts&lt;/span&gt;: snow-${{ matrix.archive-name }}.tar.gz
+          &lt;span style=&quot;color:#66d9ef&quot;&gt;token&lt;/span&gt;: ${{ secrets.GITHUB_TOKEN }}&lt;/pre&gt;
+
+&lt;p&gt;
+   当 &lt;code&gt;Github Actions&lt;/code&gt; 执行完成后，就能在 &lt;code&gt;Release&lt;/code&gt; 页看到我们发布的 &lt;code&gt;Package&lt;/code&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/03/github-actions-03.png?show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/github-actions-03.png?thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-5&quot;&gt;FAQ&lt;/h2&gt;
+&lt;h3 id=&quot;heading-5.1&quot;&gt;version `GLIBC_2.33&amp;#39; not found&lt;/h3&gt;
+&lt;p&gt;
+    使用 &lt;code&gt;Github Actions&lt;/code&gt; 发布一个新的版本，下载到本地执行时报错
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.33&amp;#39; not found (required by ./snow)
+./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.34&amp;#39; not found (required by ./snow)
+./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.32&amp;#39; not found (required by ./snow)
+./snow: /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.29&amp;#39; not found (required by ./snow)&lt;/pre&gt;
+&lt;p&gt;
+    这是由于使用的 &lt;code&gt;ubuntu&lt;/code&gt; 版本太高导致, 降低版本即可
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;include:
+...
+&lt;span style=&quot;color:#f92672&quot;&gt;-   os: ubuntu-latest
+&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+   os: ubuntu-18.04
+&lt;/span&gt;&lt;/pre&gt;</content>
+        <category term="Linux"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>Emacs笔记之修复yaml-mode的格式化问题</title>
       <link href="" rel="alternate"></link>
@@ -1590,7 +1878,7 @@ nginx.ingress.kubernetes.io/auth-secret-type=auth-map&lt;/pre&gt;
       <title>flutter笔记之初体验</title>
       <link href="" rel="alternate"></link>
       <published>Sat, 05 Jun 2021 22:58:01 +0000</published>
-      <updated>Mon, 10 Oct 2022 14:52:03 +0000</updated>
+      <updated>Tue, 07 Mar 2023 10:18:05 +0000</updated>
       <author>
         <name>honmaple</name>
       </author>
@@ -1673,30 +1961,22 @@ Tools • Dart 2.13.1&lt;/pre&gt;
 &lt;li&gt;
 &lt;p&gt;
  第一步，禁用 &lt;b&gt;google analytics&lt;/b&gt;
-      #+begin_example
-        └──╼ flutter config --no-analytics
 &lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter config --no-analytics
 
-&lt;p&gt;
-          ╔════════════════════════════════════════════════════════════════════════════╗
-          ║                 Welcome to Flutter! - &lt;a href=&quot;flutter.dev&quot;&gt;flutter.dev&lt;/a&gt;║
-          ......
-          ║ See Google&amp;#39;s privacy policy:                                               ║
-          ║ &lt;a href=&quot;policies.google.com/privacy&quot;&gt;policies.google.com/privacy&lt;/a&gt;
-&lt;/p&gt;
+  ╔════════════════════════════════════════════════════════════════════════════╗
+  ║                 Welcome to Flutter! - https://flutter.dev                  ║
+  ║                                                                            ║
+  ║ The Flutter tool uses Google Analytics to anonymously report feature usage ║
+  ║ statistics and basic crash reports. This data is used to help improve      ║
+  ......
+  ║ See Google&amp;#39;s privacy policy:                                               ║
+  ║ https://policies.google.com/privacy                                        ║
+  ╚════════════════════════════════════════════════════════════════════════════╝
 
-&lt;p&gt;
-        Analytics reporting disabled.
-&lt;/p&gt;
+Analytics reporting disabled.
 
-&lt;p&gt;
-        You may need to restart any open editors for them to read new settings.
-&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-    #+end_example
-&lt;/p&gt;
-&lt;ul&gt;
+You may need to restart any open editors for them to read new settings.&lt;/pre&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
  第二步, 执行 &lt;code&gt;flutter doctor&lt;/code&gt; 检查依赖环境
@@ -2124,143 +2404,6 @@ report_errors = False&lt;/pre&gt;
 auth = True
 user = gns3
 password = gns3&lt;/pre&gt;</content>
-        <category term="Linux"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>pyenv笔记</title>
-      <link href="" rel="alternate"></link>
-      <published>Thu, 18 Mar 2021 15:29:39 +0000</published>
-      <updated>Thu, 18 Mar 2021 15:35:51 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2021/03/pyenv笔记.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2021/03/pyenv笔记.html</id>
-      <summary type="html">
-&lt;h1 id=&quot;heading-1&quot;&gt;常见问题&lt;/h1&gt;
-
-&lt;h2 id=&quot;heading-1.1&quot;&gt;pyenv install 3.6.7 失败&lt;/h2&gt;
-&lt;blockquote&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 环境: macOs big Sur 11.2.2
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- pyenv: 1.2.23
-&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/blockquote&gt;
-
-&lt;h3 id=&quot;heading-1.1.1&quot;&gt;相关日志&lt;/h3&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;┌─[jianglin]─[~/repo/golang/src/alarm](master)
-└──╼ pyenv install 3.6.7
-python-build: use openssl@1.1 from homebrew
-python-build: use readline from homebrew
-Installing...&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;常见问题&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;pyenv install 3.6.7 失败&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1.1&quot;&gt;相关日志&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1.2&quot;&gt;解决方式&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1.3&quot;&gt;参考文档&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h1 id=&quot;heading-1&quot;&gt;常见问题&lt;/h1&gt;
-
-&lt;h2 id=&quot;heading-1.1&quot;&gt;pyenv install 3.6.7 失败&lt;/h2&gt;
-&lt;blockquote&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 环境: macOs big Sur 11.2.2
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- pyenv: 1.2.23
-&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/blockquote&gt;
-
-&lt;h3 id=&quot;heading-1.1.1&quot;&gt;相关日志&lt;/h3&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;┌─[jianglin]─[~/repo/golang/src/alarm](master)
-└──╼ pyenv install 3.6.7
-python-build: use openssl@1.1 from homebrew
-python-build: use readline from homebrew
-Installing Python-3.6.7...
-python-build: use readline from homebrew
-python-build: use zlib from xcode sdk
-
-BUILD FAILED (OS X 11.2.2 using python-build 20180424)
-
-Inspect or clean up the working tree at /var/folders/44/hnrgfyfn0fsb8lqwk_0h2jvm0000gn/T/python-build.20210318151243.78376
-Results logged to /var/folders/44/hnrgfyfn0fsb8lqwk_0h2jvm0000gn/T/python-build.20210318151243.78376.log
-
-Last 10 log lines:
-        ret = sendfile(in, out, offset, &amp;amp;sbytes, &amp;amp;sf, flags);
-              ^
-./Modules/posixmodule.c:10433:5: warning: code will never be executed [-Wunreachable-code]
-    Py_FatalError(&amp;#34;abort() called from Python code didn&amp;#39;t abort!&amp;#34;);
-    ^~~~~~~~~~~~~
-clang -Wno-unused-result -Wsign-compare -Wunreachable-code -DNDEBUG -g -fwrapv -O3 -Wall -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include   -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include   -std=c99 -Wextra -Wno-unused-result -Wno-unused-parameter -Wno-missing-field-initializers -Wstrict-prototypes   -I. -I./Include -I/usr/local/opt/readline/include -I/usr/local/opt/readline/include -I/usr/local/opt/openssl@1.1/include -I/Users/jianglin/repo/python/pyenv/versions/3.6.7/include  -I/usr/local/opt/readline/include -I/usr/local/opt/readline/include -I/usr/local/opt/openssl@1.1/include -I/Users/jianglin/repo/python/pyenv/versions/3.6.7/include   -DPy_BUILD_CORE  -c ./Modules/pwdmodule.c -o Modules/pwdmodule.o
-1 warning and 1 error generated.
-make: *** [Modules/posixmodule.o] Error 1
-make: *** Waiting for unfinished jobs....
-1 warning generated.
-┌─[jianglin]─[~/repo/golang/src/alarm](master)
-└──╼  pyenv install --patch 3.6.7 &amp;lt; &amp;lt;(curl -sSL https://github.com/python/cpython/commit/8ea6353.patch\?full_index\=1)
-python-build: use openssl@1.1 from homebrew
-python-build: use readline from homebrew
-Installing Python-3.6.7...
-curl: (28) Operation timed out after 300188 milliseconds with 0 out of 0 bytes received
-python-build: use readline from homebrew
-python-build: use zlib from xcode sdk
-
-BUILD FAILED (OS X 11.2.2 using python-build 20180424)
-
-Inspect or clean up the working tree at /var/folders/44/hnrgfyfn0fsb8lqwk_0h2jvm0000gn/T/python-build.20210318151644.86904
-Results logged to /var/folders/44/hnrgfyfn0fsb8lqwk_0h2jvm0000gn/T/python-build.20210318151644.86904.log
-
-Last 10 log lines:
-./Modules/posixmodule.c:8211:15: error: implicit declaration of function &amp;#39;sendfile&amp;#39; is invalid in C99 [-Werror,-Wimplicit-function-declaration]
-        ret = sendfile(in, out, offset, &amp;amp;sbytes, &amp;amp;sf, flags);
-              ^
-./Modules/posixmodule.c:10433:5: warning: code will never be executed [-Wunreachable-code]
-    Py_FatalError(&amp;#34;abort() called from Python code didn&amp;#39;t abort!&amp;#34;);
-    ^~~~~~~~~~~~~
-1 warning and 1 error generated.
-make: *** [Modules/posixmodule.o] Error 1
-make: *** Waiting for unfinished jobs....
-1 warning generated.&lt;/pre&gt;
-
-&lt;h3 id=&quot;heading-1.1.2&quot;&gt;解决方式&lt;/h3&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;┌─&lt;span style=&quot;color:#f92672&quot;&gt;[&lt;/span&gt;jianglin&lt;span style=&quot;color:#f92672&quot;&gt;]&lt;/span&gt;─&lt;span style=&quot;color:#f92672&quot;&gt;[&lt;/span&gt;~/repo/golang/src/alarm&lt;span style=&quot;color:#f92672&quot;&gt;]&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;(&lt;/span&gt;master&lt;span style=&quot;color:#f92672&quot;&gt;)&lt;/span&gt;
-└──╼ CFLAGS&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;-Wno-implicit-function-declaration  pyenv install --patch 3.6.7 &amp;lt; &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;(&lt;/span&gt;curl -sSL https://github.com/python/cpython/commit/8ea6353.patch&lt;span style=&quot;color:#ae81ff&quot;&gt;\?&lt;/span&gt;full_index&lt;span style=&quot;color:#ae81ff&quot;&gt;\=&lt;/span&gt;1&lt;span style=&quot;color:#f92672&quot;&gt;)&lt;/span&gt;
-python-build: use openssl@1.1 from homebrew
-python-build: use readline from homebrew
-Installing Python-3.6.7...
-curl: &lt;span style=&quot;color:#f92672&quot;&gt;(&lt;/span&gt;7&lt;span style=&quot;color:#f92672&quot;&gt;)&lt;/span&gt; Failed to connect to github.com port 443: Operation timed out
-python-build: use readline from homebrew
-python-build: use zlib from xcode sdk
-Installed Python-3.6.7 to /Users/jianglin/repo/python/pyenv/versions/3.6.7&lt;/pre&gt;
-
-&lt;h3 id=&quot;heading-1.1.3&quot;&gt;参考文档&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;github.com/pyenv/pyenv/issues/1737&quot;&gt;github.com/pyenv/pyenv/issues/1737&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;github.com/pyenv/pyenv/issues/1643&quot;&gt;github.com/pyenv/pyenv/issues/1643&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;</content>
         <category term="Linux"></category>
     </entry>
 </feed>

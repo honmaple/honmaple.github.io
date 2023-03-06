@@ -1,5 +1,5 @@
 $(document).ready(function(){
-    $("pre").css("max-height", $(window).height());
+    $("pre").css("max-height", $(window).height()/1.5);
     var e = $(".back-to-top");
     $(window).on("scroll", function() {
         var offsetHeight = document.body.offsetHeight;
@@ -33,11 +33,6 @@ $(document).ready(function(){
     $('[data-fancybox]').fancybox({
         protect: true
     });
-    $("#entry-cover").click(function() {
-        $(".entry-cover-left").fadeOut(600);
-        $(".entry-cover").slideUp(600);
-    });
-
     $(".entry-comment").click(function() {
         var dsq = document.createElement('script');
         var thr = document.getElementById('comment_thread')
@@ -52,14 +47,10 @@ $(document).ready(function(){
         thr.appendChild(dsq);
         $(".entry-comment").parent().fadeToggle(800);
     });
-    $(".entry-switch-theme").click(function() {
-        switchTheme();
-    });
     $(".navbar-logo").error(function() {
         var content = '<span class="navbar-title">' + $(".navbar-logo").attr("alt") + '</span>';
         $(".navbar-logo").parent().html(content);
     });
-
     $(".encrypt-container .encrypt-form input").keyup(function(e){
       if(e.keyCode == 13) {
         decrypt($(this).get(0));
