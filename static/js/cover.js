@@ -56,24 +56,22 @@ function Cover() {
         $(".entry-cover-left").fadeOut(600);
         $(".entry-cover").slideUp(600);
     });
-    // var startPos = {
-    //     Top:-1,
-    //     Y:0
-    // };
-    // $("body").on('touchstart', function(e) {
-    //     startPos = {
-    //         Top: $(window).scrollTop(),
-    //         Y: e.originalEvent.changedTouches[0].pageY
-    //     };
-    // });
-    // $("body").on("touchend", function(e) {
-    //     var pageY = e.originalEvent.changedTouches[0].pageY - startPos.Y;
-    //     if (pageY > 0) {
-    //         scrollUp();
-    //     }else if (pageY  < 0) {
-    //         scrollDown();
-    //     }
-    // });
+    var startPos = {
+        Top:-1,
+        Y:0
+    };
+    $("body").on('touchstart', function(e) {
+        startPos = {
+            Top: $(window).scrollTop(),
+            Y: e.originalEvent.changedTouches[0].pageY
+        };
+    });
+    $("body").on("touchend", function(e) {
+        var pageY = e.originalEvent.changedTouches[0].pageY - startPos.Y;
+        if (pageY  < 0) {
+            scrollDown();
+        }
+    });
 }
 
 Cover();

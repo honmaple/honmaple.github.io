@@ -1,5 +1,5 @@
 function switchTheme(n) {
-    const themeList = ["theme-tree"];
+    const themeList = ["theme-light", "theme-tree"];
     const themeStorage = localStorage;
 
     let oldTheme = themeStorage.getItem("theme");

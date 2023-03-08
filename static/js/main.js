@@ -9,7 +9,7 @@ $(document).ready(function(){
         if (navbarFixed) {
             $(".navbar").toggleClass("navbar-fixed", window.pageYOffset > 120);
             if (!$("#navbar-title").length && window.pageYOffset > 120 && window.innerWidth > 1280 && $(".entry-title").length == 1) {
-                $(".navbar-header").after('<div class="navbar-text" id="navbar-title">' + $(".entry-title").text() + '</div>');
+                $(".navbar-nav").prepend('<li id="navbar-title"><a>' + $(".entry-title").text() + '</a></li>');
             }
             if ($("#navbar-title").length && window.pageYOffset < 120) {
                 $("#navbar-title").remove();
