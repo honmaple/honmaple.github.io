@@ -89,6 +89,198 @@
         <article>
           <div class="entry-header">
             <h1 class="entry-title">
+              <a href="https://honmaple.me/articles/2023/03/搭建Memos作为私人笔记.html" rel="bookmark" title="Permalink to 搭建Memos作为私人笔记">搭建Memos作为私人笔记</a>
+            </h1><header class="entry-info">
+  <span title="Updated at 2023-03-18">
+    <i class="fa fa-calendar-o"></i>
+    2023-03-10 Fri
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By
+        <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-folder-o"></i>
+      In
+        <a href="https://honmaple.me/categories/life/index.html">Life</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+        <a href="https://honmaple.me/tags/memos/index.html">memos</a>
+    </span>
+</header>
+
+          </div>
+          <hr class="entry-hr" />
+            <div class="entry-content entry-summary">
+              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">如何搭建</a></li>
+<li><a href="#heading-2">docker-compose</a></li>
+<li><a href="#heading-3">nginx和https配置</a></li>
+<li><a href="#heading-4">移动端支持</a></li>
+</ul></div></div>
+
+<blockquote>
+<p>
+类似我之前实现的时间轴, 也是一个私人的说说或者是私人的微博，可以用来记录一些临时的想法或者分享某一时刻的精彩瞬间，毕竟数据在自己手上<b>相当酷不是</b>
+</p>
+</blockquote>
+
+<h2 id="heading-1">如何搭建</h2>
+<p>
+   根据<a href="https://github.com/usememos/memos">memos文档</a>, 搭建也非常简单, 直接使用 <code>docker</code> 即可
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker run -d --name memos -p 5230:5230 -v ~/.memos/:/var/opt/memos neosmemo/memos:latest</pre>
+<p>
+   
+<a href="https://s.libforest.com/images/2023/03/memos.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/03/memos.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<h2 id="heading-2">docker-compose</h2>
+<p>
+   因为我需要和我之前的搭建好一些服务(<b>Blog</b>, <b>DNS</b>等)统一管理, 所以转成了 <code>docker-compose</code> 配置
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">version</span>: <span style="color:#e6db74">&#34;3&#34;</span>
+
+<span style="color:#66d9ef">services</span>:
+  <span style="color:#66d9ef">blog</span>:
+    ...
+  <span style="color:#66d9ef">memos</span>:
+    <span style="color:#66d9ef">image</span>: neosmemo/memos:latest
+    <span style="color:#66d9ef">container_name</span>: <span style="color:#e6db74">&#34;memos&#34;</span>
+    <span style="color:#66d9ef">ports</span>:
+      - <span style="color:#ae81ff">127.0</span><span style="color:#ae81ff">.0</span><span style="color:#ae81ff">.1</span>:<span style="color:#ae81ff">8005</span>:<span style="color:#ae81ff">5230</span>
+    <span style="color:#66d9ef">volumes</span>:
+      - ./memos:/var/opt/memos
+    <span style="color:#66d9ef">network_mode</span>: bridge</pre>
+<p>
+   需要注意的是 <code>./memos</code> 目录用来作为数据持久化
+</p>
+
+<h2 id="heading-3">nginx和https配置</h2>
+<p>
+   这也是和我之前的服务保持一致, 我的 <code>nginx</code> 配置目录格式如下
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">/etc/nginx/
+├── nginx.conf
+├── conf.d
+│   ├── default.conf
+│   ├── upsteam.conf
+│   ├── blog.conf
+│   ├── cloud.conf
+│   ├── ...
+│   ├── memos.conf
+│   └── ssl
+│       ├── xxx.com.conf</pre>
+<ul>
+<li>
+<p>
+ 使用 <b>HTTPS</b> 连接
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">server</span> {
+    <span style="color:#f92672">listen</span>       <span style="color:#ae81ff">80</span>;
+    <span style="color:#f92672">listen</span>  <span style="color:#e6db74">[::]:80</span>;
+    <span style="color:#f92672">server_name</span>  <span style="color:#e6db74">xxx.com</span> <span style="color:#e6db74">*.xxx.com</span>;
+
+    <span style="color:#f92672">location</span> <span style="color:#e6db74">/</span> {
+        <span style="color:#f92672">return</span> <span style="color:#ae81ff">301</span> <span style="color:#e6db74">https://</span>$host$request_uri;
+    }
+    <span style="color:#f92672">location</span> <span style="color:#e6db74">^~</span> <span style="color:#e6db74">/.well-known/acme-challenge</span> {
+        <span style="color:#f92672">alias</span> <span style="color:#e6db74">/home/xxx/app/acme.sh/xxx.com/.well-known/acme-challenge</span>;
+    }
+}</pre></li>
+<li>
+<p>
+ 添加 <code>upstream</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">upstream</span> <span style="color:#e6db74">memos.xxx.com</span> {
+    <span style="color:#f92672">server</span> 127.0.0.1:<span style="color:#ae81ff">8005</span> <span style="color:#e6db74">max_fails=3</span> <span style="color:#e6db74">fail_timeout=30s</span>;
+}</pre></li>
+<li>
+<p>
+ 添加 <code>memos.conf</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">server</span> {
+    <span style="color:#f92672">listen</span>       <span style="color:#ae81ff">443</span> <span style="color:#e6db74">ssl</span>;
+    <span style="color:#f92672">listen</span>       <span style="color:#e6db74">[::]:443</span> <span style="color:#e6db74">ssl</span>;
+    <span style="color:#f92672">server_name</span>  <span style="color:#e6db74">memos.xxx.com</span>;
+    <span style="color:#f92672">include</span>      <span style="color:#e6db74">/etc/nginx/conf.d/ssl/xxx.com.conf</span>;
+
+    <span style="color:#f92672">access_log</span>  <span style="color:#e6db74">/home/xxx/app/logs/memos_nginx_access.log</span>;
+    <span style="color:#f92672">error_log</span>   <span style="color:#e6db74">/home/xxx/app/logs/memos_nginx_error.log</span>;
+
+    <span style="color:#f92672">location</span> <span style="color:#e6db74">/</span> {
+        <span style="color:#f92672">proxy_pass</span>       <span style="color:#e6db74">http://memos.xxx.com</span>;
+        <span style="color:#f92672">proxy_redirect</span>   <span style="color:#66d9ef">off</span>;
+        <span style="color:#f92672">proxy_set_header</span> <span style="color:#e6db74">Host</span> $host;
+        <span style="color:#f92672">proxy_set_header</span> <span style="color:#e6db74">X-Real-IP</span> $remote_addr;
+        <span style="color:#f92672">proxy_set_header</span> <span style="color:#e6db74">X-Forwarded-For</span> $proxy_add_x_forwarded_for;
+    }
+}</pre></li>
+<li>
+<p>
+ <b>添加DNS记录</b>: 到 <code>CloudFlare</code> 添加一个 <code>memos</code> 的 <b>CNAME</b> 记录到 <code>cname.xxx.com</code>, 等待一分钟即可
+</p></li>
+<li>
+<p>
+ <b>添加SSL证书</b>: 如果使用了 <code>CloudFlare</code>, 这一步可以忽略。 因为我很早就建好了一个 <code>acme.sh</code> 服务，现在可以使用它来增加一个证书，首先需要重启 <code>nginx</code>， 生成证书前也可以使用 <b>dig memos.xxx.com</b> 验证 <code>DNS</code> 是否生效, 我这里使用的是 <code>webroot</code> 方式
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker exec acme.sh --issue -d xxx.com -d www.xxx.com,memos.xxx.com -w /acme.sh/xxx.com --preferred-chain &#34;ISRG&#34; --server  letsencrypt</pre>
+<p>
+     然后重启nginx
+</p>
+</li>
+</ul>
+<h2 id="heading-4">移动端支持</h2>
+<p>
+   既然要记录一些临时的想法，肯定不能只有web平台，否则有了新想法，等打开浏览器，登录，然后输入，这时候想法早没了，虽然 <code>Memos</code> 本身自带的web界面在手机浏览器上也能渲染得很好，但是有一个手机APP还是会更方便一些，目前有一个 <a href="https://memos.moe">memos.moe</a> 可供使用，我也安装使用过，确实流畅，但还有一些基础功能比如资源管理和系统管理没有实现，为此，我自己写了一个 <b>专属APP</b>, 添加了这一部分的实现
+</p>
+
+   <div class="row" style="margin-top:15px;">
+     <div class="col-sm-3">
+       
+<a href="https://s.libforest.com/images/2023/03/memos-app-01.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/03/memos-app-01.jpg-thumb" class="lazyload" />
+</a>
+     </div>
+
+     <div class="col-sm-3">
+       
+<a href="https://s.libforest.com/images/2023/03/memos-app-02.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/03/memos-app-02.jpg-thumb" class="lazyload" />
+</a>
+     </div>
+
+     <div class="col-sm-3">
+       
+<a href="https://s.libforest.com/images/2023/03/memos-app-03.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/03/memos-app-03.jpg-thumb" class="lazyload" />
+</a>
+     </div>
+
+     <div class="col-sm-3">
+       
+<a href="https://s.libforest.com/images/2023/03/memos-app-04.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/03/memos-app-04.jpg-thumb" class="lazyload" />
+</a>
+     </div>
+   </div>
+
+            </div>
+        </article>
+      </li>
+      <li>
+        <article>
+          <div class="entry-header">
+            <h1 class="entry-title">
               <a href="https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html" rel="bookmark" title="Permalink to 使用Github Actions自动打包Go项目">使用Github Actions自动打包Go项目</a>
             </h1><header class="entry-info">
   <span title="Updated at 2023-03-06">
@@ -120,21 +312,7 @@
           </div>
           <hr class="entry-hr" />
             <div class="entry-content entry-summary">
-              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">前言</a></li>
-<li><a href="#heading-2">快速开始(Quickstart)</a></li>
-<li><a href="#heading-3">多平台编译(Cross Compile)</a>
-<ul>
-<li><a href="#heading-3.1">交叉编译</a></li>
-<li><a href="#heading-3.2">跨平台编译</a></li>
-</ul></li>
-<li><a href="#heading-4">发布(Release)</a></li>
-<li><a href="#heading-5">FAQ</a>
-<ul>
-<li><a href="#heading-5.1">version `GLIBC_2.33&#39; not found</a></li>
-</ul></li>
-</ul></div></div>
-
+              
 <h2 id="heading-1">前言</h2>
 <p>
    如果用过 <b>Gitlab Ci</b>, 相信对此也非常熟悉，<b>GitHub Actions</b> 是 <b>GitHub</b> 推出的持续集成（Continuous Integration，简称 CI）服务，它提供了整套虚拟服务器环境，基于它可以进行构建、测试、打包、部署项目等等操作
@@ -153,229 +331,10 @@
    点击 <code>Configure</code>, 此时会生成一个 <code>.github/workflow/go.yml</code> 文件
 </p>
 <pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e"># This workflow will build a golang project</span>
-<span style="color:#75715e"># For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go</span>
-
-<span style="color:#66d9ef">name</span>: Go
-
-<span style="color:#66d9ef">on</span>:
-  <span style="color:#66d9ef">push</span>:
-    <span style="color:#66d9ef">branches</span>: [ <span style="color:#e6db74">&#34;master&#34;</span> ]
-  <span style="color:#66d9ef">pull_request</span>:
-    <span style="color:#66d9ef">branches</span>: [ <span style="color:#e6db74">&#34;master&#34;</span> ]
-
-<span style="color:#66d9ef">jobs</span>:
-
-  <span style="color:#66d9ef">build</span>:
-    <span style="color:#66d9ef">runs-on</span>: ubuntu-latest
-    <span style="color:#66d9ef">steps</span>:
-      - <span style="color:#66d9ef">uses</span>: actions/checkout@v3
-        - <span style="color:#66d9ef">name</span>: Set up Go
-          <span style="color:#66d9ef">uses</span>: actions/setup-go@v3
-        <span style="color:#66d9ef">with</span>:
-          <span style="color:#66d9ef">go-version</span>: <span style="color:#ae81ff">1.19</span>
-      - <span style="color:#66d9ef">name</span>: Build
-        <span style="color:#66d9ef">run</span>: go build -v ./...
-      - <span style="color:#66d9ef">name</span>: Test
-        <span style="color:#66d9ef">run</span>: go test -v ./...</pre>
-
-<h2 id="heading-3">多平台编译(Cross Compile)</h2>
-<h3 id="heading-3.1">交叉编译</h3>
-<p>
-    对于非 <code>CGO</code> 项目，<code>Go</code> 提供了一种十分方便的方式来进行交叉编译，只需要指定 <code>GOOS</code> 和 <code>GOARCH</code> 环境变量
-</p>
-<ul>
-<li>
-<p>
-  Mac下编译Linux, Windows平台的64位可执行程序：
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>linux GOARCH<span style="color:#f92672">=</span>amd64 go build .
-$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>windows GOARCH<span style="color:#f92672">=</span>amd64 go build .</pre></li>
-<li>
-<p>
- Linux下编译Mac, Windows平台的64位可执行程序：
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>darwin GOARCH<span style="color:#f92672">=</span>amd64 go build .
-$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>windows GOARCH<span style="color:#f92672">=</span>amd64 go build .</pre>
-</li>
-</ul>
-<p>
-    同样的，我们可以在 <code>Gtihub Actions</code> 中设置环境变量来编译非 <code>CGO</code> 项目，这里需要使用 <code>matrix</code> 策略，让我们基于不同的参数创建并行的任务，比如编译Go时指定不同的环境变量
-</p>
-
-<ul>
-<li>
-<p>
- 首先编写任务
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">jobs</span>:
-  <span style="color:#66d9ef">build</span>:
-    <span style="color:#66d9ef">strategy</span>:
-      <span style="color:#66d9ef">matrix</span>:
-        <span style="color:#66d9ef">goos</span>: [linux, darwin]
-        <span style="color:#66d9ef">goarch</span>: [amd64]
-
-    <span style="color:#66d9ef">runs-on</span>: ubuntu-latest
-
-    <span style="color:#66d9ef">steps</span>:
-      - <span style="color:#66d9ef">name</span>: Checkout
-        <span style="color:#66d9ef">uses</span>: actions/checkout@v3
-      - <span style="color:#66d9ef">name</span>: Set up Go
-        <span style="color:#66d9ef">uses</span>: actions/setup-go@v3
-        <span style="color:#66d9ef">with</span>:
-          <span style="color:#66d9ef">go-version</span>: <span style="color:#ae81ff">1.19</span>
-      - <span style="color:#66d9ef">name</span>: Download dependencies
-        <span style="color:#66d9ef">run</span>: go mod download
-      - <span style="color:#66d9ef">name</span>: Build
-        <span style="color:#66d9ef">run</span>: go build -v -o snow .
-        <span style="color:#75715e"># 指定编译时的环境变量</span>
-        <span style="color:#66d9ef">env</span>:
-          <span style="color:#66d9ef">GOOS</span>: ${{ matrix.goos }}
-          <span style="color:#66d9ef">GOARCH</span>: ${{ matrix.goarch }}
-          <span style="color:#66d9ef">CGO_ENABLED</span>: <span style="color:#ae81ff">0</span></pre>
-<p>
-      这样就创建了 <code>GOOS=linux GOARCH=amd64</code> 和 <code>GOOS=darwin GOARCH=amd64</code> 的两个任务, 当 <code>goarch</code> 增加一个 <code>arm</code> 的参数后，会组合成四个任务, 如果需要指定或者排除某个选项，可以使用 <code>include</code> 或者 <code>exclude</code>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">matrix</span>:
-  <span style="color:#66d9ef">goos</span>: [linux, darwin]
-  <span style="color:#66d9ef">goarch</span>: [amd64, arm]
-  <span style="color:#75715e"># 只包括linux编译选项</span>
-  <span style="color:#66d9ef">include</span>:
-    - <span style="color:#66d9ef">goos</span>: linux
-      <span style="color:#66d9ef">goarch</span>: amd64
-    - <span style="color:#66d9ef">goos</span>: linux
-      <span style="color:#66d9ef">goarch</span>: arm
-  <span style="color:#75715e"># 排除所有关于arm的编译选项</span>
-  <span style="color:#66d9ef">exclude</span>:
-    - <span style="color:#66d9ef">goarch</span>: arm</pre></li>
-<li>
-<p>
- 然后执行 <code>git push</code>, 这样就能在 <code>Github</code> 的 <code>Actions</code> 标签页看到执行结果
-</p>
-</li>
-</ul>
-<h3 id="heading-3.2">跨平台编译</h3>
-<p>
-    如果是非 <code>CGO</code> 项目，可以使用Go内置的交叉编译，但如果是 <code>CGO</code> 项目，上述的交叉编译大概率会失败(相关问题:<a href="https://github.com/wellington/go-libsass/issues/67">go-libsass</a>)， 所以我们需要基于不同的平台来进行编译，幸运的是，<code>Github Actions</code> 对此支持的非常好,
-</p>
-
-<ul>
-<li>
-<p>
- 编写新任务
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">jobs</span>:
-  <span style="color:#66d9ef">build</span>:
-    <span style="color:#66d9ef">strategy</span>:
-      <span style="color:#66d9ef">matrix</span>:
-        <span style="color:#66d9ef">build</span>: [macos, linux]
-        <span style="color:#66d9ef">include</span>:
-          - <span style="color:#66d9ef">build</span>: macos
-            <span style="color:#66d9ef">os</span>: macos-latest
-          - <span style="color:#66d9ef">build</span>: linux
-            <span style="color:#66d9ef">os</span>: ubuntu<span style="color:#ae81ff">-18.04</span>
-    <span style="color:#66d9ef">runs-on</span>: ${{ matrix.os }}
-    <span style="color:#66d9ef">steps</span>:
-      - <span style="color:#66d9ef">name</span>: Checkout
-        <span style="color:#66d9ef">uses</span>: actions/checkout@v3
-      - <span style="color:#66d9ef">name</span>: Set up Go
-        <span style="color:#66d9ef">uses</span>: actions/setup-go@v3
-        <span style="color:#66d9ef">with</span>:
-          <span style="color:#66d9ef">go-version</span>: <span style="color:#ae81ff">1.19</span>
-      - <span style="color:#66d9ef">name</span>: Download dependencies
-        <span style="color:#66d9ef">run</span>: go mod download
-      - <span style="color:#66d9ef">name</span>: Build
-        <span style="color:#66d9ef">run</span>: go build -v -o snow .
-        <span style="color:#66d9ef">env</span>:
-          <span style="color:#66d9ef">CGO_ENABLED</span>: <span style="color:#ae81ff">1</span></pre>
-<p>
-      注意 <code>runs-on</code> 使用的 <code>matrix.os</code> 变量, 它允许我们分别使用 <code>ubuntu-18.04</code> 和 <code>macos-latest</code> 两个平台进行编译，这时不用指定 <code>GOOS</code> 和 <code>GOARCH</code> 参数
-</p></li>
-<li>
-<p>
- 执行 <code>git push</code>, 可以看到执行结果
-      
-<a href="https://s.libforest.com/images/2023/03/github-actions-02.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/03/github-actions-02.png-thumb" class="lazyload" />
-</a>
-</p>
-</li>
-</ul>
-<h2 id="heading-4">发布(Release)</h2>
-<p>
-   当编译好一个二进制文件后，需要发布到 <code>Github</code> 的 <code>Release</code> 页，这时就需要添加新的任务, 目前官方的<a href="https://github.com/actions/create-release">actions/create-release</a>已经无人维护，所以此次选择另外一个<a href="https://github.com/ncipollo/release-action">ncipollo/release-action</a>
-</p>
-
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">name</span>: Release
-
-<span style="color:#66d9ef">on</span>:
-  <span style="color:#75715e"># 只在预发布时才执行</span>
-  <span style="color:#66d9ef">release</span>:
-    <span style="color:#66d9ef">types</span>: [prereleased]
-
-<span style="color:#66d9ef">jobs</span>:
-  <span style="color:#66d9ef">build</span>:
-    <span style="color:#66d9ef">strategy</span>:
-      <span style="color:#66d9ef">matrix</span>:
-        <span style="color:#66d9ef">build</span>: [macos, linux]
-        <span style="color:#66d9ef">include</span>:
-          - <span style="color:#66d9ef">build</span>: macos
-            <span style="color:#66d9ef">os</span>: macos-latest
-            <span style="color:#66d9ef">archive-name</span>: darwin.tar.gz
-          - <span style="color:#66d9ef">build</span>: linux
-            <span style="color:#66d9ef">os</span>: ubuntu-latest
-            <span style="color:#66d9ef">archive-name</span>: linux.tar.gz
-
-    <span style="color:#75715e"># 需要设置写权限才能自动发布</span>
-    <span style="color:#66d9ef">permissions</span>:
-      <span style="color:#66d9ef">contents</span>: write
-
-    <span style="color:#66d9ef">steps</span>:
-      ...
-      <span style="color:#75715e"># 把二进制文件打包成压缩文件</span>
-      - <span style="color:#66d9ef">name</span>: Prepare Packaging
-        <span style="color:#66d9ef">run</span>: tar zcvf snow-${{ matrix.archive-name }}.tar.gz snow LICENSE
-
-      <span style="color:#75715e"># 上传附件</span>
-      - <span style="color:#66d9ef">name</span>: Upload Artifacts
-        <span style="color:#66d9ef">uses</span>: actions/upload-artifact@v3
-        <span style="color:#66d9ef">with</span>:
-          <span style="color:#66d9ef">name</span>: snow-${{ matrix.archive-name }}.tar.gz
-          <span style="color:#66d9ef">path</span>: snow-${{ matrix.archive-name }}.tar.gz
-
-      <span style="color:#75715e"># 发布release版本</span>
-      - <span style="color:#66d9ef">name</span>: Release version
-        <span style="color:#66d9ef">uses</span>: ncipollo/release-action@v1
-        <span style="color:#66d9ef">if</span>: github.event_name == <span style="color:#e6db74">&#39;release&#39;</span>
-        <span style="color:#66d9ef">with</span>:
-          <span style="color:#66d9ef">allowUpdates</span>: <span style="color:#66d9ef">true</span>
-          <span style="color:#66d9ef">artifacts</span>: snow-${{ matrix.archive-name }}.tar.gz
-          <span style="color:#66d9ef">token</span>: ${{ secrets.GITHUB_TOKEN }}</pre>
-
-<p>
-   当 <code>Github Actions</code> 执行完成后，就能在 <code>Release</code> 页看到我们发布的 <code>Package</code>
-   
-<a href="https://s.libforest.com/images/2023/03/github-actions-03.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/03/github-actions-03.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<h2 id="heading-5">FAQ</h2>
-<h3 id="heading-5.1">version `GLIBC_2.33&#39; not found</h3>
-<p>
-    使用 <code>Github Actions</code> 发布一个新的版本，下载到本地执行时报错
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.33&#39; not found (required by ./snow)
-./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.34&#39; not found (required by ./snow)
-./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.32&#39; not found (required by ./snow)
-./snow: /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.29&#39; not found (required by ./snow)</pre>
-<p>
-    这是由于使用的 <code>ubuntu</code> 版本太高导致, 降低版本即可
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">include:
-...
-<span style="color:#f92672">-   os: ubuntu-latest
-</span><span style="color:#f92672"></span><span style="color:#a6e22e">+   os: ubuntu-18.04
-</span></pre>
+<span style="color:#75715e"># For more information see: https://docs.github...</span></pre>
+            </div>
+            <div class="text-center">
+              <a class="btn entry-read-more" href="https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html">阅读全文 »</a>
             </div>
         </article>
       </li>
@@ -453,7 +412,7 @@ $ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</
             <h1 class="entry-title">
               <a href="https://honmaple.me/articles/2023/02/博客系统从Pelican迁移至Snow.html" rel="bookmark" title="Permalink to 博客系统从Pelican迁移至Snow">博客系统从Pelican迁移至Snow</a>
             </h1><header class="entry-info">
-  <span title="Updated at 2023-03-05">
+  <span title="Updated at 2023-03-18">
     <i class="fa fa-calendar-o"></i>
     2023-02-19 Sun
   </span>
@@ -1538,74 +1497,6 @@ Installing...</pre>
             </div>
             <div class="text-center">
               <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/09/rust笔记.html">阅读全文 »</a>
-            </div>
-        </article>
-      </li>
-      <li>
-        <article>
-          <div class="entry-header">
-            <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2020/08/golang笔记之interface类型判断性能.html" rel="bookmark" title="Permalink to golang笔记之interface类型判断性能">golang笔记之interface类型判断性能</a>
-            </h1><header class="entry-info">
-  <span title="Updated at 2021-08-27">
-    <i class="fa fa-calendar-o"></i>
-    2020-08-21 Fri
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By
-        <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-    </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-folder-o"></i>
-      In
-        <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
-    </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tags/golang/index.html">golang</a>
-    </span>
-</header>
-
-          </div>
-          <hr class="entry-hr" />
-            <div class="entry-content entry-summary">
-              
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
-
-<span style="color:#f92672">import</span> <span style="color:#e6db74">&#34;testing&#34;</span>
-
-<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">InterfaceA</span> <span style="color:#66d9ef">interface</span> {
-    <span style="color:#a6e22e">AA</span>()
-}
-
-<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">InterfaceB</span> <span style="color:#66d9ef">interface</span> {
-    <span style="color:#a6e22e">BB</span>()
-}
-
-<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">A</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#a6e22e">v</span> <span style="color:#66d9ef">int</span>
-}
-
-<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">a</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">A</span>) <span style="color:#a6e22e">AA</span>() {
-    <span style="color:#a6e22e">a</span>.<span style="color:#a6e22e">v</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
-}
-
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">BenchmarkTypeSwitch</span>(<span style="color:#a6e22e">b</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">testing</span>.<span style="color:#a6e22e">B</span>) {
-    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">a</span> = new(<span style="color:#a6e22e">A</span>)
-
-    <span style="color:#a6e22e">switchFunc</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">v</span> <span style="color:#66d9ef">interface</span>{}) {
-        <span style="color:#66d9ef">switch</span> <span style="color:#a6e22e">v</span>.(<span style="color:#66d9ef">type</span>) {
-        <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">InterfaceA</span>:
-            <span style="color:#a6e22e">v</span>.(<span style="color:#a6e22e">InterfaceA...</span></pre>
-            </div>
-            <div class="text-center">
-              <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/08/golang笔记之interface类型判断性能.html">阅读全文 »</a>
             </div>
         </article>
       </li>
