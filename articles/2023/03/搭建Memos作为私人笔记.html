@@ -66,7 +66,7 @@
   <article>
     <div class="entry-header">
       <h1 class="entry-title"><a href="https://honmaple.me/articles/2023/03/搭建Memos作为私人笔记.html">搭建Memos作为私人笔记</a></h1><header class="entry-info">
-  <span title="Updated at 2023-03-18">
+  <span title="Updated at 2023-04-06">
     <i class="fa fa-calendar-o"></i>
     2023-03-10 Fri
   </span>
@@ -99,6 +99,10 @@
 <li><a href="#heading-2">docker-compose</a></li>
 <li><a href="#heading-3">nginx和https配置</a></li>
 <li><a href="#heading-4">移动端支持</a></li>
+<li><a href="#heading-5">FAQ</a>
+<ul>
+<li><a href="#heading-5.1">重置密码</a></li>
+</ul></li>
 </ul></div></div>
 
 <blockquote>
@@ -249,6 +253,40 @@
      </div>
    </div>
 
+<h2 id="heading-5">FAQ</h2>
+<h3 id="heading-5.1">重置密码</h3>
+<p>
+    升级到 <code>0.12.0</code> 后无法登录，总是提示 <code>Incorrect login credentials</code>, 因为使用的 <code>Docker</code> 部署，找到挂载目录下的 <code>memos_prod.db</code> 文件(<b>请先备份好</b>), 我的机器上没有安装 <code>sqlite</code>, 所以需要
+</p>
+<ul>
+<li>
+<p>
+ 拷贝到本地
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">└──╼ scp xxx:~/app/memos/memos_prod.db ./</pre></li>
+<li>
+<p>
+ 然后使用 <code>sqlite</code> 打开文件并手动更新
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">└──╼ sqlite3 memos_prod.db
+SQLite version 3.32.2 2021-07-12 15:00:17
+Enter &#34;.help&#34; for usage hints.
+sqlite&gt; select * from user;
+...
+sqlite&gt; update user set password_hash=&#34;$2a$14$ajq8Q7fbtFRQvXpdCq7Jcuy.Rx1h/L4J60Otx.gyNLbAYctGMJ9tK&#34; where id=1;
+sqlite&gt; .quit</pre>
+<p>
+      这时候密码会被设置成 <b>secret</b>
+</p></li>
+<li>
+<p>
+ 覆盖原文件(需要先暂停服务)
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">└──╼ scp ./memos_prod.db xxx:~/app/memos/memos_prod.db</pre>
+<p>
+      重启服务，重新登录后修改新密码即可
+</p></li>
+</ul>
     </div><div class="entry-copyright">
       <div>
         <i class="fa fa-user-o"></i>
