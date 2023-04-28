@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>基于Quasar实现一个树状表格TableTree · 紅楓吟</title>
+      <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+    <script src="https://honmaple.me/static/js/theme.js"></script>
+  </head>
+  <body>
+    <div class="scrollbar"></div>
+
+    <div class="wrap">
+      <div class="main"><nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://s.libforest.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="https://honmaple.me/categories/life/index.html">代码人生</a>
+              <ul class="dropdown-menu">
+                  <li><a href="https://honmaple.me/categories/life/coding/index.html">分享世界</a></li>
+                  <li><a href="https://honmaple.me/categories/life/love/index.html">你不懂我</a></li>
+                  <li><a href="https://honmaple.me/categories/life/recall/index.html">我不怪你</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="https://honmaple.me/categories/linux/index.html">字符艺术</a>
+              <ul class="dropdown-menu">
+                  <li><a href="https://honmaple.me/categories/linux/emacs/index.html">Emacs</a></li>
+              </ul>
+            </li>
+            <li><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+            <li><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+          <li class="dropdown">
+            <a href="https://honmaple.me/archives/index.html">文章归档</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+                <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+                <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+            </ul>
+          </li>
+          <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>
+
+  <article>
+    <div class="entry-header">
+      <h1 class="entry-title"><a href="https://honmaple.me/articles/2023/04/基于Quasar实现一个树状表格TableTree.html">基于Quasar实现一个树状表格TableTree</a></h1><header class="entry-info">
+  <span title="Updated at 2023-04-29">
+    <i class="fa fa-calendar-o"></i>
+    2023-04-29 Sat
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By
+        <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-folder-o"></i>
+      In
+        <a href="https://honmaple.me/categories/life/coding/index.html">Life/Coding</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/coding/index.html">coding</a>
+        <a href="https://honmaple.me/tags/quasar/index.html">quasar</a>
+    </span>
+</header>
+
+    </div>
+    <hr class="entry-hr" />
+    <div class="entry-content">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">前言</a></li>
+<li><a href="#heading-2">实现一(废弃)</a></li>
+<li><a href="#heading-3">实现二</a></li>
+<li><a href="#heading-4">最终实现</a></li>
+</ul></div></div>
+
+<blockquote>
+<p>
+<a href="https://quasar.dev/">Quasar</a> 是一个基于 <code>Vue3</code> 的前端UI框架，使用的是 <b>Material Design</b>, 对于国内而言(包括我)觉得确实不太好看，但因为之前使用的是 <code>Element-UI</code>，大概是由于审美疲劳，此次升级我的后台管理UI，没有继续使用 <code>Vue3</code> 版本的 <code>Element-Plus</code>。 不久前我也是基于 <code>Quasar</code> 开发了一个 Memos 客户端, 感觉效果还不错
+</p>
+</blockquote>
+
+<h2 id="heading-1">前言</h2>
+<p>
+   <code>Quasar</code> 默认没有树状表格的支持，但我觉得树状表格其实还挺重要的，尤其是在显示一些树状的数据，比如一个部门列表(打比方), 树状表格能够清晰的表明各部门之间的上下关系，目前我看实现树状表格的示例要么是基于 <code>qhierarchy</code> (使用 <code>q-markup-table</code> 实现，定制太困难), 要么就是实现方式太复杂 <a href="https://forum.quasar-framework.org/topic/2428/tree-table-example">tree-table-example</a>, 所以我研究了一下，发现其实还挺简单的，故此记录
+</p>
+
+<h2 id="heading-2">实现一(废弃)</h2>
+<p>
+   虽然 <code>Quasar</code> 没有树状表格的组件, 但 <code>q-table</code> 默认是支持 <code>Expanding rows</code> 的，所以我一开始的想法是使用这个功能实现一个递归的组件, 就像这样
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">template</span>&gt;
+  &lt;<span style="color:#f92672">q-tr</span> <span style="color:#a6e22e">:key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;row.id&#34;</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
+    &lt;<span style="color:#f92672">slot</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;row&#34;</span> <span style="color:#a6e22e">:status</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;status&#34;</span> <span style="color:#a6e22e">:indent</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indent&#34;</span> <span style="color:#a6e22e">:indentStyle</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indentStyle(indent)&#34;</span>&gt;&lt;/<span style="color:#f92672">slot</span>&gt;
+  &lt;/<span style="color:#f92672">q-tr</span>&gt;
+  &lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">:key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;index&#34;</span> <span style="color:#a6e22e">v-for</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;(child, index) in row.children&#34;</span> <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;status.expand&#34;</span>&gt;
+    &lt;<span style="color:#f92672">table-tree</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span> <span style="color:#a6e22e">:indent</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indent + 1&#34;</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;child&#34;</span> <span style="color:#a6e22e">v-slot</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope&#34;</span>&gt;
+      &lt;<span style="color:#f92672">slot</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.row&#34;</span> <span style="color:#a6e22e">:status</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status&#34;</span> <span style="color:#a6e22e">:indent</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.indent&#34;</span> <span style="color:#a6e22e">:indentStyle</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indentStyle(scope.indent)&#34;</span>&gt;&lt;/<span style="color:#f92672">slot</span>&gt;
+    &lt;/<span style="color:#f92672">table-tree</span>&gt;
+  &lt;/<span style="color:#f92672">template</span>&gt;
+&lt;/<span style="color:#f92672">template</span>&gt;</pre>
+<p>
+   而在父组件中调用只需要把原来的 <code>props</code> 改成 <code>scope</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:body</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
+  &lt;<span style="color:#f92672">table-tree</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.row&#34;</span> <span style="color:#a6e22e">v-slot</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope&#34;</span>&gt;
+    &lt;<span style="color:#f92672">q-td</span> <span style="color:#a6e22e">auto-width</span>&gt;
+      &lt;<span style="color:#f92672">q-checkbox</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;sm&#34;</span> <span style="color:#a6e22e">v-model</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status.selected&#34;</span> /&gt;
+    &lt;/<span style="color:#f92672">q-td</span>&gt;
+    &lt;<span style="color:#f92672">q-td</span>&gt;
+      &lt;<span style="color:#f92672">q-btn</span> <span style="color:#a6e22e">flat</span> <span style="color:#a6e22e">round</span> <span style="color:#a6e22e">dense</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xs&#34;</span>
+             <span style="color:#a6e22e">:icon</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status.expand ? &#39;remove&#39; : &#39;add&#39;&#34;</span>
+             <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">click</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status.expand = !scope.status.expand&#34;</span>
+             <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.row.children &amp;&amp; scope.row.children.length &gt; 0&#34;</span> /&gt;
+      {{ scope.row.name }}
+    &lt;/<span style="color:#f92672">q-td</span>&gt;
+    &lt;<span style="color:#f92672">q-td</span>&gt;{{ scope.row.desc }}&lt;/<span style="color:#f92672">q-td</span>&gt;
+  &lt;/<span style="color:#f92672">table-tree</span>&gt;
+&lt;/<span style="color:#f92672">template</span>&gt;</pre>
+<p>
+   但是后面发现表格在多选状态下无法和原有的表格选择进行联动，只能自己实现选中和取消选中的方法，虽然也能实现，当很麻烦，只好另寻其它方式
+</p>
+
+<h2 id="heading-3">实现二</h2>
+<p>
+   后面研究了一下 <b>Fernando2684</b> 的实现方式, 虽然他的方式同样复杂，当实现原理其实很简单, 那就是修改原始数据，比如第二行需要进行展开，那我就在原来第二行的数据下把第二行的子数据追加上去，取消展开就把子数据删除，恢复原来的数据。有了这个原理后就好办了，我们可以利用 <code>Expanding rows</code> 时用到的 <code>props.expand</code> 参数来控制是否展开子数据, 然后利用计算属性动态的计算展开后的数据
+</p>
+
+<ul>
+<li>
+<p>
+ 表格模版
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">q-table</span> <span style="color:#a6e22e">flat</span> <span style="color:#a6e22e">bordered</span>
+         <span style="color:#a6e22e">row-key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;id&#34;</span>
+         <span style="color:#a6e22e">separator</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;cell&#34;</span>
+         <span style="color:#a6e22e">selection</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;multiple&#34;</span>
+       <span style="color:#a6e22e">-</span> <span style="color:#a6e22e">:rows</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.list&#34;</span>
+       <span style="color:#960050;background-color:#1e0010">+</span> <span style="color:#a6e22e">:rows</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;expandRows&#34;</span>
+         <span style="color:#a6e22e">v-model:expanded</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.expanded&#34;</span>
+         <span style="color:#a6e22e">v-model:selected</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.selected&#34;</span>
+         <span style="color:#a6e22e">v-model:pagination</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.pagination&#34;</span>&gt;
+  &lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:body</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
+    &lt;<span style="color:#f92672">q-tr</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
+      &lt;<span style="color:#f92672">q-td</span> <span style="color:#a6e22e">auto-width</span>&gt;
+        &lt;<span style="color:#f92672">q-checkbox</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;sm&#34;</span> <span style="color:#a6e22e">v-model</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.selected&#34;</span> /&gt;
+      &lt;/<span style="color:#f92672">q-td</span>&gt;
+      &lt;<span style="color:#f92672">q-td</span>&gt;
+        &lt;<span style="color:#f92672">q-btn</span> <span style="color:#a6e22e">flat</span> <span style="color:#a6e22e">round</span> <span style="color:#a6e22e">dense</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xs&#34;</span>
+               <span style="color:#a6e22e">:icon</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.expand ? &#39;remove&#39; : &#39;add&#39;&#34;</span>
+               <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">click</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.expand = !props.expand&#34;</span>
+               <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.row.children &amp;&amp; props.row.children.length &gt; 0&#34;</span> /&gt;
+        {{ props.row.name }}
+      &lt;/<span style="color:#f92672">q-td</span>&gt;
+      &lt;<span style="color:#f92672">q-td</span>&gt;{{ props.row.desc }}&lt;/<span style="color:#f92672">q-td</span>&gt;
+    &lt;/<span style="color:#f92672">q-tr</span>&gt;
+  &lt;/<span style="color:#f92672">template</span>&gt;
+&lt;/<span style="color:#f92672">q-table</span>&gt;</pre></li>
+<li>
+<p>
+ 表格数据
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">table</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">ref</span>({
+    <span style="color:#a6e22e">list</span><span style="color:#f92672">:</span> [],
+    <span style="color:#a6e22e">expanded</span><span style="color:#f92672">:</span> [],
+    <span style="color:#a6e22e">selected</span><span style="color:#f92672">:</span> [],
+    <span style="color:#a6e22e">loading</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>,
+    <span style="color:#a6e22e">pagination</span><span style="color:#f92672">:</span> {
+        <span style="color:#a6e22e">page</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>,
+        <span style="color:#a6e22e">sortBy</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;desc&#39;</span>,
+        <span style="color:#a6e22e">descending</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>,
+        <span style="color:#a6e22e">rowsPerPage</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
+        <span style="color:#a6e22e">rowsNumber</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
+    }
+})
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">expandRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">computed</span>(() =&gt; {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span>, <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">expanded</span>)
+})
+</pre>
+<p>
+     这里提一嘴，<code>pagination.rowsPerPage</code> 默认最好设置为0(不限制每页的数量, 但会由由后端控制返回的行数), 否则展开子数据后的数据会被放到第二页, 影响数据查看
+</p></li>
+<li>
+<p>
+ 动态计算展开后的数据
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">rows</span>, <span style="color:#a6e22e">expanded</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">rows</span>) {
+        <span style="color:#66d9ef">return</span> []
+    }
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">expanded</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">rows</span>
+    }
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> []
+    <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">row</span> =&gt; {
+        <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">row</span>)
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">expanded</span>.<span style="color:#a6e22e">indexOf</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">id</span>) <span style="color:#f92672">&gt;</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) {
+            <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">concat</span>(<span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">children</span>, <span style="color:#a6e22e">expanded</span>))
+        }
+    })
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">newRows</span>
+}
+</pre>
+<p>
+     注意，这里因为要递归计算多级子目录，所以不能直接在 <code>setup</code> 上直接用 <code>const</code> 定义
+</p></li>
+<li>
+<p>
+ 缩进：目前缩进确实有些问题，其中一个解决办法是原始数据会带有 <code>parent_id</code> 字段，可以通过判断 <code>parent_id</code> 大于0时增加缩进
+</p>
+</li>
+</ul>
+<h2 id="heading-4">最终实现</h2>
+<p>
+   
+<a href="https://s.libforest.com/images/2023/04/quasar-table-tree.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/04/quasar-table-tree.png-thumb" class="lazyload" />
+</a>
+</p>
+    </div><div class="entry-copyright">
+      <div>
+        <i class="fa fa-user-o"></i>
+        作者:
+          <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+      </div>
+  <div>
+    <i class="fa fa-link"></i>
+    链接:
+    <a href="https://honmaple.me/articles/2023/04/基于Quasar实现一个树状表格TableTree.html">https://honmaple.me/articles/2023/04/基于Quasar实现一个树状表格TableTree.html</a>
+  </div>
+  <div>
+    <i class="fa fa-copyright"></i>
+    版权:
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+    </a>
+  </div>
+</div>
+
+<div class="entry-honor">
+  <button class="btn" data-target="#entry-honor-content" data-toggle="collapse">赏</button>
+  <div class="collapse" id="entry-honor-content">
+    <div class="entry-honor-content">
+      <div class="entry-honor-alipay">
+        <div class="entry-honor-mask">
+          <button class="btn btn-success" data-target=".entry-honor-wechat" data-toggle="collapse">
+            <i class="fa fa-wechat"></i>
+            <span>微信</span>
+          </button>
+        </div>
+      </div>
+      <div class="entry-honor-wechat collapse">
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+    </div>
+  </div>
+</div>
+
+    <hr class="entry-hr" />
+    <ul class="entry-pager">
+        <li class="next">
+          <a href="https://honmaple.me/articles/2023/03/搭建Memos作为私人笔记.html" title="Next article: 搭建Memos作为私人笔记">
+            搭建Memos作为私人笔记
+            <i class="fa fa-chevron-right"></i>
+          </a>
+        </li>
+    </ul>
+  <div class="comments">
+    <div class="text-center">
+      <a class="btn entry-read-more entry-comment">加载评论</a>
+    </div>
+    <div id="comment_thread" issue-term="基于Quasar实现一个树状表格TableTree"></div>
+  </div>
+
+  </article>
+      </div>
+    </div><div class="entry-footer">
+  <ul class="entry-footer-left">
+    <li class="hidden-xs">© 2015-2023 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+        <a href="https://honmaple.me/pages/friends.html" data-no-instant>友链</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/contact.html" data-no-instant>联系</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/project.html" data-no-instant>项目</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/timeline.html" data-no-instant>时间轴</a>
+    </li>
+  </ul>
+  <ul class="entry-footer-right">
+    <li><a class="entry-switch-theme" title="切换主题" onclick="switchTheme()"><i class="fa fa-moon-o"></i></a></li>
+      <li><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/pages/music.html" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>
+      <li><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li><a href="https://honmaple.me/pages/contact.html" title="Contact"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+</div>
+<div class="back-to-top back-to-top-on">
+  <i class="fa fa-hand-o-up" title="back to top"></i>
+</div>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'UA-88401692-2');
+  </script>
+
+
+      <script src="https://s.libforest.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
+      <script src="https://s.libforest.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+         if (typeof ga !== 'undefined') {
+           ga('send', 'pageview', location.pathname + location.search);
+         }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>
