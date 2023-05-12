@@ -66,7 +66,7 @@
   <article>
     <div class="entry-header">
       <h1 class="entry-title"><a href="https://honmaple.me/articles/2023/04/基于Quasar实现一个树状表格TableTree.html">基于Quasar实现一个树状表格TableTree</a></h1><header class="entry-info">
-  <span title="Updated at 2023-04-29">
+  <span title="Updated at 2023-05-09">
     <i class="fa fa-calendar-o"></i>
     2023-04-29 Sat
   </span>
@@ -162,8 +162,8 @@
          <span style="color:#a6e22e">row-key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;id&#34;</span>
          <span style="color:#a6e22e">separator</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;cell&#34;</span>
          <span style="color:#a6e22e">selection</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;multiple&#34;</span>
-       <span style="color:#a6e22e">-</span> <span style="color:#a6e22e">:rows</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.list&#34;</span>
-       <span style="color:#960050;background-color:#1e0010">+</span> <span style="color:#a6e22e">:rows</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;expandRows&#34;</span>
+         <span style="color:#a6e22e">-</span> <span style="color:#a6e22e">:rows</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.list&#34;</span>
+         <span style="color:#960050;background-color:#1e0010">+</span> <span style="color:#a6e22e">:rows</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;expandRows&#34;</span>
          <span style="color:#a6e22e">v-model:expanded</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.expanded&#34;</span>
          <span style="color:#a6e22e">v-model:selected</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.selected&#34;</span>
          <span style="color:#a6e22e">v-model:pagination</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.pagination&#34;</span>&gt;
@@ -234,15 +234,55 @@
 </p></li>
 <li>
 <p>
- 缩进：目前缩进确实有些问题，其中一个解决办法是原始数据会带有 <code>parent_id</code> 字段，可以通过判断 <code>parent_id</code> 大于0时增加缩进
+ 缩进：<del>目前缩进确实有些问题，其中一个解决办法是原始数据会带有 <code>parent_id</code> 字段，可以通过判断 <code>parent_id</code> 大于0时增加缩进</del>
 </p>
+
+<p>
+     缩进的计算可以通过<code>makeRows</code>函数在遍历时添加每行数据的层级
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">rows</span>, <span style="color:#a6e22e">expanded</span>, <span style="color:#a6e22e">indent</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">rows</span>) {
+        <span style="color:#66d9ef">return</span> []
+    }
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> []
+    <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">row</span> =&gt; {
+        <span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">_indent</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">indent</span>
+        <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">row</span>)
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">expanded</span>.<span style="color:#a6e22e">indexOf</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">id</span>) <span style="color:#f92672">&gt;</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) {
+            <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">concat</span>(<span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">children</span>, <span style="color:#a6e22e">expanded</span>, <span style="color:#a6e22e">indent</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>))
+        }
+    })
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">newRows</span>
+}
+
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">useTable</span>(<span style="color:#a6e22e">table</span>) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">expandRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">computed</span>(() =&gt; {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span>, <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">expanded</span>, <span style="color:#ae81ff">0</span>)
+    })
+    <span style="color:#66d9ef">return</span> {
+        <span style="color:#a6e22e">expandRows</span>,
+    }
+}
+</pre>
+<p>
+     然后在表格中添加对应的偏移即可, 需要注意的是表格对齐方向需要设置为 <code>left</code> (<b>默认值</b>)
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:body-cell-name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
+  &lt;<span style="color:#f92672">q-td</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span> <span style="color:#a6e22e">:style</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;&#39;padding-left:&#39; + ((props.row._indent || 0) + 1) + &#39;rem&#39;&#34;</span>&gt;
+    &lt;<span style="color:#f92672">q-btn</span> <span style="color:#a6e22e">flat</span> <span style="color:#a6e22e">round</span> <span style="color:#a6e22e">dense</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xs&#34;</span>
+           <span style="color:#a6e22e">:icon</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.expand ? &#39;remove&#39; : &#39;add&#39;&#34;</span>
+           <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">click</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.expand = !props.expand&#34;</span>
+           <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.row.children &amp;&amp; props.row.children.length &gt; 0&#34;</span> /&gt;
+    {{ props.row.name }}
+  &lt;/<span style="color:#f92672">q-td</span>&gt;
+&lt;/<span style="color:#f92672">template</span>&gt;</pre>
 </li>
 </ul>
 <h2 id="heading-4">最终实现</h2>
 <p>
    
-<a href="https://s.libforest.com/images/2023/04/quasar-table-tree.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/04/quasar-table-tree.png-thumb" class="lazyload" />
+<a href="https://s.libforest.com/images/2023/04/quasar-tree-table.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/04/quasar-tree-table.png-thumb" class="lazyload" />
 </a>
 </p>
     </div><div class="entry-copyright">
@@ -287,6 +327,12 @@
 
     <hr class="entry-hr" />
     <ul class="entry-pager">
+        <li class="previous">
+          <a href="https://honmaple.me/articles/2023/05/基于Quasar实现一个树状选择器TreeSelect.html" title="Previous article: 基于Quasar实现一个树状选择器TreeSelect">
+            <i class="fa fa-chevron-left"></i>
+            基于Quasar实现一个树状选择器TreeSelect
+          </a>
+        </li>
         <li class="next">
           <a href="https://honmaple.me/articles/2023/03/搭建Memos作为私人笔记.html" title="Next article: 搭建Memos作为私人笔记">
             搭建Memos作为私人笔记

@@ -5,13 +5,230 @@
   <link href="https://honmaple.me/categories/life/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Sat, 29 Apr 2023 01:18:34 +0000</updated>
+    <updated>Fri, 12 May 2023 23:44:48 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>基于Quasar实现一个树状选择器TreeSelect</title>
+      <link href="" rel="alternate"></link>
+      <published>Tue, 09 May 2023 23:23:52 +0000</published>
+      <updated>Fri, 12 May 2023 23:44:48 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/05/基于Quasar实现一个树状选择器TreeSelect.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/05/基于Quasar实现一个树状选择器TreeSelect.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;code&gt;Quasar&lt;/code&gt; 默认没有树状选择器的支持，而在 &lt;code&gt;Vue&lt;/code&gt; 中通常会使用一个现成的&lt;a href=&quot;https://github.com/riophae/vue-treeselect&quot;&gt;vue-treeselect&lt;/a&gt;, 这是一个非常不错的 &lt;code&gt;Select&lt;/code&gt; 组件, 此次不适用该组件，而是利用 &lt;code&gt;Quasar&lt;/code&gt; 中的 &lt;code&gt;q-select&lt;/code&gt; 和 &lt;code&gt;q-tree&lt;/code&gt; 结合，实现一个类似的树状选择器
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;源数据结构&lt;/h2&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;,
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;admin&amp;#34;&lt;/span&gt;,
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;desc&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;管理员&amp;#34;&lt;/span&gt;,
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;children&amp;#34;&lt;/span&gt;: [{
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;6&lt;/span&gt;,
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;...&lt;/span&gt;&lt;/pre&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;源数据结构&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;组件模版&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;组件选项&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;最终实现&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;code&gt;Quasar&lt;/code&gt; 默认没有树状选择器的支持，而在 &lt;code&gt;Vue&lt;/code&gt; 中通常会使用一个现成的&lt;a href=&quot;https://github.com/riophae/vue-treeselect&quot;&gt;vue-treeselect&lt;/a&gt;, 这是一个非常不错的 &lt;code&gt;Select&lt;/code&gt; 组件, 此次不适用该组件，而是利用 &lt;code&gt;Quasar&lt;/code&gt; 中的 &lt;code&gt;q-select&lt;/code&gt; 和 &lt;code&gt;q-tree&lt;/code&gt; 结合，实现一个类似的树状选择器
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;源数据结构&lt;/h2&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;,
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;admin&amp;#34;&lt;/span&gt;,
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;desc&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;管理员&amp;#34;&lt;/span&gt;,
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;children&amp;#34;&lt;/span&gt;: [{
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;6&lt;/span&gt;,
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;superadmin&amp;#34;&lt;/span&gt;,
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;desc&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;超级管理员&amp;#34;&lt;/span&gt;,
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;children&amp;#34;&lt;/span&gt;: [{
+            &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;10&lt;/span&gt;,
+            &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;vvvvv&amp;#34;&lt;/span&gt;,
+            &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;desc&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;dddd&amp;#34;&lt;/span&gt;,
+        }]
+    }]
+}&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;组件模版&lt;/h2&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;
+  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-select&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;dense&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;outlined&lt;/span&gt;
+            &lt;span style=&quot;color:#a6e22e&quot;&gt;emit-value&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;map-options&lt;/span&gt;
+            &lt;span style=&quot;color:#a6e22e&quot;&gt;option-value&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;
+            &lt;span style=&quot;color:#a6e22e&quot;&gt;option-label&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;
+            &lt;span style=&quot;color:#a6e22e&quot;&gt;label&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;角色列表&amp;#34;&lt;/span&gt;
+            &lt;span style=&quot;color:#a6e22e&quot;&gt;:options&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;list&amp;#34;&lt;/span&gt;
+            &lt;span style=&quot;color:#a6e22e&quot;&gt;:loading&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.loading&amp;#34;&lt;/span&gt;
+            &lt;span style=&quot;color:#a6e22e&quot;&gt;:multiple&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;multiple&amp;#34;&lt;/span&gt;
+            &lt;span style=&quot;color:#a6e22e&quot;&gt;:use-chips&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;multiple&amp;#34;&lt;/span&gt;
+            &lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;@&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;filter&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;filterFn&amp;#34;&lt;/span&gt;
+            &lt;span style=&quot;color:#a6e22e&quot;&gt;:model-value&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;modelValue&amp;#34;&lt;/span&gt;
+            &lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;@&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;update:model-value&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;value =&amp;gt; $emit(&amp;#39;update:modelValue&amp;#39;, value)&amp;#34;&lt;/span&gt; &amp;gt;
+    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-slot:option&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{ itemProps, opt, selected, toggleOption }&amp;#34;&lt;/span&gt;&amp;gt;
+      &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-tree&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:nodes&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;[opt]&amp;#34;&lt;/span&gt;
+              &lt;span style=&quot;color:#a6e22e&quot;&gt;node-key&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;
+              &lt;span style=&quot;color:#a6e22e&quot;&gt;label-key&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;
+              &lt;span style=&quot;color:#a6e22e&quot;&gt;:tick-strategy&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;multiple?&amp;#39;strict&amp;#39;:&amp;#39;none&amp;#39;&amp;#34;&lt;/span&gt;
+              &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model:ticked&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.ticked&amp;#34;&lt;/span&gt;
+              &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model:selected&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.selected&amp;#34;&lt;/span&gt;
+              &lt;span style=&quot;color:#a6e22e&quot;&gt;v-if&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;opt.parent_id == 0&amp;#34;&lt;/span&gt;&amp;gt;
+        &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-slot:default-header&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;prop&amp;#34;&lt;/span&gt;&amp;gt;
+          &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;items-center&amp;#34;&lt;/span&gt;&amp;gt;
+            {{ prop.node.desc }}({{ prop.node.name }})
+          &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt;&amp;gt;
+        &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;
+      &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-tree&lt;/span&gt;&amp;gt;
+    &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;
+  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-select&lt;/span&gt;&amp;gt;
+&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;&lt;/pre&gt;
+&lt;p&gt;
+   这里利用 &lt;code&gt;slot&lt;/code&gt; 方式添加 &lt;code&gt;q-tree&lt;/code&gt; 组件, 由于只能传递单个选项(&lt;code&gt;option&lt;/code&gt;), 所以在传递给 &lt;code&gt;q-tree&lt;/code&gt; 的参数 &lt;code&gt;nodes&lt;/code&gt; 需要修改成 &lt;code&gt;[opt]&lt;/code&gt;。
+&lt;/p&gt;
+
+&lt;p&gt;
+   而在 &lt;code&gt;q-tree&lt;/code&gt; 中，单选和多选同样有区别，单选所使用的参数为 &lt;code&gt;v-model:ticked&lt;/code&gt;, 点击选项即可选中，多选所使用的参数为 &lt;code&gt;v-model:selected&lt;/code&gt;, 配置为多选状态时每个树状列表选项前会添加一个 &lt;code&gt;checkbox&lt;/code&gt;，多选状态需要配置 &lt;code&gt;tick-strategy&lt;/code&gt; 参数
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;code&gt;strict&lt;/code&gt;: 父选项和子选项的选中状态相互独立
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;code&gt;leaf&lt;/code&gt;: 选中父选项同时选中父选项下的子选项
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;code&gt;none&lt;/code&gt;: 禁用多选
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-3&quot;&gt;组件选项&lt;/h2&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;props&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;defineProps&lt;/span&gt;({
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;multiple&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; {
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;type&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; Boolean,
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;default&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;false&lt;/span&gt;,
+    },
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;modelValue&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; {
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;default&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;null&lt;/span&gt;,
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;required&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;,
+    },
+})
+&lt;/pre&gt;
+&lt;p&gt;
+   父组件可以使用
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;role-select&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;multiple&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;form.roles&amp;#34;&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;role-select&lt;/span&gt;&amp;gt;&lt;/pre&gt;
+
+&lt;p&gt;
+   同时，为了区分多选和单选, 需要将没有用到的选项设置为 &lt;code&gt;undefined&lt;/code&gt;, 同时监听选项的修改
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;emit&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;defineEmits&lt;/span&gt;([&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;update:model-value&amp;#39;&lt;/span&gt;])
+&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; { &lt;span style=&quot;color:#a6e22e&quot;&gt;modelValue&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;multiple&lt;/span&gt; } &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;toRefs&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;props&lt;/span&gt;)
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;multiple&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;) {
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;selected&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;undefined&lt;/span&gt;
+
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;watch&lt;/span&gt;(() =&amp;gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;ticked&lt;/span&gt;, (&lt;span style=&quot;color:#a6e22e&quot;&gt;val&lt;/span&gt;) =&amp;gt; {
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;emit&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;update:model-value&amp;#39;&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;val&lt;/span&gt;)
+    })
+
+} &lt;span style=&quot;color:#66d9ef&quot;&gt;else&lt;/span&gt; {
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;ticked&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;undefined&lt;/span&gt;
+
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;watch&lt;/span&gt;(() =&amp;gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;selected&lt;/span&gt;, (&lt;span style=&quot;color:#a6e22e&quot;&gt;val&lt;/span&gt;) =&amp;gt; {
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;emit&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;update:model-value&amp;#39;&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;val&lt;/span&gt;)
+    })
+}
+&lt;/pre&gt;
+
+&lt;p&gt;
+   为了让子选项在选中状态时也能够显示 &lt;code&gt;.name&lt;/code&gt;，而不是 &lt;code&gt;.id&lt;/code&gt;，需要遍历所有选项，将其合成一个列表，在 &lt;code&gt;q-tree&lt;/code&gt; 组件中通过判断 &lt;code&gt;row.parent_id&lt;/code&gt; 只显示父组件, 这里也可以通过定义 &lt;code&gt;q-select&lt;/code&gt; 的 &lt;code&gt;selected&lt;/code&gt; 或者是 &lt;code&gt;selected-item&lt;/code&gt; 插槽来显示正确的名称
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;) {
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#f92672&quot;&gt;!&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;) {
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; []
+    }
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;let&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; []
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;forEach&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt; =&amp;gt; {
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;push&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;)
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;children&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;children&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;length&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;) {
+            &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;concat&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;children&lt;/span&gt;))
+        }
+    })
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;
+}
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;computed&lt;/span&gt;(() =&amp;gt; {
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;)
+})
+&lt;/pre&gt;
+
+&lt;p&gt;
+   最后就是从后端获取列表数据
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;ref&lt;/span&gt;({
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; [],
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;ticked&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; [],
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; [],
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;selected&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; [],
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;loading&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;false&lt;/span&gt;,
+})
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;handleFetch&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;props&lt;/span&gt;) =&amp;gt; {
+    ...
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;loading&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;api&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;fetchList&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;query&lt;/span&gt;).&lt;span style=&quot;color:#a6e22e&quot;&gt;then&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;response&lt;/span&gt; =&amp;gt; {
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;response&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;data&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;
+    }).&lt;span style=&quot;color:#66d9ef&quot;&gt;finally&lt;/span&gt;(() =&amp;gt; {
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;loading&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;false&lt;/span&gt;
+    })
+}
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;filterFn&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;val&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;update&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;abort&lt;/span&gt;) =&amp;gt; {
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;length&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;) {
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;update&lt;/span&gt;()
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt;
+    }
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;update&lt;/span&gt;(() =&amp;gt; {&lt;span style=&quot;color:#a6e22e&quot;&gt;handleFetch&lt;/span&gt;()})
+}
+&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-4&quot;&gt;最终实现&lt;/h2&gt;
+   &lt;div class=&quot;row&quot;&gt;
+     &lt;div class=&quot;col-sm-6&quot;&gt;
+       
+&lt;a href=&quot;https://s.libforest.com/images/2023/05/quasar-tree-select.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/05/quasar-tree-select.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     &lt;/div&gt;
+
+     &lt;div class=&quot;col-sm-6&quot;&gt;
+       
+&lt;a href=&quot;https://s.libforest.com/images/2023/05/quasar-tree-select-multiple.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/05/quasar-tree-select-multiple.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     &lt;/div&gt;
+   &lt;/div&gt;</content>
+        <category term="Life/Coding"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>基于Quasar实现一个树状表格TableTree</title>
       <link href="" rel="alternate"></link>
       <published>Sat, 29 Apr 2023 00:03:40 +0000</published>
-      <updated>Sat, 29 Apr 2023 01:18:34 +0000</updated>
+      <updated>Tue, 09 May 2023 23:49:45 +0000</updated>
       <author>
         <name>honmaple</name>
       </author>
@@ -95,8 +312,8 @@
          &lt;span style=&quot;color:#a6e22e&quot;&gt;row-key&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;
          &lt;span style=&quot;color:#a6e22e&quot;&gt;separator&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;cell&amp;#34;&lt;/span&gt;
          &lt;span style=&quot;color:#a6e22e&quot;&gt;selection&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;multiple&amp;#34;&lt;/span&gt;
-       &lt;span style=&quot;color:#a6e22e&quot;&gt;-&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:rows&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.list&amp;#34;&lt;/span&gt;
-       &lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;+&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:rows&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;expandRows&amp;#34;&lt;/span&gt;
+         &lt;span style=&quot;color:#a6e22e&quot;&gt;-&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:rows&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.list&amp;#34;&lt;/span&gt;
+         &lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;+&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:rows&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;expandRows&amp;#34;&lt;/span&gt;
          &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model:expanded&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.expanded&amp;#34;&lt;/span&gt;
          &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model:selected&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.selected&amp;#34;&lt;/span&gt;
          &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model:pagination&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.pagination&amp;#34;&lt;/span&gt;&amp;gt;
@@ -167,15 +384,55 @@
 &lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;
- 缩进：目前缩进确实有些问题，其中一个解决办法是原始数据会带有 &lt;code&gt;parent_id&lt;/code&gt; 字段，可以通过判断 &lt;code&gt;parent_id&lt;/code&gt; 大于0时增加缩进
+ 缩进：&lt;del&gt;目前缩进确实有些问题，其中一个解决办法是原始数据会带有 &lt;code&gt;parent_id&lt;/code&gt; 字段，可以通过判断 &lt;code&gt;parent_id&lt;/code&gt; 大于0时增加缩进&lt;/del&gt;
 &lt;/p&gt;
+
+&lt;p&gt;
+     缩进的计算可以通过&lt;code&gt;makeRows&lt;/code&gt;函数在遍历时添加每行数据的层级
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;indent&lt;/span&gt;) {
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#f92672&quot;&gt;!&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;) {
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; []
+    }
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;let&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; []
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;forEach&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt; =&amp;gt; {
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;_indent&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;indent&lt;/span&gt;
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;push&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;)
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;indexOf&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;id&lt;/span&gt;) &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;-&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;) {
+            &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;concat&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;children&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;indent&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;+&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;))
+        }
+    })
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;
+}
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;export&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;default&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;useTable&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;) {
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;expandRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;computed&lt;/span&gt;(() =&amp;gt; {
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;, &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;)
+    })
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; {
+        &lt;span style=&quot;color:#a6e22e&quot;&gt;expandRows&lt;/span&gt;,
+    }
+}
+&lt;/pre&gt;
+&lt;p&gt;
+     然后在表格中添加对应的偏移即可, 需要注意的是表格对齐方向需要设置为 &lt;code&gt;left&lt;/code&gt; (&lt;b&gt;默认值&lt;/b&gt;)
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-slot:body-cell-name&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props&amp;#34;&lt;/span&gt;&amp;gt;
+  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:props&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:style&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#39;padding-left:&amp;#39; + ((props.row._indent || 0) + 1) + &amp;#39;rem&amp;#39;&amp;#34;&lt;/span&gt;&amp;gt;
+    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-btn&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;flat&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;round&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;dense&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;size&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;xs&amp;#34;&lt;/span&gt;
+           &lt;span style=&quot;color:#a6e22e&quot;&gt;:icon&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props.expand ? &amp;#39;remove&amp;#39; : &amp;#39;add&amp;#39;&amp;#34;&lt;/span&gt;
+           &lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;@&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;click&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props.expand = !props.expand&amp;#34;&lt;/span&gt;
+           &lt;span style=&quot;color:#a6e22e&quot;&gt;v-if&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props.row.children &amp;amp;&amp;amp; props.row.children.length &amp;gt; 0&amp;#34;&lt;/span&gt; /&amp;gt;
+    {{ props.row.name }}
+  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;
+&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;&lt;/pre&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&quot;heading-4&quot;&gt;最终实现&lt;/h2&gt;
 &lt;p&gt;
    
-&lt;a href=&quot;https://s.libforest.com/images/2023/04/quasar-table-tree.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/04/quasar-table-tree.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;a href=&quot;https://s.libforest.com/images/2023/04/quasar-tree-table.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/04/quasar-tree-table.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
 &lt;/a&gt;
 &lt;/p&gt;</content>
         <category term="Life/Coding"></category>
@@ -1841,33 +2098,5 @@ install: 553 (30 days), 1,329 (90 days), 2,166 (365 days)
 
 </content>
         <category term="Life"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>曾经</title>
-      <link href="" rel="alternate"></link>
-      <published>Mon, 20 May 2019 00:31:18 +0000</published>
-      <updated>Mon, 29 Mar 2021 10:03:56 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2019/05/曾经.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2019/05/曾经.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;div style=&quot;text-align:center;&quot;&gt;
-&lt;p&gt;
-曾经&lt;br/&gt;她问我&lt;br/&gt;谁考了全校第二&lt;br/&gt;&lt;br/&gt;我笑着&lt;br/&gt;指了指旁边&lt;br/&gt;是他&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;听说他们走得很近&lt;br/&gt;&lt;br/&gt;明明考了全校第二的人是我&lt;br/&gt;&lt;br/&gt;曾经&lt;br/&gt;她问我&lt;br/&gt;谁是运动会上得分最多的人&lt;br/&gt;&lt;br/&gt;我笑着&lt;br/&gt;指了指旁边&lt;br/&gt;是他&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;听说他们在一起了&lt;br/&gt;&lt;br/&gt;明明得分最多的人是我&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;她不再问我了&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;我没有她了
-&lt;/p&gt;
-&lt;/div&gt;
-&lt;/blockquote&gt;</summary>
-      <content type="html">
-&lt;blockquote&gt;
-&lt;div style=&quot;text-align:center;&quot;&gt;
-&lt;p&gt;
-曾经&lt;br/&gt;她问我&lt;br/&gt;谁考了全校第二&lt;br/&gt;&lt;br/&gt;我笑着&lt;br/&gt;指了指旁边&lt;br/&gt;是他&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;听说他们走得很近&lt;br/&gt;&lt;br/&gt;明明考了全校第二的人是我&lt;br/&gt;&lt;br/&gt;曾经&lt;br/&gt;她问我&lt;br/&gt;谁是运动会上得分最多的人&lt;br/&gt;&lt;br/&gt;我笑着&lt;br/&gt;指了指旁边&lt;br/&gt;是他&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;听说他们在一起了&lt;br/&gt;&lt;br/&gt;明明得分最多的人是我&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;她不再问我了&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;我没有她了
-&lt;/p&gt;
-&lt;/div&gt;
-&lt;/blockquote&gt;</content>
-        <category term="Life/Love"></category>
     </entry>
 </feed>

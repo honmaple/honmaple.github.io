@@ -89,9 +89,236 @@
         <article>
           <div class="entry-header">
             <h1 class="entry-title">
+              <a href="https://honmaple.me/articles/2023/05/基于Quasar实现一个树状选择器TreeSelect.html" rel="bookmark" title="Permalink to 基于Quasar实现一个树状选择器TreeSelect">基于Quasar实现一个树状选择器TreeSelect</a>
+            </h1><header class="entry-info">
+  <span title="Updated at 2023-05-12">
+    <i class="fa fa-calendar-o"></i>
+    2023-05-09 Tue
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By
+        <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-folder-o"></i>
+      In
+        <a href="https://honmaple.me/categories/life/coding/index.html">Life/Coding</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/coding/index.html">coding</a>
+        <a href="https://honmaple.me/tags/quasar/index.html">quasar</a>
+    </span>
+</header>
+
+          </div>
+          <hr class="entry-hr" />
+            <div class="entry-content entry-summary">
+              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">源数据结构</a></li>
+<li><a href="#heading-2">组件模版</a></li>
+<li><a href="#heading-3">组件选项</a></li>
+<li><a href="#heading-4">最终实现</a></li>
+</ul></div></div>
+
+<blockquote>
+<p>
+<code>Quasar</code> 默认没有树状选择器的支持，而在 <code>Vue</code> 中通常会使用一个现成的<a href="https://github.com/riophae/vue-treeselect">vue-treeselect</a>, 这是一个非常不错的 <code>Select</code> 组件, 此次不适用该组件，而是利用 <code>Quasar</code> 中的 <code>q-select</code> 和 <code>q-tree</code> 结合，实现一个类似的树状选择器
+</p>
+</blockquote>
+
+<h2 id="heading-1">源数据结构</h2>
+<pre style="color:#f8f8f2;background-color:#272822">{
+    <span style="color:#f92672">&#34;id&#34;</span>: <span style="color:#ae81ff">1</span>,
+    <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;admin&#34;</span>,
+    <span style="color:#f92672">&#34;desc&#34;</span>: <span style="color:#e6db74">&#34;管理员&#34;</span>,
+    <span style="color:#f92672">&#34;children&#34;</span>: [{
+        <span style="color:#f92672">&#34;id&#34;</span>: <span style="color:#ae81ff">6</span>,
+        <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;superadmin&#34;</span>,
+        <span style="color:#f92672">&#34;desc&#34;</span>: <span style="color:#e6db74">&#34;超级管理员&#34;</span>,
+        <span style="color:#f92672">&#34;children&#34;</span>: [{
+            <span style="color:#f92672">&#34;id&#34;</span>: <span style="color:#ae81ff">10</span>,
+            <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;vvvvv&#34;</span>,
+            <span style="color:#f92672">&#34;desc&#34;</span>: <span style="color:#e6db74">&#34;dddd&#34;</span>,
+        }]
+    }]
+}</pre>
+
+<h2 id="heading-2">组件模版</h2>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">template</span>&gt;
+  &lt;<span style="color:#f92672">q-select</span> <span style="color:#a6e22e">dense</span> <span style="color:#a6e22e">outlined</span>
+            <span style="color:#a6e22e">emit-value</span> <span style="color:#a6e22e">map-options</span>
+            <span style="color:#a6e22e">option-value</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;id&#34;</span>
+            <span style="color:#a6e22e">option-label</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;name&#34;</span>
+            <span style="color:#a6e22e">label</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;角色列表&#34;</span>
+            <span style="color:#a6e22e">:options</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;list&#34;</span>
+            <span style="color:#a6e22e">:loading</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.loading&#34;</span>
+            <span style="color:#a6e22e">:multiple</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;multiple&#34;</span>
+            <span style="color:#a6e22e">:use-chips</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;multiple&#34;</span>
+            <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">filter</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;filterFn&#34;</span>
+            <span style="color:#a6e22e">:model-value</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;modelValue&#34;</span>
+            <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">update:model-value</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;value =&gt; $emit(&#39;update:modelValue&#39;, value)&#34;</span> &gt;
+    &lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:option</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{ itemProps, opt, selected, toggleOption }&#34;</span>&gt;
+      &lt;<span style="color:#f92672">q-tree</span> <span style="color:#a6e22e">:nodes</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;[opt]&#34;</span>
+              <span style="color:#a6e22e">node-key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;id&#34;</span>
+              <span style="color:#a6e22e">label-key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;name&#34;</span>
+              <span style="color:#a6e22e">:tick-strategy</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;multiple?&#39;strict&#39;:&#39;none&#39;&#34;</span>
+              <span style="color:#a6e22e">v-model:ticked</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.ticked&#34;</span>
+              <span style="color:#a6e22e">v-model:selected</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.selected&#34;</span>
+              <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;opt.parent_id == 0&#34;</span>&gt;
+        &lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:default-header</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;prop&#34;</span>&gt;
+          &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;items-center&#34;</span>&gt;
+            {{ prop.node.desc }}({{ prop.node.name }})
+          &lt;/<span style="color:#f92672">div</span>&gt;
+        &lt;/<span style="color:#f92672">template</span>&gt;
+      &lt;/<span style="color:#f92672">q-tree</span>&gt;
+    &lt;/<span style="color:#f92672">template</span>&gt;
+  &lt;/<span style="color:#f92672">q-select</span>&gt;
+&lt;/<span style="color:#f92672">template</span>&gt;</pre>
+<p>
+   这里利用 <code>slot</code> 方式添加 <code>q-tree</code> 组件, 由于只能传递单个选项(<code>option</code>), 所以在传递给 <code>q-tree</code> 的参数 <code>nodes</code> 需要修改成 <code>[opt]</code>。
+</p>
+
+<p>
+   而在 <code>q-tree</code> 中，单选和多选同样有区别，单选所使用的参数为 <code>v-model:ticked</code>, 点击选项即可选中，多选所使用的参数为 <code>v-model:selected</code>, 配置为多选状态时每个树状列表选项前会添加一个 <code>checkbox</code>，多选状态需要配置 <code>tick-strategy</code> 参数
+</p>
+<ul>
+<li>
+<p>
+ <code>strict</code>: 父选项和子选项的选中状态相互独立
+</p></li>
+<li>
+<p>
+ <code>leaf</code>: 选中父选项同时选中父选项下的子选项
+</p></li>
+<li>
+<p>
+ <code>none</code>: 禁用多选
+</p>
+</li>
+</ul>
+<h2 id="heading-3">组件选项</h2>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">props</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">defineProps</span>({
+    <span style="color:#a6e22e">multiple</span><span style="color:#f92672">:</span> {
+        <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> Boolean,
+        <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>,
+    },
+    <span style="color:#a6e22e">modelValue</span><span style="color:#f92672">:</span> {
+        <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">null</span>,
+        <span style="color:#a6e22e">required</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>,
+    },
+})
+</pre>
+<p>
+   父组件可以使用
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">role-select</span> <span style="color:#a6e22e">multiple</span> <span style="color:#a6e22e">v-model</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;form.roles&#34;</span>&gt;&lt;/<span style="color:#f92672">role-select</span>&gt;</pre>
+
+<p>
+   同时，为了区分多选和单选, 需要将没有用到的选项设置为 <code>undefined</code>, 同时监听选项的修改
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">emit</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">defineEmits</span>([<span style="color:#e6db74">&#39;update:model-value&#39;</span>])
+<span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">modelValue</span>, <span style="color:#a6e22e">multiple</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">toRefs</span>(<span style="color:#a6e22e">props</span>)
+
+<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">multiple</span>.<span style="color:#a6e22e">value</span>) {
+    <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">selected</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">undefined</span>
+
+    <span style="color:#a6e22e">watch</span>(() =&gt; <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">ticked</span>, (<span style="color:#a6e22e">val</span>) =&gt; {
+        <span style="color:#a6e22e">emit</span>(<span style="color:#e6db74">&#39;update:model-value&#39;</span>, <span style="color:#a6e22e">val</span>)
+    })
+
+} <span style="color:#66d9ef">else</span> {
+    <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">ticked</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">undefined</span>
+
+    <span style="color:#a6e22e">watch</span>(() =&gt; <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">selected</span>, (<span style="color:#a6e22e">val</span>) =&gt; {
+        <span style="color:#a6e22e">emit</span>(<span style="color:#e6db74">&#39;update:model-value&#39;</span>, <span style="color:#a6e22e">val</span>)
+    })
+}
+</pre>
+
+<p>
+   为了让子选项在选中状态时也能够显示 <code>.name</code>，而不是 <code>.id</code>，需要遍历所有选项，将其合成一个列表，在 <code>q-tree</code> 组件中通过判断 <code>row.parent_id</code> 只显示父组件, 这里也可以通过定义 <code>q-select</code> 的 <code>selected</code> 或者是 <code>selected-item</code> 插槽来显示正确的名称
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">rows</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">rows</span>) {
+        <span style="color:#66d9ef">return</span> []
+    }
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> []
+    <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">row</span> =&gt; {
+        <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">row</span>)
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">children</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">children</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+            <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">concat</span>(<span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">children</span>))
+        }
+    })
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">newRows</span>
+}
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">list</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">computed</span>(() =&gt; {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span>)
+})
+</pre>
+
+<p>
+   最后就是从后端获取列表数据
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">table</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">ref</span>({
+    <span style="color:#a6e22e">list</span><span style="color:#f92672">:</span> [],
+    <span style="color:#a6e22e">ticked</span><span style="color:#f92672">:</span> [],
+    <span style="color:#a6e22e">expanded</span><span style="color:#f92672">:</span> [],
+    <span style="color:#a6e22e">selected</span><span style="color:#f92672">:</span> [],
+    <span style="color:#a6e22e">loading</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>,
+})
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handleFetch</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">props</span>) =&gt; {
+    ...
+    <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">loading</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">api</span>.<span style="color:#a6e22e">fetchList</span>(<span style="color:#a6e22e">query</span>).<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">response</span> =&gt; {
+        <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">list</span>
+    }).<span style="color:#66d9ef">finally</span>(() =&gt; {
+        <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">loading</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+    })
+}
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">filterFn</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">val</span>, <span style="color:#a6e22e">update</span>, <span style="color:#a6e22e">abort</span>) =&gt; {
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+        <span style="color:#a6e22e">update</span>()
+        <span style="color:#66d9ef">return</span>
+    }
+    <span style="color:#a6e22e">update</span>(() =&gt; {<span style="color:#a6e22e">handleFetch</span>()})
+}
+</pre>
+
+<h2 id="heading-4">最终实现</h2>
+   <div class="row">
+     <div class="col-sm-6">
+       
+<a href="https://s.libforest.com/images/2023/05/quasar-tree-select.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/05/quasar-tree-select.png-thumb" class="lazyload" />
+</a>
+     </div>
+
+     <div class="col-sm-6">
+       
+<a href="https://s.libforest.com/images/2023/05/quasar-tree-select-multiple.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/05/quasar-tree-select-multiple.png-thumb" class="lazyload" />
+</a>
+     </div>
+   </div>
+            </div>
+        </article>
+      </li>
+      <li>
+        <article>
+          <div class="entry-header">
+            <h1 class="entry-title">
               <a href="https://honmaple.me/articles/2023/04/基于Quasar实现一个树状表格TableTree.html" rel="bookmark" title="Permalink to 基于Quasar实现一个树状表格TableTree">基于Quasar实现一个树状表格TableTree</a>
             </h1><header class="entry-info">
-  <span title="Updated at 2023-04-29">
+  <span title="Updated at 2023-05-09">
     <i class="fa fa-calendar-o"></i>
     2023-04-29 Sat
   </span>
@@ -119,13 +346,7 @@
           </div>
           <hr class="entry-hr" />
             <div class="entry-content entry-summary">
-              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">前言</a></li>
-<li><a href="#heading-2">实现一(废弃)</a></li>
-<li><a href="#heading-3">实现二</a></li>
-<li><a href="#heading-4">最终实现</a></li>
-</ul></div></div>
-
+              
 <blockquote>
 <p>
 <a href="https://quasar.dev/">Quasar</a> 是一个基于 <code>Vue3</code> 的前端UI框架，使用的是 <b>Material Design</b>, 对于国内而言(包括我)觉得确实不太好看，但因为之前使用的是 <code>Element-UI</code>，大概是由于审美疲劳，此次升级我的后台管理UI，没有继续使用 <code>Vue3</code> 版本的 <code>Element-Plus</code>。 不久前我也是基于 <code>Quasar</code> 开发了一个 Memos 客户端, 感觉效果还不错
@@ -134,142 +355,10 @@
 
 <h2 id="heading-1">前言</h2>
 <p>
-   <code>Quasar</code> 默认没有树状表格的支持，但我觉得树状表格其实还挺重要的，尤其是在显示一些树状的数据，比如一个部门列表(打比方), 树状表格能够清晰的表明各部门之间的上下关系，目前我看实现树状表格的示例要么是基于 <code>qhierarchy</code> (使用 <code>q-markup-table</code> 实现，定制太困难), 要么就是实现方式太复杂 <a href="https://forum.quasar-framework.org/topic/2428/tree-table-example">tree-table-example</a>, 所以我研究了一下，发现其实还挺简单的，故此记录
-</p>
-
-<h2 id="heading-2">实现一(废弃)</h2>
-<p>
-   虽然 <code>Quasar</code> 没有树状表格的组件, 但 <code>q-table</code> 默认是支持 <code>Expanding rows</code> 的，所以我一开始的想法是使用这个功能实现一个递归的组件, 就像这样
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">template</span>&gt;
-  &lt;<span style="color:#f92672">q-tr</span> <span style="color:#a6e22e">:key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;row.id&#34;</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
-    &lt;<span style="color:#f92672">slot</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;row&#34;</span> <span style="color:#a6e22e">:status</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;status&#34;</span> <span style="color:#a6e22e">:indent</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indent&#34;</span> <span style="color:#a6e22e">:indentStyle</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indentStyle(indent)&#34;</span>&gt;&lt;/<span style="color:#f92672">slot</span>&gt;
-  &lt;/<span style="color:#f92672">q-tr</span>&gt;
-  &lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">:key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;index&#34;</span> <span style="color:#a6e22e">v-for</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;(child, index) in row.children&#34;</span> <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;status.expand&#34;</span>&gt;
-    &lt;<span style="color:#f92672">table-tree</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span> <span style="color:#a6e22e">:indent</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indent + 1&#34;</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;child&#34;</span> <span style="color:#a6e22e">v-slot</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope&#34;</span>&gt;
-      &lt;<span style="color:#f92672">slot</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.row&#34;</span> <span style="color:#a6e22e">:status</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status&#34;</span> <span style="color:#a6e22e">:indent</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.indent&#34;</span> <span style="color:#a6e22e">:indentStyle</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indentStyle(scope.indent)&#34;</span>&gt;&lt;/<span style="color:#f92672">slot</span>&gt;
-    &lt;/<span style="color:#f92672">table-tree</span>&gt;
-  &lt;/<span style="color:#f92672">template</span>&gt;
-&lt;/<span style="color:#f92672">template</span>&gt;</pre>
-<p>
-   而在父组件中调用只需要把原来的 <code>props</code> 改成 <code>scope</code>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:body</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
-  &lt;<span style="color:#f92672">table-tree</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.row&#34;</span> <span style="color:#a6e22e">v-slot</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope&#34;</span>&gt;
-    &lt;<span style="color:#f92672">q-td</span> <span style="color:#a6e22e">auto-width</span>&gt;
-      &lt;<span style="color:#f92672">q-checkbox</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;sm&#34;</span> <span style="color:#a6e22e">v-model</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status.selected&#34;</span> /&gt;
-    &lt;/<span style="color:#f92672">q-td</span>&gt;
-    &lt;<span style="color:#f92672">q-td</span>&gt;
-      &lt;<span style="color:#f92672">q-btn</span> <span style="color:#a6e22e">flat</span> <span style="color:#a6e22e">round</span> <span style="color:#a6e22e">dense</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xs&#34;</span>
-             <span style="color:#a6e22e">:icon</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status.expand ? &#39;remove&#39; : &#39;add&#39;&#34;</span>
-             <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">click</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status.expand = !scope.status.expand&#34;</span>
-             <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.row.children &amp;&amp; scope.row.children.length &gt; 0&#34;</span> /&gt;
-      {{ scope.row.name }}
-    &lt;/<span style="color:#f92672">q-td</span>&gt;
-    &lt;<span style="color:#f92672">q-td</span>&gt;{{ scope.row.desc }}&lt;/<span style="color:#f92672">q-td</span>&gt;
-  &lt;/<span style="color:#f92672">table-tree</span>&gt;
-&lt;/<span style="color:#f92672">template</span>&gt;</pre>
-<p>
-   但是后面发现表格在多选状态下无法和原有的表格选择进行联动，只能自己实现选中和取消选中的方法，虽然也能实现，当很麻烦，只好另寻其它方式
-</p>
-
-<h2 id="heading-3">实现二</h2>
-<p>
-   后面研究了一下 <b>Fernando2684</b> 的实现方式, 虽然他的方式同样复杂，当实现原理其实很简单, 那就是修改原始数据，比如第二行需要进行展开，那我就在原来第二行的数据下把第二行的子数据追加上去，取消展开就把子数据删除，恢复原来的数据。有了这个原理后就好办了，我们可以利用 <code>Expanding rows</code> 时用到的 <code>props.expand</code> 参数来控制是否展开子数据, 然后利用计算属性动态的计算展开后的数据
-</p>
-
-<ul>
-<li>
-<p>
- 表格模版
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">q-table</span> <span style="color:#a6e22e">flat</span> <span style="color:#a6e22e">bordered</span>
-         <span style="color:#a6e22e">row-key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;id&#34;</span>
-         <span style="color:#a6e22e">separator</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;cell&#34;</span>
-         <span style="color:#a6e22e">selection</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;multiple&#34;</span>
-       <span style="color:#a6e22e">-</span> <span style="color:#a6e22e">:rows</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.list&#34;</span>
-       <span style="color:#960050;background-color:#1e0010">+</span> <span style="color:#a6e22e">:rows</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;expandRows&#34;</span>
-         <span style="color:#a6e22e">v-model:expanded</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.expanded&#34;</span>
-         <span style="color:#a6e22e">v-model:selected</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.selected&#34;</span>
-         <span style="color:#a6e22e">v-model:pagination</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.pagination&#34;</span>&gt;
-  &lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:body</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
-    &lt;<span style="color:#f92672">q-tr</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
-      &lt;<span style="color:#f92672">q-td</span> <span style="color:#a6e22e">auto-width</span>&gt;
-        &lt;<span style="color:#f92672">q-checkbox</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;sm&#34;</span> <span style="color:#a6e22e">v-model</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.selected&#34;</span> /&gt;
-      &lt;/<span style="color:#f92672">q-td</span>&gt;
-      &lt;<span style="color:#f92672">q-td</span>&gt;
-        &lt;<span style="color:#f92672">q-btn</span> <span style="color:#a6e22e">flat</span> <span style="color:#a6e22e">round</span> <span style="color:#a6e22e">dense</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xs&#34;</span>
-               <span style="color:#a6e22e">:icon</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.expand ? &#39;remove&#39; : &#39;add&#39;&#34;</span>
-               <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">click</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.expand = !props.expand&#34;</span>
-               <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.row.children &amp;&amp; props.row.children.length &gt; 0&#34;</span> /&gt;
-        {{ props.row.name }}
-      &lt;/<span style="color:#f92672">q-td</span>&gt;
-      &lt;<span style="color:#f92672">q-td</span>&gt;{{ props.row.desc }}&lt;/<span style="color:#f92672">q-td</span>&gt;
-    &lt;/<span style="color:#f92672">q-tr</span>&gt;
-  &lt;/<span style="color:#f92672">template</span>&gt;
-&lt;/<span style="color:#f92672">q-table</span>&gt;</pre></li>
-<li>
-<p>
- 表格数据
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">table</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">ref</span>({
-    <span style="color:#a6e22e">list</span><span style="color:#f92672">:</span> [],
-    <span style="color:#a6e22e">expanded</span><span style="color:#f92672">:</span> [],
-    <span style="color:#a6e22e">selected</span><span style="color:#f92672">:</span> [],
-    <span style="color:#a6e22e">loading</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>,
-    <span style="color:#a6e22e">pagination</span><span style="color:#f92672">:</span> {
-        <span style="color:#a6e22e">page</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>,
-        <span style="color:#a6e22e">sortBy</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;desc&#39;</span>,
-        <span style="color:#a6e22e">descending</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>,
-        <span style="color:#a6e22e">rowsPerPage</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
-        <span style="color:#a6e22e">rowsNumber</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
-    }
-})
-
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">expandRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">computed</span>(() =&gt; {
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span>, <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">expanded</span>)
-})
-</pre>
-<p>
-     这里提一嘴，<code>pagination.rowsPerPage</code> 默认最好设置为0(不限制每页的数量, 但会由由后端控制返回的行数), 否则展开子数据后的数据会被放到第二页, 影响数据查看
-</p></li>
-<li>
-<p>
- 动态计算展开后的数据
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">rows</span>, <span style="color:#a6e22e">expanded</span>) {
-    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">rows</span>) {
-        <span style="color:#66d9ef">return</span> []
-    }
-    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">expanded</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">rows</span>
-    }
-    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> []
-    <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">row</span> =&gt; {
-        <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">row</span>)
-        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">expanded</span>.<span style="color:#a6e22e">indexOf</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">id</span>) <span style="color:#f92672">&gt;</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) {
-            <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">concat</span>(<span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">children</span>, <span style="color:#a6e22e">expanded</span>))
-        }
-    })
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">newRows</span>
-}
-</pre>
-<p>
-     注意，这里因为要递归计算多级子目录，所以不能直接在 <code>setup</code> 上直接用 <code>const</code> 定义
-</p></li>
-<li>
-<p>
- 缩进：目前缩进确实有些问题，其中一个解决办法是原始数据会带有 <code>parent_id</code> 字段，可以通过判断 <code>parent_id</code> 大于0时增加缩进
-</p>
-</li>
-</ul>
-<h2 id="heading-4">最终实现</h2>
-<p>
-   
-<a href="https://s.libforest.com/images/2023/04/quasar-table-tree.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/04/quasar-table-tree.png-thumb" class="lazyload" />
-</a>
-</p>
+   <code>Quasar</code> 默认没有树状表格的支持，但我觉得树状表格其实还挺重要的，尤其是在显示一些树状的数据，比如一个部门列表(打比方), 树状表格能够清晰的表明各部门之间的上下关系，目前我看实现树状表格的示例要么是基于 <code>qhierarchy</code> (使用 <code>q-markup-table</code> 实现，定制太困难), 要么就是实现方式太复杂 <a href="https://forum.quasar-framework.org/topic/2428/tree-table-example">tree-table-example</a>, 所以我研究了一下，发现其实还挺简单的，故此记录...</p>
+            </div>
+            <div class="text-center">
+              <a class="btn entry-read-more" href="https://honmaple.me/articles/2023/04/基于Quasar实现一个树状表格TableTree.html">阅读全文 »</a>
             </div>
         </article>
       </li>
@@ -1444,61 +1533,6 @@ Installing...</pre>
             </div>
             <div class="text-center">
               <a class="btn entry-read-more" href="https://honmaple.me/articles/2021/03/pyenv笔记.html">阅读全文 »</a>
-            </div>
-        </article>
-      </li>
-      <li>
-        <article>
-          <div class="entry-header">
-            <h1 class="entry-title">
-              <a href="https://honmaple.me/articles/2020/09/golang笔记之struct转map性能比较.html" rel="bookmark" title="Permalink to golang笔记之struct转map性能比较">golang笔记之struct转map性能比较</a>
-            </h1><header class="entry-info">
-  <span title="Updated at 2023-04-09">
-    <i class="fa fa-calendar-o"></i>
-    2020-09-21 Mon
-  </span>
-    <span class="entry-info-sep hidden-xs">|</span>
-    <span class="hidden-xs">
-      <i class="fa fa-user-o"></i>
-      By
-        <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-    </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-folder-o"></i>
-      In
-        <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
-    </span>
-    <span class="entry-info-sep">|</span>
-    <span>
-      <i class="fa fa-bookmark-o"></i>
-      0f
-        <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-        <a href="https://honmaple.me/tags/golang/index.html">golang</a>
-    </span>
-</header>
-
-          </div>
-          <hr class="entry-hr" />
-            <div class="entry-content entry-summary">
-              
-<h2 id="heading-1">测试代码</h2>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
-
-<span style="color:#f92672">import</span> (
-    <span style="color:#e6db74">&#34;encoding/json&#34;</span>
-    <span style="color:#e6db74">&#34;reflect&#34;</span>
-    <span style="color:#e6db74">&#34;testing&#34;</span>
-)
-
-<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">A</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#a6e22e">A</span> <span style="color:#66d9ef">string</span>   <span style="color:#e6db74">`</span><span style="color:#e6db74">json:&#34;a&#34;</span><span style="color:#e6db74">`</span>
-    <span style="color:#a6e22e">B</span> <span style="color:#66d9ef">string</span>   <span style="color:#e6db74">`</span><span style="color:#e6db74">json:&#34;b&#34;</span><span style="color:#e6db74">`</span>
-    <span style="color:#a6e22e">C</span> <span style="color:#66d9ef">int</span>      <span style="color:#e6db74">`</span><span style="color:#e6db74">json:&#34;c&#34;</span><span style="color:#e6db74">`</span>
-    <span style="color:#a6e22e">D</span> <span style="color:#66d9ef">int</span>      <span style="color:#e6db74">`</span><span style="color:#e6db74">json:&#34;d&#34;</span><span style="color:#e6db74">`...</span></pre>
-            </div>
-            <div class="text-center">
-              <a class="btn entry-read-more" href="https://honmaple.me/articles/2020/09/golang笔记之struct转map性能比较.html">阅读全文 »</a>
             </div>
         </article>
       </li>

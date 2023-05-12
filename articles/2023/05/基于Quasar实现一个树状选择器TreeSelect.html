@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>基于Quasar实现一个树状选择器TreeSelect · 紅楓吟</title>
+      <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+    <script src="https://honmaple.me/static/js/theme.js"></script>
+  </head>
+  <body>
+    <div class="scrollbar"></div>
+
+    <div class="wrap">
+      <div class="main"><nav class="navbar navbar-default">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-header" aria-expanded="false">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="https://honmaple.me">
+      <img class="navbar-logo" src="https://s.libforest.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+  </div>
+  <div class="collapse navbar-collapse" id="nav-header">
+    <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="https://honmaple.me/categories/life/index.html">代码人生</a>
+              <ul class="dropdown-menu">
+                  <li><a href="https://honmaple.me/categories/life/coding/index.html">分享世界</a></li>
+                  <li><a href="https://honmaple.me/categories/life/love/index.html">你不懂我</a></li>
+                  <li><a href="https://honmaple.me/categories/life/recall/index.html">我不怪你</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="https://honmaple.me/categories/linux/index.html">字符艺术</a>
+              <ul class="dropdown-menu">
+                  <li><a href="https://honmaple.me/categories/linux/emacs/index.html">Emacs</a></li>
+              </ul>
+            </li>
+            <li><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+            <li><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+          <li class="dropdown">
+            <a href="https://honmaple.me/archives/index.html">文章归档</a>
+            <ul class="dropdown-menu">
+                <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+                <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+                <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+            </ul>
+          </li>
+          <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form action="https://honmaple.me/search.html" class="navbar-form navbar-right" style="margin-top:10px;">
+      <div class="form-group has-feedback">
+        <input class="form-control input-sm" id="search" name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''">
+        <i class="fa fa-search form-control-feedback"></i>
+      </div>
+    </form>
+  </div>
+</nav>
+
+  <article>
+    <div class="entry-header">
+      <h1 class="entry-title"><a href="https://honmaple.me/articles/2023/05/基于Quasar实现一个树状选择器TreeSelect.html">基于Quasar实现一个树状选择器TreeSelect</a></h1><header class="entry-info">
+  <span title="Updated at 2023-05-12">
+    <i class="fa fa-calendar-o"></i>
+    2023-05-09 Tue
+  </span>
+    <span class="entry-info-sep hidden-xs">|</span>
+    <span class="hidden-xs">
+      <i class="fa fa-user-o"></i>
+      By
+        <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-folder-o"></i>
+      In
+        <a href="https://honmaple.me/categories/life/coding/index.html">Life/Coding</a>
+    </span>
+    <span class="entry-info-sep">|</span>
+    <span>
+      <i class="fa fa-bookmark-o"></i>
+      0f
+        <a href="https://honmaple.me/tags/coding/index.html">coding</a>
+        <a href="https://honmaple.me/tags/quasar/index.html">quasar</a>
+    </span>
+</header>
+
+    </div>
+    <hr class="entry-hr" />
+    <div class="entry-content">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">源数据结构</a></li>
+<li><a href="#heading-2">组件模版</a></li>
+<li><a href="#heading-3">组件选项</a></li>
+<li><a href="#heading-4">最终实现</a></li>
+</ul></div></div>
+
+<blockquote>
+<p>
+<code>Quasar</code> 默认没有树状选择器的支持，而在 <code>Vue</code> 中通常会使用一个现成的<a href="https://github.com/riophae/vue-treeselect">vue-treeselect</a>, 这是一个非常不错的 <code>Select</code> 组件, 此次不适用该组件，而是利用 <code>Quasar</code> 中的 <code>q-select</code> 和 <code>q-tree</code> 结合，实现一个类似的树状选择器
+</p>
+</blockquote>
+
+<h2 id="heading-1">源数据结构</h2>
+<pre style="color:#f8f8f2;background-color:#272822">{
+    <span style="color:#f92672">&#34;id&#34;</span>: <span style="color:#ae81ff">1</span>,
+    <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;admin&#34;</span>,
+    <span style="color:#f92672">&#34;desc&#34;</span>: <span style="color:#e6db74">&#34;管理员&#34;</span>,
+    <span style="color:#f92672">&#34;children&#34;</span>: [{
+        <span style="color:#f92672">&#34;id&#34;</span>: <span style="color:#ae81ff">6</span>,
+        <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;superadmin&#34;</span>,
+        <span style="color:#f92672">&#34;desc&#34;</span>: <span style="color:#e6db74">&#34;超级管理员&#34;</span>,
+        <span style="color:#f92672">&#34;children&#34;</span>: [{
+            <span style="color:#f92672">&#34;id&#34;</span>: <span style="color:#ae81ff">10</span>,
+            <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;vvvvv&#34;</span>,
+            <span style="color:#f92672">&#34;desc&#34;</span>: <span style="color:#e6db74">&#34;dddd&#34;</span>,
+        }]
+    }]
+}</pre>
+
+<h2 id="heading-2">组件模版</h2>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">template</span>&gt;
+  &lt;<span style="color:#f92672">q-select</span> <span style="color:#a6e22e">dense</span> <span style="color:#a6e22e">outlined</span>
+            <span style="color:#a6e22e">emit-value</span> <span style="color:#a6e22e">map-options</span>
+            <span style="color:#a6e22e">option-value</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;id&#34;</span>
+            <span style="color:#a6e22e">option-label</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;name&#34;</span>
+            <span style="color:#a6e22e">label</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;角色列表&#34;</span>
+            <span style="color:#a6e22e">:options</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;list&#34;</span>
+            <span style="color:#a6e22e">:loading</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.loading&#34;</span>
+            <span style="color:#a6e22e">:multiple</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;multiple&#34;</span>
+            <span style="color:#a6e22e">:use-chips</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;multiple&#34;</span>
+            <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">filter</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;filterFn&#34;</span>
+            <span style="color:#a6e22e">:model-value</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;modelValue&#34;</span>
+            <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">update:model-value</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;value =&gt; $emit(&#39;update:modelValue&#39;, value)&#34;</span> &gt;
+    &lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:option</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{ itemProps, opt, selected, toggleOption }&#34;</span>&gt;
+      &lt;<span style="color:#f92672">q-tree</span> <span style="color:#a6e22e">:nodes</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;[opt]&#34;</span>
+              <span style="color:#a6e22e">node-key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;id&#34;</span>
+              <span style="color:#a6e22e">label-key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;name&#34;</span>
+              <span style="color:#a6e22e">:tick-strategy</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;multiple?&#39;strict&#39;:&#39;none&#39;&#34;</span>
+              <span style="color:#a6e22e">v-model:ticked</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.ticked&#34;</span>
+              <span style="color:#a6e22e">v-model:selected</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.selected&#34;</span>
+              <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;opt.parent_id == 0&#34;</span>&gt;
+        &lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:default-header</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;prop&#34;</span>&gt;
+          &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;items-center&#34;</span>&gt;
+            {{ prop.node.desc }}({{ prop.node.name }})
+          &lt;/<span style="color:#f92672">div</span>&gt;
+        &lt;/<span style="color:#f92672">template</span>&gt;
+      &lt;/<span style="color:#f92672">q-tree</span>&gt;
+    &lt;/<span style="color:#f92672">template</span>&gt;
+  &lt;/<span style="color:#f92672">q-select</span>&gt;
+&lt;/<span style="color:#f92672">template</span>&gt;</pre>
+<p>
+   这里利用 <code>slot</code> 方式添加 <code>q-tree</code> 组件, 由于只能传递单个选项(<code>option</code>), 所以在传递给 <code>q-tree</code> 的参数 <code>nodes</code> 需要修改成 <code>[opt]</code>。
+</p>
+
+<p>
+   而在 <code>q-tree</code> 中，单选和多选同样有区别，单选所使用的参数为 <code>v-model:ticked</code>, 点击选项即可选中，多选所使用的参数为 <code>v-model:selected</code>, 配置为多选状态时每个树状列表选项前会添加一个 <code>checkbox</code>，多选状态需要配置 <code>tick-strategy</code> 参数
+</p>
+<ul>
+<li>
+<p>
+ <code>strict</code>: 父选项和子选项的选中状态相互独立
+</p></li>
+<li>
+<p>
+ <code>leaf</code>: 选中父选项同时选中父选项下的子选项
+</p></li>
+<li>
+<p>
+ <code>none</code>: 禁用多选
+</p>
+</li>
+</ul>
+<h2 id="heading-3">组件选项</h2>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">props</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">defineProps</span>({
+    <span style="color:#a6e22e">multiple</span><span style="color:#f92672">:</span> {
+        <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> Boolean,
+        <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>,
+    },
+    <span style="color:#a6e22e">modelValue</span><span style="color:#f92672">:</span> {
+        <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">null</span>,
+        <span style="color:#a6e22e">required</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>,
+    },
+})
+</pre>
+<p>
+   父组件可以使用
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">role-select</span> <span style="color:#a6e22e">multiple</span> <span style="color:#a6e22e">v-model</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;form.roles&#34;</span>&gt;&lt;/<span style="color:#f92672">role-select</span>&gt;</pre>
+
+<p>
+   同时，为了区分多选和单选, 需要将没有用到的选项设置为 <code>undefined</code>, 同时监听选项的修改
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">emit</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">defineEmits</span>([<span style="color:#e6db74">&#39;update:model-value&#39;</span>])
+<span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">modelValue</span>, <span style="color:#a6e22e">multiple</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">toRefs</span>(<span style="color:#a6e22e">props</span>)
+
+<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">multiple</span>.<span style="color:#a6e22e">value</span>) {
+    <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">selected</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">undefined</span>
+
+    <span style="color:#a6e22e">watch</span>(() =&gt; <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">ticked</span>, (<span style="color:#a6e22e">val</span>) =&gt; {
+        <span style="color:#a6e22e">emit</span>(<span style="color:#e6db74">&#39;update:model-value&#39;</span>, <span style="color:#a6e22e">val</span>)
+    })
+
+} <span style="color:#66d9ef">else</span> {
+    <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">ticked</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">undefined</span>
+
+    <span style="color:#a6e22e">watch</span>(() =&gt; <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">selected</span>, (<span style="color:#a6e22e">val</span>) =&gt; {
+        <span style="color:#a6e22e">emit</span>(<span style="color:#e6db74">&#39;update:model-value&#39;</span>, <span style="color:#a6e22e">val</span>)
+    })
+}
+</pre>
+
+<p>
+   为了让子选项在选中状态时也能够显示 <code>.name</code>，而不是 <code>.id</code>，需要遍历所有选项，将其合成一个列表，在 <code>q-tree</code> 组件中通过判断 <code>row.parent_id</code> 只显示父组件, 这里也可以通过定义 <code>q-select</code> 的 <code>selected</code> 或者是 <code>selected-item</code> 插槽来显示正确的名称
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">rows</span>) {
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">rows</span>) {
+        <span style="color:#66d9ef">return</span> []
+    }
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> []
+    <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">row</span> =&gt; {
+        <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">row</span>)
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">children</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">children</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+            <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">concat</span>(<span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">children</span>))
+        }
+    })
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">newRows</span>
+}
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">list</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">computed</span>(() =&gt; {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span>)
+})
+</pre>
+
+<p>
+   最后就是从后端获取列表数据
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">table</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">ref</span>({
+    <span style="color:#a6e22e">list</span><span style="color:#f92672">:</span> [],
+    <span style="color:#a6e22e">ticked</span><span style="color:#f92672">:</span> [],
+    <span style="color:#a6e22e">expanded</span><span style="color:#f92672">:</span> [],
+    <span style="color:#a6e22e">selected</span><span style="color:#f92672">:</span> [],
+    <span style="color:#a6e22e">loading</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>,
+})
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handleFetch</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">props</span>) =&gt; {
+    ...
+    <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">loading</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">api</span>.<span style="color:#a6e22e">fetchList</span>(<span style="color:#a6e22e">query</span>).<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">response</span> =&gt; {
+        <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">list</span>
+    }).<span style="color:#66d9ef">finally</span>(() =&gt; {
+        <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">loading</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+    })
+}
+
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">filterFn</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">val</span>, <span style="color:#a6e22e">update</span>, <span style="color:#a6e22e">abort</span>) =&gt; {
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+        <span style="color:#a6e22e">update</span>()
+        <span style="color:#66d9ef">return</span>
+    }
+    <span style="color:#a6e22e">update</span>(() =&gt; {<span style="color:#a6e22e">handleFetch</span>()})
+}
+</pre>
+
+<h2 id="heading-4">最终实现</h2>
+   <div class="row">
+     <div class="col-sm-6">
+       
+<a href="https://s.libforest.com/images/2023/05/quasar-tree-select.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/05/quasar-tree-select.png-thumb" class="lazyload" />
+</a>
+     </div>
+
+     <div class="col-sm-6">
+       
+<a href="https://s.libforest.com/images/2023/05/quasar-tree-select-multiple.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/05/quasar-tree-select-multiple.png-thumb" class="lazyload" />
+</a>
+     </div>
+   </div>
+    </div><div class="entry-copyright">
+      <div>
+        <i class="fa fa-user-o"></i>
+        作者:
+          <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+      </div>
+  <div>
+    <i class="fa fa-link"></i>
+    链接:
+    <a href="https://honmaple.me/articles/2023/05/基于Quasar实现一个树状选择器TreeSelect.html">https://honmaple.me/articles/2023/05/基于Quasar实现一个树状选择器TreeSelect.html</a>
+  </div>
+  <div>
+    <i class="fa fa-copyright"></i>
+    版权:
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+      <img class="hidden-xs" src="https://static.honmaple.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+      知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+    </a>
+  </div>
+</div>
+
+<div class="entry-honor">
+  <button class="btn" data-target="#entry-honor-content" data-toggle="collapse">赏</button>
+  <div class="collapse" id="entry-honor-content">
+    <div class="entry-honor-content">
+      <div class="entry-honor-alipay">
+        <div class="entry-honor-mask">
+          <button class="btn btn-success" data-target=".entry-honor-wechat" data-toggle="collapse">
+            <i class="fa fa-wechat"></i>
+            <span>微信</span>
+          </button>
+        </div>
+      </div>
+      <div class="entry-honor-wechat collapse">
+        <img src="https://static.honmaple.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+    </div>
+  </div>
+</div>
+
+    <hr class="entry-hr" />
+    <ul class="entry-pager">
+        <li class="next">
+          <a href="https://honmaple.me/articles/2023/04/基于Quasar实现一个树状表格TableTree.html" title="Next article: 基于Quasar实现一个树状表格TableTree">
+            基于Quasar实现一个树状表格TableTree
+            <i class="fa fa-chevron-right"></i>
+          </a>
+        </li>
+    </ul>
+  <div class="comments">
+    <div class="text-center">
+      <a class="btn entry-read-more entry-comment">加载评论</a>
+    </div>
+    <div id="comment_thread" issue-term="基于Quasar实现一个树状选择器TreeSelect"></div>
+  </div>
+
+  </article>
+      </div>
+    </div><div class="entry-footer">
+  <ul class="entry-footer-left">
+    <li class="hidden-xs">© 2015-2023 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+        <a href="https://honmaple.me/pages/friends.html" data-no-instant>友链</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/contact.html" data-no-instant>联系</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/project.html" data-no-instant>项目</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/timeline.html" data-no-instant>时间轴</a>
+    </li>
+  </ul>
+  <ul class="entry-footer-right">
+    <li><a class="entry-switch-theme" title="切换主题" onclick="switchTheme()"><i class="fa fa-moon-o"></i></a></li>
+      <li><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/pages/music.html" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>
+      <li><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li><a href="https://honmaple.me/pages/contact.html" title="Contact"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+</div>
+<div class="back-to-top back-to-top-on">
+  <i class="fa fa-hand-o-up" title="back to top"></i>
+</div>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'UA-88401692-2');
+  </script>
+
+
+      <script src="https://s.libforest.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
+      <script src="https://s.libforest.com/static/js/instantclick.min.js" data-no-instant></script>
+      <script data-no-instant>
+       InstantClick.on('change', function() {
+         if (typeof ga !== 'undefined') {
+           ga('send', 'pageview', location.pathname + location.search);
+         }
+       });
+       InstantClick.init(60);
+      </script>
+  </body>
+</html>
