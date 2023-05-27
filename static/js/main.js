@@ -5,10 +5,12 @@ $(document).ready(function () {
     $(window).on("scroll", function () {
         var navbar = $(".navbar");
         var height = $(".navbar").height();
+        // 整个文档的高度 - navbar高度 > 显示高度
+        // navbar高度110， margin-bottom高度20
+        var toggle = height == 110 ? document.body.scrollHeight - document.body.offsetHeight > 130 : true;
 
         e.toggleClass("back-to-top-on", window.pageYOffset >= 120);
-        // 整个文档的高度 - 显示高度 - 锁定后的高度 > 原来navbar的高度
-        navbar.toggleClass("navbar-fixed", window.pageYOffset >= height && document.body.scrollHeight - document.body.offsetHeight - 50 >= height);
+        navbar.toggleClass("navbar-fixed", window.pageYOffset >= height && toggle);
 
         if (window.innerWidth >= 1280) {
             var scrollTop = window.pageYOffset;
