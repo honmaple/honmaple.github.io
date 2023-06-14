@@ -83,14 +83,6 @@ $(document).ready(function () {
         thr.appendChild(dsq);
         $(".entry-comment a").parent().fadeToggle(800);
     });
-    $(".encrypt-container .encrypt-form input").keyup(function (e) {
-        if (e.keyCode == 13) {
-            decrypt($(this).get(0));
-        }
-    });
-    $(".encrypt-container .encrypt-form i").click(function (e) {
-        decrypt($(this).get(0));
-    });
 });
 
 document.addEventListener("DOMContentLoaded", () => {
