@@ -60,7 +60,7 @@ $(document).ready(function () {
     $('[data-fancybox]').fancybox({
         protect: true
     });
-    $(".entry-comment").click(function () {
+    $(".entry-comment a").click(function () {
         var dsq = document.createElement('script');
         var thr = document.getElementById('comment_thread');
         var theme = localStorage.getItem("theme") == "theme-tree" ? "dark_dimmed" : "light";
@@ -81,7 +81,7 @@ $(document).ready(function () {
         dsq.setAttribute('crossorigin', 'anonymous');
 
         thr.appendChild(dsq);
-        $(".entry-comment").parent().fadeToggle(800);
+        $(".entry-comment a").parent().fadeToggle(800);
     });
     $(".encrypt-container .encrypt-form input").keyup(function (e) {
         if (e.keyCode == 13) {
