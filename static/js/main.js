@@ -1,19 +1,25 @@
 $(document).ready(function () {
     $("pre").css("max-height", $(window).height() / 1.5);
     var e = $(".back-to-top");
-    var titles = document.getElementsByClassName("entry-title");
+    var navbar = $(".entry-navbar");
+    var titles = document.querySelectorAll(".entry-article-title");
+    var lastYOffset = window.pageYOffset;
     $(window).on("scroll", function () {
-        var navbar = $(".navbar");
-        var height = $(".navbar").height();
+        var height = navbar.height();
+        var scrollTop = window.pageYOffset;
         // 整个文档的高度 - navbar高度 > 显示高度
         // navbar高度110， margin-bottom高度20
-        var toggle = height == 110 ? document.body.scrollHeight - document.body.offsetHeight > 130 : true;
-
-        e.toggleClass("back-to-top-on", window.pageYOffset >= 120);
-        navbar.toggleClass("navbar-fixed", window.pageYOffset >= height && toggle);
+        if (navbar.hasClass("entry-navbar-fixed")) {
+            if (scrollTop < lastYOffset && scrollTop <= 10) {
+                navbar.removeClass("entry-navbar-fixed");
+            }
+        } else {
+            if (scrollTop > lastYOffset && scrollTop >= height && document.body.scrollHeight - document.body.offsetHeight - height > 10) {
+                navbar.addClass("entry-navbar-fixed");
+            }
+        }
 
         if (window.innerWidth >= 1280) {
-            var scrollTop = window.pageYOffset;
             var currentTitle = document.getElementById("navbar-title");
             if (scrollTop > height) {
                 for (var i = titles.length - 1; i >= 0; i--) {
@@ -21,7 +27,7 @@ $(document).ready(function () {
                         if (!currentTitle) {
                             currentTitle = document.createElement("li");
                             currentTitle.id = "navbar-title"
-                            $(".navbar-nav").prepend(currentTitle);
+                            $(".entry-navbar-menu").prepend(currentTitle);
                         }
                         currentTitle.innerHTML = `<a>${titles[i].innerText}</a>`;
                         break
@@ -33,6 +39,9 @@ $(document).ready(function () {
                 }
             }
         }
+        lastYOffset = window.pageYOffset;
+        // back to top
+        e.toggleClass("on", window.pageYOffset >= 120);
         // scrollbar
         if ($(".scrollbar").length) {
             var a = $(window).scrollTop();
@@ -74,10 +83,6 @@ $(document).ready(function () {
         thr.appendChild(dsq);
         $(".entry-comment").parent().fadeToggle(800);
     });
-    $(".navbar-logo").error(function () {
-        var content = '<span class="navbar-title">' + $(".navbar-logo").attr("alt") + '</span>';
-        $(".navbar-logo").parent().html(content);
-    });
     $(".encrypt-container .encrypt-form input").keyup(function (e) {
         if (e.keyCode == 13) {
             decrypt($(this).get(0));
@@ -85,5 +90,19 @@ $(document).ready(function () {
     });
     $(".encrypt-container .encrypt-form i").click(function (e) {
         decrypt($(this).get(0));
+    });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    let elements = document.querySelectorAll('[data-toggle="collapse"]');
+    elements.forEach((element, index) => {
+        if (element.dataset.target) {
+            element.addEventListener("click", () => {
+                let target = document.querySelector(element.dataset.target);
+                if (target) {
+                    target.classList.toggle('in');
+                }
+            })
+        }
     });
 });

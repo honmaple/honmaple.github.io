@@ -42,7 +42,7 @@ $(document).ready(function(){
             date = TimeFormat(item.created_at);
             title = date[0] + '年' + date[1] + '月';
             if (first_title != title) {
-                $("#timeline").append('<ul class="timeline timeline-circle"><li class="timeline-count"><a>{0}</a>{1}</li></ul>'.format(first_title,child_template));
+                $("#timeline").append('<ul class="timeline timeline-circle"><li class="timeline-count"><h2>{0}</h2>{1}</li></ul>'.format(first_title,child_template));
                 first_title = title;
                 child_template = '';
             }
@@ -50,7 +50,7 @@ $(document).ready(function(){
             console.log(child_template)
         });
         if (child_template) {
-            $("#timeline").append('<ul class="timeline timeline-circle"><li class="timeline-count"><a>{0}</a>{1}<li></ul>'.format(first_title,child_template));
+            $("#timeline").append('<ul class="timeline timeline-circle"><li class="timeline-count"><h2>{0}</h2>{1}<li></ul>'.format(first_title,child_template));
         }
     }, 'json');
 });
