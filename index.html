@@ -83,6 +83,120 @@
         <article class="entry-article">
           <div class="entry-article-header">
     <h1 class="entry-article-title">
+      <a href="https://honmaple.me/articles/2023/06/重大BUG——绿联NAS用户暂时不要使用文件同步功能.html" rel="bookmark" title="Permalink to 重大BUG——绿联NAS用户暂时不要使用文件同步功能">重大BUG——绿联NAS用户暂时不要使用文件同步功能</a>
+    </h1>
+      <div class="entry-article-info">
+        <span title="Updated at 2023-06-27">
+          <i class="fa fa-calendar-o"></i>
+          2023-06-27 Tue
+        </span>
+          <span class="hidden-xs">|</span>
+          <span class="hidden-xs">
+            <i class="fa fa-user-o"></i>
+            By
+              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-folder-o"></i>
+            In
+              <a href="https://honmaple.me/categories/life/index.html">Life</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-bookmark-o"></i>
+            0f
+              <a href="https://honmaple.me/tags/life/index.html">life</a>
+              <a href="https://honmaple.me/tags/nas/index.html">nas</a>
+          </span>
+      </div>
+  </div>
+          <hr class="entry-article-hr" />
+            <div class="entry-article-content no-tables">
+              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">本地创建一个测试目录</a></li>
+<li><a href="#heading-2">客户端文件同步里添加该目录</a></li>
+<li><a href="#heading-3">修改文件并等待文件同步完成</a></li>
+</ul></div></div>
+
+<p>
+前不久 <b>618</b> 入手了一个<b>绿联 DX4600 Pro</b>，差不多用了快一个月，具体吐槽的点就不说了，毕竟平时 <b>Docker</b> 用的比较多，自带的应用只能说能用，昨天测试了一下文件同步和时间机器的功能，却无意中发现了一个<b>重大BUG</b>
+</p>
+
+<blockquote>
+<p>
+绿联的文件同步会修改本地源文件的权限，本地文件原来是 <b>644</b> 的权限，使用文件同步会被直接修改成 <b>755</b>，还好我只测试了一个目录，而且这个目录使用了Git进行管理，可以快速恢复，如果是整机备份并且没有用Git或者其它版本系统进行管理的话，我只能说，你们有福了，一个文件一个文件地恢复吧
+</p>
+</blockquote>
+
+<p>
+<b>复现步骤：</b>
+</p>
+
+<h2 id="heading-1">本地创建一个测试目录</h2>
+<p>
+   
+<a href="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-01.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-01.png-thumb" class="lazyload" />
+</a>
+</p>
+<h2 id="heading-2">客户端文件同步里添加该目录</h2>
+<p>
+   
+<a href="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-02.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-02.png-thumb" class="lazyload" />
+</a>
+   
+<a href="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-03.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-03.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   设置完成后可以看到原始目录下会多出几个目录，这个不用管
+   
+<a href="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-04.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-04.png-thumb" class="lazyload" />
+</a>
+</p>
+<h2 id="heading-3">修改文件并等待文件同步完成</h2>
+<p>
+   
+<a href="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-05.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-05.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   这时会发现<b>无论修改多少次</b>，无论是手动刷新还是自动同步，文件权限都不会被修改
+</p>
+
+<p>
+   但是，如果这时候打开绿联云客户端自带的文件管理，并打开同步的目录(<b>不用打开文件，只打开目录</b>)，然后手动刷新同步，或者等待自动同步完成，就会发现本地文件的权限已经被更改
+   
+<a href="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-06.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-06.png-thumb" class="lazyload" />
+</a>
+   
+<a href="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-07.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-07.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   这么严重的BUG，我觉得真的不应该出现，<b>如果已经使用了文件同步的用户，千万千万不要打开绿联云文件管理里的同步目录</b>
+</p>
+
+<p>
+   我目前使用的是<b>MacOS v4.3.0 版本</b>，其它系统暂时不清楚是否有同样的问题
+</p>
+            </div>
+        </article>
+      </li>
+      <li>
+        <article class="entry-article">
+          <div class="entry-article-header">
+    <h1 class="entry-article-title">
       <a href="https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html" rel="bookmark" title="Permalink to 绿联DX4600 Pro禁用迅雷和中国移动云盘进程">绿联DX4600 Pro禁用迅雷和中国移动云盘进程</a>
     </h1>
       <div class="entry-article-info">
@@ -113,18 +227,7 @@
   </div>
           <hr class="entry-article-hr" />
             <div class="entry-article-content no-tables">
-              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">为什么要禁用？</a></li>
-<li><a href="#heading-2">禁用流程</a>
-<ul>
-<li><a href="#heading-2.1">开启远程协助</a></li>
-<li><a href="#heading-2.2">ssh登录</a></li>
-<li><a href="#heading-2.3">禁用迅雷</a></li>
-<li><a href="#heading-2.4">禁用中国移动云盘</a></li>
-</ul></li>
-<li><a href="#heading-3">其它</a></li>
-</ul></div></div>
-
+              
 <blockquote>
 <p>
 前不久入手了一个绿联的 <b>DX4600Pro</b> nas, 外观和硬件确实很精致，但同样发现系统也挺简陋的
@@ -161,75 +264,10 @@
 <p>
     我这边使用的是MacOS自带的ssh
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">ssh root@192.168.31.65 -p 922</pre>
-
-<p>
-    用户默认为<code>root</code>，端口默认为<code>922</code>，IP地址可以在设备信息里查看
-    
-<a href="https://s.libforest.com/images/2023/06/DX4600Pro-03.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-03.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    如果提示拒绝连接(<code>ssh: connect to host 192.168.31.65 port 922: Connection refused</code>)， 则需要重启设备，注意重启前保存运行的任务，重启完成后正常即可登录。
-    ssh登录密码前缀为 <code>L#W$%W1uGa</code>，后缀为开启远程协助时的验证码，比如验证码是<code>XXX</code>，则密码为 <code>L#W$%W1uGaXXX</code>
-</p>
-
-<p>
-    登录后可以使用正常的Linux命令，比如查看cpu信息、使用htop查看进程等
-    
-<a href="https://s.libforest.com/images/2023/06/DX4600Pro-04.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-04.png-thumb" class="lazyload" />
-</a>
-    
-<a href="https://s.libforest.com/images/2023/06/DX4600Pro-05.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-05.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<h3 id="heading-2.3">禁用迅雷</h3>
-<p>
-    在 <code>/ugreen/thunder/xunlei-pan/</code> 目录下有两个脚本: <code>start.sh</code> 和 <code>stop.sh</code>, 根据文件名称以及查看其内容可以看出 <code>stop.sh</code> 用于停止迅雷服务，<code>start.sh</code> 用于开启服务，并且在 <code>start.sh</code> 里有这么一段
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/06/DX4600Pro-06.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-06.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    那么问题就简单了，使用 <b>vi</b> 修改 <code>/ugreen/thunder/xunlei-pan/start.sh</code> 的内容，注释掉倒数第二行的代码(在 <code>su - $thunderName</code> 前加一个 <b>#</b>)，然后执行 <code>/ugreen/thunder/xunlei-pan/stop.sh</code>，到任务管理器里查看迅雷进程就消失了且不会重新出现
-</p>
-
-<h3 id="heading-2.4">禁用中国移动云盘</h3>
-<p>
-    中国移动云盘的启动文件在 <code>/data/nas_server/cmcc_svr</code>，由于这是个二进制文件，无法修改其内容，原本想去除可执行权限，但测试发现使用 <code>chmod -x /data/nas_server/cmcc_svr</code> 后会被其他进程恢复, 所以通过修改文件名称来禁用进程
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">cd /data/nas_server/ &amp;&amp; mv cmcc_svr cmcc_svr.backup</pre>
-<p>
-    然后kill掉原来的进程即可
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">ps axuf | grep cmcc | grep -v grep | awk &#39;{printf $2}&#39; | xargs kill -9</pre>
-
-<p>
-    这样在任务管理器里看不到中国移动云盘的进程，百度网盘同理
-    
-<a href="https://s.libforest.com/images/2023/06/DX4600Pro-07.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/06/DX4600Pro-07.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<h2 id="heading-3">其它</h2>
-<p>
-   吐槽一下绿联云影院，各种识别错误，把伪恋识别成十二怒汉，十一罗汉也就算了，还把原盘下的花絮识别成错误的影片，识别错也就算了，还不支持多选，只能一个一个地解除匹配信息
-</p>
-
-<p>
-   绿联系统能用，但确实不太好用，还好 <b>Docker</b> 用起来还算不错，希望绿联能继续优化，尤其是进程管理、权限管理以及云影院的识别，另外就是坐等大佬出一期刷其它系统的教程
-</p>
+<pre style="color:#f8f8f2;background-color:#272822">ssh root@192.168.31.65...</pre>
+            </div>
+            <div class="entry-btn">
+              <a href="https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html">阅读全文 »</a>
             </div>
         </article>
       </li>
@@ -1302,64 +1340,6 @@ Flutter 2.2...</pre></li></ul>
             </div>
             <div class="entry-btn">
               <a href="https://honmaple.me/articles/2021/04/时代.html">阅读全文 »</a>
-            </div>
-        </article>
-      </li>
-      <li>
-        <article class="entry-article">
-          <div class="entry-article-header">
-    <h1 class="entry-article-title">
-      <a href="https://honmaple.me/articles/2021/03/python2升级至python3.html" rel="bookmark" title="Permalink to python2升级至python3">python2升级至python3</a>
-    </h1>
-      <div class="entry-article-info">
-        <span title="Updated at 2021-07-07">
-          <i class="fa fa-calendar-o"></i>
-          2021-03-22 Mon
-        </span>
-          <span class="hidden-xs">|</span>
-          <span class="hidden-xs">
-            <i class="fa fa-user-o"></i>
-            By
-              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-folder-o"></i>
-            In
-              <a href="https://honmaple.me/categories/python/index.html">Python</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-bookmark-o"></i>
-            0f
-              <a href="https://honmaple.me/tags/python/index.html">python</a>
-          </span>
-      </div>
-  </div>
-          <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
-<blockquote>
-<p>
-首先使用工具 <b>2to3</b> 转换
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">2to3 目录名 -w -n</pre>
-</blockquote>
-
-<h2 id="heading-1">print</h2>
-<p>
-   <a href="stackoverflow.com/questions/55559825/how-to-fix-print-double-parentheses-after-2to3-conversion">stackoverflow.com/questions/55559825/how-to-fix-print-double-parentheses-after-2to3-conversion</a>
-</p>
-<ul>
-<li>
-<p>
- 问题:
-     如果在python2项目里使用了python3的写法，比如在 <b>python2</b> 里的 <code>print(&#34;test&#34;)</code>, 使用 <b>2to3</b> 就会转换成
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">print</span>((<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">test...</span></pre></li></ul>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2021/03/python2升级至python3.html">阅读全文 »</a>
             </div>
         </article>
       </li>
