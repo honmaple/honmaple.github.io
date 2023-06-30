@@ -85,7 +85,36 @@ $(document).ready(function () {
     });
 });
 
-document.addEventListener("DOMContentLoaded", () => {
+function setToc() {
+    let element = document.querySelector('#table-of-contents');
+    if (element) {
+        element.querySelector("h2").addEventListener("click", () => {
+            element.classList.toggle("in")
+        });
+        document.addEventListener("scroll", (event) => {
+            let screenWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            if (screenWidth >= 1280) {
+                let rect = element.getBoundingClientRect();
+                ["side", "in"].map((e) => element.classList.toggle(e, window.pageYOffset > rect.y));
+            }
+        })
+        let content = document.querySelector('.entry-article-content');
+        if (content) {
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    const id = entry.target.getAttribute('id');
+                    const el = document.querySelector(`li a[href="#${id}"]`);
+                    el.classList.toggle('active', entry.intersectionRatio > 0);
+                });
+            });
+            content.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]').forEach((section) => {
+                observer.observe(section);
+            });
+        }
+    }
+}
+
+function setCollapse() {
     let elements = document.querySelectorAll('[data-toggle="collapse"]');
     elements.forEach((element, index) => {
         if (element.dataset.target) {
@@ -97,4 +126,10 @@ document.addEventListener("DOMContentLoaded", () => {
             })
         }
     });
+
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    setToc();
+    setCollapse();
 });
