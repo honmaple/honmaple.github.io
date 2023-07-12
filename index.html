@@ -83,6 +83,424 @@
         <article class="entry-article">
           <div class="entry-article-header">
     <h1 class="entry-article-title">
+      <a href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html" rel="bookmark" title="Permalink to 绿联DX4600 Pro虚拟机探索">绿联DX4600 Pro虚拟机探索</a>
+    </h1>
+      <div class="entry-article-info">
+        <span title="Updated at 2023-07-12">
+          <i class="fa fa-calendar-o"></i>
+          2023年07月06日 周四
+        </span>
+          <span class="hidden-xs">|</span>
+          <span class="hidden-xs">
+            <i class="fa fa-user-o"></i>
+            By
+              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-folder-o"></i>
+            In
+              <a href="https://honmaple.me/categories/life/index.html">Life</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-bookmark-o"></i>
+            0f
+              <a href="https://honmaple.me/tags/life/index.html">life</a>
+              <a href="https://honmaple.me/tags/nas/index.html">nas</a>
+          </span>
+      </div>
+  </div>
+          <hr class="entry-article-hr" />
+            <div class="entry-article-content no-tables">
+              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">虚拟机管理</a>
+<ul>
+<li><a href="#heading-1.1">Ubuntu版本问题</a></li>
+<li><a href="#heading-1.2">Libvirt安装依赖</a></li>
+</ul></li>
+<li><a href="#heading-2">构建Docker</a>
+<ul>
+<li><a href="#heading-2.1">导入镜像</a></li>
+<li><a href="#heading-2.2">ssh登录</a></li>
+<li><a href="#heading-2.3">运行Docker</a></li>
+<li><a href="#heading-2.4">启动libvirtd</a></li>
+</ul></li>
+<li><a href="#heading-3">管理界面</a>
+<ul>
+<li><a href="#heading-3.1">创建虚拟机</a></li>
+</ul></li>
+<li><a href="#heading-4">其它</a></li>
+</ul></div></div>
+
+<blockquote>
+<p>
+本次探索源于上次发现可以<b>使用Docker来管理群晖虚拟机</b>，而绿联本身是自带<b>kvm</b>内核模块的，但是要等到绿联官方支持虚拟机，又不知道会等到猴年马月。所以我有一个大胆的想法，能否使用Docker搭建一个可以自由管理虚拟机的程序，最起码可以安装一个windows替换掉绿联内置的有着各种限制的迅雷
+</p>
+</blockquote>
+
+<p>
+<b>注意：非专业人士请勿模仿，除非你知道什么是KVM，在此期间所造成的系统风险请自行承担</b>
+</p>
+
+<h2 id="heading-1">虚拟机管理</h2>
+<p>
+   选择了我之前使用过的 <b>retspen/webvirtcloud</b> 来管理 <code>KVM</code>，说实话，这个管理程序比起威联通群晖这些官方自带确实不太好用，但用于测试还是足够了，如果有更好更方便的推荐请在评论区留言
+</p>
+
+<p>
+   <b>retspen/webvirtcloud</b> 没有官方的  <code>Docker</code> 镜像，只能自己编译，虽然它本身带有一个 <b>Dockerfile</b>，但如果自己构建会遇到各种各样的问题，下面是我遇到的部分问题
+</p>
+
+<h3 id="heading-1.1">Ubuntu版本问题</h3>
+<p>
+    <b>retspen/webvirtcloud</b> 默认是基于一个 <b>Ubuntu22.04</b> 的镜像构建，但是，如果自行构建会发现旧版本的 <b>Docker</b> 和 <b>Ubuntu22.04</b> 根本不兼容
+</p>
+<ul>
+<li>
+<p>
+ 报错一
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">The following signatures couldn&#39;t be verified because the public key is not available: NO_PUBKEY 871920D1991BC93C</pre>
+<p>
+      搜索了一下，说是可以使用 <code>apt-key</code> 命令添加公钥解决，实际上
+      
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-01.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-01.png-thumb" class="lazyload" />
+</a>
+</p></li>
+<li>
+<p>
+ 报错二
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">/etc/apt/trusted.gpg.d/ubuntu-keyring-2012-cdimage.gpg are ignored as the file is not readable by user &#39;_apt&#39; executing apt-key.</pre>
+<p>
+      这个报错可以通过<b>删除gpg文件忽略</b>，但实际上没什么用。真正的解决方式是<b>升级自身的Docker版本</b>，最小要到20.0 以上，因为我使用的Mac，最新版本的Docker也不过是 19.03.13，所以没办法使用升级Docker的方式解决，只能降级ubuntu的版本
+</p>
+</li>
+</ul>
+<p>
+    一开始我直接把版本降到最熟悉的18.04，但在安装Python库发现部分库的指定版本要求Python3.8，否则找不到指定版本
+    
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-02.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-02.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+    如果使用 <code>apt</code> 直接安装 <code>Python3.8</code>，会发现有两个问题：
+</p>
+<ol>
+<li>
+<p>
+ 其中一个依赖 <code>python3-lxml</code> 没有3.8的版本，直接安装会同时安装 <code>Python3.6</code>
+</p></li>
+<li>
+<p>
+ <code>venv</code> 无法使用
+</p>
+</li>
+</ol>
+<p>
+    后面甚至想要忽略Python版本强行安装
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">pip3 install -r conf/requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com --ignore-requires-python</pre>
+
+<p>
+    但仍然是一堆报错
+    
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-03.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-03.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+    所以再次测试升级到 <b>20.04</b> 的版本，还好 <b>20.04</b> 安装的Python3正是 <code>Python3.8</code>，故此正常
+</p>
+
+<h3 id="heading-1.2">Libvirt安装依赖</h3>
+<p>
+    由于 <b>retspen/webvirtcloud</b> 是依赖libvirt对虚拟机进行管理的，而绿联使用的系统本身没有libvirt进程，所以我将在Docker内部安装，在此期间也遇到了部分问题，下面对部分依赖包统一说明一下
+</p>
+
+<ul>
+<li>
+<p>
+ <b>libvirt-daemon</b> <br/>
+      libvirtd的进程包
+</p></li>
+<li>
+<p>
+ <b>libvirt-daemon-system</b> <br/>
+      libvirtd的默认配置包，如果不安装需要手动编写配置
+</p></li>
+<li>
+<p>
+ <b>iptables</b> <br/>
+      libvirtd的依赖，不安装启动libvirtd时会报错
+</p></li>
+<li>
+<p>
+ <b>dnsmasq</b> <br/>
+      libvirtd的依赖，不安装kvm的默认网络无法启动，导致后续建立的虚拟机无法联网
+</p></li>
+<li>
+<p>
+ <b>qemu-kvm</b> <br/>
+      不安装导致后续新建虚拟机时可选的架构和芯片组为空
+</p></li>
+<li>
+<p>
+ <b>qemu-utils</b> <br/>
+      不安装导致虚拟机无法使用qcow2，只能使用raw格式
+</p></li>
+<li>
+<p>
+ <b>virt-manager(可选)</b> <br/>
+      通过命令行管理虚拟机
+</p>
+</li>
+</ul>
+<h2 id="heading-2">构建Docker</h2>
+<p>
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-04.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-04.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   修改完 <b>Ubuntu版本</b> 和添加 <b>KVM所需依赖</b> 后，就能成功构建Docker。
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-05.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-05.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   <b>注意</b>: 构建好的Docker镜像还是挺大的，总共<b>6.43G</b>
+</p>
+
+<h3 id="heading-2.1">导入镜像</h3>
+<ol>
+<li>
+<p>
+ 首先先导出镜像
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker save -o webvirtcloud.tar webvirtcloud:test-2</pre></li>
+<li>
+<p>
+ 上传到绿联Nas，可以同时上传后面创建虚拟机所用的iso文件
+       
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-06.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-06.png-thumb" class="lazyload" />
+</a>
+</p></li>
+<li>
+<p>
+ 打开绿联Docker，在镜像管理里选择从设备导入镜像
+       
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-07.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-07.png-thumb" class="lazyload" />
+</a>
+</p>
+</li>
+</ol>
+<h3 id="heading-2.2">ssh登录</h3>
+<p>
+    老传统了，这里就不再过多叙述，具体可看
+</p>
+
+<h3 id="heading-2.3">运行Docker</h3>
+<pre style="color:#f8f8f2;background-color:#272822">docker run --rm -p 8088:80 -p 6080:6080 --device=/dev/kvm --privileged webvirtcloud:test-2</pre>
+
+<p>
+    <code>8088</code> 是 <b>retspen/webvirtcloud</b> 界面端口，启动后可以通过 <code>NasIP:8088</code> 访问，<code>6080</code> 是 <b>VNC</b> 端口，启动虚拟机后可以直接使用浏览器访问
+</p>
+
+<p>
+    
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-08.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-08.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<h3 id="heading-2.4">启动libvirtd</h3>
+<p>
+    由于我只修改了Dockerfile里的依赖，所以<b>libvirtd</b>只能手动启动，如果想要自动启动的可以添加启动脚本到 <code>/etc/service</code> 目录
+</p>
+
+<ol>
+<li>
+<p>
+ 进入<b>Docker内部</b>：
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker exec -it {镜像名} bash</pre></li>
+<li>
+<p>
+ 修改<b>配置文件</b>: 使用 vi 打开 <code>/etc/libvirt/libvirtd.conf</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#f92672">- unix_sock_group = &#34;libvirt&#34;
+</span><span style="color:#f92672"></span><span style="color:#a6e22e">+ unix_sock_group = &#34;www-data&#34;
+</span></pre></li>
+<li>
+<p>
+ 启动<b>libvirtd</b>:
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">libvirtd -d</pre></li>
+<li>
+<p>
+ 启动<b>virtlogd</b>：
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">virtlogd -d</pre>
+</li>
+</ol>
+<h2 id="heading-3">管理界面</h2>
+<p>
+   通过 <code>NasIP:8088</code> 访问管理界面，默认用户名和密码都是 <b>admin</b>
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-09.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-09.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   登录成功后，点击<b>计算节点 -&gt; 本地</b>
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-10.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-10.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   然后添加一个<b>本地节点</b>
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-11.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-11.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   添加后正常情况就会显示<b>已连接</b>
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-12.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-12.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   接着继续点击右边的<b>眼睛图案 -&gt; 选择存储 -&gt; 右上角的+号</b>，添加两个存储
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-13.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-13.png-thumb" class="lazyload" />
+</a>
+</p>
+<ol>
+<li>
+<p>
+ test: 路径为 <code>/var/lib/libvirt/images</code>，用于存放虚拟机文件
+</p></li>
+<li>
+<p>
+ iso:  路径为 <code>/var/lib/libvirt/iso</code>，存放iso镜像文件
+</p>
+</li>
+</ol>
+<p>
+   然后返回绿联Nas的ssh界面，复制iso文件到Docker内部
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-14.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-14.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<h3 id="heading-3.1">创建虚拟机</h3>
+<p>
+    一切准备就绪，现在我们就能创建虚拟机了。
+</p>
+
+<p>
+    选择<b>实例 -&gt; 创建</b>
+    
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-15.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-15.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+    点击下一个，注意：<b>webvirtcloud</b> 这里的操作有些反人类，最好选择<b>规格 -&gt; 应用</b>，不要使用自定义和模版，否则无法挂载<b>CD-ROM</b>。我这里选择30G的mini，存储一定要改成 <b>test</b>，然后创建
+    
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-16.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-16.png-thumb" class="lazyload" />
+</a>
+    
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-17.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-17.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+    点击创建后会到实例页面，先不要启动，到<b>设置 -&gt; 磁盘</b>挂载想要安装的系统iso文件，然后在旁边的启动顺序里确认<b>启动第一项</b>是iso所在的磁盘
+    
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-18.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-18.png-thumb" class="lazyload" />
+</a>
+    
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-19.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-19.png-thumb" class="lazyload" />
+</a>
+    
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-20.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-20.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+    接着就可以开机了，开机后可以点击<b>访问 -&gt; 控制台</b>使用VNC打开系统安装界面，安装完成后记得重新调整启动顺序以及卸载iso镜像
+    
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-21.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-21.png-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+    至此，使用第三方Docker搭建的绿联Nas虚拟机管理也就完成了，如果急需使用虚拟机功能，又想保留绿联Nas的系统，随绿联一起“成长”的用户可以利用此功能创建虚拟机，如果不着急的可以等官方的实现
+</p>
+
+<h2 id="heading-4">其它</h2>
+<ol>
+<li>
+<p>
+ 没有修改libvirtd里的 <code>unix_sock_group</code> 配置为 <b>www-data</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">Failed to connect socket to &#39;/var/run/libvirt/libvirt-sock&#39;: Permission denied</pre></li>
+<li>
+<p>
+ Docker内部(不是绿联系统)执行 <code>chmod 666 /dev/kvm</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">libvirt 错误- internal error: process exited while connecting to monitor: Could not access KVM kernel module: Permission denied 2023-07-05T16:17:57.942238Z qemu-system-x86_64: failed to initialize KVM: Permission denied</pre></li>
+<li>
+<p>
+ 未安装<b>dnsmasq</b>，如果手动安装，使用 <code>virsh net-start default</code> 手动启动
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">libbvirt 错误- Requested operation is not valid: network &#39;default&#39; is not active</pre></li>
+<li>
+<p>
+ 未安装<b>qemu-utils</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">internal error: creation of non-raw file images is not supported without qemu-img.</pre>
+</li>
+</ol>
+<p>
+   注意：文章中并未修改绿联Nas本身的系统，所有的安装包和修改文件配置都是在Docker内部进行
+</p>
+            </div>
+        </article>
+      </li>
+      <li>
+        <article class="entry-article">
+          <div class="entry-article-header">
+    <h1 class="entry-article-title">
       <a href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro安装一个超酷超帅的Docker.html" rel="bookmark" title="Permalink to 绿联DX4600 Pro安装一个超酷超帅的Docker">绿联DX4600 Pro安装一个超酷超帅的Docker</a>
     </h1>
       <div class="entry-article-info">
@@ -113,21 +531,7 @@
   </div>
           <hr class="entry-article-hr" />
             <div class="entry-article-content no-tables">
-              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">安装教程</a>
-<ul>
-<li><a href="#heading-1.1">下载镜像</a></li>
-<li><a href="#heading-1.2">使用ssh登录到后台</a></li>
-<li><a href="#heading-1.3">使用Docker命令行安装</a></li>
-</ul></li>
-<li><a href="#heading-2">折腾教程</a>
-<ul>
-<li><a href="#heading-2.1">群晖本地IP(macvlan)</a></li>
-<li><a href="#heading-2.2">webdav挂载</a></li>
-</ul></li>
-<li><a href="#heading-3">其它</a></li>
-</ul></div></div>
-
+              
 <p>
 绿联Nas的系统真是一言难尽，所以最近几天我都在寻找一种安装群晖的教程，也知晓群晖其实也没那么容易安装，主要是安装群晖后，有很大的概率<b>导致机器指示灯，风扇，甚至M.2固态失效</b>，也正因为此，虽然已经整理好了安装的教程，但迟迟没有动手，此次在网上搜寻教程时无意中发现了一个超酷超帅的Docker镜像，安装后真的会惊叹为何会有如此棒的东西，它就是
 </p>
@@ -163,268 +567,10 @@
 </a>
 </p>
 
-<h3 id="heading-1.2">使用ssh登录到后台</h3>
-<p>
-    其中登录教程在我之前的一篇文章中有介绍 <a href="https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html">绿联DX4600 Pro禁用迅雷和中国移动云盘进程</a>
-</p>
-
-<p>
-    这里就再简单介绍一下:
-</p>
-<ol>
-<li>
-<p>
- 开启远程协助，记住验证码
-</p></li>
-<li>
-<p>
- 重启机器(注意先保存进行中的任务)
-</p></li>
-<li>
-<p>
- 使用 <b>ssh</b> 客户端登录，端口 <b>922</b>，密码 <code>L#W$%W1uGa</code> 加上验证码，用户 <b>root</b>
-</p>
-</li>
-</ol>
-<h3 id="heading-1.3">使用Docker命令行安装</h3>
-<p>
-    首先需要验证挂载的目录，我这里是找了两个已经创建并挂载了本地存储的镜像，使用
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker inspect --format &#34;{{json .HostConfig.Mounts}}&#34; 镜像名</pre>
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-02.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-02.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    查看挂载的实际目录，可以看出Docker实际挂载的目录由
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">/mnt/media_rw/ + 硬盘UUID + /.ugreen_nas/ + 用户ID + 硬盘目录</pre>
-<p>
-    这几部分构成，那么就好办了，首先创建一个<b>DSM的目录</b>，用于存放群晖虚拟机文件，我这里选择<b>固态硬盘</b>，避免使用机械硬盘<b>导致硬盘无法休眠</b>，如果选择其它硬盘，需要先创建一个没什么用的Docker挂载目录，然后使用 <code>inspect</code> 找到实际的路径
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-03.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-03.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    建立好目录后使用命令行安装镜像
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-04.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-04.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    其中的几个参数
-</p>
-<ul>
-<li>
-<p>
- <b>DISK_SIZE=100G</b>: 分配给群晖虚拟机100G的磁盘空间，这部分空间会作为<b>存储1</b>使用
-</p></li>
-<li>
-<p>
- <b>ALLOCATE=N</b>: 是否预分配100G的大小(Y)，还是按照实际大小展示在绿联Nas上(N)(这个参数貌似没生效)
-</p></li>
-<li>
-<p>
- <b>CPU_CORES=2</b>: 分配给虚拟机的核数，我的是 <b>n6005</b>，四核，所以分了两核给群晖
-</p></li>
-<li>
-<p>
- <b>RAM_SIZE=8192M</b>: 分配给虚拟机的内存大小
-</p></li>
-<li>
-<p>
- <b>--network 实际的网络</b>: 也可以不写，使用默认的 <code>Docker bridge</code>
-</p>
-</li>
-</ul>
-<p>
-    创建完成后使用 <code>docker logs -f DSM</code> 查看日志，直到日志显示
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-05.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-05.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    在此期间，也可以打开浏览器，使用绿联Nas <b>IP+端口5000</b> 进行访问
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-06.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-06.png-thumb" class="lazyload" />
-</a>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-07.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-07.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    然后就是正常的群晖初始化，至此，想要体验本地群晖系统的就可以行动了
-</p>
-
-<p>
-    <b>等等，后面还有</b>。。。
-</p>
-
-<h2 id="heading-2">折腾教程</h2>
-<h3 id="heading-2.1">群晖本地IP(macvlan)</h3>
-<p>
-    按照GitHub上的教程，我原本想要配置一个和局域网内其它设备相同网段的IP给群晖虚拟机，所以我创建了一个基于 <code>macvlan</code> 的网络
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker network create -d macvlan --subnet=192.168.31.0/24 --gateway=192.168.31.1 --ip-range=192.168.31.66/32 -o parent=eth0  dsmnet</pre>
-
-<p>
-    然后使用 <code>--network dsmnet</code> 重新创建Docker，结果怎么着，报错了
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker: Error response from daemon: failed to create the macvlan port: operation not supported.</pre>
-
-<p>
-    第一眼我还觉得这是由于docker打包脚本里的 <code>EXPOSE</code> 的锅，甚至去搜索能否禁用该操作，结果也是显而易见的，什么都没找到。后来仔细看了一下报错信息：<code>operation not supported</code>
-    好吧，确认一下 <code>macvlan</code> 相关的模块是否被加载
-</p>
-
-<pre style="color:#f8f8f2;background-color:#272822">lsmod | grep macvlan</pre>
-
-<p>
-    果然，<b>绿联Nas默认是没有macvlan模块的</b>，所以想用绿联Nas部署一个openwrt旁路由的可以先歇了。那么，我能否自己安装macvlan模块呢？
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-08.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-08.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    对不起，打扰了。不对，内核版本不符，那么我去下载一个和内核版本相符的文件，使用 <b>uname -r</b> 看一下绿联用的版本
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">5.10.120</pre>
-
-<p>
-    我直接去官方库里找，还好找到了，同样使用的 <b>5.10.120-1</b>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">wget https://downloads.openwrt.org/releases/22.03.0-rc4/targets/x86/64/packages/kmod-macvlan_5.10.120-1_x86_64.ipk</pre>
-
-<p>
-    继续安装，结果还是一样
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-09.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-09.png-thumb" class="lazyload" />
-</a>
-    因为我对openwrt不太熟悉，实在进行不下去了，<b>只好放弃</b>。不过也能看出绿联还是编译了一些属于自己的东西的，没有直接使用默认的openwrt内核，不过现在大概只能等绿联自己升级固件来默认支持macvlan了，或者有没有大佬能够解答一下这个问题
-</p>
-
-<h3 id="heading-2.2">webdav挂载</h3>
-<p>
-    因为docker安装的群晖无法直接使用插入的硬盘，甚至不能映射某个目录到群晖虚拟机，所以如果想用群晖来操作绿联Nas上面的文件，只能通过网络挂载
-</p>
-
-<p>
-    绿联本身支持的网络挂载有限，不支持<code>NFS</code>，但是还好可以支持<code>webdav</code>和<code>ftp</code>，那么可以去群晖web管理界面，打开 <b>file station -&gt; 工具 -&gt; 远程连接 -&gt; 连接设置 -&gt; ftp/webdav</b> 进行配置
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-10.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-10.png-thumb" class="lazyload" />
-</a>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-11.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-11.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    你以为我要说的就这，这不是<b>显而易见，浅显易懂，入口即化</b>的吗？实际上，除了<code>ftp</code>可以正常挂载外，<code>webdav</code>却是死活挂载不了，总是提示<b>连接被服务器拒绝</b>，搞得我还以为绿联是不是连一个基础的webdav都没做好，但我用我的mac连接又可以正常挂载，差点把我整emo
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-12.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-12.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    我可以确认我的配置是对的，那到底是哪里出了问题，打开群晖的<b>ssh</b>，也确认了是可以正常和宿主机通信的
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-13.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-13.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    最后搞得实在没办法了，抓包吧，还好群晖默认已经安装了<b>tcpdump</b>，只需要生成<b>pcap</b>文件就行
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">tcpdump -i eth0 host 192.168.31.65 -w ugreen/webdav.pcap</pre>
-
-<p>
-    终端运行抓包命令，另一边在群晖界面进行添加webdav的操作，等待再次提示连接被服务器拒绝后，再等待5s，暂停抓包，然后把 <b>webdav.pcap</b> 下载到本地，使用 <b>wireshark</b> 查看
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-14.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-14.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    乍一看没什么问题，都是正常的<b>DNS查询</b>和<b>TCP握手</b>，可仔细一看，怎么会<b>多了一个斜杆</b>，而且服务端返回了401错误
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-15.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-15.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    原来群晖挂载webdav的路径<b>一定不能使用斜杆开头</b>，<b>一定不能使用斜杆开头</b>，<b>一定不能使用斜杆开头</b>，重要的事情说三遍，需要把 <code>/dav/share/</code> 改成 <code>dav/share/</code> (注意，绿联webdav路径后必须有一个斜杆)
-</p>
-
-<p>
-    至此，webdav挂载也ok了
-</p>
-
-<h2 id="heading-3">其它</h2>
-<ol>
-<li>
-<p>
- 在使用 <b>非macvlan</b> 网络创建的群晖系统里内置的 <b>IP 20.20.20.21</b> 以及 <b>网关20.20.20.1</b> 是不能修改的，修改后可能会导致无法从浏览器访问群晖
-</p></li>
-<li>
-<p>
- 可以修改DNS服务为<b>局域网网关</b>或者<b>自建DNS的IP</b>，修改后记得重启群晖系统
-</p></li>
-<li>
-<p>
- 功耗，启动 <code>virtual-dsm</code> 前我的机器功耗大概是<b>18W</b>，启动后在<b>26W</b>左右，一段时间后又会变成<b>19W</b>，这应该和系统内运行的任务有关
-</p></li>
-</ol>
+<h3 id="heading-1.2">使用ssh登录到后台...</h3>
+            </div>
+            <div class="entry-btn">
+              <a href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro安装一个超酷超帅的Docker.html">阅读全文 »</a>
             </div>
         </article>
       </li>
@@ -1505,99 +1651,6 @@ Flutter 2.2...</pre></li></ul>
             </div>
             <div class="entry-btn">
               <a href="https://honmaple.me/articles/2021/05/GNS3笔记.html">阅读全文 »</a>
-            </div>
-        </article>
-      </li>
-      <li>
-        <article class="entry-article">
-          <div class="entry-article-header">
-    <h1 class="entry-article-title">
-      <a href="https://honmaple.me/articles/2021/04/公共DNS.html" rel="bookmark" title="Permalink to 公共DNS">公共DNS</a>
-    </h1>
-      <div class="entry-article-info">
-        <span title="Updated at 2021-04-14">
-          <i class="fa fa-calendar-o"></i>
-          2021年04月14日 周三
-        </span>
-          <span class="hidden-xs">|</span>
-          <span class="hidden-xs">
-            <i class="fa fa-user-o"></i>
-            By
-              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-folder-o"></i>
-            In
-              <a href="https://honmaple.me/categories/life/index.html">Life</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-bookmark-o"></i>
-            0f
-              <a href="https://honmaple.me/tags/dns/index.html">dns</a>
-          </span>
-      </div>
-  </div>
-          <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
-<h1 id="heading-1">百度DNS</h1>
-<h2 id="heading-1.1">IPv4</h2>
-<ul>
-<li>
-<p>
-  180.76.76.76 
-</p></li>
-</ul>
-<h2 id="heading-1.2">IPv6</h2>
-<ul>
-<li>
-<p>
- 2400:da00::6666
-</p>
-</li>
-</ul>
-<h1 id="heading-2">阿里DNS</h1>
-<h2 id="heading-2.1">IPv4</h2>
-<ul>
-<li>
-<p>
- 223.5.5.5
-</p></li>
-<li>
-<p>
- 223.6.6.6
-</p></li>
-</ul>
-<h2 id="heading-2.2">IPv6</h2>
-<ul>
-<li>
-<p>
- 2400:3200::1
-</p></li>
-<li>
-<p>
- 2400:3200:baba::1
-</p></li>
-</ul>
-<h2 id="heading-2.3">DoH/DoT地址</h2>
-<ul>
-<li>
-<p>
- dns.alidns.com
-</p>
-</li>
-</ul>
-<h1 id="heading-3">谷歌DNS</h1>
-<h2 id="heading-3.1">IPv4</h2>
-<ul>
-<li>
-<p>
- 8...</p></li></ul>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2021/04/公共DNS.html">阅读全文 »</a>
             </div>
         </article>
       </li>
