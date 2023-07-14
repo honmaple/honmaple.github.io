@@ -83,6 +83,202 @@
         <article class="entry-article">
           <div class="entry-article-header">
     <h1 class="entry-article-title">
+      <a href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html" rel="bookmark" title="Permalink to 绿联云Nas新版本v3.4.0固件开启SSH">绿联云Nas新版本v3.4.0固件开启SSH</a>
+    </h1>
+      <div class="entry-article-info">
+        <span title="Updated at 2023-07-14">
+          <i class="fa fa-calendar-o"></i>
+          2023年07月14日 周五
+        </span>
+          <span class="hidden-xs">|</span>
+          <span class="hidden-xs">
+            <i class="fa fa-user-o"></i>
+            By
+              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-folder-o"></i>
+            In
+              <a href="https://honmaple.me/categories/life/index.html">Life</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-bookmark-o"></i>
+            0f
+              <a href="https://honmaple.me/tags/life/index.html">life</a>
+              <a href="https://honmaple.me/tags/nas/index.html">nas</a>
+          </span>
+      </div>
+  </div>
+          <hr class="entry-article-hr" />
+            <div class="entry-article-content no-tables">
+              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">创建随机镜像</a></li>
+<li><a href="#heading-2">抓包获取Token</a></li>
+<li><a href="#heading-3">手动创建容器</a></li>
+<li><a href="#heading-4">修改SSH配置</a></li>
+<li><a href="#heading-5">SSH登录</a></li>
+<li><a href="#heading-6">问题排查</a></li>
+<li><a href="#heading-7">其它</a></li>
+</ul></div></div>
+
+<blockquote>
+<p>
+之前老的方式<b>固定前缀加远程协助验证码</b>在更新到最新版本的<b>v3.4.0</b>后已经失效，想要开启ssh只能使用另一种方式，也希望绿联云官方在系统更加完善(<b>权限管理、软件卸载</b>)前不要再继续封堵开启的方式，当然，如果能提供官方的开启方式更好
+</p>
+</blockquote>
+
+<p>
+<b>免责声明：本教程所提供的内容仅供学习交流使用，请勿用于商业及非法用途，因此产生的任何法律纠纷均与本人无关！如有侵权，请您联系我，我将立刻删除该内容</b>
+</p>
+
+<p>
+<b>注：此教程可能会造成未知的后果，在此期间所造成的系统风险请自行承担</b>
+</p>
+
+<h2 id="heading-1">创建随机镜像</h2>
+<p>
+   首先拉取一个镜像，我这里选择 <code>nginx:stable-alpine</code>
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   然后点击创建容器，除存储空间<b>添加一个任意目录</b>，挂载到 <code>/data</code> 下，<b>其它参数为默认</b>，然后下一步，先<b>不要点击完成</b>
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<h2 id="heading-2">抓包获取Token</h2>
+<p>
+   打开 <b>wireshark</b> 进行抓包，输入筛选参数
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">ip.dst_host == 192.168.31.65 and http and http.request.method==POST</pre>
+
+<p>
+   然后返回绿联云，点击完成，这时会在 <b>wireshark</b> 窗口看到一条HTTP请求
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   点击这条请求，然后 <b>右键 -&gt; Follow -&gt; HTTP Stream</b>
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   这时会看到具体的<b>HTTP请求头和请求参数</b>，在下方的Find里输入 <code>create</code> 进行查找，然后将红色内容复制到本地，将请求参数 <code>{&#34;_query&#34;...}</code> 复制到一个 <b>json</b> 文件
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   接着修改 <b>json</b> 文件，找到<b>HostConfig -&gt; Mounts</b>，将里面的 <b>Source</b> 参数修改为 <code>/</code>
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<h2 id="heading-3">手动创建容器</h2>
+<p>
+   首先到绿联云删除刚开始创建的容器
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   然后使用命令行手动请求创建容器，其中 <b>ugreen.json</b> 为抓包获取并修改后的参数文件，请求头保持一致
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   创建完成后，返回绿联云，刷新并查看详情，可以看到绿联系统的根目录已经挂载到容器内部
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<h2 id="heading-4">修改SSH配置</h2>
+<p>
+   使用终端进入Docker内部
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+   然后添加公钥到root目录，怎么生成公私钥这里不再叙述。
+   查看sshd的配置，默认是不允许使用公钥匙登录的，所以需要修改 <code>PubkeyAuthentication no</code> 为 <code>PubkeyAuthentication yes</code>
+</p>
+
+<p>
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-thumb" class="lazyload" />
+</a>
+   接着到<b>设备管理 -&gt; 远程协助 -&gt; 开启远程调试功能</b>，重启sshd就是关闭远程调试然后重新打开
+</p>
+
+<h2 id="heading-5">SSH登录</h2>
+<p>
+   最后就可以使用ssh公钥登录绿联云系统了
+   
+<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<h2 id="heading-6">问题排查</h2>
+<p>
+   如果无法使用ssh公钥登录，可以查看系统的ssh登录日志
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">grep ssh /data/data/nas_server/log/system/*syslog | less</pre>
+
+<p>
+   如果提示 <code>Authentication refused: bad ownership or modes for directory /root</code>，则执行
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">chmod go-w /data/root</pre>
+
+<p>
+   如果提示 <code>ssh-rsa: signature algorithm not supported</code>，则添加下面配置到<b>sshd_config</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">PubkeyAcceptedKeyTypes=+ssh-rsa</pre>
+
+<h2 id="heading-7">其它</h2>
+<p>
+   升级到<b>v3.4.0</b>后，目前觉得还不错，其中<b>批量重命名，TMDB接口，自定义Hosts</b>等都是非常有用的功能，也希望绿联能再接再厉，我们这些用户也能和绿联Nas一同成长。
+</p>
+
+<p>
+   对了，之前文件同步会修改源文件权限的问题已经被修复，<b>Very Good</b>
+</p>
+            </div>
+        </article>
+      </li>
+      <li>
+        <article class="entry-article">
+          <div class="entry-article-header">
+    <h1 class="entry-article-title">
       <a href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html" rel="bookmark" title="Permalink to 绿联DX4600 Pro虚拟机探索">绿联DX4600 Pro虚拟机探索</a>
     </h1>
       <div class="entry-article-info">
@@ -113,26 +309,7 @@
   </div>
           <hr class="entry-article-hr" />
             <div class="entry-article-content no-tables">
-              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">虚拟机管理</a>
-<ul>
-<li><a href="#heading-1.1">Ubuntu版本问题</a></li>
-<li><a href="#heading-1.2">Libvirt安装依赖</a></li>
-</ul></li>
-<li><a href="#heading-2">构建Docker</a>
-<ul>
-<li><a href="#heading-2.1">导入镜像</a></li>
-<li><a href="#heading-2.2">ssh登录</a></li>
-<li><a href="#heading-2.3">运行Docker</a></li>
-<li><a href="#heading-2.4">启动libvirtd</a></li>
-</ul></li>
-<li><a href="#heading-3">管理界面</a>
-<ul>
-<li><a href="#heading-3.1">创建虚拟机</a></li>
-</ul></li>
-<li><a href="#heading-4">其它</a></li>
-</ul></div></div>
-
+              
 <blockquote>
 <p>
 本次探索源于上次发现可以<b>使用Docker来管理群晖虚拟机</b>，而绿联本身是自带<b>kvm</b>内核模块的，但是要等到绿联官方支持虚拟机，又不知道会等到猴年马月。所以我有一个大胆的想法，能否使用Docker搭建一个可以自由管理虚拟机的程序，最起码可以安装一个windows替换掉绿联内置的有着各种限制的迅雷
@@ -154,346 +331,10 @@
 
 <h3 id="heading-1.1">Ubuntu版本问题</h3>
 <p>
-    <b>retspen/webvirtcloud</b> 默认是基于一个 <b>Ubuntu22.04</b> 的镜像构建，但是，如果自行构建会发现旧版本的 <b>Docker</b> 和 <b>Ubuntu22.04</b> 根本不兼容
-</p>
-<ul>
-<li>
-<p>
- 报错一
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">The following signatures couldn&#39;t be verified because the public key is not available: NO_PUBKEY 871920D1991BC93C</pre>
-<p>
-      搜索了一下，说是可以使用 <code>apt-key</code> 命令添加公钥解决，实际上
-      
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-01.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-01.png-thumb" class="lazyload" />
-</a>
-</p></li>
-<li>
-<p>
- 报错二
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">/etc/apt/trusted.gpg.d/ubuntu-keyring-2012-cdimage.gpg are ignored as the file is not readable by user &#39;_apt&#39; executing apt-key.</pre>
-<p>
-      这个报错可以通过<b>删除gpg文件忽略</b>，但实际上没什么用。真正的解决方式是<b>升级自身的Docker版本</b>，最小要到20.0 以上，因为我使用的Mac，最新版本的Docker也不过是 19.03.13，所以没办法使用升级Docker的方式解决，只能降级ubuntu的版本
-</p>
-</li>
-</ul>
-<p>
-    一开始我直接把版本降到最熟悉的18.04，但在安装Python库发现部分库的指定版本要求Python3.8，否则找不到指定版本
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-02.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-02.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    如果使用 <code>apt</code> 直接安装 <code>Python3.8</code>，会发现有两个问题：
-</p>
-<ol>
-<li>
-<p>
- 其中一个依赖 <code>python3-lxml</code> 没有3.8的版本，直接安装会同时安装 <code>Python3.6</code>
-</p></li>
-<li>
-<p>
- <code>venv</code> 无法使用
-</p>
-</li>
-</ol>
-<p>
-    后面甚至想要忽略Python版本强行安装
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">pip3 install -r conf/requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com --ignore-requires-python</pre>
-
-<p>
-    但仍然是一堆报错
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-03.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-03.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    所以再次测试升级到 <b>20.04</b> 的版本，还好 <b>20.04</b> 安装的Python3正是 <code>Python3.8</code>，故此正常
-</p>
-
-<h3 id="heading-1.2">Libvirt安装依赖</h3>
-<p>
-    由于 <b>retspen/webvirtcloud</b> 是依赖libvirt对虚拟机进行管理的，而绿联使用的系统本身没有libvirt进程，所以我将在Docker内部安装，在此期间也遇到了部分问题，下面对部分依赖包统一说明一下
-</p>
-
-<ul>
-<li>
-<p>
- <b>libvirt-daemon</b> <br/>
-      libvirtd的进程包
-</p></li>
-<li>
-<p>
- <b>libvirt-daemon-system</b> <br/>
-      libvirtd的默认配置包，如果不安装需要手动编写配置
-</p></li>
-<li>
-<p>
- <b>iptables</b> <br/>
-      libvirtd的依赖，不安装启动libvirtd时会报错
-</p></li>
-<li>
-<p>
- <b>dnsmasq</b> <br/>
-      libvirtd的依赖，不安装kvm的默认网络无法启动，导致后续建立的虚拟机无法联网
-</p></li>
-<li>
-<p>
- <b>qemu-kvm</b> <br/>
-      不安装导致后续新建虚拟机时可选的架构和芯片组为空
-</p></li>
-<li>
-<p>
- <b>qemu-utils</b> <br/>
-      不安装导致虚拟机无法使用qcow2，只能使用raw格式
-</p></li>
-<li>
-<p>
- <b>virt-manager(可选)</b> <br/>
-      通过命令行管理虚拟机
-</p>
-</li>
-</ul>
-<h2 id="heading-2">构建Docker</h2>
-<p>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-04.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-04.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   修改完 <b>Ubuntu版本</b> 和添加 <b>KVM所需依赖</b> 后，就能成功构建Docker。
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-05.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-05.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   <b>注意</b>: 构建好的Docker镜像还是挺大的，总共<b>6.43G</b>
-</p>
-
-<h3 id="heading-2.1">导入镜像</h3>
-<ol>
-<li>
-<p>
- 首先先导出镜像
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker save -o webvirtcloud.tar webvirtcloud:test-2</pre></li>
-<li>
-<p>
- 上传到绿联Nas，可以同时上传后面创建虚拟机所用的iso文件
-       
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-06.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-06.png-thumb" class="lazyload" />
-</a>
-</p></li>
-<li>
-<p>
- 打开绿联Docker，在镜像管理里选择从设备导入镜像
-       
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-07.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-07.png-thumb" class="lazyload" />
-</a>
-</p>
-</li>
-</ol>
-<h3 id="heading-2.2">ssh登录</h3>
-<p>
-    老传统了，这里就不再过多叙述，具体可看
-</p>
-
-<h3 id="heading-2.3">运行Docker</h3>
-<pre style="color:#f8f8f2;background-color:#272822">docker run --rm -p 8088:80 -p 6080:6080 --device=/dev/kvm --privileged webvirtcloud:test-2</pre>
-
-<p>
-    <code>8088</code> 是 <b>retspen/webvirtcloud</b> 界面端口，启动后可以通过 <code>NasIP:8088</code> 访问，<code>6080</code> 是 <b>VNC</b> 端口，启动虚拟机后可以直接使用浏览器访问
-</p>
-
-<p>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-08.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-08.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<h3 id="heading-2.4">启动libvirtd</h3>
-<p>
-    由于我只修改了Dockerfile里的依赖，所以<b>libvirtd</b>只能手动启动，如果想要自动启动的可以添加启动脚本到 <code>/etc/service</code> 目录
-</p>
-
-<ol>
-<li>
-<p>
- 进入<b>Docker内部</b>：
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker exec -it {镜像名} bash</pre></li>
-<li>
-<p>
- 修改<b>配置文件</b>: 使用 vi 打开 <code>/etc/libvirt/libvirtd.conf</code>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#f92672">- unix_sock_group = &#34;libvirt&#34;
-</span><span style="color:#f92672"></span><span style="color:#a6e22e">+ unix_sock_group = &#34;www-data&#34;
-</span></pre></li>
-<li>
-<p>
- 启动<b>libvirtd</b>:
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">libvirtd -d</pre></li>
-<li>
-<p>
- 启动<b>virtlogd</b>：
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">virtlogd -d</pre>
-</li>
-</ol>
-<h2 id="heading-3">管理界面</h2>
-<p>
-   通过 <code>NasIP:8088</code> 访问管理界面，默认用户名和密码都是 <b>admin</b>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-09.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-09.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   登录成功后，点击<b>计算节点 -&gt; 本地</b>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-10.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-10.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   然后添加一个<b>本地节点</b>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-11.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-11.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   添加后正常情况就会显示<b>已连接</b>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-12.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-12.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   接着继续点击右边的<b>眼睛图案 -&gt; 选择存储 -&gt; 右上角的+号</b>，添加两个存储
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-13.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-13.png-thumb" class="lazyload" />
-</a>
-</p>
-<ol>
-<li>
-<p>
- test: 路径为 <code>/var/lib/libvirt/images</code>，用于存放虚拟机文件
-</p></li>
-<li>
-<p>
- iso:  路径为 <code>/var/lib/libvirt/iso</code>，存放iso镜像文件
-</p>
-</li>
-</ol>
-<p>
-   然后返回绿联Nas的ssh界面，复制iso文件到Docker内部
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-14.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-14.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<h3 id="heading-3.1">创建虚拟机</h3>
-<p>
-    一切准备就绪，现在我们就能创建虚拟机了。
-</p>
-
-<p>
-    选择<b>实例 -&gt; 创建</b>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-15.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-15.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    点击下一个，注意：<b>webvirtcloud</b> 这里的操作有些反人类，最好选择<b>规格 -&gt; 应用</b>，不要使用自定义和模版，否则无法挂载<b>CD-ROM</b>。我这里选择30G的mini，存储一定要改成 <b>test</b>，然后创建
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-16.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-16.png-thumb" class="lazyload" />
-</a>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-17.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-17.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    点击创建后会到实例页面，先不要启动，到<b>设置 -&gt; 磁盘</b>挂载想要安装的系统iso文件，然后在旁边的启动顺序里确认<b>启动第一项</b>是iso所在的磁盘
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-18.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-18.png-thumb" class="lazyload" />
-</a>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-19.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-19.png-thumb" class="lazyload" />
-</a>
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-20.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-20.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    接着就可以开机了，开机后可以点击<b>访问 -&gt; 控制台</b>使用VNC打开系统安装界面，安装完成后记得重新调整启动顺序以及卸载iso镜像
-    
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-21.png-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-KVM-21.png-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    至此，使用第三方Docker搭建的绿联Nas虚拟机管理也就完成了，如果急需使用虚拟机功能，又想保留绿联Nas的系统，随绿联一起“成长”的用户可以利用此功能创建虚拟机，如果不着急的可以等官方的实现
-</p>
-
-<h2 id="heading-4">其它</h2>
-<ol>
-<li>
-<p>
- 没有修改libvirtd里的 <code>unix_sock_group</code> 配置为 <b>www-data</b>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">Failed to connect socket to &#39;/var/run/libvirt/libvirt-sock&#39;: Permission denied</pre></li>
-<li>
-<p>
- Docker内部(不是绿联系统)执行 <code>chmod 666 /dev/kvm</code>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">libvirt 错误- internal error: process exited while connecting to monitor: Could not access KVM kernel module: Permission denied 2023-07-05T16:17:57.942238Z qemu-system-x86_64: failed to initialize KVM: Permission denied</pre></li>
-<li>
-<p>
- 未安装<b>dnsmasq</b>，如果手动安装，使用 <code>virsh net-start default</code> 手动启动
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">libbvirt 错误- Requested operation is not valid: network &#39;default&#39; is not active</pre></li>
-<li>
-<p>
- 未安装<b>qemu-utils</b>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">internal error: creation of non-raw file images is not supported without qemu-img.</pre>
-</li>
-</ol>
-<p>
-   注意：文章中并未修改绿联Nas本身的系统，所有的安装包和修改文件配置都是在Docker内部进行
-</p>
+    <b>retspen...</b></p>
+            </div>
+            <div class="entry-btn">
+              <a href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html">阅读全文 »</a>
             </div>
         </article>
       </li>
@@ -1608,49 +1449,6 @@ Flutter 2.2...</pre></li></ul>
             </div>
             <div class="entry-btn">
               <a href="https://honmaple.me/articles/2021/06/flutter笔记之初体验.html">阅读全文 »</a>
-            </div>
-        </article>
-      </li>
-      <li>
-        <article class="entry-article">
-          <div class="entry-article-header">
-    <h1 class="entry-article-title">
-      <a href="https://honmaple.me/articles/2021/05/GNS3笔记.html" rel="bookmark" title="Permalink to GNS3笔记">GNS3笔记</a>
-    </h1>
-      <div class="entry-article-info">
-        <span title="Updated at 2021-11-24">
-          <i class="fa fa-calendar-o"></i>
-          2021年05月11日 周二
-        </span>
-          <span class="hidden-xs">|</span>
-          <span class="hidden-xs">
-            <i class="fa fa-user-o"></i>
-            By
-              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-folder-o"></i>
-            In
-              <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-bookmark-o"></i>
-            0f
-              <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-              <a href="https://honmaple.me/tags/gns3/index.html">gns3</a>
-          </span>
-      </div>
-  </div>
-          <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
-<h2 id="heading-1">GNS3 VM导入</h2>
-<pre style="color:#f8f8f2;background-color:#272822">virt-install  --name gns3  --memory <span style="color:#ae81ff">8192</span>  --vcpus <span style="color:#ae81ff">4</span>  --disk /home/kvm/GNS3/GNS3VM-disk001.qcow2  --disk /home/kvm/GNS3/GNS3VM-disk002.qcow2  --import --virt-type kvm --os-type linux --os-variant ubuntu18.04 --network...</pre>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2021/05/GNS3笔记.html">阅读全文 »</a>
             </div>
         </article>
       </li>
