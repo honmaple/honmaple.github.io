@@ -83,6 +83,454 @@
         <article class="entry-article">
           <div class="entry-article-header">
     <h1 class="entry-article-title">
+      <a href="https://honmaple.me/articles/2023/09/zerotier-note.html" rel="bookmark" title="Permalink to Zerotier笔记">Zerotier笔记</a>
+    </h1>
+      <div class="entry-article-info">
+        <span title="Updated at 2023-09-21">
+          <i class="fa fa-calendar-o"></i>
+          2023年09月17日 周日
+        </span>
+          <span class="hidden-xs">|</span>
+          <span class="hidden-xs">
+            <i class="fa fa-user-o"></i>
+            By
+              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-folder-o"></i>
+            In
+              <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-bookmark-o"></i>
+            0f
+              <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+          </span>
+      </div>
+  </div>
+          <hr class="entry-article-hr" />
+            <div class="entry-article-content no-tables">
+              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">相关概念</a></li>
+<li><a href="#heading-2">部署教程</a>
+<ul>
+<li><a href="#heading-2.1">UI界面</a></li>
+<li><a href="#heading-2.2">Zerotier客户端</a></li>
+<li><a href="#heading-2.3">私有Planet</a></li>
+<li><a href="#heading-2.4">私有Planet服务器加入组网</a></li>
+<li><a href="#heading-2.5">UI和Zerotier分开部署</a></li>
+</ul></li>
+<li><a href="#heading-3">组网教程</a>
+<ul>
+<li><a href="#heading-3.1">创建网络</a></li>
+<li><a href="#heading-3.2">加入网络</a></li>
+<li><a href="#heading-3.3">跨网段访问</a></li>
+<li><a href="#heading-3.4">安全限制</a></li>
+</ul></li>
+<li><a href="#heading-4">FAQ</a>
+<ul>
+<li><a href="#heading-4.1">如何修改默认的9993端口?</a></li>
+</ul></li>
+<li><a href="#heading-5">参考资料</a></li>
+</ul></div></div>
+
+<blockquote>
+<p>
+<b>zerotier</b> 可谓是慕名许久，但之前一直没有太多内网穿透和异地组网的需求，此次准备在外网访问家里NAS部署的部分应用，所以也调研了一些相关的应用，最终选择了 <b>zerotier</b> 来对我现有的机器进行组网
+</p>
+
+<ul>
+<li>
+<p>
+ <b>FRP</b>: 需要将服务器的端口映射出去，不太喜欢这种暴力的方式。我目前的服务基本上只会在 <code>0.0.0.0</code> 监听80、443等常用端口，其它服务一律监听 <code>127.0.0.1</code>，通过nginx访问内部的服务
+</p></li>
+<li>
+<p>
+ <b>DDNS</b>: 家里的NAS直接暴露在公网，这非常不安全，而且家用宽带无法使用80，443端口，只能使用高位端口
+</p></li>
+<li>
+<p>
+ <b>ZEROTIER</b>: 使用 <b>P2P</b> 的方式对多台服务器进行组网，映射的端口只允许加入组网的设备访问，这在速度和安全性上确实是我所需要的
+</p></li>
+</ul>
+</blockquote>
+
+<h3 id="heading-1">相关概念</h3>
+<ul>
+<li>
+<p>
+ <b>Planet</b>: 行星服务器，也称根服务器。主要用于管理 <b>zerotier</b> 客户端的地址信息
+</p></li>
+<li>
+<p>
+ <b>Moon</b>: 月亮服务器，也称中继服务器、跳转服务器。主要用于当两台设备无法直连时，可以通过Moon中转连接
+</p></li>
+<li>
+<p>
+ <b>Leaf</b>: 组网使用的设备，可以是一台服务器，一台NAS，甚至一台手机
+</p>
+</li>
+</ul>
+<h2 id="heading-2">部署教程</h2>
+<p>
+   现在我有三台设备需要进行组网，一台A在国外， 一台B在国内(腾讯云)，还有一台C在家里(NAS)。我准备将私有Planet部署到机器A，同时机器A也会加入到内网里，A、B、C三台设备可以通过内网相互访问
+</p>
+
+<h3 id="heading-2.1">UI界面</h3>
+<p>
+    以 <code>jonnyan404/zerotier-planet</code> 为例
+</p>
+<ol>
+<li>
+<p>
+ 创建目录
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">mkdir /opt/zerotier /opt/ztncui</pre></li>
+<li>
+<p>
+ 部署服务
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker run -d --name ztncui --restart always \
+-p 4000:4000 -p 9993:9993/tcp -p 9993:9993/udp \
+-e MYADDR={服务器公网IP} \
+-e HTTP_PORT=4000 \
+-e HTTP_ALL_INTERFACES=yes \
+-e ZTNCUI_PASSWD=mrdoc.fun \
+-v /opt/zerotier:/var/lib/zerotier-one \
+-v /opt/ztncui:/opt/key-networks/ztncui/etc \
+keynetworks/ztncui</pre>
+<p>
+       然后就可以通过 <code>服务器公网IP:4000</code> 访问UI管理界面，默认的用户名和密码: <code>admin,mrdoc.fun</code>
+</p>
+</li>
+</ol>
+<h3 id="heading-2.2">Zerotier客户端</h3>
+<ul>
+<li>
+<p>
+ <b>Linux</b>: 部署方式很简单，注意区分 <b>host网络</b> 和 <b>bridge网络</b>，这两个在安全性有所区别(具体在下面讲)
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker run --name zerotier -d \
+--restart always \
+--net host \
+--cap-add NET_ADMIN \
+--device /dev/net/tun \
+-v /opt/zerotier:/var/lib/zerotier-one \
+zerotier/zerotier:latest</pre>
+<p>
+      如果使用私有Planet，记得替换 <code>/opt/zerotier/planet</code> 文件
+</p></li>
+<li>
+<p>
+ <b>Android</b>: 推荐使用 <a href="github.com/kaaass/ZerotierFix">github.com/kaaass/ZerotierFix</a>
+</p>
+</li>
+</ul>
+<h3 id="heading-2.3">私有Planet</h3>
+<p>
+    默认的Planet信息是硬编码在zertier代码里，如果安装好客户端后会在 <code>zerotier-cli peers</code> 看到官方的Planet服务器。而部署私有的Planet的目的:
+</p>
+<ol>
+<li>
+<p>
+ 官方的服务器基本都位于国外或者香港，服务连通性无法得到保证
+</p></li>
+<li>
+<p>
+ 安全性。试想一个陌生的设备加入到网络，而这个设备的许可只需要得到官方的认证即可。当然，官方是基本不可能发生这样的情况，但如果有一个完全控制的网络，何乐而不为呢
+</p>
+</li>
+</ol>
+<p>
+    如何生成私有Planet文件?
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">git clone https://github.com/jonnyan404/zerotier-planet --depth=1
+cd zerotier-planet
+docker cp mkmoonworld-x86_64 ztncui:/tmp
+docker cp patch.sh ztncui:/tmp
+docker exec -it ztncui bash /tmp/patch.sh
+docker restart ztncui</pre>
+<p>
+    这样就会在挂载目录 <code>/opt/zerotier</code> 下生成一个新的 <b>planet</b> 文件，记得下载并备份。<b>所有加入组网的客户端都需要替换该文件</b>
+</p>
+
+<h3 id="heading-2.4">私有Planet服务器加入组网</h3>
+<p>
+    如果按照上述部署流程也可以正常使用 <code>zerotier</code> 组网，<b>但是</b>，如果想要把部署了私有Planet的设备也加入到内网，貌似没有一篇文章说到。 所以我专门研究了一下，想要把私有Planet的机器也加入到内网，大概是可以分为下面几种方式:
+</p>
+<ol>
+<li>
+<p>
+ (<b>不推荐</b>) 修改ztncui内部zerotier的默认端口9993 <br/>
+       在 <code>/opt/zerotier</code> 目录下添加一个 <code>local.conf</code>，并设置
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">{
+    <span style="color:#f92672">&#34;settings&#34;</span>: {
+        <span style="color:#f92672">&#34;primaryPort&#34;</span>: <span style="color:#ae81ff">9995</span>
+    }
+}</pre>
+<p>
+       然后修改 <code>patch.sh</code> 文件里的 <code>9993</code> 端口，以及 <code>/start_ztncui.sh</code> 添加一行
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">echo &#34;ZT_ADDR=localhost:$ZT_PORT&#34; &gt; /opt/key-networks/ztncui/.env</pre></li>
+<li>
+<p>
+ 部署两个zerotier: 除了ztncui容器内部的一个zerotier，再在机器上部署一个客户端，并修改端口，避免端口冲突
+</p></li>
+<li>
+<p>
+ (<b>推荐</b>) ztncui镜像的UI和zerotier分开部署<br/>
+       我研究后才发现 <code>ztncui</code> 的相关镜像把事情弄的很复杂，都把 <code>ztncui</code> 和 <code>zerotier</code> 放到同一个镜像，专门去连接 <code>localhost:9993</code> 。其实是可以把两个镜像分开的，<b>UI</b> 只做 <b>UI</b> ，使用 <b>API</b> 去连接 <b>zerotier</b> 官方的镜像
+</p>
+</li>
+</ol>
+<h3 id="heading-2.5">UI和Zerotier分开部署</h3>
+<p>
+    如果想要自己构建Docker镜像，可以参考 <a href="https://github.com/honmaple/ztncui-aio">honmaple/ztncui-aio</a>
+</p>
+
+<ol>
+<li>
+<p>
+ 部署 <b>zerotier</b> 的客户端(部署过的可以忽略)
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker run -d --name zerotier --restart always --net=host --cap-add NET_ADMIN --device /dev/net/tun -v /opt/zerotier:/var/lib/zerotier-one zerotier/zerotier:latest</pre></li>
+<li>
+<p>
+ 部署 <b>UI</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker run -d --name ztncui --restart always \
+-e MYADDR={服务器IP} \
+-e HTTP_PORT=4000 \
+-e HTTP_ALL_INTERFACES=yes \
+-e ZT_ADDR={zerotier地址, 比如Docker网关:9993} \
+-e ZT_TOKEN={可以为空，但需要挂载zerotier-one的配置路径} \
+-v /opt/ztncui:/opt/ztncui/etc \
+-v /opt/zerotier:/var/lib/zerotier-one \
+-p 4000:4000 \
+honmaple/ztncui:latest</pre>
+<p>
+       <b>ZT_ADDR</b>: 由于 <b>zerotier</b> 和 <b>ztncui</b> 没有部署在一个容器，所以需要从UI内部访问宿主机的 <b><b>9993</b></b> 端口，这里可以使用UI容器的网关访问，比如UI容器的IP是 <b><b>172.17.0.12</b></b>，则访问 <b><b>172.17.0.1</b></b>
+</p>
+
+<p>
+       另外，<b>zerotier</b> 默认的API接口只允许 <b><b>127.0.0.1</b></b> 访问，所以需要在挂载目录 <code>/opt/zerotier</code> 下新建一个 <b><b>local.conf</b></b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">{
+    <span style="color:#f92672">&#34;settings&#34;</span>: {
+        <span style="color:#f92672">&#34;allowManagementFrom&#34;</span>: [<span style="color:#e6db74">&#34;127.0.0.1/24&#34;</span>, <span style="color:#e6db74">&#34;::1&#34;</span>, <span style="color:#e6db74">&#34;172.17.0.1/24&#34;</span>]
+    }
+}</pre></li>
+<li>
+<p>
+ 修改归属的用户和用户组
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker exec -it zerotier bash
+cd /var/lib/zerotier-one
+chown zerotier-one:zerotier-one local.conf
+exit</pre></li>
+<li>
+<p>
+ 生成私有Planet文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">git clone https://github.com/honmaple/ztncui-aio --depth=1
+cd ztncui-aio
+docker cp script/mkmoonworld-x86_64 zerotier:/tmp
+docker cp script/patch.sh zerotier:/tmp
+docker exec -it zerotier bash /tmp/patch.sh {服务器IP}</pre></li>
+<li>
+<p>
+ 重启
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker restart zerotier</pre>
+<p>
+       这样就能使私有Planet和zerotier客户端共存，让Planet服务器也能加入到内网环境了
+</p>
+</li>
+</ol>
+<h2 id="heading-3">组网教程</h2>
+<h3 id="heading-3.1">创建网络</h3>
+<ol>
+<li>
+<p>
+ 使用浏览器打开UI管理界面 <code>{服务器公网IP}:4000</code>，<code>honmaple/ztncui</code> 默认用户名密码是 <code>admin,password</code>
+       
+<a href="https://s.libforest.com/images/2023/09/zerotier-01.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/09/zerotier-01.jpg-thumb" class="lazyload" />
+</a>
+</p>
+</li>
+<li>
+<p>
+ 点击 <code>Add network</code>，输入一个网络名称，比如 <b>testlab</b>。然后选择 <code>Easy setup</code>
+       
+<a href="https://s.libforest.com/images/2023/09/zerotier-02.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/09/zerotier-02.jpg-thumb" class="lazyload" />
+</a>
+</p>
+</li>
+<li>
+<p>
+ 添加一个内网网段，记得这个内网网段不能和需要加入组网的设备网段相同，比如我的设备C网段是 <code>192.168.31.0/24</code> ，就不能添加该网段，另外Docker所使用的网段 <code>172.0.0.0/8</code> 也需要避免添加，所以我这里选择 <code>10.8.230.0/24</code>。<b>不同的设备内网网段不同，请根据实际添加</b>
+       
+<a href="https://s.libforest.com/images/2023/09/zerotier-03.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/09/zerotier-03.jpg-thumb" class="lazyload" />
+</a>
+</p>
+</li>
+</ol>
+<h3 id="heading-3.2">加入网络</h3>
+<p>
+    创建好网络后就会得到一串网络ID，登录到设备，然后使用
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker exec zerotier zerotier-cli join {网络ID}</pre>
+
+<p>
+    加入网络，正常情况下会得到
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">200 join OK</pre>
+<p>
+    刷新管理界面就会出现一个新的成员
+    
+<a href="https://s.libforest.com/images/2023/09/zerotier-04.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/09/zerotier-04.jpg-thumb" class="lazyload" />
+</a>
+    然后勾选 <b>Authorizerd</b> 允许加入，再次刷新，就能看到该设备分配了一个新的IP <code>10.8.230.170</code>
+    
+<a href="https://s.libforest.com/images/2023/09/zerotier-05.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/09/zerotier-05.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+    返回设备，可以看到设备多了一个新的IP
+    
+<a href="https://s.libforest.com/images/2023/09/zerotier-06.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/09/zerotier-06.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<h3 id="heading-3.3">跨网段访问</h3>
+<p>
+    什么是跨网段访问? 比如现在我可以通过 <b>10.8.230.0/24</b> 访问已经加入组网的设备，但我想要在<b>设备B</b>上访问我家里的其它设备，但是，我家里设备的网段是 <b>192.168.31.0/24</b>，正常是无法访问的，只能访问已经加入组网的Nas。这时需要配置静态路由，让设备B访问 <b>192.168.31.0/24</b> 网段时走zerotier配置好的IP。
+</p>
+
+<p>
+    如果手动添加就是
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">ip route add 192.168.31.0/24 via 10.8.230.170 dev {zerotier建立的网卡}</pre>
+
+<p>
+    当然，也可以直接使用zerotier管理界面添加，选择 <code>Routes</code>
+    
+<a href="https://s.libforest.com/images/2023/09/zerotier-07.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/09/zerotier-07.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+    <b>Target</b> 输入想要访问的网段：<code>192.168.31.0/24</code>，<b>Gateway</b> 输入之前分配的IP：<code>10.8.230.170</code>。
+    
+<a href="https://s.libforest.com/images/2023/09/zerotier-08.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2023/09/zerotier-08.jpg-thumb" class="lazyload" />
+</a>
+</p>
+
+<p>
+    创建好后可以在设备B上执行
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">ping 192.168.31.XX(除设备C之外的内网设备IP)</pre>
+<p>
+    查看网络是否连通
+</p>
+
+<h3 id="heading-3.4">安全限制</h3>
+<p>
+    正因为跨网段访问只需要添加一个静态路由，就能访问我家里的其它设备，这无疑是非常不安全的。如果私有Planet服务器遭到入侵，我家里的所有联网设备都会暴露出去，即使加入组网只是其中的一台。基于此原因，我专门调整了一下zerotier的部署方式，不再使用 <b>host网络</b> 的方式部署，而是创建一个新的Docker网络 <code>zerotier</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker network create --driver=bridge --subnet=192.168.100.0/24 --gateway=192.168.100.1 zerotier</pre>
+<p>
+    注: <code>192.168.100.0/24</code> 是一个全新的网段，不要使用172网段
+</p>
+
+<p>
+    然后删除之前部署的 <b>zerotier</b> 客户端，并使用 <b>zerotier网络</b> 重新部署
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker stop zerotier
+docker rm zerotier
+docker run -d --name zerotier --restart always --net zerotier --cap-add NET_ADMIN --device /dev/net/tun -v /opt/zerotier:/var/lib/zerotier-one zerotier/zerotier:latest</pre>
+<p>
+    细心的朋友应该会发现我这里没有将 <b>9993</b> 端口映射给宿主机，这是由于我测试发现两台设备只需要其中一台开放 <code>9993</code> 端口，两台设备设备就能直连。如果两台设备都不开放端口，则会通过开放了端口的其它设备进行跳转，查看 <b>peers</b> 会看到一直是 <b>RELAY</b> 状态
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">root@cf5f973bd294:/# zerotier-cli peers
+200 peers
+&lt;ztaddr&gt;   &lt;ver&gt;  &lt;role&gt; &lt;lat&gt; &lt;link&gt;   &lt;lastTX&gt; &lt;lastRX&gt; &lt;path&gt;
+xxxxxxxxx  1.12.1 LEAF      -1 RELAY</pre>
+
+<p>
+    这时想要从设备B访问我家里其它联网的设备已是不可能，除非突破Docker的限制。而正常情况下，我想要从设备B上访问的是部署在设备C的其它服务(以Docker服务为主)，所以，现在可以添加一个新的路由 <b>192.168.100.0/24</b> 指向 <b>10.8.230.170</b>，然后修改其它镜像使用的网络为 <b>zerotier</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker run -d --rm --name=test-nginx --net=zerotier nginx:stable-alpine
+docker exec -it test-nginx ip a</pre>
+
+<p>
+    接着在设备B上执行
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">ping 192.168.100.3(test-nginx的IP)
+curl 192.168.100.3</pre>
+
+<p>
+    如果无法访问，需要在Docker所在宿主机上添加路由
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">ip route add 10.8.230.0/24 via 192.168.100.2(zerotier客户端的IP)</pre>
+
+<p>
+    另外，由于Docker的IP可能会发生改变，除创建容器时指定 <code>--ip</code> 外，还可以将服务的端口映射出去，比如 <b>NasTools</b> 使用端口为 3000，那么可以在创建容器时指定
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">-p 11300:3000</pre>
+<p>
+    然后在设备B上访问 <code>192.168.100.1:11300</code>，即<b>网关地址+映射的端口</b>，这样就能避免Docker重启后IP发生改变而导致服务异常的情况
+</p>
+
+<h2 id="heading-4">FAQ</h2>
+<h3 id="heading-4.1">如何修改默认的9993端口?</h3>
+<p>
+    在 <b>zerotier</b> 挂载的目录下新建一个 <code>local.conf</code> 文件，并设置
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">{
+    <span style="color:#f92672">&#34;settings&#34;</span>: {
+        <span style="color:#f92672">&#34;primaryPort&#34;</span>: <span style="color:#ae81ff">9995</span>
+    }
+}</pre>
+
+<h2 id="heading-5">参考资料</h2>
+<ul>
+<li>
+<p>
+ <a href="github.com/honmaple/ztncui-aio">github.com/honmaple/ztncui-aio</a>
+</p></li>
+<li>
+<p>
+ <a href="github.com/jonnyan404/zerotier-planet">github.com/jonnyan404/zerotier-planet</a>
+</p></li>
+<li>
+<p>
+ <a href="github.com/zerotier/ZeroTierOne/blob/dev/README.docker.md">github.com/zerotier/ZeroTierOne/blob/dev/README.docker.md</a>
+</p></li>
+<li>
+<p>
+ <a href="docs.zerotier.com/zerotier/zerotier.conf/">docs.zerotier.com/zerotier/zerotier.conf/</a>
+</p></li>
+</ul>
+            </div>
+        </article>
+      </li>
+      <li>
+        <article class="entry-article">
+          <div class="entry-article-header">
+    <h1 class="entry-article-title">
       <a href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html" rel="bookmark" title="Permalink to 绿联云Nas新版本v3.4.0固件开启SSH">绿联云Nas新版本v3.4.0固件开启SSH</a>
     </h1>
       <div class="entry-article-info">
@@ -113,16 +561,7 @@
   </div>
           <hr class="entry-article-hr" />
             <div class="entry-article-content no-tables">
-              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">创建随机镜像</a></li>
-<li><a href="#heading-2">抓包获取Token</a></li>
-<li><a href="#heading-3">手动创建容器</a></li>
-<li><a href="#heading-4">修改SSH配置</a></li>
-<li><a href="#heading-5">SSH登录</a></li>
-<li><a href="#heading-6">问题排查</a></li>
-<li><a href="#heading-7">其它</a></li>
-</ul></div></div>
-
+              
 <blockquote>
 <p>
 之前老的方式<b>固定前缀加远程协助验证码</b>在更新到最新版本的<b>v3.4.0</b>后已经失效，想要开启ssh只能使用另一种方式，也希望绿联云官方在系统更加完善(<b>权限管理、软件卸载</b>)前不要再继续封堵开启的方式，当然，如果能提供官方的开启方式更好
@@ -147,131 +586,10 @@
 </p>
 
 <p>
-   然后点击创建容器，存储空间<b>添加一个任意目录</b>，挂载到 <code>/data</code> 下，<b>其它参数为默认</b>，然后下一步，先<b>不要点击完成</b>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<h2 id="heading-2">抓包获取Token</h2>
-<p>
-   打开 <b>wireshark</b> 进行抓包，输入筛选参数
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">ip.dst_host == 192.168.31.65 and http and http.request.method==POST</pre>
-
-<p>
-   然后返回绿联云，点击完成，这时会在 <b>wireshark</b> 窗口看到一条HTTP请求
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   点击这条请求，然后 <b>右键 -&gt; Follow -&gt; HTTP Stream</b>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   这时会看到具体的<b>HTTP请求头和请求参数</b>，在下方的Find里输入 <code>create</code> 进行查找，然后将红色内容复制到本地，将请求参数 <code>{&#34;_query&#34;...}</code> 复制到一个 <b>json</b> 文件
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   接着修改 <b>json</b> 文件，找到<b>HostConfig -&gt; Mounts</b>，将里面的 <b>Source</b> 参数修改为 <code>/</code>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<h2 id="heading-3">手动创建容器</h2>
-<p>
-   首先到绿联云删除刚开始创建的容器
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   然后使用命令行手动请求创建容器，其中 <b>ugreen.json</b> 为抓包获取并修改后的参数文件，请求头保持一致
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   创建完成后，返回绿联云，刷新并查看详情，可以看到绿联系统的根目录已经挂载到容器内部
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<h2 id="heading-4">修改SSH配置</h2>
-<p>
-   使用终端进入Docker内部
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-   然后添加公钥到root目录，怎么生成公私钥这里不再叙述。
-   查看sshd的配置，默认是不允许使用公钥匙登录的，所以需要修改 <code>PubkeyAuthentication no</code> 为 <code>PubkeyAuthentication yes</code>
-</p>
-
-<p>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-thumb" class="lazyload" />
-</a>
-   接着到<b>设备管理 -&gt; 远程协助 -&gt; 开启远程调试功能</b>，重启sshd就是关闭远程调试然后重新打开
-</p>
-
-<h2 id="heading-5">SSH登录</h2>
-<p>
-   最后就可以使用ssh公钥登录绿联云系统了
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<h2 id="heading-6">问题排查</h2>
-<p>
-   如果无法使用ssh公钥登录，可以查看系统的ssh登录日志
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">grep ssh /data/data/nas_server/log/system/*syslog | less</pre>
-
-<p>
-   如果提示 <code>Authentication refused: bad ownership or modes for directory /root</code>，则执行
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">chmod go-w /data/root</pre>
-
-<p>
-   如果提示 <code>ssh-rsa: signature algorithm not supported</code>，则添加下面配置到<b>sshd_config</b>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">PubkeyAcceptedKeyTypes=+ssh-rsa</pre>
-
-<h2 id="heading-7">其它</h2>
-<p>
-   升级到<b>v3.4.0</b>后，目前觉得还不错，其中<b>批量重命名，TMDB接口，自定义Hosts</b>等都是非常有用的功能，也希望绿联能再接再厉，我们这些用户也能和绿联Nas一同成长。
-</p>
-
-<p>
-   对了，之前文件同步会修改源文件权限的问题已经被修复，<b>Very Good</b>
-</p>
+   然后点击创建容器，存储空间<b>添加一个任意目录</b>，挂载到 <code>/data</code> 下...</p>
+            </div>
+            <div class="entry-btn">
+              <a href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html">阅读全文 »</a>
             </div>
         </article>
       </li>
@@ -422,7 +740,7 @@
       <a href="https://honmaple.me/articles/2023/06/snow-faq.html" rel="bookmark" title="Permalink to 关于Snow静态博客的常见问题">关于Snow静态博客的常见问题</a>
     </h1>
       <div class="entry-article-info">
-        <span title="Updated at 2023-07-27">
+        <span title="Updated at 2023-07-28">
           <i class="fa fa-calendar-o"></i>
           2023年06月28日 周三
         </span>
@@ -1386,63 +1704,6 @@
             </div>
             <div class="entry-btn">
               <a href="https://honmaple.me/articles/2021/08/Docker笔记之registry清理.html">阅读全文 »</a>
-            </div>
-        </article>
-      </li>
-      <li>
-        <article class="entry-article">
-          <div class="entry-article-header">
-    <h1 class="entry-article-title">
-      <a href="https://honmaple.me/articles/2021/07/K8S笔记之ingress增加验证.html" rel="bookmark" title="Permalink to K8S笔记之ingress增加验证">K8S笔记之ingress增加验证</a>
-    </h1>
-      <div class="entry-article-info">
-        <span title="Updated at 2021-09-02">
-          <i class="fa fa-calendar-o"></i>
-          2021年07月13日 周二
-        </span>
-          <span class="hidden-xs">|</span>
-          <span class="hidden-xs">
-            <i class="fa fa-user-o"></i>
-            By
-              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-folder-o"></i>
-            In
-              <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-bookmark-o"></i>
-            0f
-              <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-              <a href="https://honmaple.me/tags/k8s/index.html">k8s</a>
-          </span>
-      </div>
-  </div>
-          <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
-<h2 id="heading-1">创建账户密码</h2>
-<ul>
-<li>
-<p>
- 生成密码
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">PASSWORD<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>base64 &lt; /dev/urandom | head -c8<span style="color:#66d9ef">)</span>; echo <span style="color:#e6db74">&#34;</span>$PASSWORD<span style="color:#e6db74">&#34;</span></pre></li>
-<li>
-<p>
- 生成hash值
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker run --rm --entrypoint htpasswd httpd:2 -Bbn username password &gt;&gt; auth</pre>
-</li>
-</ul>
-<h2 id="heading-2">修改ingress</h2>
-<pre style="color:#f8f8f2;background-color:#272822">nginx.ingress.kubernetes.io/auth...</pre>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2021/07/K8S笔记之ingress增加验证.html">阅读全文 »</a>
             </div>
         </article>
       </li>

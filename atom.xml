@@ -5,8 +5,450 @@
   <link href="https://honmaple.me/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me/index.html"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Thu, 20 Jul 2023 09:54:51 +0000</updated>
+    <updated>Thu, 21 Sep 2023 02:59:40 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>Zerotier笔记</title>
+      <link href="" rel="alternate"></link>
+      <published>Sun, 17 Sep 2023 15:41:40 +0000</published>
+      <updated>Thu, 21 Sep 2023 02:59:40 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/09/zerotier-note.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/09/zerotier-note.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;b&gt;zerotier&lt;/b&gt; 可谓是慕名许久，但之前一直没有太多内网穿透和异地组网的需求，此次准备在外网访问家里NAS部署的部分应用，所以也调研了一些相关的应用，最终选择了 &lt;b&gt;zerotier&lt;/b&gt; 来对我现有的机器进行组网
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;FRP&lt;/b&gt;: 需要将服务器的端口映射出去，不太喜欢这种暴力的方式。我目前的服务基本上只会在 &lt;code&gt;0.0.0.0&lt;/code&gt; 监听80、443等常用端口，其它服务一律监听 &lt;code&gt;127.0.0.1&lt;/code&gt;，通过nginx访问内部的服务
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;DDNS&lt;/b&gt;: 家里的NAS直接暴露在公网，这非常不安全，而且家用宽带无法使用80，443端口，只能使用高位端口
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;ZEROTIER&lt;/b&gt;: 使用 &lt;b&gt;P2P&lt;/b&gt; 的方式对多台服务器进行组网，映射的端口只允许加入组网的设备访问，这在速度和安全性上确实是我所需要的...&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/blockquote&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;相关概念&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;部署教程&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;UI界面&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;Zerotier客户端&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;私有Planet&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;私有Planet服务器加入组网&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.5&quot;&gt;UI和Zerotier分开部署&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;组网教程&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.1&quot;&gt;创建网络&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.2&quot;&gt;加入网络&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.3&quot;&gt;跨网段访问&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.4&quot;&gt;安全限制&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;FAQ&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4.1&quot;&gt;如何修改默认的9993端口?&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;参考资料&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;b&gt;zerotier&lt;/b&gt; 可谓是慕名许久，但之前一直没有太多内网穿透和异地组网的需求，此次准备在外网访问家里NAS部署的部分应用，所以也调研了一些相关的应用，最终选择了 &lt;b&gt;zerotier&lt;/b&gt; 来对我现有的机器进行组网
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;FRP&lt;/b&gt;: 需要将服务器的端口映射出去，不太喜欢这种暴力的方式。我目前的服务基本上只会在 &lt;code&gt;0.0.0.0&lt;/code&gt; 监听80、443等常用端口，其它服务一律监听 &lt;code&gt;127.0.0.1&lt;/code&gt;，通过nginx访问内部的服务
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;DDNS&lt;/b&gt;: 家里的NAS直接暴露在公网，这非常不安全，而且家用宽带无法使用80，443端口，只能使用高位端口
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;ZEROTIER&lt;/b&gt;: 使用 &lt;b&gt;P2P&lt;/b&gt; 的方式对多台服务器进行组网，映射的端口只允许加入组网的设备访问，这在速度和安全性上确实是我所需要的
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;heading-1&quot;&gt;相关概念&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Planet&lt;/b&gt;: 行星服务器，也称根服务器。主要用于管理 &lt;b&gt;zerotier&lt;/b&gt; 客户端的地址信息
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Moon&lt;/b&gt;: 月亮服务器，也称中继服务器、跳转服务器。主要用于当两台设备无法直连时，可以通过Moon中转连接
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Leaf&lt;/b&gt;: 组网使用的设备，可以是一台服务器，一台NAS，甚至一台手机
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;部署教程&lt;/h2&gt;
+&lt;p&gt;
+   现在我有三台设备需要进行组网，一台A在国外， 一台B在国内(腾讯云)，还有一台C在家里(NAS)。我准备将私有Planet部署到机器A，同时机器A也会加入到内网里，A、B、C三台设备可以通过内网相互访问
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.1&quot;&gt;UI界面&lt;/h3&gt;
+&lt;p&gt;
+    以 &lt;code&gt;jonnyan404/zerotier-planet&lt;/code&gt; 为例
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 创建目录
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;mkdir /opt/zerotier /opt/ztncui&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 部署服务
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name ztncui --restart always \
+-p 4000:4000 -p 9993:9993/tcp -p 9993:9993/udp \
+-e MYADDR={服务器公网IP} \
+-e HTTP_PORT=4000 \
+-e HTTP_ALL_INTERFACES=yes \
+-e ZTNCUI_PASSWD=mrdoc.fun \
+-v /opt/zerotier:/var/lib/zerotier-one \
+-v /opt/ztncui:/opt/key-networks/ztncui/etc \
+keynetworks/ztncui&lt;/pre&gt;
+&lt;p&gt;
+       然后就可以通过 &lt;code&gt;服务器公网IP:4000&lt;/code&gt; 访问UI管理界面，默认的用户名和密码: &lt;code&gt;admin,mrdoc.fun&lt;/code&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;heading-2.2&quot;&gt;Zerotier客户端&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Linux&lt;/b&gt;: 部署方式很简单，注意区分 &lt;b&gt;host网络&lt;/b&gt; 和 &lt;b&gt;bridge网络&lt;/b&gt;，这两个在安全性有所区别(具体在下面讲)
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run --name zerotier -d \
+--restart always \
+--net host \
+--cap-add NET_ADMIN \
+--device /dev/net/tun \
+-v /opt/zerotier:/var/lib/zerotier-one \
+zerotier/zerotier:latest&lt;/pre&gt;
+&lt;p&gt;
+      如果使用私有Planet，记得替换 &lt;code&gt;/opt/zerotier/planet&lt;/code&gt; 文件
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Android&lt;/b&gt;: 推荐使用 &lt;a href=&quot;github.com/kaaass/ZerotierFix&quot;&gt;github.com/kaaass/ZerotierFix&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;heading-2.3&quot;&gt;私有Planet&lt;/h3&gt;
+&lt;p&gt;
+    默认的Planet信息是硬编码在zertier代码里，如果安装好客户端后会在 &lt;code&gt;zerotier-cli peers&lt;/code&gt; 看到官方的Planet服务器。而部署私有的Planet的目的:
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 官方的服务器基本都位于国外或者香港，服务连通性无法得到保证
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 安全性。试想一个陌生的设备加入到网络，而这个设备的许可只需要得到官方的认证即可。当然，官方是基本不可能发生这样的情况，但如果有一个完全控制的网络，何乐而不为呢
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+    如何生成私有Planet文件?
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;git clone https://github.com/jonnyan404/zerotier-planet --depth=1
+cd zerotier-planet
+docker cp mkmoonworld-x86_64 ztncui:/tmp
+docker cp patch.sh ztncui:/tmp
+docker exec -it ztncui bash /tmp/patch.sh
+docker restart ztncui&lt;/pre&gt;
+&lt;p&gt;
+    这样就会在挂载目录 &lt;code&gt;/opt/zerotier&lt;/code&gt; 下生成一个新的 &lt;b&gt;planet&lt;/b&gt; 文件，记得下载并备份。&lt;b&gt;所有加入组网的客户端都需要替换该文件&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.4&quot;&gt;私有Planet服务器加入组网&lt;/h3&gt;
+&lt;p&gt;
+    如果按照上述部署流程也可以正常使用 &lt;code&gt;zerotier&lt;/code&gt; 组网，&lt;b&gt;但是&lt;/b&gt;，如果想要把部署了私有Planet的设备也加入到内网，貌似没有一篇文章说到。 所以我专门研究了一下，想要把私有Planet的机器也加入到内网，大概是可以分为下面几种方式:
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ (&lt;b&gt;不推荐&lt;/b&gt;) 修改ztncui内部zerotier的默认端口9993 &lt;br/&gt;
+       在 &lt;code&gt;/opt/zerotier&lt;/code&gt; 目录下添加一个 &lt;code&gt;local.conf&lt;/code&gt;，并设置
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;settings&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;primaryPort&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;9995&lt;/span&gt;
+    }
+}&lt;/pre&gt;
+&lt;p&gt;
+       然后修改 &lt;code&gt;patch.sh&lt;/code&gt; 文件里的 &lt;code&gt;9993&lt;/code&gt; 端口，以及 &lt;code&gt;/start_ztncui.sh&lt;/code&gt; 添加一行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;echo &amp;#34;ZT_ADDR=localhost:$ZT_PORT&amp;#34; &amp;gt; /opt/key-networks/ztncui/.env&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 部署两个zerotier: 除了ztncui容器内部的一个zerotier，再在机器上部署一个客户端，并修改端口，避免端口冲突
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ (&lt;b&gt;推荐&lt;/b&gt;) ztncui镜像的UI和zerotier分开部署&lt;br/&gt;
+       我研究后才发现 &lt;code&gt;ztncui&lt;/code&gt; 的相关镜像把事情弄的很复杂，都把 &lt;code&gt;ztncui&lt;/code&gt; 和 &lt;code&gt;zerotier&lt;/code&gt; 放到同一个镜像，专门去连接 &lt;code&gt;localhost:9993&lt;/code&gt; 。其实是可以把两个镜像分开的，&lt;b&gt;UI&lt;/b&gt; 只做 &lt;b&gt;UI&lt;/b&gt; ，使用 &lt;b&gt;API&lt;/b&gt; 去连接 &lt;b&gt;zerotier&lt;/b&gt; 官方的镜像
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;heading-2.5&quot;&gt;UI和Zerotier分开部署&lt;/h3&gt;
+&lt;p&gt;
+    如果想要自己构建Docker镜像，可以参考 &lt;a href=&quot;https://github.com/honmaple/ztncui-aio&quot;&gt;honmaple/ztncui-aio&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 部署 &lt;b&gt;zerotier&lt;/b&gt; 的客户端(部署过的可以忽略)
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name zerotier --restart always --net=host --cap-add NET_ADMIN --device /dev/net/tun -v /opt/zerotier:/var/lib/zerotier-one zerotier/zerotier:latest&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 部署 &lt;b&gt;UI&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name ztncui --restart always \
+-e MYADDR={服务器IP} \
+-e HTTP_PORT=4000 \
+-e HTTP_ALL_INTERFACES=yes \
+-e ZT_ADDR={zerotier地址, 比如Docker网关:9993} \
+-e ZT_TOKEN={可以为空，但需要挂载zerotier-one的配置路径} \
+-v /opt/ztncui:/opt/ztncui/etc \
+-v /opt/zerotier:/var/lib/zerotier-one \
+-p 4000:4000 \
+honmaple/ztncui:latest&lt;/pre&gt;
+&lt;p&gt;
+       &lt;b&gt;ZT_ADDR&lt;/b&gt;: 由于 &lt;b&gt;zerotier&lt;/b&gt; 和 &lt;b&gt;ztncui&lt;/b&gt; 没有部署在一个容器，所以需要从UI内部访问宿主机的 &lt;b&gt;&lt;b&gt;9993&lt;/b&gt;&lt;/b&gt; 端口，这里可以使用UI容器的网关访问，比如UI容器的IP是 &lt;b&gt;&lt;b&gt;172.17.0.12&lt;/b&gt;&lt;/b&gt;，则访问 &lt;b&gt;&lt;b&gt;172.17.0.1&lt;/b&gt;&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+       另外，&lt;b&gt;zerotier&lt;/b&gt; 默认的API接口只允许 &lt;b&gt;&lt;b&gt;127.0.0.1&lt;/b&gt;&lt;/b&gt; 访问，所以需要在挂载目录 &lt;code&gt;/opt/zerotier&lt;/code&gt; 下新建一个 &lt;b&gt;&lt;b&gt;local.conf&lt;/b&gt;&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;settings&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;allowManagementFrom&amp;#34;&lt;/span&gt;: [&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;127.0.0.1/24&amp;#34;&lt;/span&gt;, &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;::1&amp;#34;&lt;/span&gt;, &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;172.17.0.1/24&amp;#34;&lt;/span&gt;]
+    }
+}&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 修改归属的用户和用户组
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec -it zerotier bash
+cd /var/lib/zerotier-one
+chown zerotier-one:zerotier-one local.conf
+exit&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 生成私有Planet文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;git clone https://github.com/honmaple/ztncui-aio --depth=1
+cd ztncui-aio
+docker cp script/mkmoonworld-x86_64 zerotier:/tmp
+docker cp script/patch.sh zerotier:/tmp
+docker exec -it zerotier bash /tmp/patch.sh {服务器IP}&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 重启
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker restart zerotier&lt;/pre&gt;
+&lt;p&gt;
+       这样就能使私有Planet和zerotier客户端共存，让Planet服务器也能加入到内网环境了
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&quot;heading-3&quot;&gt;组网教程&lt;/h2&gt;
+&lt;h3 id=&quot;heading-3.1&quot;&gt;创建网络&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 使用浏览器打开UI管理界面 &lt;code&gt;{服务器公网IP}:4000&lt;/code&gt;，&lt;code&gt;honmaple/ztncui&lt;/code&gt; 默认用户名密码是 &lt;code&gt;admin,password&lt;/code&gt;
+       
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 点击 &lt;code&gt;Add network&lt;/code&gt;，输入一个网络名称，比如 &lt;b&gt;testlab&lt;/b&gt;。然后选择 &lt;code&gt;Easy setup&lt;/code&gt;
+       
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-02.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-02.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 添加一个内网网段，记得这个内网网段不能和需要加入组网的设备网段相同，比如我的设备C网段是 &lt;code&gt;192.168.31.0/24&lt;/code&gt; ，就不能添加该网段，另外Docker所使用的网段 &lt;code&gt;172.0.0.0/8&lt;/code&gt; 也需要避免添加，所以我这里选择 &lt;code&gt;10.8.230.0/24&lt;/code&gt;。&lt;b&gt;不同的设备内网网段不同，请根据实际添加&lt;/b&gt;
+       
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-03.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-03.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;heading-3.2&quot;&gt;加入网络&lt;/h3&gt;
+&lt;p&gt;
+    创建好网络后就会得到一串网络ID，登录到设备，然后使用
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec zerotier zerotier-cli join {网络ID}&lt;/pre&gt;
+
+&lt;p&gt;
+    加入网络，正常情况下会得到
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;200 join OK&lt;/pre&gt;
+&lt;p&gt;
+    刷新管理界面就会出现一个新的成员
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-04.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-04.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+    然后勾选 &lt;b&gt;Authorizerd&lt;/b&gt; 允许加入，再次刷新，就能看到该设备分配了一个新的IP &lt;code&gt;10.8.230.170&lt;/code&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-05.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-05.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    返回设备，可以看到设备多了一个新的IP
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-06.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-06.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-3.3&quot;&gt;跨网段访问&lt;/h3&gt;
+&lt;p&gt;
+    什么是跨网段访问? 比如现在我可以通过 &lt;b&gt;10.8.230.0/24&lt;/b&gt; 访问已经加入组网的设备，但我想要在&lt;b&gt;设备B&lt;/b&gt;上访问我家里的其它设备，但是，我家里设备的网段是 &lt;b&gt;192.168.31.0/24&lt;/b&gt;，正常是无法访问的，只能访问已经加入组网的Nas。这时需要配置静态路由，让设备B访问 &lt;b&gt;192.168.31.0/24&lt;/b&gt; 网段时走zerotier配置好的IP。
+&lt;/p&gt;
+
+&lt;p&gt;
+    如果手动添加就是
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ip route add 192.168.31.0/24 via 10.8.230.170 dev {zerotier建立的网卡}&lt;/pre&gt;
+
+&lt;p&gt;
+    当然，也可以直接使用zerotier管理界面添加，选择 &lt;code&gt;Routes&lt;/code&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-07.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-07.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;b&gt;Target&lt;/b&gt; 输入想要访问的网段：&lt;code&gt;192.168.31.0/24&lt;/code&gt;，&lt;b&gt;Gateway&lt;/b&gt; 输入之前分配的IP：&lt;code&gt;10.8.230.170&lt;/code&gt;。
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-08.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-08.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    创建好后可以在设备B上执行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ping 192.168.31.XX(除设备C之外的内网设备IP)&lt;/pre&gt;
+&lt;p&gt;
+    查看网络是否连通
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-3.4&quot;&gt;安全限制&lt;/h3&gt;
+&lt;p&gt;
+    正因为跨网段访问只需要添加一个静态路由，就能访问我家里的其它设备，这无疑是非常不安全的。如果私有Planet服务器遭到入侵，我家里的所有联网设备都会暴露出去，即使加入组网只是其中的一台。基于此原因，我专门调整了一下zerotier的部署方式，不再使用 &lt;b&gt;host网络&lt;/b&gt; 的方式部署，而是创建一个新的Docker网络 &lt;code&gt;zerotier&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker network create --driver=bridge --subnet=192.168.100.0/24 --gateway=192.168.100.1 zerotier&lt;/pre&gt;
+&lt;p&gt;
+    注: &lt;code&gt;192.168.100.0/24&lt;/code&gt; 是一个全新的网段，不要使用172网段
+&lt;/p&gt;
+
+&lt;p&gt;
+    然后删除之前部署的 &lt;b&gt;zerotier&lt;/b&gt; 客户端，并使用 &lt;b&gt;zerotier网络&lt;/b&gt; 重新部署
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker stop zerotier
+docker rm zerotier
+docker run -d --name zerotier --restart always --net zerotier --cap-add NET_ADMIN --device /dev/net/tun -v /opt/zerotier:/var/lib/zerotier-one zerotier/zerotier:latest&lt;/pre&gt;
+&lt;p&gt;
+    细心的朋友应该会发现我这里没有将 &lt;b&gt;9993&lt;/b&gt; 端口映射给宿主机，这是由于我测试发现两台设备只需要其中一台开放 &lt;code&gt;9993&lt;/code&gt; 端口，两台设备设备就能直连。如果两台设备都不开放端口，则会通过开放了端口的其它设备进行跳转，查看 &lt;b&gt;peers&lt;/b&gt; 会看到一直是 &lt;b&gt;RELAY&lt;/b&gt; 状态
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;root@cf5f973bd294:/# zerotier-cli peers
+200 peers
+&amp;lt;ztaddr&amp;gt;   &amp;lt;ver&amp;gt;  &amp;lt;role&amp;gt; &amp;lt;lat&amp;gt; &amp;lt;link&amp;gt;   &amp;lt;lastTX&amp;gt; &amp;lt;lastRX&amp;gt; &amp;lt;path&amp;gt;
+xxxxxxxxx  1.12.1 LEAF      -1 RELAY&lt;/pre&gt;
+
+&lt;p&gt;
+    这时想要从设备B访问我家里其它联网的设备已是不可能，除非突破Docker的限制。而正常情况下，我想要从设备B上访问的是部署在设备C的其它服务(以Docker服务为主)，所以，现在可以添加一个新的路由 &lt;b&gt;192.168.100.0/24&lt;/b&gt; 指向 &lt;b&gt;10.8.230.170&lt;/b&gt;，然后修改其它镜像使用的网络为 &lt;b&gt;zerotier&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --rm --name=test-nginx --net=zerotier nginx:stable-alpine
+docker exec -it test-nginx ip a&lt;/pre&gt;
+
+&lt;p&gt;
+    接着在设备B上执行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ping 192.168.100.3(test-nginx的IP)
+curl 192.168.100.3&lt;/pre&gt;
+
+&lt;p&gt;
+    如果无法访问，需要在Docker所在宿主机上添加路由
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ip route add 10.8.230.0/24 via 192.168.100.2(zerotier客户端的IP)&lt;/pre&gt;
+
+&lt;p&gt;
+    另外，由于Docker的IP可能会发生改变，除创建容器时指定 &lt;code&gt;--ip&lt;/code&gt; 外，还可以将服务的端口映射出去，比如 &lt;b&gt;NasTools&lt;/b&gt; 使用端口为 3000，那么可以在创建容器时指定
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;-p 11300:3000&lt;/pre&gt;
+&lt;p&gt;
+    然后在设备B上访问 &lt;code&gt;192.168.100.1:11300&lt;/code&gt;，即&lt;b&gt;网关地址+映射的端口&lt;/b&gt;，这样就能避免Docker重启后IP发生改变而导致服务异常的情况
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-4&quot;&gt;FAQ&lt;/h2&gt;
+&lt;h3 id=&quot;heading-4.1&quot;&gt;如何修改默认的9993端口?&lt;/h3&gt;
+&lt;p&gt;
+    在 &lt;b&gt;zerotier&lt;/b&gt; 挂载的目录下新建一个 &lt;code&gt;local.conf&lt;/code&gt; 文件，并设置
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;settings&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;primaryPort&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;9995&lt;/span&gt;
+    }
+}&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-5&quot;&gt;参考资料&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;github.com/honmaple/ztncui-aio&quot;&gt;github.com/honmaple/ztncui-aio&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;github.com/jonnyan404/zerotier-planet&quot;&gt;github.com/jonnyan404/zerotier-planet&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;github.com/zerotier/ZeroTierOne/blob/dev/README.docker.md&quot;&gt;github.com/zerotier/ZeroTierOne/blob/dev/README.docker.md&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;docs.zerotier.com/zerotier/zerotier.conf/&quot;&gt;docs.zerotier.com/zerotier/zerotier.conf/&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+        <category term="Linux"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>绿联云Nas新版本v3.4.0固件开启SSH</title>
       <link href="" rel="alternate"></link>
@@ -989,7 +1431,7 @@
       <title>关于Snow静态博客的常见问题</title>
       <link href="" rel="alternate"></link>
       <published>Wed, 28 Jun 2023 11:14:08 +0000</published>
-      <updated>Thu, 27 Jul 2023 22:37:57 +0000</updated>
+      <updated>Fri, 28 Jul 2023 14:03:47 +0000</updated>
       <author>
         <name>honmaple</name>
       </author>
@@ -2006,292 +2448,5 @@ sqlite&amp;gt; .quit&lt;/pre&gt;
 &lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</content>
         <category term="Life"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>使用Github Actions自动打包Go项目</title>
-      <link href="" rel="alternate"></link>
-      <published>Mon, 06 Mar 2023 02:22:23 +0000</published>
-      <updated>Mon, 06 Mar 2023 20:23:31 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html</id>
-      <summary type="html">
-&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
-&lt;p&gt;
-   如果用过 &lt;b&gt;Gitlab Ci&lt;/b&gt;, 相信对此也非常熟悉，&lt;b&gt;GitHub Actions&lt;/b&gt; 是 &lt;b&gt;GitHub&lt;/b&gt; 推出的持续集成（Continuous Integration，简称 CI）服务，它提供了整套虚拟服务器环境，基于它可以进行构建、测试、打包、部署项目等等操作
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;快速开始(Quickstart)&lt;/h2&gt;
-&lt;p&gt;
-   在自己的 &lt;code&gt;Github&lt;/code&gt; 仓库中找到 &lt;code&gt;Actions&lt;/code&gt; 标签页
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/03/github-actions-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/github-actions-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   点击 &lt;code&gt;Configure&lt;/code&gt;, 此时会生成一个 &lt;code&gt;.github/workflow/go.yml&lt;/code&gt; 文件
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;# This...&lt;/span&gt;&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;前言&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;快速开始(Quickstart)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;多平台编译(Cross Compile)&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3.1&quot;&gt;交叉编译&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3.2&quot;&gt;跨平台编译&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;发布(Release)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;FAQ&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-5.1&quot;&gt;version `GLIBC_2.33&amp;#39; not found&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
-&lt;p&gt;
-   如果用过 &lt;b&gt;Gitlab Ci&lt;/b&gt;, 相信对此也非常熟悉，&lt;b&gt;GitHub Actions&lt;/b&gt; 是 &lt;b&gt;GitHub&lt;/b&gt; 推出的持续集成（Continuous Integration，简称 CI）服务，它提供了整套虚拟服务器环境，基于它可以进行构建、测试、打包、部署项目等等操作
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;快速开始(Quickstart)&lt;/h2&gt;
-&lt;p&gt;
-   在自己的 &lt;code&gt;Github&lt;/code&gt; 仓库中找到 &lt;code&gt;Actions&lt;/code&gt; 标签页
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/03/github-actions-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/github-actions-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   点击 &lt;code&gt;Configure&lt;/code&gt;, 此时会生成一个 &lt;code&gt;.github/workflow/go.yml&lt;/code&gt; 文件
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;# This workflow will build a golang project&lt;/span&gt;
-&lt;span style=&quot;color:#75715e&quot;&gt;# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go&lt;/span&gt;
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Go
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;on&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;push&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;branches&lt;/span&gt;: [ &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;master&amp;#34;&lt;/span&gt; ]
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;pull_request&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;branches&lt;/span&gt;: [ &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;master&amp;#34;&lt;/span&gt; ]
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;jobs&lt;/span&gt;:
-
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;runs-on&lt;/span&gt;: ubuntu-latest
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;steps&lt;/span&gt;:
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/checkout@v3
-        - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Set up Go
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/setup-go@v3
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;with&lt;/span&gt;:
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;go-version&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1.19&lt;/span&gt;
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Build
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go build -v ./...
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Test
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go test -v ./...&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;多平台编译(Cross Compile)&lt;/h2&gt;
-&lt;h3 id=&quot;heading-3.1&quot;&gt;交叉编译&lt;/h3&gt;
-&lt;p&gt;
-    对于非 &lt;code&gt;CGO&lt;/code&gt; 项目，&lt;code&gt;Go&lt;/code&gt; 提供了一种十分方便的方式来进行交叉编译，只需要指定 &lt;code&gt;GOOS&lt;/code&gt; 和 &lt;code&gt;GOARCH&lt;/code&gt; 环境变量
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-  Mac下编译Linux, Windows平台的64位可执行程序：
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ CGO_ENABLED&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; GOOS&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;linux GOARCH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;amd64 go build .
-$ CGO_ENABLED&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; GOOS&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;windows GOARCH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;amd64 go build .&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- Linux下编译Mac, Windows平台的64位可执行程序：
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ CGO_ENABLED&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; GOOS&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;darwin GOARCH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;amd64 go build .
-$ CGO_ENABLED&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; GOOS&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;windows GOARCH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;amd64 go build .&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-    同样的，我们可以在 &lt;code&gt;Gtihub Actions&lt;/code&gt; 中设置环境变量来编译非 &lt;code&gt;CGO&lt;/code&gt; 项目，这里需要使用 &lt;code&gt;matrix&lt;/code&gt; 策略，让我们基于不同的参数创建并行的任务，比如编译Go时指定不同的环境变量
-&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 首先编写任务
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;jobs&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;strategy&lt;/span&gt;:
-      &lt;span style=&quot;color:#66d9ef&quot;&gt;matrix&lt;/span&gt;:
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;goos&lt;/span&gt;: [linux, darwin]
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;goarch&lt;/span&gt;: [amd64]
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;runs-on&lt;/span&gt;: ubuntu-latest
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;steps&lt;/span&gt;:
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Checkout
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/checkout@v3
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Set up Go
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/setup-go@v3
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;with&lt;/span&gt;:
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;go-version&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1.19&lt;/span&gt;
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Download dependencies
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go mod download
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Build
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go build -v -o snow .
-        &lt;span style=&quot;color:#75715e&quot;&gt;# 指定编译时的环境变量&lt;/span&gt;
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;env&lt;/span&gt;:
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;GOOS&lt;/span&gt;: ${{ matrix.goos }}
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;GOARCH&lt;/span&gt;: ${{ matrix.goarch }}
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;CGO_ENABLED&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;&lt;/pre&gt;
-&lt;p&gt;
-      这样就创建了 &lt;code&gt;GOOS=linux GOARCH=amd64&lt;/code&gt; 和 &lt;code&gt;GOOS=darwin GOARCH=amd64&lt;/code&gt; 的两个任务, 当 &lt;code&gt;goarch&lt;/code&gt; 增加一个 &lt;code&gt;arm&lt;/code&gt; 的参数后，会组合成四个任务, 如果需要指定或者排除某个选项，可以使用 &lt;code&gt;include&lt;/code&gt; 或者 &lt;code&gt;exclude&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;matrix&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;goos&lt;/span&gt;: [linux, darwin]
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;goarch&lt;/span&gt;: [amd64, arm]
-  &lt;span style=&quot;color:#75715e&quot;&gt;# 只包括linux编译选项&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;include&lt;/span&gt;:
-    - &lt;span style=&quot;color:#66d9ef&quot;&gt;goos&lt;/span&gt;: linux
-      &lt;span style=&quot;color:#66d9ef&quot;&gt;goarch&lt;/span&gt;: amd64
-    - &lt;span style=&quot;color:#66d9ef&quot;&gt;goos&lt;/span&gt;: linux
-      &lt;span style=&quot;color:#66d9ef&quot;&gt;goarch&lt;/span&gt;: arm
-  &lt;span style=&quot;color:#75715e&quot;&gt;# 排除所有关于arm的编译选项&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;exclude&lt;/span&gt;:
-    - &lt;span style=&quot;color:#66d9ef&quot;&gt;goarch&lt;/span&gt;: arm&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 然后执行 &lt;code&gt;git push&lt;/code&gt;, 这样就能在 &lt;code&gt;Github&lt;/code&gt; 的 &lt;code&gt;Actions&lt;/code&gt; 标签页看到执行结果
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;heading-3.2&quot;&gt;跨平台编译&lt;/h3&gt;
-&lt;p&gt;
-    如果是非 &lt;code&gt;CGO&lt;/code&gt; 项目，可以使用Go内置的交叉编译，但如果是 &lt;code&gt;CGO&lt;/code&gt; 项目，上述的交叉编译大概率会失败(相关问题:&lt;a href=&quot;https://github.com/wellington/go-libsass/issues/67&quot;&gt;go-libsass&lt;/a&gt;)， 所以我们需要基于不同的平台来进行编译，幸运的是，&lt;code&gt;Github Actions&lt;/code&gt; 对此支持的非常好,
-&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 编写新任务
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;jobs&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;strategy&lt;/span&gt;:
-      &lt;span style=&quot;color:#66d9ef&quot;&gt;matrix&lt;/span&gt;:
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: [macos, linux]
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;include&lt;/span&gt;:
-          - &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: macos
-            &lt;span style=&quot;color:#66d9ef&quot;&gt;os&lt;/span&gt;: macos-latest
-          - &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: linux
-            &lt;span style=&quot;color:#66d9ef&quot;&gt;os&lt;/span&gt;: ubuntu&lt;span style=&quot;color:#ae81ff&quot;&gt;-18.04&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;runs-on&lt;/span&gt;: ${{ matrix.os }}
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;steps&lt;/span&gt;:
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Checkout
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/checkout@v3
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Set up Go
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/setup-go@v3
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;with&lt;/span&gt;:
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;go-version&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1.19&lt;/span&gt;
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Download dependencies
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go mod download
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Build
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: go build -v -o snow .
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;env&lt;/span&gt;:
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;CGO_ENABLED&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;&lt;/pre&gt;
-&lt;p&gt;
-      注意 &lt;code&gt;runs-on&lt;/code&gt; 使用的 &lt;code&gt;matrix.os&lt;/code&gt; 变量, 它允许我们分别使用 &lt;code&gt;ubuntu-18.04&lt;/code&gt; 和 &lt;code&gt;macos-latest&lt;/code&gt; 两个平台进行编译，这时不用指定 &lt;code&gt;GOOS&lt;/code&gt; 和 &lt;code&gt;GOARCH&lt;/code&gt; 参数
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 执行 &lt;code&gt;git push&lt;/code&gt;, 可以看到执行结果
-      
-&lt;a href=&quot;https://s.libforest.com/images/2023/03/github-actions-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/github-actions-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-4&quot;&gt;发布(Release)&lt;/h2&gt;
-&lt;p&gt;
-   当编译好一个二进制文件后，需要发布到 &lt;code&gt;Github&lt;/code&gt; 的 &lt;code&gt;Release&lt;/code&gt; 页，这时就需要添加新的任务, 目前官方的&lt;a href=&quot;https://github.com/actions/create-release&quot;&gt;actions/create-release&lt;/a&gt;已经无人维护，所以此次选择另外一个&lt;a href=&quot;https://github.com/ncipollo/release-action&quot;&gt;ncipollo/release-action&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Release
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;on&lt;/span&gt;:
-  &lt;span style=&quot;color:#75715e&quot;&gt;# 只在预发布时才执行&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;release&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;types&lt;/span&gt;: [prereleased]
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;jobs&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;strategy&lt;/span&gt;:
-      &lt;span style=&quot;color:#66d9ef&quot;&gt;matrix&lt;/span&gt;:
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: [macos, linux]
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;include&lt;/span&gt;:
-          - &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: macos
-            &lt;span style=&quot;color:#66d9ef&quot;&gt;os&lt;/span&gt;: macos-latest
-            &lt;span style=&quot;color:#66d9ef&quot;&gt;archive-name&lt;/span&gt;: darwin.tar.gz
-          - &lt;span style=&quot;color:#66d9ef&quot;&gt;build&lt;/span&gt;: linux
-            &lt;span style=&quot;color:#66d9ef&quot;&gt;os&lt;/span&gt;: ubuntu-latest
-            &lt;span style=&quot;color:#66d9ef&quot;&gt;archive-name&lt;/span&gt;: linux.tar.gz
-
-    &lt;span style=&quot;color:#75715e&quot;&gt;# 需要设置写权限才能自动发布&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;permissions&lt;/span&gt;:
-      &lt;span style=&quot;color:#66d9ef&quot;&gt;contents&lt;/span&gt;: write
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;steps&lt;/span&gt;:
-      ...
-      &lt;span style=&quot;color:#75715e&quot;&gt;# 把二进制文件打包成压缩文件&lt;/span&gt;
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Prepare Packaging
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;run&lt;/span&gt;: tar zcvf snow-${{ matrix.archive-name }}.tar.gz snow LICENSE
-
-      &lt;span style=&quot;color:#75715e&quot;&gt;# 上传附件&lt;/span&gt;
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Upload Artifacts
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: actions/upload-artifact@v3
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;with&lt;/span&gt;:
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: snow-${{ matrix.archive-name }}.tar.gz
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;path&lt;/span&gt;: snow-${{ matrix.archive-name }}.tar.gz
-
-      &lt;span style=&quot;color:#75715e&quot;&gt;# 发布release版本&lt;/span&gt;
-      - &lt;span style=&quot;color:#66d9ef&quot;&gt;name&lt;/span&gt;: Release version
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;uses&lt;/span&gt;: ncipollo/release-action@v1
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt;: github.event_name == &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;release&amp;#39;&lt;/span&gt;
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;with&lt;/span&gt;:
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;allowUpdates&lt;/span&gt;: &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;artifacts&lt;/span&gt;: snow-${{ matrix.archive-name }}.tar.gz
-          &lt;span style=&quot;color:#66d9ef&quot;&gt;token&lt;/span&gt;: ${{ secrets.GITHUB_TOKEN }}&lt;/pre&gt;
-
-&lt;p&gt;
-   当 &lt;code&gt;Github Actions&lt;/code&gt; 执行完成后，就能在 &lt;code&gt;Release&lt;/code&gt; 页看到我们发布的 &lt;code&gt;Package&lt;/code&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/03/github-actions-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/github-actions-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-5&quot;&gt;FAQ&lt;/h2&gt;
-&lt;h3 id=&quot;heading-5.1&quot;&gt;version `GLIBC_2.33&amp;#39; not found&lt;/h3&gt;
-&lt;p&gt;
-    使用 &lt;code&gt;Github Actions&lt;/code&gt; 发布一个新的版本，下载到本地执行时报错
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.33&amp;#39; not found (required by ./snow)
-./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.34&amp;#39; not found (required by ./snow)
-./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.32&amp;#39; not found (required by ./snow)
-./snow: /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.29&amp;#39; not found (required by ./snow)&lt;/pre&gt;
-&lt;p&gt;
-    这是由于使用的 &lt;code&gt;ubuntu&lt;/code&gt; 版本太高导致, 降低版本即可
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;include:
-...
-&lt;span style=&quot;color:#f92672&quot;&gt;-   os: ubuntu-latest
-&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+   os: ubuntu-18.04
-&lt;/span&gt;&lt;/pre&gt;</content>
-        <category term="Linux"></category>
     </entry>
 </feed>
