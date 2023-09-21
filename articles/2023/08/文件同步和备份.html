@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>绿联云Nas新版本v3.4.0固件开启SSH · 紅楓吟</title>
+    <title>文件同步和备份 · 紅楓吟</title>
       <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
       <script src="https://honmaple.me/static/lib/js/before.min.js"></script>
@@ -60,12 +60,12 @@
   <article class="entry-article">
     <div class="entry-article-header">
     <h1 class="entry-article-title">
-      <a href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html" rel="bookmark" title="Permalink to 绿联云Nas新版本v3.4.0固件开启SSH">绿联云Nas新版本v3.4.0固件开启SSH</a>
+      <a href="https://honmaple.me/articles/2023/08/文件同步和备份.html" rel="bookmark" title="Permalink to 文件同步和备份">文件同步和备份</a>
     </h1>
       <div class="entry-article-info">
-        <span title="Updated at 2023-07-20">
+        <span title="Updated at 2023-09-21">
           <i class="fa fa-calendar-o"></i>
-          2023年07月14日 周五
+          2023年08月04日 周五
         </span>
           <span class="hidden-xs">|</span>
           <span class="hidden-xs">
@@ -91,164 +91,246 @@
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">创建随机镜像</a></li>
-<li><a href="#heading-2">抓包获取Token</a></li>
-<li><a href="#heading-3">手动创建容器</a></li>
-<li><a href="#heading-4">修改SSH配置</a></li>
-<li><a href="#heading-5">SSH登录</a></li>
-<li><a href="#heading-6">问题排查</a></li>
-<li><a href="#heading-7">其它</a></li>
+<li><a href="#heading-1">同步</a>
+<ul>
+<li><a href="#heading-1.1">单向同步</a>
+<ul>
+<li><a href="#heading-1.1.1">同步选项</a></li>
+<li><a href="#heading-1.1.2">同步逻辑</a></li>
+</ul></li>
+<li><a href="#heading-1.2">镜像同步</a>
+<ul>
+<li><a href="#heading-1.2.1">同步选项</a></li>
+<li><a href="#heading-1.2.2">同步逻辑</a></li>
+</ul></li>
+<li><a href="#heading-1.3">双向同步</a>
+<ul>
+<li><a href="#heading-1.3.1">同步选项</a></li>
+<li><a href="#heading-1.3.2">同步逻辑</a></li>
+</ul></li>
+</ul></li>
 </ul></div></div>
 
 <blockquote>
 <p>
-之前老的方式<b>固定前缀加远程协助验证码</b>在更新到最新版本的<b>v3.4.0</b>后已经失效，想要开启ssh只能使用另一种方式，也希望绿联云官方在系统更加完善(<b>权限管理、软件卸载</b>)前不要再继续封堵开启的方式，当然，如果能提供官方的开启方式更好
+最近在写一个文件同步和备份的软件，特此记录
 </p>
 </blockquote>
 
+<h2 id="heading-1">同步</h2>
+<h3 id="heading-1.1">单向同步</h3>
+<h4 id="heading-1.1.1">同步选项</h4>
+<ul>
+<li>
 <p>
-<b>免责声明：本教程所提供的内容仅供学习交流使用，请勿用于商业及非法用途，因此产生的任何法律纠纷均与本人无关！如有侵权，请您联系我，我将立刻删除该内容</b>
+ 选项一: 源目录的文件和目标目录的文件都发生修改:
+</p>
+<ul>
+<li>
+<p>
+ 覆盖文件: <b>源目录 -&gt; 目录目录</b>
+</p></li>
+<li>
+<p>
+ 跳过文件: 不作任何处理
+</p></li>
+</ul></li>
+<li>
+<p>
+ 选项二: 源目录的文件被删除时，是否删除目标目录的文件
+</p>
+</li>
+</ul>
+<h4 id="heading-1.1.2">同步逻辑</h4>
+<p>
+     <b>第一次同步</b>会获取源目录和目标目录所有文件的信息, 并将信息写入本地。这时源目录下所有文件都是新增的。<b>后续同步</b>会获取源目录和目标目录所有文件的信息, 并对比本地信息的修改来进行同步。
 </p>
 
+<ul>
+<li>
 <p>
-<b>注：此教程可能会造成未知的后果，在此期间所造成的系统风险请自行承担</b>
+ 源目录<b>无修改</b>: 无操作
+</p></li>
+<li>
+<p>
+ 源目录<b>新增文件</b>: 对比信息文件判断是否新增
+</p>
+<ul>
+<li>
+<p>
+ 目标目录无修改: <b>源目录 -&gt; 目录目录</b>
+</p></li>
+<li>
+<p>
+ 目标目录新增文件: <b>选项一</b>
+</p></li>
+</ul></li>
+<li>
+<p>
+ 源目录<b>修改文件</b>: 对比信息文件判断是否修改
+</p>
+<ul>
+<li>
+<p>
+ 目标目录无修改: <b>源目录 -&gt; 目录目录</b>
+</p></li>
+<li>
+<p>
+ 目标目录修改文件: <b>选项一</b>
+</p></li>
+<li>
+<p>
+ 目标目录删除文件: <b>源目录 -&gt; 目录目录</b>
+</p></li>
+</ul></li>
+<li>
+<p>
+ 源目录<b>删除文件</b>: 对比信息文件判断是否删除
+</p>
+<ul>
+<li>
+<p>
+ 目标目录无修改: <b>源目录 -&gt; 目录目录</b>
+</p></li>
+<li>
+<p>
+ 目标目录修改文件: <b>选项一</b>
+</p></li>
+<li>
+<p>
+ 目标目录删除文件: 无操作
+</p>
+</li>
+</ul></li>
+</ul>
+<h3 id="heading-1.2">镜像同步</h3>
+<h4 id="heading-1.2.1">同步选项</h4>
+<ul>
+<li>
+<p>
+ 单向同步选项一: 覆盖文件
+</p></li>
+<li>
+<p>
+ 单向同步选项二: 同步删除目标目录的文件
+</p>
+</li>
+</ul>
+<h4 id="heading-1.2.2">同步逻辑</h4>
+<p>
+     逻辑同单向同步
 </p>
 
-<h2 id="heading-1">创建随机镜像</h2>
+<h3 id="heading-1.3">双向同步</h3>
+<h4 id="heading-1.3.1">同步选项</h4>
+<ul>
+<li>
 <p>
-   首先拉取一个镜像，我这里选择 <code>nginx:stable-alpine</code>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-thumb" class="lazyload" />
-</a>
+ 选项一: 源目录的文件和目标目录的文件都发生修改:
+</p>
+<ul>
+<li>
+<p>
+ 保留最新的文件: 对比文件修改时间，如果源目录的文件最新, 则覆盖目标目录的文件; 反之，覆盖源目录的文件
+</p></li>
+<li>
+<p>
+ 以源目录为准: <b>源目录 -&gt; 目录目录</b>
+</p></li>
+<li>
+<p>
+ 以目标目录为准: <b>源目录 &lt;- 目录目录</b>
+</p></li>
+<li>
+<p>
+ 跳过文件: 不作任何处理
+</p></li>
+</ul></li>
+<li>
+<p>
+ 选项二: 源目录的文件被删除时，是否删除目标目录的文件
+</p></li>
+<li>
+<p>
+ 选项三: 目标目录的文件被删除时，是否删除源目录的文件
+</p>
+</li>
+</ul>
+<h4 id="heading-1.3.2">同步逻辑</h4>
+<p>
+     <b>第一次同步</b>会获取源目录和目标目录所有文件的信息, 并将信息写入本地。这时源目录下所有文件都是新增的。<b>后续同步</b>会获取源目录和目标目录所有文件的信息, 并对比本地信息的修改来进行同步。
 </p>
 
+<ul>
+<li>
 <p>
-   然后点击创建容器，存储空间<b>添加一个任意目录</b>，挂载到 <code>/data</code> 下，<b>其它参数为默认</b>，然后下一步，先<b>不要点击完成</b>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-thumb" class="lazyload" />
-</a>
+ 源目录<b>无修改</b>: 对比信息文件判断
 </p>
-
-<h2 id="heading-2">抓包获取Token</h2>
+<ul>
+<li>
 <p>
-   打开 <b>wireshark</b> 进行抓包，输入筛选参数
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">ip.dst_host == 192.168.31.65 and http and http.request.method==POST</pre>
-
+ 目标目录新增文件: <b>源目录 &lt;- 目录目录</b>
+</p></li>
+<li>
 <p>
-   然后返回绿联云，点击完成，这时会在 <b>wireshark</b> 窗口看到一条HTTP请求
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
+ 目标目录修改文件: <b>源目录 &lt;- 目录目录</b>
+</p></li>
+<li>
 <p>
-   点击这条请求，然后 <b>右键 -&gt; Follow -&gt; HTTP Stream</b>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
+ 目标目录删除文件: <b>源目录 &lt;- 目录目录</b>
+</p></li>
+</ul></li>
+<li>
 <p>
-   这时会看到具体的<b>HTTP请求头和请求参数</b>，在下方的Find里输入 <code>create</code> 进行查找，然后将红色内容复制到本地，将请求参数 <code>{&#34;_query&#34;...}</code> 复制到一个 <b>json</b> 文件
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-thumb" class="lazyload" />
-</a>
+ 源目录<b>新增文件</b>: 对比信息文件判断是否新增
 </p>
-
+<ul>
+<li>
 <p>
-   接着修改 <b>json</b> 文件，找到<b>HostConfig -&gt; Mounts</b>，将里面的 <b>Source</b> 参数修改为 <code>/</code>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<h2 id="heading-3">手动创建容器</h2>
+ 目标目录无修改: <b>源目录 -&gt; 目录目录</b>
+</p></li>
+<li>
 <p>
-   首先到绿联云删除刚开始创建的容器
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
+ 目标目录新增文件: <b>选项一</b>
+</p></li>
+</ul></li>
+<li>
 <p>
-   然后使用命令行手动请求创建容器，其中 <b>ugreen.json</b> 为抓包获取并修改后的参数文件，请求头保持一致
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-thumb" class="lazyload" />
-</a>
+ 源目录<b>修改文件</b>: 对比信息文件判断是否修改
 </p>
-
+<ul>
+<li>
 <p>
-   创建完成后，返回绿联云，刷新并查看详情，可以看到绿联系统的根目录已经挂载到容器内部
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<h2 id="heading-4">修改SSH配置</h2>
+ 目标目录无修改: <b>源目录 -&gt; 目录目录</b>
+</p></li>
+<li>
 <p>
-   使用终端进入Docker内部
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
+ 目标目录修改文件: <b>选项一</b>
+</p></li>
+<li>
 <p>
-   然后添加公钥到root目录，怎么生成公私钥这里不再叙述。
-   查看sshd的配置，默认是不允许使用公钥匙登录的，所以需要修改 <code>PubkeyAuthentication no</code> 为 <code>PubkeyAuthentication yes</code>
-</p>
-
+ 目标目录删除文件: <b>源目录 -&gt; 目录目录</b>
+</p></li>
+</ul></li>
+<li>
 <p>
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-thumb" class="lazyload" />
-</a>
-   接着到<b>设备管理 -&gt; 远程协助 -&gt; 开启远程调试功能</b>，重启sshd就是关闭远程调试然后重新打开
+ 源目录<b>删除文件</b>: 对比信息文件判断是否删除
 </p>
-
-<h2 id="heading-5">SSH登录</h2>
+<ul>
+<li>
 <p>
-   最后就可以使用ssh公钥登录绿联云系统了
-   
-<a href="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<h2 id="heading-6">问题排查</h2>
+ 目标目录无修改: <b>源目录 -&gt; 目录目录</b>
+</p></li>
+<li>
 <p>
-   如果无法使用ssh公钥登录，可以查看系统的ssh登录日志
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">grep ssh /data/data/nas_server/log/system/*syslog | less</pre>
-
+ 目标目录修改文件: <b>源目录 &lt;- 目录目录</b>
+</p></li>
+<li>
 <p>
-   如果提示 <code>Authentication refused: bad ownership or modes for directory /root</code>，则执行
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">chmod go-w /data/root</pre>
-
-<p>
-   如果提示 <code>ssh-rsa: signature algorithm not supported</code>，则添加下面配置到<b>sshd_config</b>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">PubkeyAcceptedKeyTypes=+ssh-rsa</pre>
-
-<h2 id="heading-7">其它</h2>
-<p>
-   升级到<b>v3.4.0</b>后，目前觉得还不错，其中<b>批量重命名，TMDB接口，自定义Hosts</b>等都是非常有用的功能，也希望绿联能再接再厉，我们这些用户也能和绿联Nas一同成长。
-</p>
-
-<p>
-   对了，之前文件同步会修改源文件权限的问题已经被修复，<b>Very Good</b>
-</p>
+ 目标目录删除文件: 无操作
+</p></li>
+</ul></li>
+</ul>
     </div>
     <div class="entry-copyright">
         <div>
@@ -257,7 +339,7 @@
         </div>
     <div>
       <span><i class="fa fa-link"></i>链接:</span>
-      <a href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html">https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html</a>
+      <a href="https://honmaple.me/articles/2023/08/文件同步和备份.html">https://honmaple.me/articles/2023/08/文件同步和备份.html</a>
     </div>
     <div>
       <span><i class="fa fa-copyright"></i>版权:</span>
@@ -281,14 +363,14 @@
     <hr class="entry-article-hr" />
     <ul class="entry-pager">
       <li class="prev">
-        <a href="https://honmaple.me/articles/2023/08/文件同步和备份.html" title="Previous article: 文件同步和备份">
+        <a href="https://honmaple.me/articles/2023/09/zerotier-note.html" title="Previous article: Zerotier笔记">
           <i class="fa fa-chevron-left"></i>
-          文件同步和备份
+          Zerotier笔记
         </a>
       </li>
       <li class="next">
-        <a href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html" title="Next article: 绿联DX4600 Pro虚拟机探索">
-          绿联DX4600 Pro虚拟机探索
+        <a href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html" title="Next article: 绿联云Nas新版本v3.4.0固件开启SSH">
+          绿联云Nas新版本v3.4.0固件开启SSH
           <i class="fa fa-chevron-right"></i>
         </a>
       </li>
@@ -298,7 +380,7 @@
       <div class="entry-btn">
         <a>加载评论</a>
       </div>
-      <div id="comment_thread" issue-term="绿联云Nas新版本v3.4.0固件开启SSH"></div>
+      <div id="comment_thread" issue-term="文件同步和备份"></div>
     </div>
   </article><div class="footer">
   <ul class="footer-left">
