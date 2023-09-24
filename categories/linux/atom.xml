@@ -5,13 +5,356 @@
   <link href="https://honmaple.me/categories/linux/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Thu, 21 Sep 2023 11:11:10 +0000</updated>
+    <updated>Sun, 24 Sep 2023 19:06:00 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>使用acme.sh申请SSL证书</title>
+      <link href="" rel="alternate"></link>
+      <published>Sun, 24 Sep 2023 13:57:51 +0000</published>
+      <updated>Sun, 24 Sep 2023 19:06:00 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/09/shi-yong-acme-shshen-qing-sslzheng-shu.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/09/shi-yong-acme-shshen-qing-sslzheng-shu.html</id>
+      <summary type="html">
+&lt;h2 id=&quot;heading-1&quot;&gt;部署教程&lt;/h2&gt;
+&lt;h3 id=&quot;heading-1.1&quot;&gt;安装并配置acme.sh&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 安装&lt;br/&gt;
+       这里使用 &lt;b&gt;Docker&lt;/b&gt; 安装，方便环境隔离。&lt;code&gt;/opt/acme.sh&lt;/code&gt; 为挂载目录
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name acme.sh \
+-e AUTO_UPGRADE=0 \
+-e TZ=Asia/Shanghai \
+-v /opt/acme.sh:/acme.sh \
+neilpang/acme.sh daemon&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 配置&lt;br/&gt;
+       &lt;b&gt;acme...&lt;/b&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;部署教程&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;安装并配置acme.sh&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;固定域名(webroot)&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2.1&quot;&gt;申请证书&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2.2&quot;&gt;配置SSL证书&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2.3&quot;&gt;配置NGINX&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2.4&quot;&gt;重启NGINX&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3&quot;&gt;泛域名(DNS)&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3.1&quot;&gt;令牌获取&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3.2&quot;&gt;账户ID获取&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3.3&quot;&gt;编辑配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3.4&quot;&gt;申请证书&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3.5&quot;&gt;安装证书&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.4&quot;&gt;搭配NginxProxyManager&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.5&quot;&gt;更新证书(手动)&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;参考资料&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;部署教程&lt;/h2&gt;
+&lt;h3 id=&quot;heading-1.1&quot;&gt;安装并配置acme.sh&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 安装&lt;br/&gt;
+       这里使用 &lt;b&gt;Docker&lt;/b&gt; 安装，方便环境隔离。&lt;code&gt;/opt/acme.sh&lt;/code&gt; 为挂载目录
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name acme.sh \
+-e AUTO_UPGRADE=0 \
+-e TZ=Asia/Shanghai \
+-v /opt/acme.sh:/acme.sh \
+neilpang/acme.sh daemon&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 配置&lt;br/&gt;
+       &lt;b&gt;acme.sh&lt;/b&gt; 默认使用的是 &lt;b&gt;ZeroSSL&lt;/b&gt;，我这里修改为 &lt;b&gt;Let&amp;#39;s Encrypt&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --set-default-ca --server letsencrypt
+docker exec acme.sh --set-default-chain --preferred-chain &amp;#34;ISRG&amp;#34; --server letsencrypt&lt;/pre&gt;
+&lt;p&gt;
+       注：&lt;code&gt;--preferred-chain &amp;#34;ISRG&amp;#34;&lt;/code&gt; 表示设置根证书为 &lt;b&gt;ISRG Root X1&lt;/b&gt;, 它与 &lt;b&gt;DST Root CA X3&lt;/b&gt; 的区别主要是
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;ISRG Root X1&lt;/b&gt; 会更新一些，&lt;b&gt;DST Root CA X3&lt;/b&gt; 已于2021年9月30日到期
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 一些旧的设备（例如，iPhone 4 或 HTC Dream）不会信任 &lt;b&gt;ISRG Root X1&lt;/b&gt;，因为它们没有获得软件更新
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 虽说 &lt;b&gt;DST Root CA X3&lt;/b&gt; 已到期，但Android设备仍能够继续正常访问使用 Let’s Encrypt 证书加密的网站，其它旧设备将会得到证书过期警告
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 注册账号(&lt;b&gt;记得修改为自己的邮箱&lt;/b&gt;)
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --register-account --server letsencrypt -m i@example.com
+[Sun Sep 24 15:49:59 CST 2023] Create account key ok.
+[Sun Sep 24 15:49:59 CST 2023] Registering account: https://acme-v02.api.letsencrypt.org/directory
+[Sun Sep 24 15:50:05 CST 2023] Registered
+[Sun Sep 24 15:50:05 CST 2023] ACCOUNT_THUMBPRINT=&amp;#39;xxx&amp;#39;&lt;/pre&gt;
+&lt;p&gt;
+       这时会在 &lt;code&gt;/acme.sh&lt;/code&gt; 目录下生成一个 &lt;code&gt;http.header&lt;/code&gt; 文件，申请证书时会使用该文件
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;heading-1.2&quot;&gt;固定域名(webroot)&lt;/h3&gt;
+&lt;p&gt;
+    如果只有少数几个固定的域名，这时可以使用 &lt;b&gt;webroot&lt;/b&gt; 方式申请SSL证书。&lt;b&gt;webroot&lt;/b&gt; 方式会在本地生成一个验证文件，申请证书时通过验证该文件验证域名所有权
+&lt;/p&gt;
+
+&lt;h4 id=&quot;heading-1.2.1&quot;&gt;申请证书&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --issue -d example.com -d www.example.com,nas.example.com -w /acme.sh/example.com&lt;/pre&gt;
+&lt;p&gt;
+     执行后会在挂载目录 &lt;code&gt;/opt/acme.sh&lt;/code&gt; 下生成SSL证书相关的 &lt;b&gt;cert&lt;/b&gt; 文件和 &lt;b&gt;key&lt;/b&gt; 文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ ls example.com
+ca.cer  fullchain.cer  example.com.cer  example.com.conf  example.com.csr  example.com.csr.conf  example.com.key&lt;/pre&gt;
+&lt;h4 id=&quot;heading-1.2.2&quot;&gt;配置SSL证书&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_certificate&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/opt/acme.sh/example.com/fullchain.cer&lt;/span&gt;;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_certificate_key&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/opt/acme.sh/example.com/example.com.key&lt;/span&gt;;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_dhparam&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/opt/acme.sh/example.com/dhparam.pem&lt;/span&gt;;
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_session_cache&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;shared:SSL:1m&lt;/span&gt;;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_session_timeout&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;5m&lt;/span&gt;;
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_protocols&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;TLSv1&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;TLSv1.1&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;TLSv1.2&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;TLSv1.3&lt;/span&gt;;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_ciphers&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5&lt;/span&gt;;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_prefer_server_ciphers&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;on&lt;/span&gt;;&lt;/pre&gt;
+
+&lt;p&gt;
+     如何生成 &lt;b&gt;dhparam&lt;/b&gt; 的证书?
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;openssl dhparam -out /opt/acme.sh/example.com/dhparam.pem 2048&lt;/pre&gt;
+&lt;h4 id=&quot;heading-1.2.3&quot;&gt;配置NGINX&lt;/h4&gt;
+&lt;p&gt;
+     &lt;b&gt;Let&amp;#39;s Encrypt&lt;/b&gt; 只会在 &lt;b&gt;80&lt;/b&gt; 端口验证域名所有权，所以只需要在 &lt;b&gt;80&lt;/b&gt; 端口添加一个 &lt;b&gt;location&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;server&lt;/span&gt; {
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;       &lt;span style=&quot;color:#ae81ff&quot;&gt;80&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;  &lt;span style=&quot;color:#e6db74&quot;&gt;[::]:80&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;server_name&lt;/span&gt;  &lt;span style=&quot;color:#e6db74&quot;&gt;www.example.com&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;nas.example.com&lt;/span&gt;;
+
+    &lt;span style=&quot;color:#f92672&quot;&gt;location&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/&lt;/span&gt; {
+        &lt;span style=&quot;color:#f92672&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;301&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;https://example.com&lt;/span&gt;$request_uri;
+    }
+    &lt;span style=&quot;color:#f92672&quot;&gt;location&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;^~&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/.well-known/acme-challenge&lt;/span&gt; {
+        &lt;span style=&quot;color:#f92672&quot;&gt;alias&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/opt/acme.sh/example.com/.well-known/acme-challenge&lt;/span&gt;;
+    }
+}
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;server&lt;/span&gt; {
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;       &lt;span style=&quot;color:#ae81ff&quot;&gt;443&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;ssl&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;       &lt;span style=&quot;color:#e6db74&quot;&gt;[::]:443&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;ssl&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;server_name&lt;/span&gt;  &lt;span style=&quot;color:#e6db74&quot;&gt;nas.example.com&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;include&lt;/span&gt;      &lt;span style=&quot;color:#e6db74&quot;&gt;/etc/nginx/conf.d/ssl/example.com.conf&lt;/span&gt;;
+
+    &lt;span style=&quot;color:#f92672&quot;&gt;......&lt;/span&gt;
+&lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;}&lt;/span&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;heading-1.2.4&quot;&gt;重启NGINX&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;nginx -t
+nginx -s reload&lt;/pre&gt;
+&lt;h3 id=&quot;heading-1.3&quot;&gt;泛域名(DNS)&lt;/h3&gt;
+&lt;p&gt;
+    &lt;b&gt;webroot&lt;/b&gt; 无法申请泛域名证书，泛域名证书的申请需要利用&lt;b&gt;DNS服务提供商&lt;/b&gt;的API，动态添加一个TEXT记录，这里以 &lt;b&gt;Cloudflare&lt;/b&gt; 为例
+&lt;/p&gt;
+&lt;h4 id=&quot;heading-1.3.1&quot;&gt;令牌获取&lt;/h4&gt;
+&lt;p&gt;
+     右上角点击&lt;b&gt;我的个人资料&lt;/b&gt;, 然后点击&lt;b&gt;创建令牌&lt;/b&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+     然后选择&lt;b&gt;DNS模版&lt;/b&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-02.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-02.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;令牌名称&lt;/b&gt;可以随意
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;权限&lt;/b&gt;设置为 &lt;code&gt;区域 -&amp;gt; DNS -&amp;gt; 编辑&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;区域资源&lt;/b&gt;设置为 &lt;code&gt;包括 -&amp;gt; 特定区域 -&amp;gt; 域名(example.com)&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-03.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-03.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+     继续以显示摘要, 然后创建令牌
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-04.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-04.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+     最后记得保存令牌到本地
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-05.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-05.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h4 id=&quot;heading-1.3.2&quot;&gt;账户ID获取&lt;/h4&gt;
+&lt;p&gt;
+     选择对应的域名，在&lt;b&gt;概况&lt;/b&gt;的右下角会有账户ID显示
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-06.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-06.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h4 id=&quot;heading-1.3.3&quot;&gt;编辑配置&lt;/h4&gt;
+&lt;p&gt;
+     编辑 &lt;code&gt;/opt/acme.sh&lt;/code&gt; 目录下的 &lt;code&gt;account.conf&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+ CF_Token=&amp;#39;xxx&amp;#39;
+&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+ CF_Account_ID=&amp;#39;xxx&amp;#39;
+&lt;/span&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;heading-1.3.4&quot;&gt;申请证书&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --issue --dns dns_cf -d &amp;#34;nas.example.com&amp;#34; -d &amp;#34;*.nas.example.com&amp;#34;&lt;/pre&gt;
+
+&lt;h4 id=&quot;heading-1.3.5&quot;&gt;安装证书&lt;/h4&gt;
+&lt;p&gt;
+     如果想要修改默认安装的目录，则可以使用 &lt;code&gt;--install-cert&lt;/code&gt; 命令
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --install-cert -d nas.example.com \
+--key-file /nginx/data/custom_ssl/npm-1/privkey.pem \
+--fullchain-file /nginx/data/custom_ssl/npm-1/fullchain.pem&lt;/pre&gt;
+
+&lt;p&gt;
+     如果想要更新证书后同步重启NGINX，可以继续添加命令参数
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;--reloadcmd &amp;#34;nginx -s reload&amp;#34;&lt;/pre&gt;
+
+&lt;h3 id=&quot;heading-1.4&quot;&gt;搭配NginxProxyManager&lt;/h3&gt;
+&lt;p&gt;
+    首先打开 &lt;b&gt;NginxProxyManager&lt;/b&gt;, 选择 &lt;b&gt;SSL Cetificates&lt;/b&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    然后选择 &lt;b&gt;Add SSL Cetificates -&amp;gt; Custom&lt;/b&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-02.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-02.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    最后添加相关文件:
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Certificate&lt;/b&gt;: &lt;code&gt;nas.example.com.cer&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Certificate Key&lt;/b&gt;: &lt;code&gt;nas.example.com.key&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Intermediate Certificate&lt;/b&gt;: &lt;code&gt;ca.cer&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-03.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-03.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    为了避免证书过期后重新添加，需要把&lt;b&gt;NginxProxyManager&lt;/b&gt;挂载目录也挂载到 &lt;b&gt;acme.sh&lt;/b&gt; 容器
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker stop acme.sh
+docker rm acme.sh
+docker run -d --name acme.sh \
+-e AUTO_UPGRADE=0 \
+-e TZ=Asia/Shanghai \
+-v /opt/acme.sh:/acme.sh \
+-v /opt/nginx:/nginx \
+neilpang/acme.sh daemon&lt;/pre&gt;
+
+&lt;p&gt;
+    然后修改申请证书的命令
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --issue --dns dns_cf -d &amp;#34;nas.example.com&amp;#34; -d &amp;#34;*.nas.example.com&amp;#34; \
+--renew-hook &amp;#34;acme.sh --install-cert -d nas.example.com \
+--key-file /nginx/data/custom_ssl/npm-1/privkey.pem \
+--fullchain-file /nginx/data/custom_ssl/npm-1/fullchain.pem&amp;#34;&lt;/pre&gt;
+
+&lt;p&gt;
+    如果提示 &lt;code&gt;Domains not changed&lt;/code&gt;, 则需要使用 &lt;code&gt;--force&lt;/code&gt; 重新申请
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-1.5&quot;&gt;更新证书(手动)&lt;/h3&gt;
+&lt;p&gt;
+    从 &lt;b&gt;Let&amp;#39;s Encrypt&lt;/b&gt; 申请到的证书有效期是90天，&lt;b&gt;acme.sh&lt;/b&gt; 每60天会对证书进行更新，你也可以手动强制更新：
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;# 查询证书申请信息
+acme.sh --list
+
+# 手动强制更新证书
+acme.sh --renew -d nas.example.com -d *.nas.example.com --force&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;参考资料&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;github.com/acmesh-official/acme.sh/wiki/Preferred-Chain&quot;&gt;github.com/acmesh-official/acme.sh/wiki/Preferred-Chain&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;letsencrypt.org/zh-cn/docs/dst-root-ca-x3-expiration-september-2021/&quot;&gt;letsencrypt.org/zh-cn/docs/dst-root-ca-x3-expiration-september-2021/&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;shiping.date/82.html&quot;&gt;shiping.date/82.html&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+        <category term="Linux"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>Zerotier笔记</title>
       <link href="" rel="alternate"></link>
       <published>Sun, 17 Sep 2023 15:41:40 +0000</published>
-      <updated>Thu, 21 Sep 2023 11:11:10 +0000</updated>
+      <updated>Sun, 24 Sep 2023 16:52:48 +0000</updated>
       <author>
         <name>honmaple</name>
       </author>
@@ -80,7 +423,7 @@
 &lt;/ul&gt;
 &lt;/blockquote&gt;
 
-&lt;h3 id=&quot;heading-1&quot;&gt;相关概念&lt;/h3&gt;
+&lt;h2 id=&quot;heading-1&quot;&gt;相关概念&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
@@ -389,7 +732,7 @@ docker exec -it zerotier bash /tmp/patch.sh {服务器IP}&lt;/pre&gt;&lt;/li&gt;
 docker rm zerotier
 docker run -d --name zerotier --restart always --net zerotier --cap-add NET_ADMIN --device /dev/net/tun -v /opt/zerotier:/var/lib/zerotier-one zerotier/zerotier:latest&lt;/pre&gt;
 &lt;p&gt;
-    细心的朋友应该会发现我这里没有将 &lt;b&gt;9993&lt;/b&gt; 端口映射给宿主机，这是由于我测试发现两台设备只需要其中一台开放 &lt;code&gt;9993&lt;/code&gt; 端口，两台设备设备就能直连。如果两台设备都不开放端口，则会通过开放了端口的其它设备进行跳转，查看 &lt;b&gt;peers&lt;/b&gt; 会看到一直是 &lt;b&gt;RELAY&lt;/b&gt; 状态
+    细心的朋友应该会发现我这里没有将 &lt;b&gt;9993&lt;/b&gt; 端口映射给宿主机，这是由于我测试发现两台设备只需要其中一台开放 &lt;code&gt;9993&lt;/code&gt; 端口，两台设备之间就能直连。如果两台设备都不开放端口，则会通过开放了端口的其它设备进行跳转，查看 &lt;b&gt;peers&lt;/b&gt; 会看到一直是 &lt;b&gt;RELAY&lt;/b&gt; 状态
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;root@cf5f973bd294:/# zerotier-cli peers
 200 peers
@@ -2642,446 +2985,6 @@ nginx.ingress.kubernetes.io/auth-secret-type=auth-map&lt;/pre&gt;
 &lt;li&gt;
 &lt;p&gt;
  &lt;a href=&quot;https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#authentication&quot;&gt;https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#authentication&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;</content>
-        <category term="Linux"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>flutter笔记之初体验</title>
-      <link href="" rel="alternate"></link>
-      <published>Sat, 05 Jun 2021 22:58:01 +0000</published>
-      <updated>Tue, 07 Mar 2023 10:18:05 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2021/06/flutter笔记之初体验.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2021/06/flutter笔记之初体验.html</id>
-      <summary type="html">
-&lt;h2 id=&quot;heading-1&quot;&gt;安装&lt;/h2&gt;
-&lt;h3 id=&quot;heading-1.1&quot;&gt;安装flutter&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 首先下载flutter包, 解压到 &lt;code&gt;~/repo&lt;/code&gt; 目录,并配置 &lt;code&gt;~/.bashrc&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;export PATH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;$PATH:$HOME/repo/flutter/bin&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;code&gt;source ~/.bashrc&lt;/code&gt;使其生效
-&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;
-      注意：首次运行flutter，macos可能会提示无法打开dart，需要到 &lt;code&gt;系统偏好 -&amp;gt; 安全性与隐私&lt;/code&gt; 点击允许
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter --version
-Flutter 2.2...&lt;/pre&gt;&lt;/li&gt;&lt;/ul&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;安装&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;安装flutter&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;安装java&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.3&quot;&gt;安装android sdk&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;初体验&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;创建一个新的项目&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;配置android模拟器&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;启动flutter项目&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;升级Flutter版本&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3.1&quot;&gt;升级步骤&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3.2&quot;&gt;FAQ&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;FAQ&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4.1&quot;&gt;启动项目报 &lt;code&gt;Operation timed out&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4.2&quot;&gt;Unable to locate Android SDK&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;参考文档&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;安装&lt;/h2&gt;
-&lt;h3 id=&quot;heading-1.1&quot;&gt;安装flutter&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 首先下载flutter包, 解压到 &lt;code&gt;~/repo&lt;/code&gt; 目录,并配置 &lt;code&gt;~/.bashrc&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;export PATH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;$PATH:$HOME/repo/flutter/bin&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;code&gt;source ~/.bashrc&lt;/code&gt;使其生效
-&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;
-      注意：首次运行flutter，macos可能会提示无法打开dart，需要到 &lt;code&gt;系统偏好 -&amp;gt; 安全性与隐私&lt;/code&gt; 点击允许
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter --version
-Flutter 2.2.1 • channel stable • https://github.com/flutter/flutter.git
-Framework • revision 02c026b03c (9 天前) • 2021-05-27 12:24:44 -0700
-Engine • revision 0fdb562ac8
-Tools • Dart 2.13.1&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 第一步，禁用 &lt;b&gt;google analytics&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter config --no-analytics
-
-  ╔════════════════════════════════════════════════════════════════════════════╗
-  ║                 Welcome to Flutter! - https://flutter.dev                  ║
-  ║                                                                            ║
-  ║ The Flutter tool uses Google Analytics to anonymously report feature usage ║
-  ║ statistics and basic crash reports. This data is used to help improve      ║
-  ......
-  ║ See Google&amp;#39;s privacy policy:                                               ║
-  ║ https://policies.google.com/privacy                                        ║
-  ╚════════════════════════════════════════════════════════════════════════════╝
-
-Analytics reporting disabled.
-
-You may need to restart any open editors for them to read new settings.&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 第二步, 执行 &lt;code&gt;flutter doctor&lt;/code&gt; 检查依赖环境
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter doctor
-Running &amp;#34;flutter pub get&amp;#34; in flutter_tools...                      10.6s
-Doctor summary (to see all details, run flutter doctor -v):
-[✓] Flutter (Channel stable, 2.2.1, on macOS 11.3.1 20E241 darwin-x64, locale zh-Hans-CN)
-[✗] Android toolchain - develop for Android devices
-    ✗ Unable to locate Android SDK.
-      Install Android Studio from: https://developer.android.com/studio/index.html
-      On first launch it will assist you in installing the Android SDK components.
-      (or visit https://flutter.dev/docs/get-started/install/macos#android-setup for detailed instructions).
-      If the Android SDK has been installed to a custom location, please use
-      `flutter config --android-sdk` to update to that location.
-
-[✗] Xcode - develop for iOS and macOS
-    ✗ Xcode installation is incomplete; a full installation is necessary for iOS development.
-      Download at: https://developer.apple.com/xcode/download/
-      Or install Xcode via the App Store.
-      Once installed, run:
-        sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
-        sudo xcodebuild -runFirstLaunch
-    ✗ CocoaPods not installed.
-        CocoaPods is used to retrieve the iOS and macOS platform side&amp;#39;s plugin code that responds to your plugin usage on the Dart side.
-        Without CocoaPods, plugins will not work on iOS or macOS.
-        For more info, see https://flutter.dev/platform-plugins
-      To install see https://guides.cocoapods.org/using/getting-started.html#installation for instructions.
-[✓] Chrome - develop for the web
-[!] Android Studio (not installed)
-[✓] VS Code (version 1.56.2)
-[✓] Connected device (1 available)
-
-! Doctor found issues in 3 categories.&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;heading-1.2&quot;&gt;安装java&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 安装
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew install openjdk@8&lt;/pre&gt;
-&lt;p&gt;
-      刚开始我安装的是 &lt;b&gt;openjdk@11&lt;/b&gt;, 但在启动 &lt;b&gt;sdkmanager&lt;/b&gt; 时会报
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ /usr/local/share/android-sdk/tools/bin/sdkmanager
-Exception in thread &amp;#34;main&amp;#34; java.lang.NoClassDefFoundError: javax/xml/bind/annotation/XmlSchema
-    at com.android.repository.api.SchemaModule$SchemaModuleVersion.&amp;lt;init&amp;gt;(SchemaModule.java:156)
-    at com.android.repository.api.SchemaModule.&amp;lt;init&amp;gt;(SchemaModule.java:75)
-    at com.android.sdklib.repository.AndroidSdkHandler.&amp;lt;clinit&amp;gt;(AndroidSdkHandler.java:81)
-    at com.android.sdklib.tool.sdkmanager.SdkManagerCli.main(SdkManagerCli.java:73)
-    at com.android.sdklib.tool.sdkmanager.SdkManagerCli.main(SdkManagerCli.java:48)
-Caused by: java.lang.ClassNotFoundException: javax.xml.bind.annotation.XmlSchema
-    at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:581)
-    at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:178)
-    at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:522)&lt;/pre&gt;
-&lt;p&gt;
-      查找网上的资料，即使设置了 &lt;code&gt;JAVA_OPTS&lt;/code&gt;, 但还是有问题，所以我安装 &lt;code&gt;openjdk@8&lt;/code&gt; 而不是 &lt;code&gt;openjdk@11&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ export JAVA_OPTS=&amp;#39;-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee&amp;#39;
-└──╼ /usr/local/share/android-sdk/tools/bin/sdkmanager
-Error occurred during initialization of boot layer
-java.lang.module.FindException: Module java.se.ee not found&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 配置环境变量
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;export JAVA_HOME&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;/usr/local/opt/openjdk@8
-export PATH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;$JAVA_HOME/bin:$PATH&lt;/pre&gt;
-&lt;p&gt;
-      如果未设置 &lt;code&gt;JAVA_HOME&lt;/code&gt; 环境变量，后续执行 &lt;code&gt;flutter doctor&lt;/code&gt; 可能会报
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;The operation couldn’t be completed. Unable to locate a Java Runtime.
-Please visit http://www.java.com for information on installing Java.&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;heading-1.3&quot;&gt;安装android sdk&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 安装sdk
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew install android-sdk&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 安装sdk组件
-      首先执行 &lt;code&gt;sdkmanager --list&lt;/code&gt; 找到组件最新版本或者选择合适版本
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ sdkmanager platform-tools
-└──╼ sdkmanager &amp;#39;platforms;android-29&amp;#39;
-└──╼ sdkmanager &amp;#39;build-tools;31.0.0-rc4&amp;#39;
-└──╼ sdkmanager --licenses&lt;/pre&gt;
-&lt;p&gt;
-      如果未执行 &lt;code&gt;sdkmanager --licenses&lt;/code&gt; 并同意相关协议，在执行 &lt;code&gt;flutter doctor&lt;/code&gt; 后可能会提示
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;[!] Android toolchain - develop for Android devices (Android SDK version 31.0.0-rc4)
-    ! Some Android licenses not accepted.  To resolve this, run: flutter doctor --android-licenses&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 配置环境变量
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;export ANDROID_SDK_ROOT&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;/usr/local/share/android-sdk
-export PATH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools:$PATH&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-2&quot;&gt;初体验&lt;/h2&gt;
-&lt;h3 id=&quot;heading-2.1&quot;&gt;创建一个新的项目&lt;/h3&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter create myapp
-└──╼ cd myapp&lt;/pre&gt;
-&lt;p&gt;
-    注意不要在 &lt;b&gt;flutter sdk&lt;/b&gt; 目录里创建项目
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;Cannot create a project within the Flutter SDK. Target directory &amp;#39;$HOME/repo/flutter/src/myapp&amp;#39; is within the Flutter SDK at
-&amp;#39;$HOME/repo/flutter&amp;#39;.&lt;/pre&gt;
-
-&lt;h3 id=&quot;heading-2.2&quot;&gt;配置android模拟器&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 安装模拟器
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ sdkmanager emulator
-└──╼ sdkmanager &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;system-images;android-29;google_apis;x86_64&amp;#39;&lt;/span&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 创建新的android模拟器
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ avdmanager -s create avd -n testAndroid -k &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;system-images;android-29;google_apis;x86_64&amp;#34;&lt;/span&gt;
-└──╼ avdmanager list avd&lt;/pre&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;heading-2.3&quot;&gt;启动flutter项目&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 启动模拟器
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter emulators
-&lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt; available emulator:
-
-testAndroid • testAndroid •  • android
-
-To run an emulator, run &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;flutter emulators --launch &amp;lt;emulator id&amp;gt;&amp;#39;&lt;/span&gt;.
-To create a new emulator, run &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;flutter emulators --create [--name xyz]&amp;#39;&lt;/span&gt;.
-
-You can find more information on managing emulators at the links below:
-https://developer.android.com/studio/run/managing-avds
-https://developer.android.com/studio/command-line/avdmanager
-└──╼ flutter emulators --launch testAndroid&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 查看可用驱动
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter devices
-&lt;span style=&quot;color:#ae81ff&quot;&gt;2&lt;/span&gt; connected devices:
-
-Android SDK built &lt;span style=&quot;color:#66d9ef&quot;&gt;for&lt;/span&gt; x86 &lt;span style=&quot;color:#ae81ff&quot;&gt;64&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;(&lt;/span&gt;mobile&lt;span style=&quot;color:#f92672&quot;&gt;)&lt;/span&gt; • emulator-5554 • android-x64    • Android &lt;span style=&quot;color:#ae81ff&quot;&gt;10&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;(&lt;/span&gt;API 29&lt;span style=&quot;color:#f92672&quot;&gt;)&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;(&lt;/span&gt;emulator&lt;span style=&quot;color:#f92672&quot;&gt;)&lt;/span&gt;
-Chrome &lt;span style=&quot;color:#f92672&quot;&gt;(&lt;/span&gt;web&lt;span style=&quot;color:#f92672&quot;&gt;)&lt;/span&gt;                          • chrome        • web-javascript • Google Chrome 90.0.4430.212&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 启动项目
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter run -d emulator-5554&lt;/pre&gt;
-&lt;p&gt;
-      
-&lt;a href=&quot;https://s.libforest.com/images/2021/06/first-flutter.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2021/06/first-flutter.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-      至此，我的第一个flutter应用体验完成。
-      很久没学习新的技术，感觉自己都快落伍了，脑子也快生锈了，很早之前就打算自己写一个私人使用的 &lt;code&gt;app&lt;/code&gt;，但总抱着一招鲜吃遍天的想法，坚持着熟悉的 &lt;code&gt;vue web app&lt;/code&gt;, 而且还道听途说对 &lt;code&gt;flutter&lt;/code&gt; 有所怀疑，一直没实际体验过。虽然 &lt;code&gt;vue&lt;/code&gt; 足够简单，搭配 &lt;code&gt;cordova&lt;/code&gt; 也很方便，但毕竟属于 &lt;code&gt;web app&lt;/code&gt;，每种语言或者工具应该都有自己最擅长的领域，比如 &lt;code&gt;vue&lt;/code&gt; 之于 web，&lt;code&gt;flutter&lt;/code&gt; 至于 移动端app，最重要的是，现在技术更新迭代太快，你不学总有人学，学而不思则罔，思而不学则殆，不思不学只会被淘汰
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-3&quot;&gt;升级Flutter版本&lt;/h2&gt;
-&lt;h3 id=&quot;heading-3.1&quot;&gt;升级步骤&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
-  查看当前使用的版本
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter channel
-
-Flutter channels:
-master
-dev
-beta
-* stable&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 选择版本(可选)
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter channel stable&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 升级
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter upgrade&lt;/pre&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;heading-3.2&quot;&gt;FAQ&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- Flutter目录有修改
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;[   +8 ms] Your flutter checkout has local changes that would be erased by upgrading. If you want to keep these changes, it is recommended that you stash them via &amp;#34;git stash&amp;#34; or else commit the changes
-to a local
-           branch. If it is okay to remove local changes, then re-run this command with &amp;#34;--force&amp;#34;.
-....&lt;/pre&gt;
-&lt;p&gt;
-       进入Flutter目录，使用 &lt;code&gt;git diff&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;──╼ git diff
-diff --git a/packages/flutter_tools/gradle/flutter.gradle b/packages/flutter_tools/gradle/flutter.gradle
-index 3db040b967..69db8a4873 100644
---- a/packages/flutter_tools/gradle/flutter.gradle
-+++ b/packages/flutter_tools/gradle/flutter.gradle
-@@ -24,8 +24,17 @@ import org.gradle.util.VersionNumber
-
- buildscript {
-     repositories {
--        google()
--        jcenter()
-+        // google()
-+        // jcenter()
-+        maven {
-+            url &amp;#39;https://maven.aliyun.com/repository/jcenter&amp;#39;
-+        }
-+        maven {
-+            url &amp;#39;http://maven.aliyun.com/nexus/content/groups/public&amp;#39;
-+        }
-+        maven {
-+            url &amp;#39;https://maven.aliyun.com/repository/google&amp;#39;
-+        }
-     }
-     dependencies {
-         classpath &amp;#39;com.android.tools.build:gradle:4.1.0&amp;#39;&lt;/pre&gt;
-
-&lt;p&gt;
-       使用&lt;code&gt;git reset --hard&lt;/code&gt; 重置修改，或者使用 &lt;code&gt;flutter upgrade --force&lt;/code&gt; 强制更新
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&quot;heading-4&quot;&gt;FAQ&lt;/h2&gt;
-&lt;h3 id=&quot;heading-4.1&quot;&gt;启动项目报 &lt;code&gt;Operation timed out&lt;/code&gt;&lt;/h3&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;Using hardware rendering with device Android SDK built for x86 64. If you notice graphics artifacts, consider enabling software rendering with
-&amp;#34;--enable-software-rendering&amp;#34;.
-Launching lib/main.dart on Android SDK built for x86 64 in debug mode...
-Exception in thread &amp;#34;main&amp;#34; java.net.ConnectException: Operation timed out (Connection timed out)
-        at java.net.PlainSocketImpl.socketConnect(Native Method)
-        at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:350)
-        at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206)
-        ......
-        at org.gradle.wrapper.WrapperExecutor.execute(WrapperExecutor.java:128)
-        at org.gradle.wrapper.GradleWrapperMain.main(GradleWrapperMain.java:61)
-Running Gradle task &amp;#39;assembleDebug&amp;#39;...
-Running Gradle task &amp;#39;assembleDebug&amp;#39;... Done                        76.2s
-Exception: Gradle task assembleDebug failed with exit code 1&lt;/pre&gt;
-
-&lt;p&gt;
-    这是因为无法下载 &lt;code&gt;gradle&lt;/code&gt; 的包和依赖，需要科学上网或者修改为国内源
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 修改项目目录下的 &lt;code&gt;android/gradle/wrapper/gradle-wrapper.properties&lt;/code&gt; 文件
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;- distributionUrl=https\://services.gradle.org/distributions/gradle-6.7-all.zip
-+ distributionUrl=https\://mirrors.cloud.tencent.com/gradle/gradle-6.7-all.zip&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 修改项目目录下 &lt;code&gt;android/build.gradle&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;- google()
-- jcenter()
-+ maven { url &amp;#39;https://maven.aliyun.com/repository/google&amp;#39; }
-+ maven { url &amp;#39;https://maven.aliyun.com/repository/jcenter&amp;#39; }
-+ maven { url &amp;#39;http://maven.aliyun.com/nexus/content/groups/public&amp;#39; }&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 修改 &lt;b&gt;flutter sdk&lt;/b&gt; 目录下 &lt;code&gt;packages/flutter_tools/gradle/flutter.gradle&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;buildscript {
-     repositories {
-!        // google()
-!        // jcenter()
-!        maven {
-!            url &amp;#39;https://maven.aliyun.com/repository/jcenter&amp;#39;
-!        }
-!        maven {
-!            url &amp;#39;http://maven.aliyun.com/nexus/content/groups/public&amp;#39;
-!        }
-!        maven {
-!            url &amp;#39;https://maven.aliyun.com/repository/google&amp;#39;
-!        }
-     }
-     dependencies {
-         classpath &amp;#39;com.android.tools.build:gradle:4.1.0&amp;#39;
-     }
- }&lt;/pre&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&quot;heading-4.2&quot;&gt;Unable to locate Android SDK&lt;/h3&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter doctor
-Doctor summary (to see all details, run flutter doctor -v):
-[✓] Flutter (Channel stable, 3.3.4, on macOS 12.5 21G72 darwin-x64, locale zh-Hans-CN)
-[✗] Android toolchain - develop for Android devices
-    ✗ Unable to locate Android SDK.
-      Install Android Studio from: https://developer.android.com/studio/index.html
-      On first launch it will assist you in installing the Android SDK components.
-      (or visit https://flutter.dev/docs/get-started/install/macos#android-setup for detailed instructions).
-      If the Android SDK has been installed to a custom location, please use
-      `flutter config --android-sdk` to update to that location.&lt;/pre&gt;
-&lt;p&gt;
-    解决:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ flutter config --android-sdk /usr/local/share/android-sdk
-Setting &amp;#34;android-sdk&amp;#34; value to &amp;#34;/usr/local/share/android-sdk&amp;#34;.
-
-You may need to restart any open editors for them to read new settings.&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-5&quot;&gt;参考文档&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;flutter.cn/docs/get-started/install/macos&quot;&gt;flutter.cn/docs/get-started/install/macos&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;blog.csdn.net/xiuxiuxiubiubiubiu/article/details/104918561&quot;&gt;blog.csdn.net/xiuxiuxiubiubiubiu/article/details/104918561&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;www.cnblogs.com/bluestorm/p/14761482.html&quot;&gt;www.cnblogs.com/bluestorm/p/14761482.html&lt;/a&gt;
 &lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</content>
         <category term="Linux"></category>

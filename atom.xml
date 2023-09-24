@@ -5,13 +5,356 @@
   <link href="https://honmaple.me/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me/index.html"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Thu, 21 Sep 2023 11:11:10 +0000</updated>
+    <updated>Sun, 24 Sep 2023 19:06:00 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>使用acme.sh申请SSL证书</title>
+      <link href="" rel="alternate"></link>
+      <published>Sun, 24 Sep 2023 13:57:51 +0000</published>
+      <updated>Sun, 24 Sep 2023 19:06:00 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/09/shi-yong-acme-shshen-qing-sslzheng-shu.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/09/shi-yong-acme-shshen-qing-sslzheng-shu.html</id>
+      <summary type="html">
+&lt;h2 id=&quot;heading-1&quot;&gt;部署教程&lt;/h2&gt;
+&lt;h3 id=&quot;heading-1.1&quot;&gt;安装并配置acme.sh&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 安装&lt;br/&gt;
+       这里使用 &lt;b&gt;Docker&lt;/b&gt; 安装，方便环境隔离。&lt;code&gt;/opt/acme.sh&lt;/code&gt; 为挂载目录
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name acme.sh \
+-e AUTO_UPGRADE=0 \
+-e TZ=Asia/Shanghai \
+-v /opt/acme.sh:/acme.sh \
+neilpang/acme.sh daemon&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 配置&lt;br/&gt;
+       &lt;b&gt;acme...&lt;/b&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;部署教程&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;安装并配置acme.sh&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;固定域名(webroot)&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2.1&quot;&gt;申请证书&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2.2&quot;&gt;配置SSL证书&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2.3&quot;&gt;配置NGINX&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2.4&quot;&gt;重启NGINX&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3&quot;&gt;泛域名(DNS)&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3.1&quot;&gt;令牌获取&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3.2&quot;&gt;账户ID获取&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3.3&quot;&gt;编辑配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3.4&quot;&gt;申请证书&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3.5&quot;&gt;安装证书&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.4&quot;&gt;搭配NginxProxyManager&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.5&quot;&gt;更新证书(手动)&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;参考资料&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;部署教程&lt;/h2&gt;
+&lt;h3 id=&quot;heading-1.1&quot;&gt;安装并配置acme.sh&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 安装&lt;br/&gt;
+       这里使用 &lt;b&gt;Docker&lt;/b&gt; 安装，方便环境隔离。&lt;code&gt;/opt/acme.sh&lt;/code&gt; 为挂载目录
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name acme.sh \
+-e AUTO_UPGRADE=0 \
+-e TZ=Asia/Shanghai \
+-v /opt/acme.sh:/acme.sh \
+neilpang/acme.sh daemon&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 配置&lt;br/&gt;
+       &lt;b&gt;acme.sh&lt;/b&gt; 默认使用的是 &lt;b&gt;ZeroSSL&lt;/b&gt;，我这里修改为 &lt;b&gt;Let&amp;#39;s Encrypt&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --set-default-ca --server letsencrypt
+docker exec acme.sh --set-default-chain --preferred-chain &amp;#34;ISRG&amp;#34; --server letsencrypt&lt;/pre&gt;
+&lt;p&gt;
+       注：&lt;code&gt;--preferred-chain &amp;#34;ISRG&amp;#34;&lt;/code&gt; 表示设置根证书为 &lt;b&gt;ISRG Root X1&lt;/b&gt;, 它与 &lt;b&gt;DST Root CA X3&lt;/b&gt; 的区别主要是
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;ISRG Root X1&lt;/b&gt; 会更新一些，&lt;b&gt;DST Root CA X3&lt;/b&gt; 已于2021年9月30日到期
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 一些旧的设备（例如，iPhone 4 或 HTC Dream）不会信任 &lt;b&gt;ISRG Root X1&lt;/b&gt;，因为它们没有获得软件更新
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 虽说 &lt;b&gt;DST Root CA X3&lt;/b&gt; 已到期，但Android设备仍能够继续正常访问使用 Let’s Encrypt 证书加密的网站，其它旧设备将会得到证书过期警告
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 注册账号(&lt;b&gt;记得修改为自己的邮箱&lt;/b&gt;)
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --register-account --server letsencrypt -m i@example.com
+[Sun Sep 24 15:49:59 CST 2023] Create account key ok.
+[Sun Sep 24 15:49:59 CST 2023] Registering account: https://acme-v02.api.letsencrypt.org/directory
+[Sun Sep 24 15:50:05 CST 2023] Registered
+[Sun Sep 24 15:50:05 CST 2023] ACCOUNT_THUMBPRINT=&amp;#39;xxx&amp;#39;&lt;/pre&gt;
+&lt;p&gt;
+       这时会在 &lt;code&gt;/acme.sh&lt;/code&gt; 目录下生成一个 &lt;code&gt;http.header&lt;/code&gt; 文件，申请证书时会使用该文件
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;heading-1.2&quot;&gt;固定域名(webroot)&lt;/h3&gt;
+&lt;p&gt;
+    如果只有少数几个固定的域名，这时可以使用 &lt;b&gt;webroot&lt;/b&gt; 方式申请SSL证书。&lt;b&gt;webroot&lt;/b&gt; 方式会在本地生成一个验证文件，申请证书时通过验证该文件验证域名所有权
+&lt;/p&gt;
+
+&lt;h4 id=&quot;heading-1.2.1&quot;&gt;申请证书&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --issue -d example.com -d www.example.com,nas.example.com -w /acme.sh/example.com&lt;/pre&gt;
+&lt;p&gt;
+     执行后会在挂载目录 &lt;code&gt;/opt/acme.sh&lt;/code&gt; 下生成SSL证书相关的 &lt;b&gt;cert&lt;/b&gt; 文件和 &lt;b&gt;key&lt;/b&gt; 文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ ls example.com
+ca.cer  fullchain.cer  example.com.cer  example.com.conf  example.com.csr  example.com.csr.conf  example.com.key&lt;/pre&gt;
+&lt;h4 id=&quot;heading-1.2.2&quot;&gt;配置SSL证书&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_certificate&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/opt/acme.sh/example.com/fullchain.cer&lt;/span&gt;;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_certificate_key&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/opt/acme.sh/example.com/example.com.key&lt;/span&gt;;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_dhparam&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/opt/acme.sh/example.com/dhparam.pem&lt;/span&gt;;
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_session_cache&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;shared:SSL:1m&lt;/span&gt;;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_session_timeout&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;5m&lt;/span&gt;;
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_protocols&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;TLSv1&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;TLSv1.1&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;TLSv1.2&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;TLSv1.3&lt;/span&gt;;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_ciphers&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5&lt;/span&gt;;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;ssl_prefer_server_ciphers&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;on&lt;/span&gt;;&lt;/pre&gt;
+
+&lt;p&gt;
+     如何生成 &lt;b&gt;dhparam&lt;/b&gt; 的证书?
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;openssl dhparam -out /opt/acme.sh/example.com/dhparam.pem 2048&lt;/pre&gt;
+&lt;h4 id=&quot;heading-1.2.3&quot;&gt;配置NGINX&lt;/h4&gt;
+&lt;p&gt;
+     &lt;b&gt;Let&amp;#39;s Encrypt&lt;/b&gt; 只会在 &lt;b&gt;80&lt;/b&gt; 端口验证域名所有权，所以只需要在 &lt;b&gt;80&lt;/b&gt; 端口添加一个 &lt;b&gt;location&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;server&lt;/span&gt; {
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;       &lt;span style=&quot;color:#ae81ff&quot;&gt;80&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;  &lt;span style=&quot;color:#e6db74&quot;&gt;[::]:80&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;server_name&lt;/span&gt;  &lt;span style=&quot;color:#e6db74&quot;&gt;www.example.com&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;nas.example.com&lt;/span&gt;;
+
+    &lt;span style=&quot;color:#f92672&quot;&gt;location&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/&lt;/span&gt; {
+        &lt;span style=&quot;color:#f92672&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;301&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;https://example.com&lt;/span&gt;$request_uri;
+    }
+    &lt;span style=&quot;color:#f92672&quot;&gt;location&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;^~&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/.well-known/acme-challenge&lt;/span&gt; {
+        &lt;span style=&quot;color:#f92672&quot;&gt;alias&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/opt/acme.sh/example.com/.well-known/acme-challenge&lt;/span&gt;;
+    }
+}
+
+&lt;span style=&quot;color:#66d9ef&quot;&gt;server&lt;/span&gt; {
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;       &lt;span style=&quot;color:#ae81ff&quot;&gt;443&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;ssl&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;       &lt;span style=&quot;color:#e6db74&quot;&gt;[::]:443&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;ssl&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;server_name&lt;/span&gt;  &lt;span style=&quot;color:#e6db74&quot;&gt;nas.example.com&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;include&lt;/span&gt;      &lt;span style=&quot;color:#e6db74&quot;&gt;/etc/nginx/conf.d/ssl/example.com.conf&lt;/span&gt;;
+
+    &lt;span style=&quot;color:#f92672&quot;&gt;......&lt;/span&gt;
+&lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;}&lt;/span&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;heading-1.2.4&quot;&gt;重启NGINX&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;nginx -t
+nginx -s reload&lt;/pre&gt;
+&lt;h3 id=&quot;heading-1.3&quot;&gt;泛域名(DNS)&lt;/h3&gt;
+&lt;p&gt;
+    &lt;b&gt;webroot&lt;/b&gt; 无法申请泛域名证书，泛域名证书的申请需要利用&lt;b&gt;DNS服务提供商&lt;/b&gt;的API，动态添加一个TEXT记录，这里以 &lt;b&gt;Cloudflare&lt;/b&gt; 为例
+&lt;/p&gt;
+&lt;h4 id=&quot;heading-1.3.1&quot;&gt;令牌获取&lt;/h4&gt;
+&lt;p&gt;
+     右上角点击&lt;b&gt;我的个人资料&lt;/b&gt;, 然后点击&lt;b&gt;创建令牌&lt;/b&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+     然后选择&lt;b&gt;DNS模版&lt;/b&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-02.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-02.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;令牌名称&lt;/b&gt;可以随意
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;权限&lt;/b&gt;设置为 &lt;code&gt;区域 -&amp;gt; DNS -&amp;gt; 编辑&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;区域资源&lt;/b&gt;设置为 &lt;code&gt;包括 -&amp;gt; 特定区域 -&amp;gt; 域名(example.com)&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-03.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-03.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+     继续以显示摘要, 然后创建令牌
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-04.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-04.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+     最后记得保存令牌到本地
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-05.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-05.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h4 id=&quot;heading-1.3.2&quot;&gt;账户ID获取&lt;/h4&gt;
+&lt;p&gt;
+     选择对应的域名，在&lt;b&gt;概况&lt;/b&gt;的右下角会有账户ID显示
+     
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-06.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/cloudflare-token-06.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h4 id=&quot;heading-1.3.3&quot;&gt;编辑配置&lt;/h4&gt;
+&lt;p&gt;
+     编辑 &lt;code&gt;/opt/acme.sh&lt;/code&gt; 目录下的 &lt;code&gt;account.conf&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+ CF_Token=&amp;#39;xxx&amp;#39;
+&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+ CF_Account_ID=&amp;#39;xxx&amp;#39;
+&lt;/span&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;heading-1.3.4&quot;&gt;申请证书&lt;/h4&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --issue --dns dns_cf -d &amp;#34;nas.example.com&amp;#34; -d &amp;#34;*.nas.example.com&amp;#34;&lt;/pre&gt;
+
+&lt;h4 id=&quot;heading-1.3.5&quot;&gt;安装证书&lt;/h4&gt;
+&lt;p&gt;
+     如果想要修改默认安装的目录，则可以使用 &lt;code&gt;--install-cert&lt;/code&gt; 命令
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --install-cert -d nas.example.com \
+--key-file /nginx/data/custom_ssl/npm-1/privkey.pem \
+--fullchain-file /nginx/data/custom_ssl/npm-1/fullchain.pem&lt;/pre&gt;
+
+&lt;p&gt;
+     如果想要更新证书后同步重启NGINX，可以继续添加命令参数
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;--reloadcmd &amp;#34;nginx -s reload&amp;#34;&lt;/pre&gt;
+
+&lt;h3 id=&quot;heading-1.4&quot;&gt;搭配NginxProxyManager&lt;/h3&gt;
+&lt;p&gt;
+    首先打开 &lt;b&gt;NginxProxyManager&lt;/b&gt;, 选择 &lt;b&gt;SSL Cetificates&lt;/b&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    然后选择 &lt;b&gt;Add SSL Cetificates -&amp;gt; Custom&lt;/b&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-02.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-02.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    最后添加相关文件:
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Certificate&lt;/b&gt;: &lt;code&gt;nas.example.com.cer&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Certificate Key&lt;/b&gt;: &lt;code&gt;nas.example.com.key&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Intermediate Certificate&lt;/b&gt;: &lt;code&gt;ca.cer&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-03.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/acme.sh-nginx-03.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    为了避免证书过期后重新添加，需要把&lt;b&gt;NginxProxyManager&lt;/b&gt;挂载目录也挂载到 &lt;b&gt;acme.sh&lt;/b&gt; 容器
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker stop acme.sh
+docker rm acme.sh
+docker run -d --name acme.sh \
+-e AUTO_UPGRADE=0 \
+-e TZ=Asia/Shanghai \
+-v /opt/acme.sh:/acme.sh \
+-v /opt/nginx:/nginx \
+neilpang/acme.sh daemon&lt;/pre&gt;
+
+&lt;p&gt;
+    然后修改申请证书的命令
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --issue --dns dns_cf -d &amp;#34;nas.example.com&amp;#34; -d &amp;#34;*.nas.example.com&amp;#34; \
+--renew-hook &amp;#34;acme.sh --install-cert -d nas.example.com \
+--key-file /nginx/data/custom_ssl/npm-1/privkey.pem \
+--fullchain-file /nginx/data/custom_ssl/npm-1/fullchain.pem&amp;#34;&lt;/pre&gt;
+
+&lt;p&gt;
+    如果提示 &lt;code&gt;Domains not changed&lt;/code&gt;, 则需要使用 &lt;code&gt;--force&lt;/code&gt; 重新申请
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-1.5&quot;&gt;更新证书(手动)&lt;/h3&gt;
+&lt;p&gt;
+    从 &lt;b&gt;Let&amp;#39;s Encrypt&lt;/b&gt; 申请到的证书有效期是90天，&lt;b&gt;acme.sh&lt;/b&gt; 每60天会对证书进行更新，你也可以手动强制更新：
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;# 查询证书申请信息
+acme.sh --list
+
+# 手动强制更新证书
+acme.sh --renew -d nas.example.com -d *.nas.example.com --force&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;参考资料&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;github.com/acmesh-official/acme.sh/wiki/Preferred-Chain&quot;&gt;github.com/acmesh-official/acme.sh/wiki/Preferred-Chain&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;letsencrypt.org/zh-cn/docs/dst-root-ca-x3-expiration-september-2021/&quot;&gt;letsencrypt.org/zh-cn/docs/dst-root-ca-x3-expiration-september-2021/&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;shiping.date/82.html&quot;&gt;shiping.date/82.html&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+        <category term="Linux"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>Zerotier笔记</title>
       <link href="" rel="alternate"></link>
       <published>Sun, 17 Sep 2023 15:41:40 +0000</published>
-      <updated>Thu, 21 Sep 2023 11:11:10 +0000</updated>
+      <updated>Sun, 24 Sep 2023 16:52:48 +0000</updated>
       <author>
         <name>honmaple</name>
       </author>
@@ -80,7 +423,7 @@
 &lt;/ul&gt;
 &lt;/blockquote&gt;
 
-&lt;h3 id=&quot;heading-1&quot;&gt;相关概念&lt;/h3&gt;
+&lt;h2 id=&quot;heading-1&quot;&gt;相关概念&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;
@@ -389,7 +732,7 @@ docker exec -it zerotier bash /tmp/patch.sh {服务器IP}&lt;/pre&gt;&lt;/li&gt;
 docker rm zerotier
 docker run -d --name zerotier --restart always --net zerotier --cap-add NET_ADMIN --device /dev/net/tun -v /opt/zerotier:/var/lib/zerotier-one zerotier/zerotier:latest&lt;/pre&gt;
 &lt;p&gt;
-    细心的朋友应该会发现我这里没有将 &lt;b&gt;9993&lt;/b&gt; 端口映射给宿主机，这是由于我测试发现两台设备只需要其中一台开放 &lt;code&gt;9993&lt;/code&gt; 端口，两台设备设备就能直连。如果两台设备都不开放端口，则会通过开放了端口的其它设备进行跳转，查看 &lt;b&gt;peers&lt;/b&gt; 会看到一直是 &lt;b&gt;RELAY&lt;/b&gt; 状态
+    细心的朋友应该会发现我这里没有将 &lt;b&gt;9993&lt;/b&gt; 端口映射给宿主机，这是由于我测试发现两台设备只需要其中一台开放 &lt;code&gt;9993&lt;/code&gt; 端口，两台设备之间就能直连。如果两台设备都不开放端口，则会通过开放了端口的其它设备进行跳转，查看 &lt;b&gt;peers&lt;/b&gt; 会看到一直是 &lt;b&gt;RELAY&lt;/b&gt; 状态
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;root@cf5f973bd294:/# zerotier-cli peers
 200 peers
@@ -2317,219 +2660,6 @@ curl 192.168.100.3&lt;/pre&gt;
 &lt;/a&gt;
      &lt;/div&gt;
    &lt;/div&gt;</content>
-        <category term="Life/Coding"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>基于Quasar实现一个树状表格TableTree</title>
-      <link href="" rel="alternate"></link>
-      <published>Sat, 29 Apr 2023 00:03:40 +0000</published>
-      <updated>Tue, 09 May 2023 23:49:45 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/04/基于Quasar实现一个树状表格TableTree.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/04/基于Quasar实现一个树状表格TableTree.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;p&gt;
-&lt;a href=&quot;https://quasar.dev/&quot;&gt;Quasar&lt;/a&gt; 是一个基于 &lt;code&gt;Vue3&lt;/code&gt; 的前端UI框架，使用的是 &lt;b&gt;Material Design&lt;/b&gt;, 对于国内而言(包括我)觉得确实不太好看，但因为之前使用的是 &lt;code&gt;Element-UI&lt;/code&gt;，大概是由于审美疲劳，此次升级我的后台管理UI，没有继续使用 &lt;code&gt;Vue3&lt;/code&gt; 版本的 &lt;code&gt;Element-Plus&lt;/code&gt;。 不久前我也是基于 &lt;code&gt;Quasar&lt;/code&gt; 开发了一个 Memos 客户端, 感觉效果还不错
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
-&lt;p&gt;
-   &lt;code&gt;Quasar&lt;/code&gt; 默认没有树状表格的支持，但我觉得树状表格其实还挺重要的，尤其是在显示一些树状的数据，比如一个部门列表(打比方), 树状表格能够清晰的表明各部门之间的上下关系，目前我看实现树状表格的示例要么是基于 &lt;code&gt;qhierarchy...&lt;/code&gt;&lt;/p&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;前言&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;实现一(废弃)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;实现二&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;最终实现&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-&lt;a href=&quot;https://quasar.dev/&quot;&gt;Quasar&lt;/a&gt; 是一个基于 &lt;code&gt;Vue3&lt;/code&gt; 的前端UI框架，使用的是 &lt;b&gt;Material Design&lt;/b&gt;, 对于国内而言(包括我)觉得确实不太好看，但因为之前使用的是 &lt;code&gt;Element-UI&lt;/code&gt;，大概是由于审美疲劳，此次升级我的后台管理UI，没有继续使用 &lt;code&gt;Vue3&lt;/code&gt; 版本的 &lt;code&gt;Element-Plus&lt;/code&gt;。 不久前我也是基于 &lt;code&gt;Quasar&lt;/code&gt; 开发了一个 Memos 客户端, 感觉效果还不错
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
-&lt;p&gt;
-   &lt;code&gt;Quasar&lt;/code&gt; 默认没有树状表格的支持，但我觉得树状表格其实还挺重要的，尤其是在显示一些树状的数据，比如一个部门列表(打比方), 树状表格能够清晰的表明各部门之间的上下关系，目前我看实现树状表格的示例要么是基于 &lt;code&gt;qhierarchy&lt;/code&gt; (使用 &lt;code&gt;q-markup-table&lt;/code&gt; 实现，定制太困难), 要么就是实现方式太复杂 &lt;a href=&quot;https://forum.quasar-framework.org/topic/2428/tree-table-example&quot;&gt;tree-table-example&lt;/a&gt;, 所以我研究了一下，发现其实还挺简单的，故此记录
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;实现一(废弃)&lt;/h2&gt;
-&lt;p&gt;
-   虽然 &lt;code&gt;Quasar&lt;/code&gt; 没有树状表格的组件, 但 &lt;code&gt;q-table&lt;/code&gt; 默认是支持 &lt;code&gt;Expanding rows&lt;/code&gt; 的，所以我一开始的想法是使用这个功能实现一个递归的组件, 就像这样
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-tr&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:key&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;row.id&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:props&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props&amp;#34;&lt;/span&gt;&amp;gt;
-    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;slot&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:row&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;row&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:status&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;status&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:indent&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;indent&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:indentStyle&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;indentStyle(indent)&amp;#34;&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;slot&lt;/span&gt;&amp;gt;
-  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-tr&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:key&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;index&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-for&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;(child, index) in row.children&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-if&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;status.expand&amp;#34;&lt;/span&gt;&amp;gt;
-    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;table-tree&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:props&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:indent&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;indent + 1&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:row&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;child&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-slot&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;scope&amp;#34;&lt;/span&gt;&amp;gt;
-      &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;slot&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:row&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;scope.row&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:status&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;scope.status&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:indent&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;scope.indent&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:indentStyle&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;indentStyle(scope.indent)&amp;#34;&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;slot&lt;/span&gt;&amp;gt;
-    &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;table-tree&lt;/span&gt;&amp;gt;
-  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-&lt;p&gt;
-   而在父组件中调用只需要把原来的 &lt;code&gt;props&lt;/code&gt; 改成 &lt;code&gt;scope&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-slot:body&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props&amp;#34;&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;table-tree&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:props&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:row&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props.row&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-slot&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;scope&amp;#34;&lt;/span&gt;&amp;gt;
-    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;auto-width&lt;/span&gt;&amp;gt;
-      &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-checkbox&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;size&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;sm&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;scope.status.selected&amp;#34;&lt;/span&gt; /&amp;gt;
-    &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;
-    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;
-      &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-btn&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;flat&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;round&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;dense&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;size&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;xs&amp;#34;&lt;/span&gt;
-             &lt;span style=&quot;color:#a6e22e&quot;&gt;:icon&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;scope.status.expand ? &amp;#39;remove&amp;#39; : &amp;#39;add&amp;#39;&amp;#34;&lt;/span&gt;
-             &lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;@&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;click&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;scope.status.expand = !scope.status.expand&amp;#34;&lt;/span&gt;
-             &lt;span style=&quot;color:#a6e22e&quot;&gt;v-if&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;scope.row.children &amp;amp;&amp;amp; scope.row.children.length &amp;gt; 0&amp;#34;&lt;/span&gt; /&amp;gt;
-      {{ scope.row.name }}
-    &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;
-    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;{{ scope.row.desc }}&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;
-  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;table-tree&lt;/span&gt;&amp;gt;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-&lt;p&gt;
-   但是后面发现表格在多选状态下无法和原有的表格选择进行联动，只能自己实现选中和取消选中的方法，虽然也能实现，当很麻烦，只好另寻其它方式
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;实现二&lt;/h2&gt;
-&lt;p&gt;
-   后面研究了一下 &lt;b&gt;Fernando2684&lt;/b&gt; 的实现方式, 虽然他的方式同样复杂，当实现原理其实很简单, 那就是修改原始数据，比如第二行需要进行展开，那我就在原来第二行的数据下把第二行的子数据追加上去，取消展开就把子数据删除，恢复原来的数据。有了这个原理后就好办了，我们可以利用 &lt;code&gt;Expanding rows&lt;/code&gt; 时用到的 &lt;code&gt;props.expand&lt;/code&gt; 参数来控制是否展开子数据, 然后利用计算属性动态的计算展开后的数据
-&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 表格模版
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-table&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;flat&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;bordered&lt;/span&gt;
-         &lt;span style=&quot;color:#a6e22e&quot;&gt;row-key&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;
-         &lt;span style=&quot;color:#a6e22e&quot;&gt;separator&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;cell&amp;#34;&lt;/span&gt;
-         &lt;span style=&quot;color:#a6e22e&quot;&gt;selection&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;multiple&amp;#34;&lt;/span&gt;
-         &lt;span style=&quot;color:#a6e22e&quot;&gt;-&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:rows&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.list&amp;#34;&lt;/span&gt;
-         &lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;+&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:rows&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;expandRows&amp;#34;&lt;/span&gt;
-         &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model:expanded&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.expanded&amp;#34;&lt;/span&gt;
-         &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model:selected&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.selected&amp;#34;&lt;/span&gt;
-         &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model:pagination&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.pagination&amp;#34;&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-slot:body&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props&amp;#34;&lt;/span&gt;&amp;gt;
-    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-tr&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:props&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props&amp;#34;&lt;/span&gt;&amp;gt;
-      &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;auto-width&lt;/span&gt;&amp;gt;
-        &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-checkbox&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;size&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;sm&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props.selected&amp;#34;&lt;/span&gt; /&amp;gt;
-      &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;
-      &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;
-        &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-btn&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;flat&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;round&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;dense&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;size&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;xs&amp;#34;&lt;/span&gt;
-               &lt;span style=&quot;color:#a6e22e&quot;&gt;:icon&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props.expand ? &amp;#39;remove&amp;#39; : &amp;#39;add&amp;#39;&amp;#34;&lt;/span&gt;
-               &lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;@&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;click&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props.expand = !props.expand&amp;#34;&lt;/span&gt;
-               &lt;span style=&quot;color:#a6e22e&quot;&gt;v-if&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props.row.children &amp;amp;&amp;amp; props.row.children.length &amp;gt; 0&amp;#34;&lt;/span&gt; /&amp;gt;
-        {{ props.row.name }}
-      &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;
-      &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;{{ props.row.desc }}&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;
-    &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-tr&lt;/span&gt;&amp;gt;
-  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-table&lt;/span&gt;&amp;gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 表格数据
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;ref&lt;/span&gt;({
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; [],
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; [],
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;selected&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; [],
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;loading&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;,
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;pagination&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; {
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;page&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;,
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;sortBy&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;desc&amp;#39;&lt;/span&gt;,
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;descending&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;false&lt;/span&gt;,
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;rowsPerPage&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;,
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;rowsNumber&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;,
-    }
-})
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;expandRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;computed&lt;/span&gt;(() =&amp;gt; {
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;)
-})
-&lt;/pre&gt;
-&lt;p&gt;
-     这里提一嘴，&lt;code&gt;pagination.rowsPerPage&lt;/code&gt; 默认最好设置为0(不限制每页的数量, 但会由由后端控制返回的行数), 否则展开子数据后的数据会被放到第二页, 影响数据查看
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 动态计算展开后的数据
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;) {
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#f92672&quot;&gt;!&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;) {
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; []
-    }
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;length&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;==&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;) {
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;
-    }
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;let&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; []
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;forEach&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt; =&amp;gt; {
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;push&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;)
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;indexOf&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;id&lt;/span&gt;) &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;-&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;) {
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;concat&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;children&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;))
-        }
-    })
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;
-}
-&lt;/pre&gt;
-&lt;p&gt;
-     注意，这里因为要递归计算多级子目录，所以不能直接在 &lt;code&gt;setup&lt;/code&gt; 上直接用 &lt;code&gt;const&lt;/code&gt; 定义
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 缩进：&lt;del&gt;目前缩进确实有些问题，其中一个解决办法是原始数据会带有 &lt;code&gt;parent_id&lt;/code&gt; 字段，可以通过判断 &lt;code&gt;parent_id&lt;/code&gt; 大于0时增加缩进&lt;/del&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-     缩进的计算可以通过&lt;code&gt;makeRows&lt;/code&gt;函数在遍历时添加每行数据的层级
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;indent&lt;/span&gt;) {
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#f92672&quot;&gt;!&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;) {
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; []
-    }
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;let&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; []
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;forEach&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt; =&amp;gt; {
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;_indent&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;indent&lt;/span&gt;
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;push&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;)
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;indexOf&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;id&lt;/span&gt;) &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;-&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;) {
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;concat&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;children&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;indent&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;+&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;))
-        }
-    })
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;
-}
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;export&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;default&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;useTable&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;) {
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;expandRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;computed&lt;/span&gt;(() =&amp;gt; {
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;, &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;)
-    })
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; {
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;expandRows&lt;/span&gt;,
-    }
-}
-&lt;/pre&gt;
-&lt;p&gt;
-     然后在表格中添加对应的偏移即可, 需要注意的是表格对齐方向需要设置为 &lt;code&gt;left&lt;/code&gt; (&lt;b&gt;默认值&lt;/b&gt;)
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-slot:body-cell-name&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props&amp;#34;&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:props&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:style&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#39;padding-left:&amp;#39; + ((props.row._indent || 0) + 1) + &amp;#39;rem&amp;#39;&amp;#34;&lt;/span&gt;&amp;gt;
-    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-btn&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;flat&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;round&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;dense&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;size&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;xs&amp;#34;&lt;/span&gt;
-           &lt;span style=&quot;color:#a6e22e&quot;&gt;:icon&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props.expand ? &amp;#39;remove&amp;#39; : &amp;#39;add&amp;#39;&amp;#34;&lt;/span&gt;
-           &lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;@&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;click&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props.expand = !props.expand&amp;#34;&lt;/span&gt;
-           &lt;span style=&quot;color:#a6e22e&quot;&gt;v-if&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;props.row.children &amp;amp;&amp;amp; props.row.children.length &amp;gt; 0&amp;#34;&lt;/span&gt; /&amp;gt;
-    {{ props.row.name }}
-  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-td&lt;/span&gt;&amp;gt;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-4&quot;&gt;最终实现&lt;/h2&gt;
-&lt;p&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/04/quasar-tree-table.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/04/quasar-tree-table.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;</content>
         <category term="Life/Coding"></category>
     </entry>
 </feed>
