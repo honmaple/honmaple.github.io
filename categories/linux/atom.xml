@@ -5,8 +5,165 @@
   <link href="https://honmaple.me/categories/linux/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Sun, 24 Sep 2023 19:06:00 +0000</updated>
+    <updated>Fri, 03 Nov 2023 23:24:39 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>重复造轮子之Emacs翻译插件maple-translate</title>
+      <link href="" rel="alternate"></link>
+      <published>Fri, 03 Nov 2023 22:19:03 +0000</published>
+      <updated>Fri, 03 Nov 2023 23:24:39 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/11/zhong-fu-zao-lun-zi-zhi-emacsfan-yi-cha-jian-maple-translate.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/11/zhong-fu-zao-lun-zi-zhi-emacsfan-yi-cha-jian-maple-translate.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+我之前一直都在使用 &lt;a href=&quot;https://github.com/xuchunyang/youdao-dictionary.el&quot;&gt;youdao-dictionary&lt;/a&gt; 这个插件，也没有配置过秘钥，虽然不配置接口会有使用次数的限制(反正是每天1000次还是多少来着，有些忘了)，但是我平时使用次数不多，所以也不会达到使用限制，不管是单词翻译还是长句翻译都很不错。但最近几个月 &lt;b&gt;youdao-dictionary&lt;/b&gt; 如果不配置私钥，处于一个完全不可用的状态。
+&lt;/p&gt;
+
+&lt;p&gt;
+我曾寻找过它的替代品，并且使用过一段时间的 &lt;a href=&quot;https://github.com/condy0919/fanyi.el&quot;&gt;fanyi.el&lt;/a&gt;，不可否认，这同样是一个非常不错的插件，不管是UI还是功能，但是，可能是因为 &lt;b&gt;fanyi.el&lt;/b&gt; 使用异步请求的原因，偶尔会出现一些意想不到的报错，更重要的是它不支持长句翻译和离线翻译。
+&lt;/p&gt;
+
+&lt;p&gt;
+考虑再三，还是决定自己造一个轮子，主要功能就按照我之前使用 &lt;b&gt;youdao-dictionary&lt;/b&gt; 的习惯...&lt;/p&gt;&lt;/blockquote&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;如何使用?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;长句翻译&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;离线翻译&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;多引擎翻译&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;翻译原理&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+我之前一直都在使用 &lt;a href=&quot;https://github.com/xuchunyang/youdao-dictionary.el&quot;&gt;youdao-dictionary&lt;/a&gt; 这个插件，也没有配置过秘钥，虽然不配置接口会有使用次数的限制(反正是每天1000次还是多少来着，有些忘了)，但是我平时使用次数不多，所以也不会达到使用限制，不管是单词翻译还是长句翻译都很不错。但最近几个月 &lt;b&gt;youdao-dictionary&lt;/b&gt; 如果不配置私钥，处于一个完全不可用的状态。
+&lt;/p&gt;
+
+&lt;p&gt;
+我曾寻找过它的替代品，并且使用过一段时间的 &lt;a href=&quot;https://github.com/condy0919/fanyi.el&quot;&gt;fanyi.el&lt;/a&gt;，不可否认，这同样是一个非常不错的插件，不管是UI还是功能，但是，可能是因为 &lt;b&gt;fanyi.el&lt;/b&gt; 使用异步请求的原因，偶尔会出现一些意想不到的报错，更重要的是它不支持长句翻译和离线翻译。
+&lt;/p&gt;
+
+&lt;p&gt;
+考虑再三，还是决定自己造一个轮子，主要功能就按照我之前使用 &lt;b&gt;youdao-dictionary&lt;/b&gt; 的习惯:
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 翻译光标下的单词，以及选中的单词或句子
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 翻译的内容输出到 &lt;code&gt;echoarea&lt;/code&gt; 或者新的 &lt;code&gt;buffer&lt;/code&gt;，方便复制
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 增加一个离线翻译的功能，并且可以不依赖外部工具
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+基于上述，所以有了这个新的轮子 &lt;a href=&quot;https://github.com/honmaple/emacs-maple-translate&quot;&gt;maple-translate&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;如何使用?&lt;/h2&gt;
+&lt;p&gt;
+   可以使用 &lt;b&gt;quelpa&lt;/b&gt; 安装
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(use-package maple-translate
+  :quelpa (:fetcher github :repo &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;honmaple/emacs-maple-translate&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+  :commands (maple-translate maple-translate+))&lt;/pre&gt;
+
+&lt;p&gt;
+   或者手动下载仓库
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;git clone https://github.com/honmaple/emacs-maple-translate ~/.emacs.d/site-lisp/maple-translate&lt;/pre&gt;
+
+&lt;p&gt;
+   然后进行配置
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(use-package maple-translate
+  :ensure &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt;
+  :commands (maple-translate maple-translate+))&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;长句翻译&lt;/h2&gt;
+&lt;p&gt;
+   目前长句翻译仅支持 &lt;code&gt;youdao&lt;/code&gt;, 可以修改翻译引擎
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(setq maple-translate-engine &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;youdao&lt;/span&gt;)&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;离线翻译&lt;/h2&gt;
+&lt;p&gt;
+   我个人平时在使用 &lt;b&gt;Emacs&lt;/b&gt; 时不太习惯依赖外部的工具，比如我之前就写过一个markdown，org-mode实时预览插件 &lt;a href=&quot;https://github.com/honmaple/emacs-maple-preview&quot;&gt;maple-preview&lt;/a&gt;，它区别于其它插件，并不会依赖外部的工具，比如 &lt;b&gt;Pandoc&lt;/b&gt;，甚至不会生出任何文件到我的本地环境
+&lt;/p&gt;
+
+&lt;p&gt;
+   同样的，我也不希望使用离线翻译时还要依赖外部诸如 &lt;b&gt;sdcv，goldendict&lt;/b&gt; 等工具，我想要直接使用 &lt;code&gt;Elisp&lt;/code&gt; 来对词典进行解析。所幸前人栽树，后人乘凉，已经有了一个纯 &lt;code&gt;Elisp&lt;/code&gt; 实现的解析器 &lt;a href=&quot;www.emacswiki.org/emacs/stardict.el&quot;&gt;www.emacswiki.org/emacs/stardict.el&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   我所需要做的，就是下载需要的词典到本地(这个步骤是必须的，即使我不喜欢)，然后设置
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;;; 离线词典所在的目录&lt;/span&gt;
+(setq maple-translate-sdcv-dir &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;~/.stardict/dicts&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+&lt;span style=&quot;color:#75715e&quot;&gt;;; 所使用的词典 -&amp;gt; (词典名词 . 词典具体目录)&lt;/span&gt;
+(setq maple-translate-sdcv-dicts
+      &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;((&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;lazyworm-ec&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;stardict-lazyworm-ec-2.4.2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+        (&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;lazyworm-ce&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;stardict-lazyworm-ce-2.4.2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))&lt;/pre&gt;
+
+&lt;p&gt;
+   最后修改翻译引擎
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(setq maple-translate-engine &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;sdcv&lt;/span&gt;)&lt;/pre&gt;
+&lt;p&gt;
+   注意：&lt;b&gt;第一次使用离线翻译需要等待词典初始化，这会需要耗费一段时间，后面就快了&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-4&quot;&gt;多引擎翻译&lt;/h2&gt;
+&lt;p&gt;
+   &lt;b&gt;maple-translate&lt;/b&gt; 同样支持&lt;b&gt;多引擎&lt;/b&gt;，需要修改设置为一个列表
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(setq maple-translate-engine &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(youdao dictcn sdcv))&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-5&quot;&gt;翻译原理&lt;/h2&gt;
+&lt;p&gt;
+   目前支持的几个引擎: &lt;code&gt;youdao&lt;/code&gt;、&lt;code&gt;dictcn&lt;/code&gt;、&lt;code&gt;bing&lt;/code&gt;、&lt;code&gt;sdcv&lt;/code&gt;。除 &lt;code&gt;sdcv&lt;/code&gt; 外，其它几个都依赖于网络，&lt;b&gt;maple-translate&lt;/b&gt; 可以看作是一个爬虫，通过爬取翻译页面，然后使用Emacs内置的 &lt;code&gt;dom&lt;/code&gt; 对HTML进行解析，最后获取到想要的内容。基于此，我还写了一个超简单的 &lt;code&gt;类xpath&lt;/code&gt; 解析器
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple-translate-dom-by-key(dom key)
+  (let (func num)
+    (when (&lt;span style=&quot;color:#a6e22e&quot;&gt;string-match&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;[&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;([0-9]+&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;]&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; key)
+      (setq num (match-string &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt; key))
+      (setq key (&lt;span style=&quot;color:#a6e22e&quot;&gt;substring&lt;/span&gt; key &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;-&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;length&lt;/span&gt; key) (&lt;span style=&quot;color:#a6e22e&quot;&gt;length&lt;/span&gt; num) &lt;span style=&quot;color:#ae81ff&quot;&gt;2&lt;/span&gt;))))
+    (cond ((string-prefix-p &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; key)
+           (setq key (&lt;span style=&quot;color:#a6e22e&quot;&gt;substring&lt;/span&gt; key &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;) func &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;dom-by-class&lt;/span&gt;))
+          ((string-prefix-p &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;#&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; key)
+           (setq key (&lt;span style=&quot;color:#a6e22e&quot;&gt;substring&lt;/span&gt; key &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;) func &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;dom-by-id&lt;/span&gt;))
+          ((string-prefix-p &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; key)
+           (setq func (lambda(p _) (dom-children p))))
+          (&lt;span style=&quot;color:#66d9ef&quot;&gt;t&lt;/span&gt; (setq key (&lt;span style=&quot;color:#a6e22e&quot;&gt;intern&lt;/span&gt; key) func &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;dom-by-tag&lt;/span&gt;)))
+    (if (&lt;span style=&quot;color:#a6e22e&quot;&gt;null&lt;/span&gt; num)
+        (&lt;span style=&quot;color:#a6e22e&quot;&gt;funcall&lt;/span&gt; func dom key)
+      (&lt;span style=&quot;color:#a6e22e&quot;&gt;nth&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;string-to-number&lt;/span&gt; num) (&lt;span style=&quot;color:#a6e22e&quot;&gt;funcall&lt;/span&gt; func dom key)))))
+
+(defun maple-translate-dom-find(dom xpath)
+  (cl-loop for key in (string-split (string-trim xpath) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+           if (&lt;span style=&quot;color:#a6e22e&quot;&gt;consp&lt;/span&gt; dom)
+           do (setq dom (maple-translate-dom-by-key dom key))
+           else return dom)
+  dom)&lt;/pre&gt;
+
+&lt;p&gt;
+   这样，我就能通过一些简单的语法来定位想要的内容，比如在有道里面使用
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(maple-translate-dom-find dom &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;.simple dict-module/.trans-container/.word-exp&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)&lt;/pre&gt;
+&lt;p&gt;
+   获取到 &lt;b&gt;class&lt;/b&gt; 名称为 &lt;code&gt;simple dict-module&lt;/code&gt; 下的 &lt;b&gt;class&lt;/b&gt; 名称为 &lt;code&gt;trans-container&lt;/code&gt; 下的 &lt;b&gt;class&lt;/b&gt; 名称为 &lt;code&gt;word-exp&lt;/code&gt; 的所有元素, 也就是&lt;b&gt;基本释义&lt;/b&gt;
+&lt;/p&gt;</content>
+        <category term="Linux/Emacs"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>使用acme.sh申请SSL证书</title>
       <link href="" rel="alternate"></link>
@@ -2897,94 +3054,6 @@ OK, 就这样
 &lt;li&gt;
 &lt;p&gt;
  &lt;a href=&quot;https://github.com/burnettk/delete-docker-registry-image&quot;&gt;https://github.com/burnettk/delete-docker-registry-image&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;</content>
-        <category term="Linux"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>K8S笔记之ingress增加验证</title>
-      <link href="" rel="alternate"></link>
-      <published>Tue, 13 Jul 2021 14:13:38 +0000</published>
-      <updated>Thu, 02 Sep 2021 00:59:05 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2021/07/K8S笔记之ingress增加验证.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2021/07/K8S笔记之ingress增加验证.html</id>
-      <summary type="html">
-&lt;h2 id=&quot;heading-1&quot;&gt;创建账户密码&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 生成密码
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;PASSWORD&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;$(&lt;/span&gt;base64 &amp;lt; /dev/urandom | head -c8&lt;span style=&quot;color:#66d9ef&quot;&gt;)&lt;/span&gt;; echo &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;$PASSWORD&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 生成hash值
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run --rm --entrypoint htpasswd httpd:2 -Bbn username password &amp;gt;&amp;gt; auth&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-2&quot;&gt;修改ingress&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;nginx.ingress.kubernetes.io/auth...&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;创建账户密码&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;修改ingress&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;Authorization请求头传递到后端server&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;参考资料&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;创建账户密码&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 生成密码
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;PASSWORD&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;$(&lt;/span&gt;base64 &amp;lt; /dev/urandom | head -c8&lt;span style=&quot;color:#66d9ef&quot;&gt;)&lt;/span&gt;; echo &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;$PASSWORD&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 生成hash值
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run --rm --entrypoint htpasswd httpd:2 -Bbn username password &amp;gt;&amp;gt; auth&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-2&quot;&gt;修改ingress&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;nginx.ingress.kubernetes.io/auth-realm=&amp;#39;Authentication Required &amp;#39;
-nginx.ingress.kubernetes.io/auth-type=basic
-nginx.ingress.kubernetes.io/auth-secret=basic-auth
-nginx.ingress.kubernetes.io/auth-secret-type=auth-map&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;Authorization请求头传递到后端server&lt;/h2&gt;
-&lt;p&gt;
-   现有一个 &lt;b&gt;django server&lt;/b&gt; 需要根据不同用户名配置不同的权限, &lt;b&gt;django&lt;/b&gt; 可以通过 &lt;code&gt;request.META.get(&amp;#34;HTTP_AUTHORIZATION&amp;#34;)&lt;/code&gt; 获取&lt;b&gt;basic auth&lt;/b&gt; 时的用户信息, 但默认 &lt;b&gt;Authorization&lt;/b&gt; 请求头无法直接传递到后端, 所以需要配置
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;nginx.ingress.kubernetes.io/configuration-snippet: |
-    proxy_set_header Authorization $http_authorization;
-    proxy_pass_header Authorization;&lt;/pre&gt;
-&lt;p&gt;
-   参考资料:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;serverfault.com/questions/977426/how-to-keep-authentication-header-with-redirect-using-nginx-ingress-annotations&quot;&gt;serverfault.com/questions/977426/how-to-keep-authentication-header-with-redirect-using-nginx-ingress-annotations&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;github.com/kubernetes/dashboard/issues/5105&quot;&gt;github.com/kubernetes/dashboard/issues/5105&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-4&quot;&gt;参考资料&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;https://kubernetes.github.io/ingress-nginx/examples/auth/external-auth/&quot;&gt;https://kubernetes.github.io/ingress-nginx/examples/auth/external-auth/&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#authentication&quot;&gt;https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#authentication&lt;/a&gt;
 &lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</content>
         <category term="Linux"></category>

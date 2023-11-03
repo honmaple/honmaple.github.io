@@ -83,6 +83,176 @@
         <article class="entry-article">
           <div class="entry-article-header">
     <h1 class="entry-article-title">
+      <a href="https://honmaple.me/articles/2023/11/zhong-fu-zao-lun-zi-zhi-emacsfan-yi-cha-jian-maple-translate.html" rel="bookmark" title="Permalink to 重复造轮子之Emacs翻译插件maple-translate">重复造轮子之Emacs翻译插件maple-translate</a>
+    </h1>
+      <div class="entry-article-info">
+        <span title="Updated at 2023-11-03">
+          <i class="fa fa-calendar-o"></i>
+          2023年11月03日 周五
+        </span>
+          <span class="hidden-xs">|</span>
+          <span class="hidden-xs">
+            <i class="fa fa-user-o"></i>
+            By
+              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-folder-o"></i>
+            In
+              <a href="https://honmaple.me/categories/linux/emacs/index.html">Linux/Emacs</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-bookmark-o"></i>
+            0f
+              <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+              <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+          </span>
+      </div>
+  </div>
+          <hr class="entry-article-hr" />
+            <div class="entry-article-content no-tables">
+              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">如何使用?</a></li>
+<li><a href="#heading-2">长句翻译</a></li>
+<li><a href="#heading-3">离线翻译</a></li>
+<li><a href="#heading-4">多引擎翻译</a></li>
+<li><a href="#heading-5">翻译原理</a></li>
+</ul></div></div>
+
+<blockquote>
+<p>
+我之前一直都在使用 <a href="https://github.com/xuchunyang/youdao-dictionary.el">youdao-dictionary</a> 这个插件，也没有配置过秘钥，虽然不配置接口会有使用次数的限制(反正是每天1000次还是多少来着，有些忘了)，但是我平时使用次数不多，所以也不会达到使用限制，不管是单词翻译还是长句翻译都很不错。但最近几个月 <b>youdao-dictionary</b> 如果不配置私钥，处于一个完全不可用的状态。
+</p>
+
+<p>
+我曾寻找过它的替代品，并且使用过一段时间的 <a href="https://github.com/condy0919/fanyi.el">fanyi.el</a>，不可否认，这同样是一个非常不错的插件，不管是UI还是功能，但是，可能是因为 <b>fanyi.el</b> 使用异步请求的原因，偶尔会出现一些意想不到的报错，更重要的是它不支持长句翻译和离线翻译。
+</p>
+
+<p>
+考虑再三，还是决定自己造一个轮子，主要功能就按照我之前使用 <b>youdao-dictionary</b> 的习惯:
+</p>
+<ol>
+<li>
+<p>
+ 翻译光标下的单词，以及选中的单词或句子
+</p></li>
+<li>
+<p>
+ 翻译的内容输出到 <code>echoarea</code> 或者新的 <code>buffer</code>，方便复制
+</p></li>
+<li>
+<p>
+ 增加一个离线翻译的功能，并且可以不依赖外部工具
+</p></li>
+</ol>
+</blockquote>
+
+<p>
+基于上述，所以有了这个新的轮子 <a href="https://github.com/honmaple/emacs-maple-translate">maple-translate</a>
+</p>
+
+<h2 id="heading-1">如何使用?</h2>
+<p>
+   可以使用 <b>quelpa</b> 安装
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">(use-package maple-translate
+  :quelpa (:fetcher github :repo <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">honmaple/emacs-maple-translate</span><span style="color:#e6db74">&#34;</span>)
+  :commands (maple-translate maple-translate+))</pre>
+
+<p>
+   或者手动下载仓库
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">git clone https://github.com/honmaple/emacs-maple-translate ~/.emacs.d/site-lisp/maple-translate</pre>
+
+<p>
+   然后进行配置
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">(use-package maple-translate
+  :ensure <span style="color:#66d9ef">nil</span>
+  :commands (maple-translate maple-translate+))</pre>
+
+<h2 id="heading-2">长句翻译</h2>
+<p>
+   目前长句翻译仅支持 <code>youdao</code>, 可以修改翻译引擎
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">(setq maple-translate-engine <span style="color:#e6db74">&#39;youdao</span>)</pre>
+
+<h2 id="heading-3">离线翻译</h2>
+<p>
+   我个人平时在使用 <b>Emacs</b> 时不太习惯依赖外部的工具，比如我之前就写过一个markdown，org-mode实时预览插件 <a href="https://github.com/honmaple/emacs-maple-preview">maple-preview</a>，它区别于其它插件，并不会依赖外部的工具，比如 <b>Pandoc</b>，甚至不会生出任何文件到我的本地环境
+</p>
+
+<p>
+   同样的，我也不希望使用离线翻译时还要依赖外部诸如 <b>sdcv，goldendict</b> 等工具，我想要直接使用 <code>Elisp</code> 来对词典进行解析。所幸前人栽树，后人乘凉，已经有了一个纯 <code>Elisp</code> 实现的解析器 <a href="www.emacswiki.org/emacs/stardict.el">www.emacswiki.org/emacs/stardict.el</a>
+</p>
+
+<p>
+   我所需要做的，就是下载需要的词典到本地(这个步骤是必须的，即使我不喜欢)，然后设置
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e">;; 离线词典所在的目录</span>
+(setq maple-translate-sdcv-dir <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">~/.stardict/dicts</span><span style="color:#e6db74">&#34;</span>)
+<span style="color:#75715e">;; 所使用的词典 -&gt; (词典名词 . 词典具体目录)</span>
+(setq maple-translate-sdcv-dicts
+      <span style="color:#f92672">&#39;</span>((<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">lazyworm-ec</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">stardict-lazyworm-ec-2.4.2</span><span style="color:#e6db74">&#34;</span>)
+        (<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">lazyworm-ce</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">stardict-lazyworm-ce-2.4.2</span><span style="color:#e6db74">&#34;</span>)))</pre>
+
+<p>
+   最后修改翻译引擎
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">(setq maple-translate-engine <span style="color:#e6db74">&#39;sdcv</span>)</pre>
+<p>
+   注意：<b>第一次使用离线翻译需要等待词典初始化，这会需要耗费一段时间，后面就快了</b>
+</p>
+
+<h2 id="heading-4">多引擎翻译</h2>
+<p>
+   <b>maple-translate</b> 同样支持<b>多引擎</b>，需要修改设置为一个列表
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">(setq maple-translate-engine <span style="color:#f92672">&#39;</span>(youdao dictcn sdcv))</pre>
+
+<h2 id="heading-5">翻译原理</h2>
+<p>
+   目前支持的几个引擎: <code>youdao</code>、<code>dictcn</code>、<code>bing</code>、<code>sdcv</code>。除 <code>sdcv</code> 外，其它几个都依赖于网络，<b>maple-translate</b> 可以看作是一个爬虫，通过爬取翻译页面，然后使用Emacs内置的 <code>dom</code> 对HTML进行解析，最后获取到想要的内容。基于此，我还写了一个超简单的 <code>类xpath</code> 解析器
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">(defun maple-translate-dom-by-key(dom key)
+  (let (func num)
+    (when (<span style="color:#a6e22e">string-match</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">\\</span><span style="color:#e6db74">[</span><span style="color:#e6db74">\\</span><span style="color:#e6db74">([0-9]+</span><span style="color:#e6db74">\\</span><span style="color:#e6db74">)</span><span style="color:#e6db74">\\</span><span style="color:#e6db74">]</span><span style="color:#e6db74">&#34;</span> key)
+      (setq num (match-string <span style="color:#ae81ff">1</span> key))
+      (setq key (<span style="color:#a6e22e">substring</span> key <span style="color:#ae81ff">0</span> (<span style="color:#a6e22e">-</span> (<span style="color:#a6e22e">length</span> key) (<span style="color:#a6e22e">length</span> num) <span style="color:#ae81ff">2</span>))))
+    (cond ((string-prefix-p <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">.</span><span style="color:#e6db74">&#34;</span> key)
+           (setq key (<span style="color:#a6e22e">substring</span> key <span style="color:#ae81ff">1</span>) func <span style="color:#e6db74">&#39;dom-by-class</span>))
+          ((string-prefix-p <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">#</span><span style="color:#e6db74">&#34;</span> key)
+           (setq key (<span style="color:#a6e22e">substring</span> key <span style="color:#ae81ff">1</span>) func <span style="color:#e6db74">&#39;dom-by-id</span>))
+          ((string-prefix-p <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">*</span><span style="color:#e6db74">&#34;</span> key)
+           (setq func (lambda(p _) (dom-children p))))
+          (<span style="color:#66d9ef">t</span> (setq key (<span style="color:#a6e22e">intern</span> key) func <span style="color:#e6db74">&#39;dom-by-tag</span>)))
+    (if (<span style="color:#a6e22e">null</span> num)
+        (<span style="color:#a6e22e">funcall</span> func dom key)
+      (<span style="color:#a6e22e">nth</span> (<span style="color:#a6e22e">string-to-number</span> num) (<span style="color:#a6e22e">funcall</span> func dom key)))))
+
+(defun maple-translate-dom-find(dom xpath)
+  (cl-loop for key in (string-split (string-trim xpath) <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/</span><span style="color:#e6db74">&#34;</span>)
+           if (<span style="color:#a6e22e">consp</span> dom)
+           do (setq dom (maple-translate-dom-by-key dom key))
+           else return dom)
+  dom)</pre>
+
+<p>
+   这样，我就能通过一些简单的语法来定位想要的内容，比如在有道里面使用
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">(maple-translate-dom-find dom <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">.simple dict-module/.trans-container/.word-exp</span><span style="color:#e6db74">&#34;</span>)</pre>
+<p>
+   获取到 <b>class</b> 名称为 <code>simple dict-module</code> 下的 <b>class</b> 名称为 <code>trans-container</code> 下的 <b>class</b> 名称为 <code>word-exp</code> 的所有元素, 也就是<b>基本释义</b>
+</p>
+            </div>
+        </article>
+      </li>
+      <li>
+        <article class="entry-article">
+          <div class="entry-article-header">
+    <h1 class="entry-article-title">
       <a href="https://honmaple.me/articles/2023/09/shi-yong-acme-shshen-qing-sslzheng-shu.html" rel="bookmark" title="Permalink to 使用acme.sh申请SSL证书">使用acme.sh申请SSL证书</a>
     </h1>
       <div class="entry-article-info">
@@ -114,31 +284,7 @@
   </div>
           <hr class="entry-article-hr" />
             <div class="entry-article-content no-tables">
-              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">部署教程</a>
-<ul>
-<li><a href="#heading-1.1">安装并配置acme.sh</a></li>
-<li><a href="#heading-1.2">固定域名(webroot)</a>
-<ul>
-<li><a href="#heading-1.2.1">申请证书</a></li>
-<li><a href="#heading-1.2.2">配置SSL证书</a></li>
-<li><a href="#heading-1.2.3">配置NGINX</a></li>
-<li><a href="#heading-1.2.4">重启NGINX</a></li>
-</ul></li>
-<li><a href="#heading-1.3">泛域名(DNS)</a>
-<ul>
-<li><a href="#heading-1.3.1">令牌获取</a></li>
-<li><a href="#heading-1.3.2">账户ID获取</a></li>
-<li><a href="#heading-1.3.3">编辑配置</a></li>
-<li><a href="#heading-1.3.4">申请证书</a></li>
-<li><a href="#heading-1.3.5">安装证书</a></li>
-</ul></li>
-<li><a href="#heading-1.4">搭配NginxProxyManager</a></li>
-<li><a href="#heading-1.5">更新证书(手动)</a></li>
-</ul></li>
-<li><a href="#heading-2">参考资料</a></li>
-</ul></div></div>
-
+              
 <h2 id="heading-1">部署教程</h2>
 <h3 id="heading-1.1">安装并配置acme.sh</h3>
 <ol>
@@ -155,278 +301,10 @@ neilpang/acme.sh daemon</pre></li>
 <li>
 <p>
  配置<br/>
-       <b>acme.sh</b> 默认使用的是 <b>ZeroSSL</b>，我这里修改为 <b>Let&#39;s Encrypt</b>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker exec acme.sh --set-default-ca --server letsencrypt
-docker exec acme.sh --set-default-chain --preferred-chain &#34;ISRG&#34; --server letsencrypt</pre>
-<p>
-       注：<code>--preferred-chain &#34;ISRG&#34;</code> 表示设置根证书为 <b>ISRG Root X1</b>, 它与 <b>DST Root CA X3</b> 的区别主要是
-</p>
-<ul>
-<li>
-<p>
- <b>ISRG Root X1</b> 会更新一些，<b>DST Root CA X3</b> 已于2021年9月30日到期
-</p></li>
-<li>
-<p>
- 一些旧的设备（例如，iPhone 4 或 HTC Dream）不会信任 <b>ISRG Root X1</b>，因为它们没有获得软件更新
-</p></li>
-<li>
-<p>
- 虽说 <b>DST Root CA X3</b> 已到期，但Android设备仍能够继续正常访问使用 Let’s Encrypt 证书加密的网站，其它旧设备将会得到证书过期警告
-</p></li>
-</ul></li>
-<li>
-<p>
- 注册账号(<b>记得修改为自己的邮箱</b>)
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker exec acme.sh --register-account --server letsencrypt -m i@example.com
-[Sun Sep 24 15:49:59 CST 2023] Create account key ok.
-[Sun Sep 24 15:49:59 CST 2023] Registering account: https://acme-v02.api.letsencrypt.org/directory
-[Sun Sep 24 15:50:05 CST 2023] Registered
-[Sun Sep 24 15:50:05 CST 2023] ACCOUNT_THUMBPRINT=&#39;xxx&#39;</pre>
-<p>
-       这时会在 <code>/acme.sh</code> 目录下生成一个 <code>http.header</code> 文件，申请证书时会使用该文件
-</p>
-</li>
-</ol>
-<h3 id="heading-1.2">固定域名(webroot)</h3>
-<p>
-    如果只有少数几个固定的域名，这时可以使用 <b>webroot</b> 方式申请SSL证书。<b>webroot</b> 方式会在本地生成一个验证文件，申请证书时通过验证该文件验证域名所有权
-</p>
-
-<h4 id="heading-1.2.1">申请证书</h4>
-<pre style="color:#f8f8f2;background-color:#272822">docker exec acme.sh --issue -d example.com -d www.example.com,nas.example.com -w /acme.sh/example.com</pre>
-<p>
-     执行后会在挂载目录 <code>/opt/acme.sh</code> 下生成SSL证书相关的 <b>cert</b> 文件和 <b>key</b> 文件
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">$ ls example.com
-ca.cer  fullchain.cer  example.com.cer  example.com.conf  example.com.csr  example.com.csr.conf  example.com.key</pre>
-<h4 id="heading-1.2.2">配置SSL证书</h4>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">ssl_certificate</span> <span style="color:#e6db74">/opt/acme.sh/example.com/fullchain.cer</span>;
-<span style="color:#66d9ef">ssl_certificate_key</span> <span style="color:#e6db74">/opt/acme.sh/example.com/example.com.key</span>;
-<span style="color:#66d9ef">ssl_dhparam</span> <span style="color:#e6db74">/opt/acme.sh/example.com/dhparam.pem</span>;
-
-<span style="color:#66d9ef">ssl_session_cache</span> <span style="color:#e6db74">shared:SSL:1m</span>;
-<span style="color:#66d9ef">ssl_session_timeout</span> <span style="color:#ae81ff">5m</span>;
-
-<span style="color:#66d9ef">ssl_protocols</span> <span style="color:#e6db74">TLSv1</span> <span style="color:#e6db74">TLSv1.1</span> <span style="color:#e6db74">TLSv1.2</span> <span style="color:#e6db74">TLSv1.3</span>;
-<span style="color:#66d9ef">ssl_ciphers</span> <span style="color:#e6db74">EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5</span>;
-<span style="color:#66d9ef">ssl_prefer_server_ciphers</span> <span style="color:#66d9ef">on</span>;</pre>
-
-<p>
-     如何生成 <b>dhparam</b> 的证书?
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">openssl dhparam -out /opt/acme.sh/example.com/dhparam.pem 2048</pre>
-<h4 id="heading-1.2.3">配置NGINX</h4>
-<p>
-     <b>Let&#39;s Encrypt</b> 只会在 <b>80</b> 端口验证域名所有权，所以只需要在 <b>80</b> 端口添加一个 <b>location</b>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">server</span> {
-    <span style="color:#f92672">listen</span>       <span style="color:#ae81ff">80</span>;
-    <span style="color:#f92672">listen</span>  <span style="color:#e6db74">[::]:80</span>;
-    <span style="color:#f92672">server_name</span>  <span style="color:#e6db74">www.example.com</span> <span style="color:#e6db74">nas.example.com</span>;
-
-    <span style="color:#f92672">location</span> <span style="color:#e6db74">/</span> {
-        <span style="color:#f92672">return</span> <span style="color:#ae81ff">301</span> <span style="color:#e6db74">https://example.com</span>$request_uri;
-    }
-    <span style="color:#f92672">location</span> <span style="color:#e6db74">^~</span> <span style="color:#e6db74">/.well-known/acme-challenge</span> {
-        <span style="color:#f92672">alias</span> <span style="color:#e6db74">/opt/acme.sh/example.com/.well-known/acme-challenge</span>;
-    }
-}
-
-<span style="color:#66d9ef">server</span> {
-    <span style="color:#f92672">listen</span>       <span style="color:#ae81ff">443</span> <span style="color:#e6db74">ssl</span>;
-    <span style="color:#f92672">listen</span>       <span style="color:#e6db74">[::]:443</span> <span style="color:#e6db74">ssl</span>;
-    <span style="color:#f92672">server_name</span>  <span style="color:#e6db74">nas.example.com</span>;
-    <span style="color:#f92672">include</span>      <span style="color:#e6db74">/etc/nginx/conf.d/ssl/example.com.conf</span>;
-
-    <span style="color:#f92672">......</span>
-<span style="color:#960050;background-color:#1e0010">}</span></pre>
-<h4 id="heading-1.2.4">重启NGINX</h4>
-<pre style="color:#f8f8f2;background-color:#272822">nginx -t
-nginx -s reload</pre>
-<h3 id="heading-1.3">泛域名(DNS)</h3>
-<p>
-    <b>webroot</b> 无法申请泛域名证书，泛域名证书的申请需要利用<b>DNS服务提供商</b>的API，动态添加一个TEXT记录，这里以 <b>Cloudflare</b> 为例
-</p>
-<h4 id="heading-1.3.1">令牌获取</h4>
-<p>
-     右上角点击<b>我的个人资料</b>, 然后点击<b>创建令牌</b>
-     
-<a href="https://s.libforest.com/images/2023/09/cloudflare-token-01.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/09/cloudflare-token-01.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-     然后选择<b>DNS模版</b>
-     
-<a href="https://s.libforest.com/images/2023/09/cloudflare-token-02.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/09/cloudflare-token-02.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<ul>
-<li>
-<p>
- <b>令牌名称</b>可以随意
-</p></li>
-<li>
-<p>
- <b>权限</b>设置为 <code>区域 -&gt; DNS -&gt; 编辑</code>
-</p></li>
-<li>
-<p>
- <b>区域资源</b>设置为 <code>包括 -&gt; 特定区域 -&gt; 域名(example.com)</code>
-</p></li>
-</ul>
-<p>
-     
-<a href="https://s.libforest.com/images/2023/09/cloudflare-token-03.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/09/cloudflare-token-03.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-     继续以显示摘要, 然后创建令牌
-     
-<a href="https://s.libforest.com/images/2023/09/cloudflare-token-04.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/09/cloudflare-token-04.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-     最后记得保存令牌到本地
-     
-<a href="https://s.libforest.com/images/2023/09/cloudflare-token-05.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/09/cloudflare-token-05.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<h4 id="heading-1.3.2">账户ID获取</h4>
-<p>
-     选择对应的域名，在<b>概况</b>的右下角会有账户ID显示
-     
-<a href="https://s.libforest.com/images/2023/09/cloudflare-token-06.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/09/cloudflare-token-06.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<h4 id="heading-1.3.3">编辑配置</h4>
-<p>
-     编辑 <code>/opt/acme.sh</code> 目录下的 <code>account.conf</code>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#a6e22e">+ CF_Token=&#39;xxx&#39;
-</span><span style="color:#a6e22e"></span><span style="color:#a6e22e">+ CF_Account_ID=&#39;xxx&#39;
-</span></pre>
-
-<h4 id="heading-1.3.4">申请证书</h4>
-<pre style="color:#f8f8f2;background-color:#272822">docker exec acme.sh --issue --dns dns_cf -d &#34;nas.example.com&#34; -d &#34;*.nas.example.com&#34;</pre>
-
-<h4 id="heading-1.3.5">安装证书</h4>
-<p>
-     如果想要修改默认安装的目录，则可以使用 <code>--install-cert</code> 命令
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker exec acme.sh --install-cert -d nas.example.com \
---key-file /nginx/data/custom_ssl/npm-1/privkey.pem \
---fullchain-file /nginx/data/custom_ssl/npm-1/fullchain.pem</pre>
-
-<p>
-     如果想要更新证书后同步重启NGINX，可以继续添加命令参数
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">--reloadcmd &#34;nginx -s reload&#34;</pre>
-
-<h3 id="heading-1.4">搭配NginxProxyManager</h3>
-<p>
-    首先打开 <b>NginxProxyManager</b>, 选择 <b>SSL Cetificates</b>
-    
-<a href="https://s.libforest.com/images/2023/09/acme.sh-nginx-01.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/09/acme.sh-nginx-01.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    然后选择 <b>Add SSL Cetificates -&gt; Custom</b>
-    
-<a href="https://s.libforest.com/images/2023/09/acme.sh-nginx-02.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/09/acme.sh-nginx-02.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    最后添加相关文件:
-</p>
-<ul>
-<li>
-<p>
- <b>Certificate</b>: <code>nas.example.com.cer</code>
-</p></li>
-<li>
-<p>
- <b>Certificate Key</b>: <code>nas.example.com.key</code>
-</p></li>
-<li>
-<p>
- <b>Intermediate Certificate</b>: <code>ca.cer</code>
-</p></li>
-</ul>
-<p>
-    
-<a href="https://s.libforest.com/images/2023/09/acme.sh-nginx-03.jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/2023/09/acme.sh-nginx-03.jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-    为了避免证书过期后重新添加，需要把<b>NginxProxyManager</b>挂载目录也挂载到 <b>acme.sh</b> 容器
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker stop acme.sh
-docker rm acme.sh
-docker run -d --name acme.sh \
--e AUTO_UPGRADE=0 \
--e TZ=Asia/Shanghai \
--v /opt/acme.sh:/acme.sh \
--v /opt/nginx:/nginx \
-neilpang/acme.sh daemon</pre>
-
-<p>
-    然后修改申请证书的命令
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker exec acme.sh --issue --dns dns_cf -d &#34;nas.example.com&#34; -d &#34;*.nas.example.com&#34; \
---renew-hook &#34;acme.sh --install-cert -d nas.example.com \
---key-file /nginx/data/custom_ssl/npm-1/privkey.pem \
---fullchain-file /nginx/data/custom_ssl/npm-1/fullchain.pem&#34;</pre>
-
-<p>
-    如果提示 <code>Domains not changed</code>, 则需要使用 <code>--force</code> 重新申请
-</p>
-
-<h3 id="heading-1.5">更新证书(手动)</h3>
-<p>
-    从 <b>Let&#39;s Encrypt</b> 申请到的证书有效期是90天，<b>acme.sh</b> 每60天会对证书进行更新，你也可以手动强制更新：
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"># 查询证书申请信息
-acme.sh --list
-
-# 手动强制更新证书
-acme.sh --renew -d nas.example.com -d *.nas.example.com --force</pre>
-
-<h2 id="heading-2">参考资料</h2>
-<ul>
-<li>
-<p>
- <a href="github.com/acmesh-official/acme.sh/wiki/Preferred-Chain">github.com/acmesh-official/acme.sh/wiki/Preferred-Chain</a>
-</p></li>
-<li>
-<p>
- <a href="letsencrypt.org/zh-cn/docs/dst-root-ca-x3-expiration-september-2021/">letsencrypt.org/zh-cn/docs/dst-root-ca-x3-expiration-september-2021/</a>
-</p></li>
-<li>
-<p>
- <a href="shiping.date/82.html">shiping.date/82.html</a>
-</p></li>
-</ul>
+       <b>acme...</b></p></li></ol>
+            </div>
+            <div class="entry-btn">
+              <a href="https://honmaple.me/articles/2023/09/shi-yong-acme-shshen-qing-sslzheng-shu.html">阅读全文 »</a>
             </div>
         </article>
       </li>
@@ -1594,60 +1472,6 @@ acme.sh --renew -d nas.example.com -d *.nas.example.com --force</pre>
             </div>
             <div class="entry-btn">
               <a href="https://honmaple.me/articles/2022/10/Snow静态博客生成器.html">阅读全文 »</a>
-            </div>
-        </article>
-      </li>
-      <li>
-        <article class="entry-article">
-          <div class="entry-article-header">
-    <h1 class="entry-article-title">
-      <a href="https://honmaple.me/articles/2021/11/Emacs笔记之minibuffer默认输入.html" rel="bookmark" title="Permalink to Emacs笔记之minibuffer默认输入">Emacs笔记之minibuffer默认输入</a>
-    </h1>
-      <div class="entry-article-info">
-        <span title="Updated at 2023-02-24">
-          <i class="fa fa-calendar-o"></i>
-          2021年11月25日 周四
-        </span>
-          <span class="hidden-xs">|</span>
-          <span class="hidden-xs">
-            <i class="fa fa-user-o"></i>
-            By
-              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-folder-o"></i>
-            In
-              <a href="https://honmaple.me/categories/linux/emacs/index.html">Linux/Emacs</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-bookmark-o"></i>
-            0f
-              <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-              <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
-          </span>
-      </div>
-  </div>
-          <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
-<blockquote>
-<p>
-在使用 <b>evil-ex</b>，也就是冒号+命令时，有一个非常有趣的功能，输入冒号后，<b>minibuffer</b> 会显示上一次执行的命令，比如 <code>:wq</code>, 确认可以直接执行这个命令，但是输入任意字符，就会把原先的 <code>wq</code> 直接覆盖，接收新的命令输入
-</p>
-</blockquote>
-
-<p>
-我觉得这是一个非常有趣且有用的功能，像 <code>read-string</code> 函数，如果我想要一个默认的输入，可以直接使用
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">(let ((input (<span style="color:#a6e22e">read-string</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">prompt: </span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">默认内容</span><span style="color:#e6db74">&#34;</span>)))
-  (<span style="color:#a6e22e">message</span> input))</pre>
-<p>
-但我想覆盖这个默认...</p>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2021/11/Emacs笔记之minibuffer默认输入.html">阅读全文 »</a>
             </div>
         </article>
       </li>
