@@ -86,7 +86,7 @@
       <a href="https://honmaple.me/articles/2023/11/zhong-fu-zao-lun-zi-zhi-emacsfan-yi-cha-jian-maple-translate.html" rel="bookmark" title="Permalink to 重复造轮子之Emacs翻译插件maple-translate">重复造轮子之Emacs翻译插件maple-translate</a>
     </h1>
       <div class="entry-article-info">
-        <span title="Updated at 2023-11-09">
+        <span title="Updated at 2023-11-15">
           <i class="fa fa-calendar-o"></i>
           2023年11月03日 周五
         </span>
@@ -116,14 +116,15 @@
               <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
 <li><a href="#heading-1">如何使用?</a></li>
 <li><a href="#heading-2">长句翻译</a></li>
-<li><a href="#heading-3">离线翻译</a></li>
-<li><a href="#heading-4">多引擎翻译</a></li>
-<li><a href="#heading-5">翻译原理</a></li>
+<li><a href="#heading-3">谷歌翻译</a></li>
+<li><a href="#heading-4">离线翻译</a></li>
+<li><a href="#heading-5">多引擎翻译</a></li>
+<li><a href="#heading-6">翻译原理</a></li>
 </ul></div></div>
 
 <blockquote>
 <p>
-我之前一直都在使用 <a href="https://github.com/xuchunyang/youdao-dictionary.el">youdao-dictionary</a> 这个插件，也没有配置过秘钥，虽然不配置接口会有使用次数的限制(反正是每天1000次还是多少来着，有些忘了)，但是我平时使用次数不多，所以也不会达到使用限制，不管是单词翻译还是长句翻译都很不错。但最近几个月 <b>youdao-dictionary</b> 如果不配置私钥，处于一个完全不可用的状态。
+我之前一直都在使用 <a href="https://github.com/xuchunyang/youdao-dictionary.el">youdao-dictionary</a> 这个插件，虽然没有配置过秘钥，这时会有使用次数的限制(反正是每天1000次还是多少来着，有些忘了)，但是我平时使用次数不多，所以也不会达到使用限制，不管是单词翻译还是长句翻译都很不错。但最近几个月 <b>youdao-dictionary</b> 如果不配置私钥，处于一个完全不可用的状态。
 </p>
 
 <p>
@@ -175,11 +176,22 @@
 
 <h2 id="heading-2">长句翻译</h2>
 <p>
-   目前长句翻译仅支持 <code>youdao</code>, 可以修改翻译引擎
+   <del>目前长句翻译仅支持 <code>youdao</code></del>, 目前支持 <code>youdao</code> 和 <code>google</code> 两种翻译引擎，可以修改设置
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">(setq maple-translate-engine <span style="color:#e6db74">&#39;youdao</span>)</pre>
+<pre style="color:#f8f8f2;background-color:#272822">(setq maple-translate-engine <span style="color:#e6db74">&#39;youdao</span>)
+<span style="color:#75715e">;; 或者</span>
+(setq maple-translate-engine <span style="color:#e6db74">&#39;google</span>)</pre>
 
-<h2 id="heading-3">离线翻译</h2>
+<h2 id="heading-3">谷歌翻译</h2>
+<p>
+   国内无法直接使用，但是可以单独为谷歌翻译设置代理
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">(setq maple-translate-google-url <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">https://translate.googleapis.com/translate_a/single</span><span style="color:#e6db74">&#34;</span>)
+(setq maple-translate-google-proxies
+      <span style="color:#f92672">&#39;</span>((<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">http</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">127.0.0.1:1086</span><span style="color:#e6db74">&#34;</span>)
+        (<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">https</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">127.0.0.1:1086</span><span style="color:#e6db74">&#34;</span>)))</pre>
+
+<h2 id="heading-4">离线翻译</h2>
 <p>
    我个人平时在使用 <b>Emacs</b> 时不太习惯依赖外部的工具，比如我之前就写过一个markdown，org-mode实时预览插件 <a href="https://github.com/honmaple/emacs-maple-preview">maple-preview</a>，它区别于其它插件，并不会依赖外部的工具，比如 <b>Pandoc</b>，甚至不会生出任何文件到我的本地环境
 </p>
@@ -206,15 +218,15 @@
    注意：<b>第一次使用离线翻译需要等待词典初始化，这会需要耗费一段时间，后面就快了</b>
 </p>
 
-<h2 id="heading-4">多引擎翻译</h2>
+<h2 id="heading-5">多引擎翻译</h2>
 <p>
    <b>maple-translate</b> 同样支持<b>多引擎</b>，需要修改设置为一个列表
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">(setq maple-translate-engine <span style="color:#f92672">&#39;</span>(youdao dictcn sdcv))</pre>
 
-<h2 id="heading-5">翻译原理</h2>
+<h2 id="heading-6">翻译原理</h2>
 <p>
-   目前支持的几个引擎: <code>youdao</code>、<code>dictcn</code>、<code>iciba</code>、<code>bing</code>、<code>sdcv</code>。除 <code>sdcv</code> 外，其它几个都依赖于网络，<b>maple-translate</b> 可以看作是一个爬虫，通过爬取翻译页面，然后使用Emacs内置的 <code>dom</code> 对HTML进行解析，最后获取到想要的内容。基于此，我还写了一个超简单的 <code>类xpath</code> 解析器
+   目前支持的几个引擎: <code>youdao(有道)</code>、<code>dictcn(海词)</code>、<code>iciba(金山词霸)</code>、<code>bing(必应)</code>、<code>google(谷歌)</code>、<code>sdcv(离线)</code>。除 <code>sdcv</code> 外，其它几个都依赖于网络，<b>maple-translate</b> 可以看作是一个爬虫，通过爬取翻译页面，然后使用Emacs内置的 <code>dom</code> 对HTML进行解析，最后获取到想要的内容( 谷歌使用API获取)。基于此，我还写了一个超简单的 <code>类xpath</code> 解析器
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">(defun maple-translate-dom-by-key(dom key)
   (let (func num)
@@ -532,7 +544,7 @@ neilpang/acme.sh daemon</pre></li>
       <a href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html" rel="bookmark" title="Permalink to 绿联DX4600 Pro虚拟机探索">绿联DX4600 Pro虚拟机探索</a>
     </h1>
       <div class="entry-article-info">
-        <span title="Updated at 2023-07-20">
+        <span title="Updated at 2023-11-15">
           <i class="fa fa-calendar-o"></i>
           2023年07月06日 周四
         </span>
