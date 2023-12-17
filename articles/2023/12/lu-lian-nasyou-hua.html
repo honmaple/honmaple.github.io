@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>西子遇 · 紅楓吟</title>
+    <title>绿联Nas优化 · 紅楓吟</title>
       <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
       <script src="https://honmaple.me/static/lib/js/before.min.js"></script>
@@ -60,12 +60,12 @@
   <article class="entry-article">
     <div class="entry-article-header">
     <h1 class="entry-article-title">
-      <a href="https://honmaple.me/articles/2018/10/西子遇.html" rel="bookmark" title="Permalink to 西子遇">西子遇</a>
+      <a href="https://honmaple.me/articles/2023/12/lu-lian-nasyou-hua.html" rel="bookmark" title="Permalink to 绿联Nas优化">绿联Nas优化</a>
     </h1>
       <div class="entry-article-info">
         <span title="Updated at 2023-12-17">
           <i class="fa fa-calendar-o"></i>
-          2018年10月07日 周日
+          2023年12月12日 周二
         </span>
           <span class="hidden-xs">|</span>
           <span class="hidden-xs">
@@ -77,72 +77,93 @@
           <span>
             <i class="fa fa-folder-o"></i>
             In
-              <a href="https://honmaple.me/categories/life/index.html">Life</a>
+              <a href="https://honmaple.me/categories/linux/index.html">Linux</a>
           </span>
           <span>|</span>
           <span>
             <i class="fa fa-bookmark-o"></i>
             0f
-              <a href="https://honmaple.me/tags/life/index.html">life</a>
-              <a href="https://honmaple.me/tags/travel/index.html">travel</a>
+              <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+              <a href="https://honmaple.me/tags/nas/index.html">nas</a>
           </span>
       </div>
   </div>
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
-      
-<p>
-
-<a href="https://static.honmaple.com/images/pic/西湖/荷花.jpg?type=show" data-fancybox="image">
-  <img data-src="https://static.honmaple.com/images/pic/西湖/荷花.jpg?type=thumb" class="lazyload" />
-</a>
-</p>
-<blockquote>
-<div style="text-align:center;">
-<p>
-欲把西湖比西子<br/>淡妆浓抹总相宜
-</p>
-</div>
-</blockquote>
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">禁用迅雷</a></li>
+<li><a href="#heading-2">禁用移动云盘</a></li>
+<li><a href="#heading-3">禁用p2px</a></li>
+<li><a href="#heading-4">ssh自启动</a></li>
+</ul></div></div>
 
 <p>
-
-<a href="https://static.honmaple.com/images/pic/西湖/荷花(一).jpg?type=show" data-fancybox="image">
-  <img data-src="https://static.honmaple.com/images/pic/西湖/荷花(一).jpg?type=thumb" class="lazyload" />
-</a>
+记录一下，每次升级系统都要重新改一次
 </p>
-<blockquote>
-<div style="text-align:center;">
+
+<h2 id="heading-1">禁用迅雷</h2>
 <p>
-久闻西子久成思<br/>时至菡萏时遇迟
+   找到 <code>/ugreen/thunder/xunlei-pan/start.sh</code> 文件，注释掉倒数第二行
 </p>
-</div>
-</blockquote>
+<pre style="color:#f8f8f2;background-color:#272822">#su - $thunderName ...</pre>
 
-<div class="img-layout">
 <p>
-
-<a href="https://static.honmaple.com/images/pic/西湖/日落(二).jpg?type=show" data-fancybox="image">
-  <img data-src="https://static.honmaple.com/images/pic/西湖/日落(二).jpg?type=thumb" class="lazyload" />
-</a>
-
-<a href="https://static.honmaple.com/images/pic/西湖/日落(三).jpg?type=show" data-fancybox="image">
-  <img data-src="https://static.honmaple.com/images/pic/西湖/日落(三).jpg?type=thumb" class="lazyload" />
-</a>
-
-<a href="https://static.honmaple.com/images/pic/西湖/日落(一).jpg?type=show" data-fancybox="image">
-  <img data-src="https://static.honmaple.com/images/pic/西湖/日落(一).jpg?type=thumb" class="lazyload" />
-</a>
+   运行 <code>/ugreen/thunder/xunlei-pan/stop.sh</code> 关闭当前进程
 </p>
-</div>
 
-<blockquote>
-<div style="text-align:center;">
+<h2 id="heading-2">禁用移动云盘</h2>
 <p>
-朝闻西子犹在天<br/>夕至柳畔觉未眠
+   删除 <code>/data/nas_server/cmcc_svr</code> 文件
 </p>
-</div>
-</blockquote>
+<pre style="color:#f8f8f2;background-color:#272822">mv /data/nas_server/cmcc_svr /data/nas_server/cmcc_svr.bak</pre>
+
+<p>
+   关闭当前进程
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">ps axuf | grep cmcc | grep -v grep | awk &#39;{printf $2}&#39; | xargs kill -9</pre>
+
+<h2 id="heading-3">禁用p2px</h2>
+<p>
+   新建一个脚本 <code>/root/script/myp2p</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e">#!/bin/sh
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> -e <span style="color:#e6db74">&#34;/data/nas_server/p2px/p2px&#34;</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
+    mv /data/nas_server/p2px/p2px /data/nas_server/p2px/p2px.bak
+<span style="color:#66d9ef">fi</span>
+
+killall -q -9 p2px <span style="color:#f92672">||</span> true</pre>
+
+<p>
+   在 <code>/etc/crontabs/root</code> 文件添加一个定时任务
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">*/3 * * * * /root/script/myp2p</pre>
+
+<h2 id="heading-4">ssh自启动</h2>
+<p>
+   新建一个脚本 <code>/root/script/myscript</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e">#!/bin/sh
+</span><span style="color:#75715e"></span>
+run_myscript<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">{</span>
+    mkdir -m <span style="color:#ae81ff">0700</span> -p /var/empty
+    netstat -anp | grep 0.0.0.0:922 | grep sshd | grep -v grep <span style="color:#f92672">||</span> /usr/sbin/sshd -D
+
+    sleep <span style="color:#ae81ff">10</span>
+
+    <span style="color:#75715e"># zerotier相关</span>
+    lsmod | grep tun | grep -v grep <span style="color:#f92672">&amp;&amp;</span> chmod <span style="color:#ae81ff">666</span> /dev/net/tun <span style="color:#f92672">&amp;&amp;</span> docker restart zerotier
+
+    ip route | grep 10.8.235 | grep -v grep <span style="color:#f92672">||</span> ip route add 10.8.235.0/24 via 192.168.100.2
+<span style="color:#f92672">}</span>
+
+run_myscript &amp;
+echo <span style="color:#e6db74">`</span>date<span style="color:#e6db74">`</span> &gt; /tmp/myscript.txt</pre>
+
+<p>
+   添加到自启动
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">ln -s  /root/script/myscript /etc/rc.d/S99myscript</pre>
     </div>
     <div class="entry-copyright">
         <div>
@@ -151,7 +172,7 @@
         </div>
     <div>
       <span><i class="fa fa-link"></i>链接:</span>
-      <a href="https://honmaple.me/articles/2018/10/西子遇.html">https://honmaple.me/articles/2018/10/西子遇.html</a>
+      <a href="https://honmaple.me/articles/2023/12/lu-lian-nasyou-hua.html">https://honmaple.me/articles/2023/12/lu-lian-nasyou-hua.html</a>
     </div>
     <div>
       <span><i class="fa fa-copyright"></i>版权:</span>
@@ -175,14 +196,14 @@
     <hr class="entry-article-hr" />
     <ul class="entry-pager">
       <li class="prev">
-        <a href="https://honmaple.me/articles/2018/10/使用maple-note管理笔记.html" title="Previous article: 使用maple-note管理笔记">
+        <a href="https://honmaple.me/articles/2023/12/snowjing-tai-bo-ke-chu-li-duo-tu-pai-ban.html" title="Previous article: Snow静态博客处理多图排版">
           <i class="fa fa-chevron-left"></i>
-          使用maple-note管理笔记
+          Snow静态博客处理多图排版
         </a>
       </li>
       <li class="next">
-        <a href="https://honmaple.me/articles/2018/10/期待着这么一部小说.html" title="Next article: 期待着这么一部小说">
-          期待着这么一部小说
+        <a href="https://honmaple.me/articles/2023/11/zhong-fu-zao-lun-zi-zhi-emacsfan-yi-cha-jian-maple-translate.html" title="Next article: 重复造轮子之Emacs翻译插件maple-translate">
+          重复造轮子之Emacs翻译插件maple-translate
           <i class="fa fa-chevron-right"></i>
         </a>
       </li>
@@ -192,7 +213,7 @@
       <div class="entry-btn">
         <a>加载评论</a>
       </div>
-      <div id="comment_thread" issue-term="西子遇"></div>
+      <div id="comment_thread" issue-term="绿联Nas优化"></div>
     </div>
   </article><div class="footer">
   <ul class="footer-left">

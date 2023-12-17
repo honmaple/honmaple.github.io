@@ -5,8 +5,114 @@
   <link href="https://honmaple.me/categories/linux/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Wed, 15 Nov 2023 15:21:38 +0000</updated>
+    <updated>Sun, 17 Dec 2023 20:22:07 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>绿联Nas优化</title>
+      <link href="" rel="alternate"></link>
+      <published>Tue, 12 Dec 2023 21:54:12 +0000</published>
+      <updated>Sun, 17 Dec 2023 20:22:07 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/12/lu-lian-nasyou-hua.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/12/lu-lian-nasyou-hua.html</id>
+      <summary type="html">
+&lt;p&gt;
+记录一下，每次升级系统都要重新改一次
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;禁用迅雷&lt;/h2&gt;
+&lt;p&gt;
+   找到 &lt;code&gt;/ugreen/thunder/xunlei-pan/start.sh&lt;/code&gt; 文件，注释掉倒数第二行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;#su - $thunderName ...&lt;/pre&gt;
+
+&lt;p&gt;
+   运行 &lt;code&gt;/ugreen/thunder/xunlei-pan/stop.sh&lt;/code&gt; 关闭当前进程
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;禁用移动云盘&lt;/h2&gt;
+&lt;p&gt;
+   删除 &lt;code&gt;/data/nas_server/cmcc_svr&lt;/code&gt; 文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;mv /data/nas_server/cmcc_svr...&lt;/pre&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;禁用迅雷&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;禁用移动云盘&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;禁用p2px&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;ssh自启动&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;
+记录一下，每次升级系统都要重新改一次
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;禁用迅雷&lt;/h2&gt;
+&lt;p&gt;
+   找到 &lt;code&gt;/ugreen/thunder/xunlei-pan/start.sh&lt;/code&gt; 文件，注释掉倒数第二行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;#su - $thunderName ...&lt;/pre&gt;
+
+&lt;p&gt;
+   运行 &lt;code&gt;/ugreen/thunder/xunlei-pan/stop.sh&lt;/code&gt; 关闭当前进程
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;禁用移动云盘&lt;/h2&gt;
+&lt;p&gt;
+   删除 &lt;code&gt;/data/nas_server/cmcc_svr&lt;/code&gt; 文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;mv /data/nas_server/cmcc_svr /data/nas_server/cmcc_svr.bak&lt;/pre&gt;
+
+&lt;p&gt;
+   关闭当前进程
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ps axuf | grep cmcc | grep -v grep | awk &amp;#39;{printf $2}&amp;#39; | xargs kill -9&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;禁用p2px&lt;/h2&gt;
+&lt;p&gt;
+   新建一个脚本 &lt;code&gt;/root/script/myp2p&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;#!/bin/sh
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;[&lt;/span&gt; -e &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;/data/nas_server/p2px/p2px&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;]&lt;/span&gt;; &lt;span style=&quot;color:#66d9ef&quot;&gt;then&lt;/span&gt;
+    mv /data/nas_server/p2px/p2px /data/nas_server/p2px/p2px.bak
+&lt;span style=&quot;color:#66d9ef&quot;&gt;fi&lt;/span&gt;
+
+killall -q -9 p2px &lt;span style=&quot;color:#f92672&quot;&gt;||&lt;/span&gt; true&lt;/pre&gt;
+
+&lt;p&gt;
+   在 &lt;code&gt;/etc/crontabs/root&lt;/code&gt; 文件添加一个定时任务
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;*/3 * * * * /root/script/myp2p&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-4&quot;&gt;ssh自启动&lt;/h2&gt;
+&lt;p&gt;
+   新建一个脚本 &lt;code&gt;/root/script/myscript&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;#!/bin/sh
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;
+run_myscript&lt;span style=&quot;color:#f92672&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;{&lt;/span&gt;
+    mkdir -m &lt;span style=&quot;color:#ae81ff&quot;&gt;0700&lt;/span&gt; -p /var/empty
+    netstat -anp | grep 0.0.0.0:922 | grep sshd | grep -v grep &lt;span style=&quot;color:#f92672&quot;&gt;||&lt;/span&gt; /usr/sbin/sshd -D
+
+    sleep &lt;span style=&quot;color:#ae81ff&quot;&gt;10&lt;/span&gt;
+
+    &lt;span style=&quot;color:#75715e&quot;&gt;# zerotier相关&lt;/span&gt;
+    lsmod | grep tun | grep -v grep &lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; chmod &lt;span style=&quot;color:#ae81ff&quot;&gt;666&lt;/span&gt; /dev/net/tun &lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; docker restart zerotier
+
+    ip route | grep 10.8.235 | grep -v grep &lt;span style=&quot;color:#f92672&quot;&gt;||&lt;/span&gt; ip route add 10.8.235.0/24 via 192.168.100.2
+&lt;span style=&quot;color:#f92672&quot;&gt;}&lt;/span&gt;
+
+run_myscript &amp;amp;
+echo &lt;span style=&quot;color:#e6db74&quot;&gt;`&lt;/span&gt;date&lt;span style=&quot;color:#e6db74&quot;&gt;`&lt;/span&gt; &amp;gt; /tmp/myscript.txt&lt;/pre&gt;
+
+&lt;p&gt;
+   添加到自启动
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ln -s  /root/script/myscript /etc/rc.d/S99myscript&lt;/pre&gt;</content>
+        <category term="Linux"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>重复造轮子之Emacs翻译插件maple-translate</title>
       <link href="" rel="alternate"></link>
@@ -2971,103 +3077,5 @@ OK, 就这样
 &lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</content>
         <category term="Linux/Emacs"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>Docker笔记之registry清理</title>
-      <link href="" rel="alternate"></link>
-      <published>Mon, 23 Aug 2021 17:14:46 +0000</published>
-      <updated>Thu, 02 Sep 2021 00:58:43 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2021/08/Docker笔记之registry清理.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2021/08/Docker笔记之registry清理.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;p&gt;
-尝试了几种方式, 算是找到了一个比较方便的清理docker registry的方式
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h1 id=&quot;heading-1&quot;&gt;前言&lt;/h1&gt;
-&lt;p&gt;
-  两年前分给了 &lt;b&gt;docker registry&lt;/b&gt; 1T的磁盘，虽然有预感磁盘空间会被用完, 没想过能够坚持这么久。
-  而且期间一直想把 &lt;b&gt;registry&lt;/b&gt; 迁移到 &lt;b&gt;harbor&lt;/b&gt;，也能对不同账户的权限进行分配和限制，但几百G的磁盘占用也不好迁移，所以一直被耽搁(迁移方式都准备好了 &lt;a href=&quot;https://blog.k8s.li/docker-registry-to-harbor.html&quot;&gt;https://blog.k8s.li/docker-registry-to-harbor.html&lt;/a&gt;)
-&lt;/p&gt;
-
-&lt;h1 id=&quot;heading-2&quot;&gt;清理&lt;/h1&gt;
-&lt;h2 id=&quot;heading-2.1&quot;&gt;列出所有镜像&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;registry garbage-collect --dry-run /etc/docker...&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;前言&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;清理&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;列出所有镜像&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;找出分层(push次数)最多的几个镜像&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;删除某个镜像的untagged的数据&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;参考资料&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-尝试了几种方式, 算是找到了一个比较方便的清理docker registry的方式
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h1 id=&quot;heading-1&quot;&gt;前言&lt;/h1&gt;
-&lt;p&gt;
-  两年前分给了 &lt;b&gt;docker registry&lt;/b&gt; 1T的磁盘，虽然有预感磁盘空间会被用完, 没想过能够坚持这么久。
-  而且期间一直想把 &lt;b&gt;registry&lt;/b&gt; 迁移到 &lt;b&gt;harbor&lt;/b&gt;，也能对不同账户的权限进行分配和限制，但几百G的磁盘占用也不好迁移，所以一直被耽搁(迁移方式都准备好了 &lt;a href=&quot;https://blog.k8s.li/docker-registry-to-harbor.html&quot;&gt;https://blog.k8s.li/docker-registry-to-harbor.html&lt;/a&gt;)
-&lt;/p&gt;
-
-&lt;h1 id=&quot;heading-2&quot;&gt;清理&lt;/h1&gt;
-&lt;h2 id=&quot;heading-2.1&quot;&gt;列出所有镜像&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;registry garbage-collect --dry-run /etc/docker/registry/config.yml &amp;gt;&amp;gt; res.txt&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-2.2&quot;&gt;找出分层(push次数)最多的几个镜像&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;cat res.txt | awk -F : &amp;#39;{print $1}&amp;#39; | sort | uniq -c | sort -rn -k1 | head -10
-  25871 image1
-  25649 image2
-  16815 image3
-  ...&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-2.3&quot;&gt;删除某个镜像的untagged的数据&lt;/h2&gt;
-&lt;p&gt;
-   注意 &lt;code&gt;-u&lt;/code&gt; 参数, 仅删除 &lt;b&gt;untagger&lt;/b&gt; 的数据
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- dry-run
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;REGISTRY_DATA_DIR=/var/lib/registry/docker/registry/v2 python delete_docker_registry_image.py --image image1 -u --dry-run&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 实际删除(&lt;b&gt;需要先暂停registry&lt;/b&gt;)
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;REGISTRY_DATA_DIR=/var/lib/registry/docker/registry/v2 python delete_docker_registry_image.py --image image1 -u&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 查看磁盘占用(&lt;b&gt;恢复registry&lt;/b&gt;)
-&lt;/p&gt;
-
-&lt;p&gt;
-      发现磁盘占用的大头还是这些 &lt;b&gt;untagged&lt;/b&gt; 的数据， 仅仅处理了几个分层数量最多的镜像，一下子多了几百G的空间
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h1 id=&quot;heading-3&quot;&gt;参考资料&lt;/h1&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;https://zhuanlan.zhihu.com/p/48009377&quot;&gt;https://zhuanlan.zhihu.com/p/48009377&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;https://github.com/burnettk/delete-docker-registry-image&quot;&gt;https://github.com/burnettk/delete-docker-registry-image&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;</content>
-        <category term="Linux"></category>
     </entry>
 </feed>
