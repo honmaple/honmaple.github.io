@@ -113,20 +113,8 @@
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">功能</a></li>
-<li><a href="#heading-2">使用</a>
-<ul>
-<li><a href="#heading-2.1">手动部署</a></li>
-<li><a href="#heading-2.2">Docker部署</a></li>
-<li><a href="#heading-2.3">配置说明</a></li>
-<li><a href="#heading-2.4">命令行参数</a></li>
-<li><a href="#heading-2.5">网页端设置</a></li>
-</ul></li>
-<li><a href="#heading-3">演示</a></li>
-</ul></div></div>
-
+          <div class="entry-article-content no-tables">
+            
 <p>
 <b>MetingJS</b> 是一款通过获取网易云音乐或者QQ音乐等服务的歌单、歌手、歌曲、歌词等信息，然后使用开源HTML5播放器 <b>APlayer</b> 进行播放的插件。而 <b>MetingJS</b> 是一段很小的JS代码，它提供了一个默认的API接口：<a href="https://api.i-meto.com/meting/api">https://api.i-meto.com/meting/api</a> , 但很不幸，该接口偶尔会出问题，作者也很久没有回复issue了。
 </p>
@@ -136,176 +124,11 @@
 </p>
 
 <p>
-基于此，与其自己改不是太懂的PHP，说不定会出现一些意想不到的漏洞(源自某安全公司多次CTF换来的教训)，不如使用熟悉的Go重写实现，毕竟核心代码也不是太多
-</p>
-
-<h2 id="heading-1">功能</h2>
-<ul>
-<li>
-<p>
- 支持网易云音乐，QQ音乐
-</p></li>
-<li>
-<p>
- 支持新服务接口扩展
-</p></li>
-<li>
-<p>
- 支持所有请求结果的缓存
-</p></li>
-<li>
-<p>
- 更方便的配置(环境变量+配置文件)，而不用修改源文件
-</p></li>
-<li>
-<p>
- 基于 <b>Go</b> 编写，一次编译，到处运行
-</p>
-</li>
-</ul>
-<h2 id="heading-2">使用</h2>
-<h3 id="heading-2.1">手动部署</h3>
-<ul>
-<li>
-<p>
- 下载仓库
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">git clone https://github.com/honmaple/meting-api</pre></li>
-<li>
-<p>
- 编译可执行文件
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">go mod download
-go build -o meting-api .</pre>
-<p>
-      或者使用 <b>Docker</b> 进行编译, 编译后的文件在 <code>/usr/bin/meting-api</code>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">docker build -t meting-api .</pre></li>
-<li>
-<p>
- 运行
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">./meting-api -D</pre></li>
-</ul>
-<h3 id="heading-2.2">Docker部署</h3>
-<pre style="color:#f8f8f2;background-color:#272822">docker run --name meting-api --restart=always -d -p 8000:8000 -v /tmp/meting-cache:/opt/meting-api/cache honmaple/meting-api</pre>
-<h3 id="heading-2.3">配置说明</h3>
-<p>
-    配置可以使用环境变量或者配置文件设置
-</p>
-<ul>
-<li>
-<p>
- 环境变量: 使用 <code>METING_XXXX</code>, 比如 <code>METING_CACHE_TTL</code>
-</p></li>
-<li>
-<p>
- 配置文件: 默认使用当前目录下的 <code>config.yaml</code>, 如果使用 <b>Docker</b> 部署，需要文件挂载到 <code>/opt/meting-api/config.yaml</code>
-</p></li>
-<li>
-<p>
- 具体配置:
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e"># 缓存过期时间</span>
-<span style="color:#66d9ef">cache.ttl</span>:                  <span style="color:#ae81ff">3600</span>
-<span style="color:#75715e"># 缓存路径，设置为空是禁用缓存</span>
-<span style="color:#66d9ef">cache.path</span>:                 <span style="color:#e6db74">&#34;./cache&#34;</span>
-<span style="color:#75715e"># 是否激活缓存</span>
-<span style="color:#66d9ef">cache.enabled</span>:              <span style="color:#66d9ef">true</span>
-
-<span style="color:#75715e"># 服务监听地址，:8000 表示监听 0.0.0.0:8000</span>
-<span style="color:#66d9ef">server.addr</span>:                <span style="color:#e6db74">&#34;:8000&#34;</span>
-<span style="color:#75715e"># 对外服务地址，比如 https://api.xxxx.com/meting</span>
-<span style="color:#66d9ef">server.host</span>:                <span style="color:#e6db74">&#34;&#34;</span>
-
-<span style="color:#75715e">## cors设置</span>
-<span style="color:#66d9ef">server.cors.allow_headers</span>:
-  - <span style="color:#e6db74">&#34;*&#34;</span>
-<span style="color:#66d9ef">server.cors.allow_origins</span>:
-  - <span style="color:#e6db74">&#34;*&#34;</span>
-<span style="color:#66d9ef">server.cors.allow_methods</span>:
-  - <span style="color:#e6db74">&#34;*&#34;</span>
-
-<span style="color:#75715e"># 日志相关, out可选stdout,stderr,file，或者使用|分隔多个，比如stderr|file</span>
-<span style="color:#66d9ef">logger.out</span>:                 <span style="color:#e6db74">&#34;stdout&#34;</span>
-<span style="color:#75715e"># 日志级别</span>
-<span style="color:#66d9ef">logger.level</span>:               <span style="color:#e6db74">&#34;info&#34;</span>
-<span style="color:#75715e"># 日志文件名格式</span>
-<span style="color:#66d9ef">logger.file_format</span>:         <span style="color:#e6db74">&#34;%Y%m%d&#34;</span>
-<span style="color:#75715e"># 日志文件保留数量</span>
-<span style="color:#66d9ef">logger.file_rotation_count</span>: <span style="color:#ae81ff">3</span></pre></li>
-</ul>
-<h3 id="heading-2.4">命令行参数</h3>
-<ul>
-<li>
-<p>
- 查看支持的服务
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">./meting-api --list</pre></li>
-<li>
-<p>
- 指定监听地址
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">./meting-api -a :8001
-./meting-api --addr :8001</pre></li>
-<li>
-<p>
- 显示请求记录
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">./meting-api -D
-./meting-api --debug</pre></li>
-<li>
-<p>
- 指定配置文件
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">./meting-api -c /etc/meting.yaml
-./meting-api --config /etc/meting.yaml</pre></li>
-<li>
-<p>
- 显示当前配置
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">./meting-api config</pre></li>
-<li>
-<p>
- 删除指定缓存
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">./meting-api delete-cache &#39;server:netease:type:${type}:id:${id}&#39;</pre></li>
-</ul>
-<h3 id="heading-2.5">网页端设置</h3>
-<p>
-    其中 <code>http://localhost:8000/</code> 是对外服务的接口
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">meting-js</span>
-  <span style="color:#a6e22e">server</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;netease&#34;</span>
-  <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;artist&#34;</span>
-  <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;6452&#34;</span>&gt;
-&lt;/<span style="color:#f92672">meting-js</span>&gt;
-&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/javascript&#34;</span>&gt;
-  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">meting_api</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://localhost:8000/?server=:server&amp;type=:type&amp;id=:id&amp;auth=:auth&amp;r=:r&#39;</span>;
-&lt;/<span style="color:#f92672">script</span>&gt;
-&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
-&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;</pre>
-
-<h2 id="heading-3">演示</h2>
-   
-  <meting-js server="netease" type="playlist" id="9085878380"></meting-js>
-<script type="text/javascript">
- if (!shortcodes) {
-     var shortcodes = {};
- }
- if (!shortcodes["music"] && document.querySelector("meting-js")) {
-     var meting_api = 'https://api.honmaple.com/meting?server=:server&type=:type&id=:id&auth=:auth&r=:r';
-
-     shortcodes.loadJS("https://honmaple.me/static/lib/js/APlayer.min.js", false, true);
-     shortcodes.loadJS("https://honmaple.me/static/lib/js/Meting.min.js", false, true);
-
-     shortcodes.loadCSS("https://honmaple.me/static/lib/css/APlayer.min.css");
-     shortcodes.loadCSS("https://honmaple.me/static/css/aplayer.css");
- }
- shortcodes["music"] = true;
-</script>
-
-            </div>
+基于此，与其自己改不是太懂的PHP，说不定会出现一些意想不到的漏洞...</p>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/12/shi-yong-gozhong-xie-metingjsde-api.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -340,18 +163,18 @@ go build -o meting-api .</pre>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <p>
 事情的缘由是我无意中发现之前写的部分文章里的图片没有渲染出来，才想起之前博客系统改版，从 <b>Pelican</b> 切换到 <b>Snow</b> 时竟然忘记了，看了一下原文，大部分都是以下形式
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;row&#34;</span>&gt;
   &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;col-md-4&#34;</span>&gt;
     [[https://s.libforest.com/images/pic/西湖/日落(二...</pre>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/12/snowjing-tai-bo-ke-chu-li-duo-tu-pai-ban.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/12/snowjing-tai-bo-ke-chu-li-duo-tu-pai-ban.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -387,8 +210,8 @@ go build -o meting-api .</pre>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <p>
 记录一下，每次升级系统都要重新改一次
 </p>
@@ -408,10 +231,10 @@ go build -o meting-api .</pre>
    删除 <code>/data/nas_server/cmcc_svr</code> 文件
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">mv /data/nas_server/cmcc_svr...</pre>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/12/lu-lian-nasyou-hua.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/12/lu-lian-nasyou-hua.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -447,8 +270,8 @@ go build -o meting-api .</pre>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <blockquote>
 <p>
 我之前一直都在使用 <a href="https://github.com/xuchunyang/youdao-dictionary.el">youdao-dictionary</a> 这个插件，虽然没有配置过秘钥，这时会有使用次数的限制(反正是每天1000次还是多少来着，有些忘了)，但是我平时使用次数不多，所以也不会达到使用限制，不管是单词翻译还是长句翻译都很不错。但最近几个月 <b>youdao-dictionary</b> 如果不配置私钥，处于一个完全不可用的状态。
@@ -460,10 +283,10 @@ go build -o meting-api .</pre>
 
 <p>
 考虑再三，还是决定自己造一个轮子，主要功能就按照我之前使用 <b>youdao-dictionary</b> 的习惯...</p></blockquote>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/11/zhong-fu-zao-lun-zi-zhi-emacsfan-yi-cha-jian-maple-translate.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/11/zhong-fu-zao-lun-zi-zhi-emacsfan-yi-cha-jian-maple-translate.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -500,8 +323,8 @@ go build -o meting-api .</pre>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <h2 id="heading-1">部署教程</h2>
 <h3 id="heading-1.1">安装并配置acme.sh</h3>
 <ol>
@@ -519,10 +342,10 @@ neilpang/acme.sh daemon</pre></li>
 <p>
  配置<br/>
        <b>acme...</b></p></li></ol>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/09/shi-yong-acme-shshen-qing-sslzheng-shu.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/09/shi-yong-acme-shshen-qing-sslzheng-shu.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -558,8 +381,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <blockquote>
 <p>
 <b>zerotier</b> 可谓是慕名许久，但之前一直没有太多内网穿透和异地组网的需求，此次准备在外网访问家里NAS部署的部分应用，所以也调研了一些相关的应用，最终选择了 <b>zerotier</b> 来对我现有的机器进行组网
@@ -577,10 +400,10 @@ neilpang/acme.sh daemon</pre></li>
 <li>
 <p>
  <b>ZEROTIER</b>: 使用 <b>P2P</b> 的方式对多台服务器进行组网，映射的端口只允许加入组网的设备访问，这在速度和安全性上确实是我所需要的...</p></li></ul></blockquote>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/09/zerotier-note.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/09/zerotier-note.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -616,8 +439,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <blockquote>
 <p>
 最近在写一个文件同步和备份的软件，特此记录
@@ -670,10 +493,10 @@ neilpang/acme.sh daemon</pre></li>
 <li>
 <p>
  目标目录新增文件: <b>选项一...</b></p></li></ul></li></ul>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/08/文件同步和备份.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/08/文件同步和备份.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -709,8 +532,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <blockquote>
 <p>
 之前老的方式<b>固定前缀加远程协助验证码</b>在更新到最新版本的<b>v3.4.0</b>后已经失效，想要开启ssh只能使用另一种方式，也希望绿联云官方在系统更加完善(<b>权限管理、软件卸载</b>)前不要再继续封堵开启的方式，当然，如果能提供官方的开启方式更好
@@ -736,10 +559,10 @@ neilpang/acme.sh daemon</pre></li>
 
 <p>
    然后点击创建容器，存储空间<b>添加一个任意目录</b>，挂载到 <code>/data</code> 下...</p>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -775,8 +598,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <blockquote>
 <p>
 本次探索源于上次发现可以<b>使用Docker来管理群晖虚拟机</b>，而绿联本身是自带<b>kvm</b>内核模块的，但是要等到绿联官方支持虚拟机，又不知道会等到猴年马月。所以我有一个大胆的想法，能否使用Docker搭建一个可以自由管理虚拟机的程序，最起码可以安装一个windows替换掉绿联内置的有着各种限制的迅雷
@@ -799,10 +622,10 @@ neilpang/acme.sh daemon</pre></li>
 <h3 id="heading-1.1">Ubuntu版本问题</h3>
 <p>
     <b>retspen...</b></p>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -838,8 +661,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <p>
 绿联Nas的系统真是一言难尽，所以最近几天我都在寻找一种安装群晖的教程，也知晓群晖其实也没那么容易安装，主要是安装群晖后，有很大的概率<b>导致机器指示灯，风扇，甚至M.2固态失效</b>，也正因为此，虽然已经整理好了安装的教程，但迟迟没有动手，此次在网上搜寻教程时无意中发现了一个超酷超帅的Docker镜像，安装后真的会惊叹为何会有如此棒的东西，它就是
 </p>
@@ -876,10 +699,10 @@ neilpang/acme.sh daemon</pre></li>
 </p>
 
 <h3 id="heading-1.2">使用ssh登录到后台...</h3>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro安装一个超酷超帅的Docker.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro安装一个超酷超帅的Docker.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -914,8 +737,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <h2 id="heading-1">如何进行显示日期的本地化？</h2>
 <p>
    比如显示文章发表于 <code>2021年06月05日 周六</code>。
@@ -930,10 +753,10 @@ neilpang/acme.sh daemon</pre></li>
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">---
 - <span style="color:#66d9ef">id</span>: <span style="color:#e6db74">&#34;...</span></pre>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/06/snow-faq.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/06/snow-faq.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -969,8 +792,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <p>
 前不久 <b>618</b> 入手了一个<b>绿联 DX4600 Pro</b>，差不多用了快一个月，具体吐槽的点就不说了，毕竟平时 <b>Docker</b> 用的比较多，自带的应用只能说能用，昨天测试了一下文件同步和时间机器的功能，却无意中发现了一个<b>重大BUG</b>
 </p>
@@ -1021,10 +844,10 @@ neilpang/acme.sh daemon</pre></li>
 
 <p>
    这时会发现<b>无论修改多少次...</b></p>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/06/重大BUG——绿联NAS用户暂时不要使用文件同步功能.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/06/重大BUG——绿联NAS用户暂时不要使用文件同步功能.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -1060,8 +883,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <blockquote>
 <p>
 前不久入手了一个绿联的 <b>DX4600Pro</b> nas, 外观和硬件确实很精致，但同样发现系统也挺简陋的
@@ -1099,10 +922,10 @@ neilpang/acme.sh daemon</pre></li>
     我这边使用的是MacOS自带的ssh
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">ssh root@192.168.31.65...</pre>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -1138,8 +961,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <blockquote>
 <p>
 <code>Quasar</code> 默认没有树状选择器的支持，而在 <code>Vue</code> 中通常会使用一个现成的<a href="https://github.com/riophae/vue-treeselect">vue-treeselect</a>, 这是一个非常不错的 <code>Select</code> 组件, 此次不使用该组件，而是利用 <code>Quasar</code> 中的 <code>q-select</code> 和 <code>q-tree</code> 结合，实现一个类似的树状选择器
@@ -1151,10 +974,10 @@ neilpang/acme.sh daemon</pre></li>
     <span style="color:#f92672">&#34;id&#34;</span>: <span style="color:#ae81ff">1</span>,
     <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;admin&#34;</span>,
     <span style="color:#f92672">&#34;desc&#34;</span>: <span style="color:#e6db74">&#34;...</span></pre>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/05/基于Quasar实现一个树状选择器TreeSelect.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/05/基于Quasar实现一个树状选择器TreeSelect.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -1190,8 +1013,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <blockquote>
 <p>
 <a href="https://quasar.dev/">Quasar</a> 是一个基于 <code>Vue3</code> 的前端UI框架，使用的是 <b>Material Design</b>, 对于国内而言(包括我)觉得确实不太好看，但因为之前使用的是 <code>Element-UI</code>，大概是由于审美疲劳，此次升级我的后台管理UI，没有继续使用 <code>Vue3</code> 版本的 <code>Element-Plus</code>。 不久前我也是基于 <code>Quasar</code> 开发了一个 Memos 客户端, 感觉效果还不错
@@ -1201,10 +1024,10 @@ neilpang/acme.sh daemon</pre></li>
 <h2 id="heading-1">前言</h2>
 <p>
    <code>Quasar</code> 默认没有树状表格的支持，但我觉得树状表格其实还挺重要的，尤其是在显示一些树状的数据，比如一个部门列表(打比方), 树状表格能够清晰的表明各部门之间的上下关系，目前我看实现树状表格的示例要么是基于 <code>qhierarchy...</code></p>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/04/基于Quasar实现一个树状表格TableTree.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/04/基于Quasar实现一个树状表格TableTree.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -1240,8 +1063,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <blockquote>
 <p>
 类似我之前实现的时间轴, 也是一个私人的说说或者是私人的微博，可以用来记录一些临时的想法或者分享某一时刻的精彩瞬间，毕竟数据在自己手上<b>相当酷不是</b>
@@ -1263,10 +1086,10 @@ neilpang/acme.sh daemon</pre></li>
 <h2 id="heading-2">docker-compose</h2>
 <p>
    因为我需要和我之前的搭建好一些服务(<b>Blog</b>, <b>DNS</b>等)统一管理...</p>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/03/搭建Memos作为私人笔记.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/03/搭建Memos作为私人笔记.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -1303,8 +1126,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <h2 id="heading-1">前言</h2>
 <p>
    如果用过 <b>Gitlab Ci</b>, 相信对此也非常熟悉，<b>GitHub Actions</b> 是 <b>GitHub</b> 推出的持续集成（Continuous Integration，简称 CI）服务，它提供了整套虚拟服务器环境，基于它可以进行构建、测试、打包、部署项目等等操作
@@ -1323,10 +1146,10 @@ neilpang/acme.sh daemon</pre></li>
    点击 <code>Configure</code>, 此时会生成一个 <code>.github/workflow/go.yml</code> 文件
 </p>
 <pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e"># This...</span></pre>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/03/使用Github Actions自动打包Go项目.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -1362,8 +1185,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <table>
 <tr>
 <th>更新时间</th>
@@ -1385,10 +1208,10 @@ neilpang/acme.sh daemon</pre></li>
   - <span style="color:#e6db74">&#34;val2&#34;</span>
 <span style="color:#66d9ef">test3</span>:
   <span style="color:#66d9ef">test4</span>: <span style="color:#e6db74">&#34;...</span></pre>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/02/Emacs笔记之修复yaml-mode的格式化问题.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -1425,8 +1248,8 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <blockquote>
 <p>
 上一次迁移博客系统还是在上一次。。。
@@ -1447,10 +1270,10 @@ neilpang/acme.sh daemon</pre></li>
 <li>
 <p><code>[X]</code>
  配置文件(pelicanconf.py -&gt;...</p></li></ul>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/02/博客系统从Pelican迁移至Snow.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/02/博客系统从Pelican迁移至Snow.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li>
@@ -1486,18 +1309,18 @@ neilpang/acme.sh daemon</pre></li>
       </div>
   </div>
           <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
+          <div class="entry-article-content no-tables">
+            
 <h2 id="heading-1">前言</h2>
 <p>
    <b>shortcode</b>,直译过来就是 <b>短代码</b>。 使用过 <b>hugo</b> 的人对此也一定有所了解，<b>shortcode</b> 允许用户使用部分关键参数就可以在文章内部插入设置好的HTML模版内容，而不用写大段的HTML代码，比如插入指定视频或者音乐,使用 <b>shortcode</b> 之前需要使用 <b>iframe</b>
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">iframe</span> <span style="color:#a6e22e">frameborder</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;no&#34;</span> <span style="color:#a6e22e">border</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0&#34;</span>
         <span style="color:#a6e22e">marginwidth</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0&#34;</span> <span style="color:#a6e22e">marginheight</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0...</span></pre>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2023/02/静态博客中的shortcode实现.html">阅读全文 »</a>
-            </div>
+          </div>
+          <div class="entry-btn">
+            <a href="https://honmaple.me/articles/2023/02/静态博客中的shortcode实现.html">阅读全文 »</a>
+          </div>
         </article>
       </li>
       <li><ul class="entry-pagination">
