@@ -5,8 +5,222 @@
   <link href="https://honmaple.me/categories/life/coding/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Sun, 17 Dec 2023 20:54:41 +0000</updated>
+    <updated>Tue, 26 Dec 2023 20:58:32 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>使用Go重写MetingJS的API</title>
+      <link href="" rel="alternate"></link>
+      <published>Tue, 26 Dec 2023 13:23:00 +0000</published>
+      <updated>Tue, 26 Dec 2023 20:58:32 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/12/shi-yong-gozhong-xie-metingjsde-api.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/12/shi-yong-gozhong-xie-metingjsde-api.html</id>
+      <summary type="html">
+&lt;p&gt;
+&lt;b&gt;MetingJS&lt;/b&gt; 是一款通过获取网易云音乐或者QQ音乐等服务的歌单、歌手、歌曲、歌词等信息，然后使用开源HTML5播放器 &lt;b&gt;APlayer&lt;/b&gt; 进行播放的插件。而 &lt;b&gt;MetingJS&lt;/b&gt; 是一段很小的JS代码，它提供了一个默认的API接口：&lt;a href=&quot;https://api.i-meto.com/meting/api&quot;&gt;https://api.i-meto.com/meting/api&lt;/a&gt; , 但很不幸，该接口偶尔会出问题，作者也很久没有回复issue了。
+&lt;/p&gt;
+
+&lt;p&gt;
+现在也有一个开源的 &lt;a href=&quot;https://github.com/injahow/meting-api&quot;&gt;injahow/meting-api&lt;/a&gt;，该服务同样使用PHP编写，我不太懂PHP，我只是想要设置一个缓存，来缓存所有的歌曲信息，而不仅仅是歌单列表，另外是可以支持内存缓存和本地磁盘缓存，而不是直接从本地文件中读取。
+&lt;/p&gt;
+
+&lt;p&gt;
+基于此，与其自己改不是太懂的PHP，说不定会出现一些意想不到的漏洞...&lt;/p&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;功能&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;使用&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;手动部署&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;Docker部署&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;配置说明&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;命令行参数&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.5&quot;&gt;网页端设置&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;演示&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;
+&lt;b&gt;MetingJS&lt;/b&gt; 是一款通过获取网易云音乐或者QQ音乐等服务的歌单、歌手、歌曲、歌词等信息，然后使用开源HTML5播放器 &lt;b&gt;APlayer&lt;/b&gt; 进行播放的插件。而 &lt;b&gt;MetingJS&lt;/b&gt; 是一段很小的JS代码，它提供了一个默认的API接口：&lt;a href=&quot;https://api.i-meto.com/meting/api&quot;&gt;https://api.i-meto.com/meting/api&lt;/a&gt; , 但很不幸，该接口偶尔会出问题，作者也很久没有回复issue了。
+&lt;/p&gt;
+
+&lt;p&gt;
+现在也有一个开源的 &lt;a href=&quot;https://github.com/injahow/meting-api&quot;&gt;injahow/meting-api&lt;/a&gt;，该服务同样使用PHP编写，我不太懂PHP，我只是想要设置一个缓存，来缓存所有的歌曲信息，而不仅仅是歌单列表，另外是可以支持内存缓存和本地磁盘缓存，而不是直接从本地文件中读取。
+&lt;/p&gt;
+
+&lt;p&gt;
+基于此，与其自己改不是太懂的PHP，说不定会出现一些意想不到的漏洞(源自某安全公司多次CTF换来的教训)，不如使用熟悉的Go重写实现，毕竟核心代码也不是太多
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;功能&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 支持网易云音乐，QQ音乐
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 支持新服务接口扩展
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 支持所有请求结果的缓存
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 更方便的配置(环境变量+配置文件)，而不用修改源文件
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 基于 &lt;b&gt;Go&lt;/b&gt; 编写，一次编译，到处运行
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;使用&lt;/h2&gt;
+&lt;h3 id=&quot;heading-2.1&quot;&gt;手动部署&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 下载仓库
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;git clone https://github.com/honmaple/meting-api&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 编译可执行文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;go mod download
+go build -o meting-api .&lt;/pre&gt;
+&lt;p&gt;
+      或者使用 &lt;b&gt;Docker&lt;/b&gt; 进行编译, 编译后的文件在 &lt;code&gt;/usr/bin/meting-api&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker build -t meting-api .&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 运行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api -D&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;heading-2.2&quot;&gt;Docker部署&lt;/h3&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run --name meting-api --restart=always -d -p 8000:8000 -v /tmp/meting-cache:/opt/meting-api/cache honmaple/meting-api&lt;/pre&gt;
+&lt;h3 id=&quot;heading-2.3&quot;&gt;配置说明&lt;/h3&gt;
+&lt;p&gt;
+    配置可以使用环境变量或者配置文件设置
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 环境变量: 使用 &lt;code&gt;METING_XXXX&lt;/code&gt;, 比如 &lt;code&gt;METING_CACHE_TTL&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 配置文件: 默认使用当前目录下的 &lt;code&gt;config.yaml&lt;/code&gt;, 如果使用 &lt;b&gt;Docker&lt;/b&gt; 部署，需要文件挂载到 &lt;code&gt;/opt/meting-api/config.yaml&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 具体配置:
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;# 缓存过期时间&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;cache.ttl&lt;/span&gt;:                  &lt;span style=&quot;color:#ae81ff&quot;&gt;3600&lt;/span&gt;
+&lt;span style=&quot;color:#75715e&quot;&gt;# 缓存路径，设置为空是禁用缓存&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;cache.path&lt;/span&gt;:                 &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;./cache&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#75715e&quot;&gt;# 是否激活缓存&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;cache.enabled&lt;/span&gt;:              &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;
+
+&lt;span style=&quot;color:#75715e&quot;&gt;# 服务监听地址，:8000 表示监听 0.0.0.0:8000&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;server.addr&lt;/span&gt;:                &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;:8000&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#75715e&quot;&gt;# 对外服务地址，比如 https://api.xxxx.com/meting&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;server.host&lt;/span&gt;:                &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+
+&lt;span style=&quot;color:#75715e&quot;&gt;## cors设置&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;server.cors.allow_headers&lt;/span&gt;:
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;*&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;server.cors.allow_origins&lt;/span&gt;:
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;*&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;server.cors.allow_methods&lt;/span&gt;:
+  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;*&amp;#34;&lt;/span&gt;
+
+&lt;span style=&quot;color:#75715e&quot;&gt;# 日志相关, out可选stdout,stderr,file，或者使用|分隔多个，比如stderr|file&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;logger.out&lt;/span&gt;:                 &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;stdout&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#75715e&quot;&gt;# 日志级别&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;logger.level&lt;/span&gt;:               &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;info&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#75715e&quot;&gt;# 日志文件名格式&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;logger.file_format&lt;/span&gt;:         &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;%Y%m%d&amp;#34;&lt;/span&gt;
+&lt;span style=&quot;color:#75715e&quot;&gt;# 日志文件保留数量&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;logger.file_rotation_count&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;3&lt;/span&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;heading-2.4&quot;&gt;命令行参数&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 查看支持的服务
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api --list&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 指定监听地址
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api -a :8001
+./meting-api --addr :8001&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 显示请求记录
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api -D
+./meting-api --debug&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 指定配置文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api -c /etc/meting.yaml
+./meting-api --config /etc/meting.yaml&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 显示当前配置
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api config&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 删除指定缓存
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api delete-cache &amp;#39;server:netease:type:${type}:id:${id}&amp;#39;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;heading-2.5&quot;&gt;网页端设置&lt;/h3&gt;
+&lt;p&gt;
+    其中 &lt;code&gt;http://localhost:8000/&lt;/code&gt; 是对外服务的接口
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;meting-js&lt;/span&gt;
+  &lt;span style=&quot;color:#a6e22e&quot;&gt;server&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;netease&amp;#34;&lt;/span&gt;
+  &lt;span style=&quot;color:#a6e22e&quot;&gt;type&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;artist&amp;#34;&lt;/span&gt;
+  &lt;span style=&quot;color:#a6e22e&quot;&gt;id&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;6452&amp;#34;&lt;/span&gt;&amp;gt;
+&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;meting-js&lt;/span&gt;&amp;gt;
+&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;type&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;text/javascript&amp;#34;&lt;/span&gt;&amp;gt;
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;var&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;meting_api&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;http://localhost:8000/?server=:server&amp;amp;type=:type&amp;amp;id=:id&amp;amp;auth=:auth&amp;amp;r=:r&amp;#39;&lt;/span&gt;;
+&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt;&amp;gt;
+&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js&amp;#34;&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt;&amp;gt;
+&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js&amp;#34;&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt;&amp;gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;演示&lt;/h2&gt;
+   
+  &lt;meting-js server=&quot;netease&quot; type=&quot;playlist&quot; id=&quot;9085878380&quot;&gt;&lt;/meting-js&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+ if (!shortcodes) {
+     var shortcodes = {};
+ }
+ if (!shortcodes[&quot;music&quot;] &amp;&amp; document.querySelector(&quot;meting-js&quot;)) {
+     var meting_api = &#39;https://api.honmaple.com/meting?server=:server&amp;type=:type&amp;id=:id&amp;auth=:auth&amp;r=:r&#39;;
+
+     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/APlayer.min.js&quot;, false, true);
+     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/Meting.min.js&quot;, false, true);
+
+     shortcodes.loadCSS(&quot;https://honmaple.me/static/lib/css/APlayer.min.css&quot;);
+     shortcodes.loadCSS(&quot;https://honmaple.me/static/css/aplayer.css&quot;);
+ }
+ shortcodes[&quot;music&quot;] = true;
+&lt;/script&gt;
+</content>
+        <category term="Life/Coding"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>Snow静态博客处理多图排版</title>
       <link href="" rel="alternate"></link>
@@ -1732,184 +1946,6 @@ date --help
 &lt;td&gt;%&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;</content>
-        <category term="Life/Coding"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>tornado中session实现</title>
-      <link href="" rel="alternate"></link>
-      <published>Sun, 06 Aug 2017 00:00:00 +0000</published>
-      <updated>Sun, 06 Aug 2017 00:00:00 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2017/08/tornado中session实现.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2017/08/tornado中session实现.html</id>
-      <summary type="html">
-&lt;p&gt;
-tornado中默认没有session的实现,虽然默认的 &lt;b&gt;set_secure_cookie&lt;/b&gt; 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息
-&lt;/p&gt;
-
-&lt;p&gt;
-注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行
-&lt;/p&gt;
-
-&lt;p&gt;
-给出源码:
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; uuid &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; uuid4
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; redis &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; StrictRedis
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; functools &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; wraps
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; datetime &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; datetime, timedelta
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; pytz &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; timezone
-
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;singleton...&lt;/span&gt;&lt;/pre&gt;</summary>
-      <content type="html">
-&lt;p&gt;
-tornado中默认没有session的实现,虽然默认的 &lt;b&gt;set_secure_cookie&lt;/b&gt; 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息
-&lt;/p&gt;
-
-&lt;p&gt;
-注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行
-&lt;/p&gt;
-
-&lt;p&gt;
-给出源码:
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; uuid &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; uuid4
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; redis &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; StrictRedis
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; functools &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; wraps
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; datetime &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; datetime, timedelta
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; pytz &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; timezone
-
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;singleton&lt;/span&gt;(cls):
-    instances &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; {}
-
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;@wraps&lt;/span&gt;(cls)
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;getinstance&lt;/span&gt;(&lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt;args, &lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt;kw):
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; cls &lt;span style=&quot;color:#f92672&quot;&gt;not&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;in&lt;/span&gt; instances:
-            instances[cls] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; cls(&lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt;args, &lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt;kw)
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; instances[cls]
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; getinstance
-
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;current_time&lt;/span&gt;(tz&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;None):
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; tz &lt;span style=&quot;color:#f92672&quot;&gt;is&lt;/span&gt; None:
-        tz &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;UTC&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; datetime&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;now(timezone(tz))
-
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;CoreSession&lt;/span&gt;(object):
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; __setitem__(self, key, value):
-        &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;        session[&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;username&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;] = &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;hello&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;        &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;set(key, value)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; __getitem__(self, key):
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;get(key)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;get_or_set&lt;/span&gt;(self, key, value):
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;not&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;get(key):
-            self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;set(key, value)
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;get(key)
-
-
-&lt;span style=&quot;color:#a6e22e&quot;&gt;@singleton&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;MemorySession&lt;/span&gt;(CoreSession):
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; __init__(self):
-        &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;        self._client = {&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;session_id1&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;:{key:value},&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;                        &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;session_id2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;:{key:value}}&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;        &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; {}
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;init&lt;/span&gt;(self, session_id, expires_days&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;30&lt;/span&gt;):
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;session:{}&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;format(session_id)
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;expires_days &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; expires_days
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id &lt;span style=&quot;color:#f92672&quot;&gt;not&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;in&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client:
-            self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client[self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; {
-                &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;is_authenticated&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;: False,
-                &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;expire&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;: current_time() &lt;span style=&quot;color:#f92672&quot;&gt;+&lt;/span&gt; timedelta(days&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;expires_days)
-            }
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;print&lt;/span&gt;(self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;set&lt;/span&gt;(self, key, value):
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client[self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id][key] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; value
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;get&lt;/span&gt;(self, key):
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client[self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id]&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;get(key)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;pop&lt;/span&gt;(self, key):
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client[self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id]&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;pop(key, None)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;remove_expires&lt;/span&gt;(self):
-        expire_sessions &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; []
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;for&lt;/span&gt; key, value &lt;span style=&quot;color:#f92672&quot;&gt;in&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;items():
-            &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; value[&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;expire&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;] &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; current_time():
-                expire_sessions&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;append(key)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;clear&lt;/span&gt;(self):
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;del&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client[self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id]
-
-
-&lt;span style=&quot;color:#a6e22e&quot;&gt;@singleton&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;RedisSession&lt;/span&gt;(CoreSession):
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; __init__(self):
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; StrictRedis(
-            host&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;localhost&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;,
-            port&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;6379&lt;/span&gt;,
-            db&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;,
-            password&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;redis&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;,
-            decode_responses&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;True)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;init&lt;/span&gt;(self, session_id, expires_days&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;30&lt;/span&gt;):
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;session:{}&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;format(session_id)
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;expires_days &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; expires_days
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;not&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;exists(self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id):
-            self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;hset(self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id, &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;is_authenticated&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;, &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;)
-            self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;expire(self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id, self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;expires_days &lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;30&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;3600&lt;/span&gt;)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;set&lt;/span&gt;(self, key, value):
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;hset(self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id, key, value)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;get&lt;/span&gt;(self, key):
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;hget(self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id, key)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;pop&lt;/span&gt;(self, key):
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;hdel(self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id, key)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;clear&lt;/span&gt;(self):
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_client&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;delete(self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id)
-
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;Session&lt;/span&gt;(object):
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; __init__(self, request_handler):
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;request_handler &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; request_handler
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;request_handler&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;get_secure_cookie(&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;session&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;not&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id:
-            self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; str(uuid4())
-            self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;request_handler&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;set_secure_cookie(&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;session&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;, self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id)
-        &lt;span style=&quot;color:#75715e&quot;&gt;# get cookies is bytes&lt;/span&gt;
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; isinstance(self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id, bytes):
-            self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;decode()
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_session &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; RedisSession()
-        &lt;span style=&quot;color:#75715e&quot;&gt;# self._session = MemorySession()&lt;/span&gt;
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_session&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;init(self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id)
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; __setitem__(self, key, value):
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_session[key] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; value
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; __getitem__(self, key):
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_session[key]
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;clear&lt;/span&gt;(self):
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;request_handler&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;clear_cookie(self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;session_id)
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_session&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;clear()&lt;/pre&gt;</content>
         <category term="Life/Coding"></category>
     </entry>
 </feed>

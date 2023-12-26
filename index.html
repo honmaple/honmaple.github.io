@@ -83,6 +83,235 @@
         <article class="entry-article">
           <div class="entry-article-header">
     <h1 class="entry-article-title">
+      <a href="https://honmaple.me/articles/2023/12/shi-yong-gozhong-xie-metingjsde-api.html" rel="bookmark" title="Permalink to 使用Go重写MetingJS的API">使用Go重写MetingJS的API</a>
+    </h1>
+      <div class="entry-article-info">
+        <span title="Updated at 2023-12-26">
+          <i class="fa fa-calendar-o"></i>
+          2023年12月26日 周二
+        </span>
+          <span class="hidden-xs">|</span>
+          <span class="hidden-xs">
+            <i class="fa fa-user-o"></i>
+            By
+              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-folder-o"></i>
+            In
+              <a href="https://honmaple.me/categories/life/coding/index.html">Life/Coding</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-bookmark-o"></i>
+            0f
+              <a href="https://honmaple.me/tags/life/index.html">life</a>
+              <a href="https://honmaple.me/tags/music/index.html">music</a>
+              <a href="https://honmaple.me/tags/go/index.html">go</a>
+          </span>
+      </div>
+  </div>
+          <hr class="entry-article-hr" />
+            <div class="entry-article-content no-tables">
+              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">功能</a></li>
+<li><a href="#heading-2">使用</a>
+<ul>
+<li><a href="#heading-2.1">手动部署</a></li>
+<li><a href="#heading-2.2">Docker部署</a></li>
+<li><a href="#heading-2.3">配置说明</a></li>
+<li><a href="#heading-2.4">命令行参数</a></li>
+<li><a href="#heading-2.5">网页端设置</a></li>
+</ul></li>
+<li><a href="#heading-3">演示</a></li>
+</ul></div></div>
+
+<p>
+<b>MetingJS</b> 是一款通过获取网易云音乐或者QQ音乐等服务的歌单、歌手、歌曲、歌词等信息，然后使用开源HTML5播放器 <b>APlayer</b> 进行播放的插件。而 <b>MetingJS</b> 是一段很小的JS代码，它提供了一个默认的API接口：<a href="https://api.i-meto.com/meting/api">https://api.i-meto.com/meting/api</a> , 但很不幸，该接口偶尔会出问题，作者也很久没有回复issue了。
+</p>
+
+<p>
+现在也有一个开源的 <a href="https://github.com/injahow/meting-api">injahow/meting-api</a>，该服务同样使用PHP编写，我不太懂PHP，我只是想要设置一个缓存，来缓存所有的歌曲信息，而不仅仅是歌单列表，另外是可以支持内存缓存和本地磁盘缓存，而不是直接从本地文件中读取。
+</p>
+
+<p>
+基于此，与其自己改不是太懂的PHP，说不定会出现一些意想不到的漏洞(源自某安全公司多次CTF换来的教训)，不如使用熟悉的Go重写实现，毕竟核心代码也不是太多
+</p>
+
+<h2 id="heading-1">功能</h2>
+<ul>
+<li>
+<p>
+ 支持网易云音乐，QQ音乐
+</p></li>
+<li>
+<p>
+ 支持新服务接口扩展
+</p></li>
+<li>
+<p>
+ 支持所有请求结果的缓存
+</p></li>
+<li>
+<p>
+ 更方便的配置(环境变量+配置文件)，而不用修改源文件
+</p></li>
+<li>
+<p>
+ 基于 <b>Go</b> 编写，一次编译，到处运行
+</p>
+</li>
+</ul>
+<h2 id="heading-2">使用</h2>
+<h3 id="heading-2.1">手动部署</h3>
+<ul>
+<li>
+<p>
+ 下载仓库
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">git clone https://github.com/honmaple/meting-api</pre></li>
+<li>
+<p>
+ 编译可执行文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">go mod download
+go build -o meting-api .</pre>
+<p>
+      或者使用 <b>Docker</b> 进行编译, 编译后的文件在 <code>/usr/bin/meting-api</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker build -t meting-api .</pre></li>
+<li>
+<p>
+ 运行
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api -D</pre></li>
+</ul>
+<h3 id="heading-2.2">Docker部署</h3>
+<pre style="color:#f8f8f2;background-color:#272822">docker run --name meting-api --restart=always -d -p 8000:8000 -v /tmp/meting-cache:/opt/meting-api/cache honmaple/meting-api</pre>
+<h3 id="heading-2.3">配置说明</h3>
+<p>
+    配置可以使用环境变量或者配置文件设置
+</p>
+<ul>
+<li>
+<p>
+ 环境变量: 使用 <code>METING_XXXX</code>, 比如 <code>METING_CACHE_TTL</code>
+</p></li>
+<li>
+<p>
+ 配置文件: 默认使用当前目录下的 <code>config.yaml</code>, 如果使用 <b>Docker</b> 部署，需要文件挂载到 <code>/opt/meting-api/config.yaml</code>
+</p></li>
+<li>
+<p>
+ 具体配置:
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e"># 缓存过期时间</span>
+<span style="color:#66d9ef">cache.ttl</span>:                  <span style="color:#ae81ff">3600</span>
+<span style="color:#75715e"># 缓存路径，设置为空是禁用缓存</span>
+<span style="color:#66d9ef">cache.path</span>:                 <span style="color:#e6db74">&#34;./cache&#34;</span>
+<span style="color:#75715e"># 是否激活缓存</span>
+<span style="color:#66d9ef">cache.enabled</span>:              <span style="color:#66d9ef">true</span>
+
+<span style="color:#75715e"># 服务监听地址，:8000 表示监听 0.0.0.0:8000</span>
+<span style="color:#66d9ef">server.addr</span>:                <span style="color:#e6db74">&#34;:8000&#34;</span>
+<span style="color:#75715e"># 对外服务地址，比如 https://api.xxxx.com/meting</span>
+<span style="color:#66d9ef">server.host</span>:                <span style="color:#e6db74">&#34;&#34;</span>
+
+<span style="color:#75715e">## cors设置</span>
+<span style="color:#66d9ef">server.cors.allow_headers</span>:
+  - <span style="color:#e6db74">&#34;*&#34;</span>
+<span style="color:#66d9ef">server.cors.allow_origins</span>:
+  - <span style="color:#e6db74">&#34;*&#34;</span>
+<span style="color:#66d9ef">server.cors.allow_methods</span>:
+  - <span style="color:#e6db74">&#34;*&#34;</span>
+
+<span style="color:#75715e"># 日志相关, out可选stdout,stderr,file，或者使用|分隔多个，比如stderr|file</span>
+<span style="color:#66d9ef">logger.out</span>:                 <span style="color:#e6db74">&#34;stdout&#34;</span>
+<span style="color:#75715e"># 日志级别</span>
+<span style="color:#66d9ef">logger.level</span>:               <span style="color:#e6db74">&#34;info&#34;</span>
+<span style="color:#75715e"># 日志文件名格式</span>
+<span style="color:#66d9ef">logger.file_format</span>:         <span style="color:#e6db74">&#34;%Y%m%d&#34;</span>
+<span style="color:#75715e"># 日志文件保留数量</span>
+<span style="color:#66d9ef">logger.file_rotation_count</span>: <span style="color:#ae81ff">3</span></pre></li>
+</ul>
+<h3 id="heading-2.4">命令行参数</h3>
+<ul>
+<li>
+<p>
+ 查看支持的服务
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api --list</pre></li>
+<li>
+<p>
+ 指定监听地址
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api -a :8001
+./meting-api --addr :8001</pre></li>
+<li>
+<p>
+ 显示请求记录
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api -D
+./meting-api --debug</pre></li>
+<li>
+<p>
+ 指定配置文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api -c /etc/meting.yaml
+./meting-api --config /etc/meting.yaml</pre></li>
+<li>
+<p>
+ 显示当前配置
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api config</pre></li>
+<li>
+<p>
+ 删除指定缓存
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api delete-cache &#39;server:netease:type:${type}:id:${id}&#39;</pre></li>
+</ul>
+<h3 id="heading-2.5">网页端设置</h3>
+<p>
+    其中 <code>http://localhost:8000/</code> 是对外服务的接口
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">meting-js</span>
+  <span style="color:#a6e22e">server</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;netease&#34;</span>
+  <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;artist&#34;</span>
+  <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;6452&#34;</span>&gt;
+&lt;/<span style="color:#f92672">meting-js</span>&gt;
+&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/javascript&#34;</span>&gt;
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">meting_api</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://localhost:8000/?server=:server&amp;type=:type&amp;id=:id&amp;auth=:auth&amp;r=:r&#39;</span>;
+&lt;/<span style="color:#f92672">script</span>&gt;
+&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;</pre>
+
+<h2 id="heading-3">演示</h2>
+   
+  <meting-js server="netease" type="playlist" id="9085878380"></meting-js>
+<script type="text/javascript">
+ if (!shortcodes) {
+     var shortcodes = {};
+ }
+ if (!shortcodes["music"] && document.querySelector("meting-js")) {
+     var meting_api = 'https://api.honmaple.com/meting?server=:server&type=:type&id=:id&auth=:auth&r=:r';
+
+     shortcodes.loadJS("https://honmaple.me/static/lib/js/APlayer.min.js", false, true);
+     shortcodes.loadJS("https://honmaple.me/static/lib/js/Meting.min.js", false, true);
+
+     shortcodes.loadCSS("https://honmaple.me/static/lib/css/APlayer.min.css");
+     shortcodes.loadCSS("https://honmaple.me/static/css/aplayer.css");
+ }
+ shortcodes["music"] = true;
+</script>
+
+            </div>
+        </article>
+      </li>
+      <li>
+        <article class="entry-article">
+          <div class="entry-article-header">
+    <h1 class="entry-article-title">
       <a href="https://honmaple.me/articles/2023/12/snowjing-tai-bo-ke-chu-li-duo-tu-pai-ban.html" rel="bookmark" title="Permalink to Snow静态博客处理多图排版">Snow静态博客处理多图排版</a>
     </h1>
       <div class="entry-article-info">
@@ -112,250 +341,16 @@
   </div>
           <hr class="entry-article-hr" />
             <div class="entry-article-content no-tables">
-              <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">解析原始链接</a></li>
-<li><a href="#heading-2">并排显示</a></li>
-<li><a href="#heading-3">多行显示</a></li>
-<li><a href="#heading-4">图片懒加载和点击全屏</a></li>
-<li><a href="#heading-5">显示效果</a></li>
-<li><a href="#heading-6">参考资料</a></li>
-</ul></div></div>
-
+              
 <p>
 事情的缘由是我无意中发现之前写的部分文章里的图片没有渲染出来，才想起之前博客系统改版，从 <b>Pelican</b> 切换到 <b>Snow</b> 时竟然忘记了，看了一下原文，大部分都是以下形式
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;row&#34;</span>&gt;
   &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;col-md-4&#34;</span>&gt;
-    [[https://s.libforest.com/images/pic/西湖/日落(二).jpg]]
-  &lt;/<span style="color:#f92672">div</span>&gt;
-  &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;col-md-4&#34;</span>&gt;
-    [[https://s.libforest.com/images/pic/西湖/日落(三).jpg]]
-  &lt;/<span style="color:#f92672">div</span>&gt;
-  &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;col-md-4&#34;</span>&gt;
-    [[https://s.libforest.com/images/pic/西湖/日落(一).jpg]]
-  &lt;/<span style="color:#f92672">div</span>&gt;
-&lt;/<span style="color:#f92672">div</span>&gt;</pre>
-<p>
-因为我之前的博客主题使用了 <b>Bootstrap</b>，为了能够让多张图片并排显示，所以用了 <b>Bootstrap</b> 里的 <code>.row .col-*</code>。但前不久移除了全部的 <b>Bootstrap</b>，现在当然不会生效。另外一点是我之前用的 <b>org mode</b> 解析器可以直接解析 <b>HTML</b> 中的链接，但更换了新的解析器 <a href="https://github.com/honmaple/org-golang">org-golang</a> 后，已经无法不能解析HTML中的原始链接
-</p>
-
-<p>
-此次利用 <b>Snow</b> 博客系统中的 <b>shortcode</b> 功能实现多图排版，让图片可以并排显示，多行显示。
-</p>
-
-<h2 id="heading-1">解析原始链接</h2>
-<p>
-   首先在主题下创建一个名为 <code>img-layout</code> 的 <b>shortcode</b>，比如我使用的主题叫做 <b>snow</b>，所以在 <code>themes/snow/templates/shortcodes</code> 目录下创建一个 <code>img-layout.html</code> 文件，并添加 <code>markdown</code> 或者 <code>org</code> 的 <b>filter</b> 将原始文本解析成HTML
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;img-layout&#34;</span>&gt;
-  {%- if params.type == &#34;markdown&#34; %}
-  {{ body | markdown | safe }}
-  {%- else %}
-  {{ body | org | safe }}
-  {%- endif %}
-&lt;/<span style="color:#f92672">div</span>&gt;</pre>
-
-<p>
-   接着修改原始文章
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">#+begin_export html
-&lt;shortcode _name=&#34;img-layout&#34;&gt;
-[[https://s.libforest.com/images/pic/西湖/日落(二).jpg]]
-[[https://s.libforest.com/images/pic/西湖/日落(三).jpg]]
-[[https://s.libforest.com/images/pic/西湖/日落(一).jpg]]
-&lt;/shortcode&gt;
-#+end_export</pre>
-
-<p>
-   经过修改，原始文章中的内容将会自动渲染成
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;img-layout&#34;</span>&gt;
-  &lt;<span style="color:#f92672">p</span>&gt;
-    &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://s.libforest.com/images/pic/西湖/日落(二).jpg&#34;</span> /&gt;
-    &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://s.libforest.com/images/pic/西湖/日落(三).jpg&#34;</span> /&gt;
-    &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://s.libforest.com/images/pic/西湖/日落(一).jpg&#34;</span> /&gt;
-  &lt;/<span style="color:#f92672">p</span>&gt;
-&lt;/<span style="color:#f92672">div</span>&gt;</pre>
-
-<h2 id="heading-2">并排显示</h2>
-<p>
-   有了固定结构的HTML， 接着就可以添加 <b>css</b>，使多张图片可以并排显示
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">.<span style="color:#a6e22e">img-layout</span> <span style="color:#f92672">p</span> {
-    <span style="color:#66d9ef">display</span>: <span style="color:#66d9ef">flex</span>;
-    <span style="color:#66d9ef">flex-wrap</span>: <span style="color:#66d9ef">wrap</span>;
-}
-
-.<span style="color:#a6e22e">img-layout</span> <span style="color:#f92672">p</span> <span style="color:#f92672">&gt;</span> <span style="color:#f92672">img</span> {
-    <span style="color:#66d9ef">width</span>: <span style="color:#66d9ef">auto</span>;
-    <span style="color:#66d9ef">min-width</span>: <span style="color:#ae81ff">0</span>;
-    <span style="color:#66d9ef">max-width</span>: <span style="color:#ae81ff">100</span><span style="color:#66d9ef">%</span>;
-
-    <span style="color:#66d9ef">flex</span>: <span style="color:#ae81ff">10000</span> <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">0</span><span style="color:#66d9ef">%</span>;
-}
-
-<span style="color:#75715e">/* 处理手机等设备图片显示问题 */</span>
-@<span style="color:#66d9ef">media</span> <span style="color:#f92672">screen</span> <span style="color:#f92672">and</span> <span style="color:#f92672">(</span><span style="color:#f92672">max-width</span><span style="color:#f92672">:</span> <span style="color:#f92672">600px</span><span style="color:#f92672">)</span> {
-    .<span style="color:#a6e22e">img-layout</span> <span style="color:#f92672">p</span> <span style="color:#f92672">&gt;</span> <span style="color:#f92672">img</span> {
-        <span style="color:#66d9ef">min-width</span>: <span style="color:#ae81ff">100</span><span style="color:#66d9ef">%</span>
-    }
-}
-
-<span style="color:#75715e">/* 添加图片上下左右间隔 */</span>
-.<span style="color:#a6e22e">img-layout</span> <span style="color:#f92672">p</span> {
-    <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">-0.25</span><span style="color:#66d9ef">rem</span> <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">-0.25</span><span style="color:#66d9ef">rem</span> <span style="color:#75715e">!important</span>;
-}
-
-.<span style="color:#a6e22e">img-layout</span> <span style="color:#f92672">p</span> <span style="color:#f92672">&gt;</span> <span style="color:#f92672">*</span> {
-    <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">0.5</span><span style="color:#66d9ef">rem</span> <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">0.25</span><span style="color:#66d9ef">rem</span> <span style="color:#75715e">!important</span>;
-}</pre>
-
-<h2 id="heading-3">多行显示</h2>
-<p>
-   多行显示可以利用文件解析时每次遇到空行都会生成一个新的段落，比如
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">[[https://s.libforest.com/images/pic/西湖/日落(一).jpg]]
-
-[[https://s.libforest.com/images/pic/西湖/日落(二).jpg]]</pre>
-<p>
-   就会生成
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">p</span>&gt;
-  &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://s.libforest.com/images/pic/西湖/日落(一).jpg&#34;</span> /&gt;
-&lt;/<span style="color:#f92672">p</span>&gt;
-&lt;<span style="color:#f92672">p</span>&gt;
-  &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://s.libforest.com/images/pic/西湖/日落(二).jpg&#34;</span> /&gt;
-&lt;/<span style="color:#f92672">p</span>&gt;</pre>
-<p>
-   故如果需要多行显示，只用在多张图片中间添加一个空行即可
-</p>
-
-<h2 id="heading-4">图片懒加载和点击全屏</h2>
-<p>
-   之前的图片懒加载和点击全屏的功能我也是利用 <b>Snow</b> 中的 <b>shortcode</b> 功能实现的，我在 <code>themes/snow/templates/shortcodes</code> 目录下建立了一个 <code>img.html</code> 的文件
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ params.src }}&#34;</span> <span style="color:#a6e22e">data-fancybox</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;image&#34;</span>&gt;
-  &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">data-src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ params.src + &#39;-thumb&#39; }}&#34;</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;lazyload&#34;</span> /&gt;
-&lt;/<span style="color:#f92672">a</span>&gt;</pre>
-<p>
-   这样，文章内所有的 <code>img</code> 标签的图片都会加上懒加载和点击全屏的功能(基于 <b>lazysizes</b> 和 <b>fancybox</b>)
-</p>
-
-<p>
-   但是，由于 <b>Snow</b> 中 <b>shortcode</b> 的实现是一次性遍历 <b>HTML DOM</b>，无法在一个 <b>shortcode</b> 内部调用另一个 <b>shortcode</b>。
-   所幸 <b>Snow</b> 是我自己写的，思索片刻，我在 <b>shortcode</b> 实现中加入了三行代码，这样就能在一个 <b>shortcode</b> 中重复调用其它的 <b>shortcode</b>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">vars := map[string]interface{}{
-...
-<span style="color:#a6e22e">+	&#34;_shortcode&#34;: func(s string) string {
-</span><span style="color:#a6e22e"></span><span style="color:#a6e22e">+		return self.shortcode(page, s)
-</span><span style="color:#a6e22e"></span><span style="color:#a6e22e">+	},
-</span><span style="color:#a6e22e"></span>}
-</pre>
-
-<p>
-   然后修改 <code>img-layout.html</code>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;img-layout&#34;</span>&gt;
-  {%- if params.type == &#34;markdown&#34; %}
-  {{ _shortcode(body | markdown) | safe }}
-  {%- else %}
-  {{ _shortcode(body | org) | safe }}
-  {%- endif %}
-&lt;/<span style="color:#f92672">div</span>&gt;</pre>
-
-<p>
-   最后添加 <b>css</b> 样式
-</p>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#f92672">- .img-layout p &gt; img {
-</span><span style="color:#f92672"></span><span style="color:#a6e22e">+ .img-layout p &gt; img, .img-layout p &gt; a {
-</span><span style="color:#a6e22e"></span>
-<span style="color:#a6e22e">+ .img-layout p &gt; a &gt; img {
-</span><span style="color:#a6e22e"></span><span style="color:#a6e22e">+     height: 100%;
-</span><span style="color:#a6e22e"></span><span style="color:#a6e22e">+ }
-</span></pre>
-
-<h2 id="heading-5">显示效果</h2>
-<ul>
-<li>
-<p>
- 两张图片
-</p>
-     <div class="img-layout">
-<p>
-     
-<a href="https://s.libforest.com/images/pic/西湖/日落(三).jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/pic/西湖/日落(三).jpg-thumb" class="lazyload" />
-</a>
-     
-<a href="https://s.libforest.com/images/pic/西湖/日落(一).jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/pic/西湖/日落(一).jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-</div></li>
-<li>
-<p>
- 三张图片
-</p>
-     <div class="img-layout">
-<p>
-     
-<a href="https://s.libforest.com/images/pic/西湖/日落(二).jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/pic/西湖/日落(二).jpg-thumb" class="lazyload" />
-</a>
-     
-<a href="https://s.libforest.com/images/pic/西湖/日落(三).jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/pic/西湖/日落(三).jpg-thumb" class="lazyload" />
-</a>
-     
-<a href="https://s.libforest.com/images/pic/西湖/日落(一).jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/pic/西湖/日落(一).jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-</div></li>
-<li>
-<p>
- 多行显示
-</p>
-     <div class="img-layout">
-<p>
-     
-<a href="https://s.libforest.com/images/pic/西湖/日落(二).jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/pic/西湖/日落(二).jpg-thumb" class="lazyload" />
-</a>
-     
-<a href="https://s.libforest.com/images/pic/西湖/日落(三).jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/pic/西湖/日落(三).jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-<p>
-     
-<a href="https://s.libforest.com/images/pic/西湖/日落(一).jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/pic/西湖/日落(一).jpg-thumb" class="lazyload" />
-</a>
-     
-<a href="https://s.libforest.com/images/pic/西湖/日落(二).jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/pic/西湖/日落(二).jpg-thumb" class="lazyload" />
-</a>
-     
-<a href="https://s.libforest.com/images/pic/西湖/日落(三).jpg-show" data-fancybox="image">
-  <img data-src="https://s.libforest.com/images/pic/西湖/日落(三).jpg-thumb" class="lazyload" />
-</a>
-</p>
-
-</div>
-</li>
-</ul>
-<h2 id="heading-6">参考资料</h2>
-<ul>
-<li>
-<p>
- <a href="https://immmmm.com/about-images-gird/">https://immmmm.com/about-images-gird/</a>
-</p></li>
-</ul>
+    [[https://s.libforest.com/images/pic/西湖/日落(二...</pre>
+            </div>
+            <div class="entry-btn">
+              <a href="https://honmaple.me/articles/2023/12/snowjing-tai-bo-ke-chu-li-duo-tu-pai-ban.html">阅读全文 »</a>
             </div>
         </article>
       </li>
@@ -1502,59 +1497,6 @@ neilpang/acme.sh daemon</pre></li>
             </div>
             <div class="entry-btn">
               <a href="https://honmaple.me/articles/2023/02/静态博客中的shortcode实现.html">阅读全文 »</a>
-            </div>
-        </article>
-      </li>
-      <li>
-        <article class="entry-article">
-          <div class="entry-article-header">
-    <h1 class="entry-article-title">
-      <a href="https://honmaple.me/articles/2022/11/MacOS适配2K显示器.html" rel="bookmark" title="Permalink to MacOS适配2K显示器">MacOS适配2K显示器</a>
-    </h1>
-      <div class="entry-article-info">
-        <span title="Updated at 2022-11-24">
-          <i class="fa fa-calendar-o"></i>
-          2022年11月24日 周四
-        </span>
-          <span class="hidden-xs">|</span>
-          <span class="hidden-xs">
-            <i class="fa fa-user-o"></i>
-            By
-              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-folder-o"></i>
-            In
-              <a href="https://honmaple.me/categories/life/index.html">Life</a>
-          </span>
-          <span>|</span>
-          <span>
-            <i class="fa fa-bookmark-o"></i>
-            0f
-              <a href="https://honmaple.me/tags/life/index.html">life</a>
-              <a href="https://honmaple.me/tags/macos/index.html">macos</a>
-          </span>
-      </div>
-  </div>
-          <hr class="entry-article-hr" />
-            <div class="entry-article-content no-tables">
-              
-<blockquote>
-<p>
-最近购买了一个2K显示器，到手后才发现macos默认对2K分辨率支持不足，导致字体很小，无法像windows对字体进行缩放，尤其是终端字体，简直不忍直视。网上一搜才知道，这已经是陈年问题，网上也有很多解决办法，本次采用 <b>BetterDisplay</b> 开启 <b>HiDPI</b>， 不用关闭 <b>SIP</b>
-</p>
-</blockquote>
-
-<h2 id="heading-1">安装</h2>
-<p>
-   安装可以直接从 <a href="https://github.com/waydabber/BetterDisplay">BetterDisplay</a> 下载，手动安装，不过我推荐使用 <b>brew</b> 安装，这样对于软件的管理也更方便
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">──╼ brew info BetterDisplay
-==&gt; betterdisplay: 1.3.4 (auto_updates...</pre>
-            </div>
-            <div class="entry-btn">
-              <a href="https://honmaple.me/articles/2022/11/MacOS适配2K显示器.html">阅读全文 »</a>
             </div>
         </article>
       </li>

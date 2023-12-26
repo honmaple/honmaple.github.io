@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>使用Go重写MetingJS的API · 紅楓吟</title>
+      <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+      <script src="https://honmaple.me/static/lib/js/before.min.js"></script>
+  </head>
+  <body>
+    <div class="scrollbar"></div>
+
+    <div class="wrapper"><nav class="entry-navbar">
+  <div class="entry-navbar-top">
+    <a href="https://honmaple.me">
+      <img class="entry-navbar-logo" src="https://s.libforest.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="entry-navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+    <button class="entry-navbar-collapse" data-target=".entry-navbar-bottom" data-toggle="collapse">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
+    </button>
+  </div>
+  <div class="entry-navbar-bottom">
+    <ul class="entry-navbar-menu">
+            <li class="entry-dropdown">
+              <a href="https://honmaple.me/categories/life/index.html">代码人生</a>
+              <ul class="entry-dropdown-content">
+                  <li><a href="https://honmaple.me/categories/life/coding/index.html">分享世界</a></li>
+                  <li><a href="https://honmaple.me/categories/life/love/index.html">你不懂我</a></li>
+                  <li><a href="https://honmaple.me/categories/life/recall/index.html">我不怪你</a></li>
+              </ul>
+            </li>
+            <li class="entry-dropdown">
+              <a href="https://honmaple.me/categories/linux/index.html">字符艺术</a>
+              <ul class="entry-dropdown-content">
+                  <li><a href="https://honmaple.me/categories/linux/emacs/index.html">Emacs</a></li>
+              </ul>
+            </li>
+            <li><a href="https://honmaple.me/categories/python/index.html">人生苦短</a></li>
+            <li><a href="https://honmaple.me/categories/security/index.html">极客安全</a></li>
+          <li class="entry-dropdown">
+            <a href="https://honmaple.me/archives/index.html">文章归档</a>
+            <ul class="entry-dropdown-content">
+                <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+                <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+                <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+            </ul>
+          </li>
+          <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form class="entry-navbar-form" action="https://honmaple.me/search.html">
+      <input name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''" />
+      <i class="fa fa-search"></i>
+    </form>
+  </div>
+</nav>
+
+  <article class="entry-article">
+    <div class="entry-article-header">
+    <h1 class="entry-article-title">
+      <a href="https://honmaple.me/articles/2023/12/shi-yong-gozhong-xie-metingjsde-api.html" rel="bookmark" title="Permalink to 使用Go重写MetingJS的API">使用Go重写MetingJS的API</a>
+    </h1>
+      <div class="entry-article-info">
+        <span title="Updated at 2023-12-26">
+          <i class="fa fa-calendar-o"></i>
+          2023年12月26日 周二
+        </span>
+          <span class="hidden-xs">|</span>
+          <span class="hidden-xs">
+            <i class="fa fa-user-o"></i>
+            By
+              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-folder-o"></i>
+            In
+              <a href="https://honmaple.me/categories/life/coding/index.html">Life/Coding</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-bookmark-o"></i>
+            0f
+              <a href="https://honmaple.me/tags/life/index.html">life</a>
+              <a href="https://honmaple.me/tags/music/index.html">music</a>
+              <a href="https://honmaple.me/tags/go/index.html">go</a>
+          </span>
+      </div>
+  </div>
+    <hr class="entry-article-hr" />
+    <div class="entry-article-content">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">功能</a></li>
+<li><a href="#heading-2">使用</a>
+<ul>
+<li><a href="#heading-2.1">手动部署</a></li>
+<li><a href="#heading-2.2">Docker部署</a></li>
+<li><a href="#heading-2.3">配置说明</a></li>
+<li><a href="#heading-2.4">命令行参数</a></li>
+<li><a href="#heading-2.5">网页端设置</a></li>
+</ul></li>
+<li><a href="#heading-3">演示</a></li>
+</ul></div></div>
+
+<p>
+<b>MetingJS</b> 是一款通过获取网易云音乐或者QQ音乐等服务的歌单、歌手、歌曲、歌词等信息，然后使用开源HTML5播放器 <b>APlayer</b> 进行播放的插件。而 <b>MetingJS</b> 是一段很小的JS代码，它提供了一个默认的API接口：<a href="https://api.i-meto.com/meting/api">https://api.i-meto.com/meting/api</a> , 但很不幸，该接口偶尔会出问题，作者也很久没有回复issue了。
+</p>
+
+<p>
+现在也有一个开源的 <a href="https://github.com/injahow/meting-api">injahow/meting-api</a>，该服务同样使用PHP编写，我不太懂PHP，我只是想要设置一个缓存，来缓存所有的歌曲信息，而不仅仅是歌单列表，另外是可以支持内存缓存和本地磁盘缓存，而不是直接从本地文件中读取。
+</p>
+
+<p>
+基于此，与其自己改不是太懂的PHP，说不定会出现一些意想不到的漏洞(源自某安全公司多次CTF换来的教训)，不如使用熟悉的Go重写实现，毕竟核心代码也不是太多
+</p>
+
+<h2 id="heading-1">功能</h2>
+<ul>
+<li>
+<p>
+ 支持网易云音乐，QQ音乐
+</p></li>
+<li>
+<p>
+ 支持新服务接口扩展
+</p></li>
+<li>
+<p>
+ 支持所有请求结果的缓存
+</p></li>
+<li>
+<p>
+ 更方便的配置(环境变量+配置文件)，而不用修改源文件
+</p></li>
+<li>
+<p>
+ 基于 <b>Go</b> 编写，一次编译，到处运行
+</p>
+</li>
+</ul>
+<h2 id="heading-2">使用</h2>
+<h3 id="heading-2.1">手动部署</h3>
+<ul>
+<li>
+<p>
+ 下载仓库
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">git clone https://github.com/honmaple/meting-api</pre></li>
+<li>
+<p>
+ 编译可执行文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">go mod download
+go build -o meting-api .</pre>
+<p>
+      或者使用 <b>Docker</b> 进行编译, 编译后的文件在 <code>/usr/bin/meting-api</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker build -t meting-api .</pre></li>
+<li>
+<p>
+ 运行
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api -D</pre></li>
+</ul>
+<h3 id="heading-2.2">Docker部署</h3>
+<pre style="color:#f8f8f2;background-color:#272822">docker run --name meting-api --restart=always -d -p 8000:8000 -v /tmp/meting-cache:/opt/meting-api/cache honmaple/meting-api</pre>
+<h3 id="heading-2.3">配置说明</h3>
+<p>
+    配置可以使用环境变量或者配置文件设置
+</p>
+<ul>
+<li>
+<p>
+ 环境变量: 使用 <code>METING_XXXX</code>, 比如 <code>METING_CACHE_TTL</code>
+</p></li>
+<li>
+<p>
+ 配置文件: 默认使用当前目录下的 <code>config.yaml</code>, 如果使用 <b>Docker</b> 部署，需要文件挂载到 <code>/opt/meting-api/config.yaml</code>
+</p></li>
+<li>
+<p>
+ 具体配置:
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e"># 缓存过期时间</span>
+<span style="color:#66d9ef">cache.ttl</span>:                  <span style="color:#ae81ff">3600</span>
+<span style="color:#75715e"># 缓存路径，设置为空是禁用缓存</span>
+<span style="color:#66d9ef">cache.path</span>:                 <span style="color:#e6db74">&#34;./cache&#34;</span>
+<span style="color:#75715e"># 是否激活缓存</span>
+<span style="color:#66d9ef">cache.enabled</span>:              <span style="color:#66d9ef">true</span>
+
+<span style="color:#75715e"># 服务监听地址，:8000 表示监听 0.0.0.0:8000</span>
+<span style="color:#66d9ef">server.addr</span>:                <span style="color:#e6db74">&#34;:8000&#34;</span>
+<span style="color:#75715e"># 对外服务地址，比如 https://api.xxxx.com/meting</span>
+<span style="color:#66d9ef">server.host</span>:                <span style="color:#e6db74">&#34;&#34;</span>
+
+<span style="color:#75715e">## cors设置</span>
+<span style="color:#66d9ef">server.cors.allow_headers</span>:
+  - <span style="color:#e6db74">&#34;*&#34;</span>
+<span style="color:#66d9ef">server.cors.allow_origins</span>:
+  - <span style="color:#e6db74">&#34;*&#34;</span>
+<span style="color:#66d9ef">server.cors.allow_methods</span>:
+  - <span style="color:#e6db74">&#34;*&#34;</span>
+
+<span style="color:#75715e"># 日志相关, out可选stdout,stderr,file，或者使用|分隔多个，比如stderr|file</span>
+<span style="color:#66d9ef">logger.out</span>:                 <span style="color:#e6db74">&#34;stdout&#34;</span>
+<span style="color:#75715e"># 日志级别</span>
+<span style="color:#66d9ef">logger.level</span>:               <span style="color:#e6db74">&#34;info&#34;</span>
+<span style="color:#75715e"># 日志文件名格式</span>
+<span style="color:#66d9ef">logger.file_format</span>:         <span style="color:#e6db74">&#34;%Y%m%d&#34;</span>
+<span style="color:#75715e"># 日志文件保留数量</span>
+<span style="color:#66d9ef">logger.file_rotation_count</span>: <span style="color:#ae81ff">3</span></pre></li>
+</ul>
+<h3 id="heading-2.4">命令行参数</h3>
+<ul>
+<li>
+<p>
+ 查看支持的服务
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api --list</pre></li>
+<li>
+<p>
+ 指定监听地址
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api -a :8001
+./meting-api --addr :8001</pre></li>
+<li>
+<p>
+ 显示请求记录
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api -D
+./meting-api --debug</pre></li>
+<li>
+<p>
+ 指定配置文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api -c /etc/meting.yaml
+./meting-api --config /etc/meting.yaml</pre></li>
+<li>
+<p>
+ 显示当前配置
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api config</pre></li>
+<li>
+<p>
+ 删除指定缓存
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">./meting-api delete-cache &#39;server:netease:type:${type}:id:${id}&#39;</pre></li>
+</ul>
+<h3 id="heading-2.5">网页端设置</h3>
+<p>
+    其中 <code>http://localhost:8000/</code> 是对外服务的接口
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">&lt;<span style="color:#f92672">meting-js</span>
+  <span style="color:#a6e22e">server</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;netease&#34;</span>
+  <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;artist&#34;</span>
+  <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;6452&#34;</span>&gt;
+&lt;/<span style="color:#f92672">meting-js</span>&gt;
+&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/javascript&#34;</span>&gt;
+  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">meting_api</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://localhost:8000/?server=:server&amp;type=:type&amp;id=:id&amp;auth=:auth&amp;r=:r&#39;</span>;
+&lt;/<span style="color:#f92672">script</span>&gt;
+&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;</pre>
+
+<h2 id="heading-3">演示</h2>
+   
+  <meting-js server="netease" type="playlist" id="9085878380"></meting-js>
+<script type="text/javascript">
+ if (!shortcodes) {
+     var shortcodes = {};
+ }
+ if (!shortcodes["music"] && document.querySelector("meting-js")) {
+     var meting_api = 'https://api.honmaple.com/meting?server=:server&type=:type&id=:id&auth=:auth&r=:r';
+
+     shortcodes.loadJS("https://honmaple.me/static/lib/js/APlayer.min.js", false, true);
+     shortcodes.loadJS("https://honmaple.me/static/lib/js/Meting.min.js", false, true);
+
+     shortcodes.loadCSS("https://honmaple.me/static/lib/css/APlayer.min.css");
+     shortcodes.loadCSS("https://honmaple.me/static/css/aplayer.css");
+ }
+ shortcodes["music"] = true;
+</script>
+
+    </div>
+    <div class="entry-copyright">
+        <div>
+          <span><i class="fa fa-user-o"></i>作者:</span>
+            <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+        </div>
+    <div>
+      <span><i class="fa fa-link"></i>链接:</span>
+      <a href="https://honmaple.me/articles/2023/12/shi-yong-gozhong-xie-metingjsde-api.html">https://honmaple.me/articles/2023/12/shi-yong-gozhong-xie-metingjsde-api.html</a>
+    </div>
+    <div>
+      <span><i class="fa fa-copyright"></i>版权:</span>
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+        <img src="https://s.libforest.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+        知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+      </a>
+    </div>
+  </div>
+  <div class="entry-honor">
+    <button data-target=".entry-honor-content" data-toggle="collapse" aria-expanded="false">赞</button>
+    <div class="entry-honor-content collapse">
+      <div class="entry-honor-wechat">
+        <img class="lazyload" data-src="https://s.libforest.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+      <div class="entry-honor-alipay">
+        <img class="lazyload" data-src="https://s.libforest.com/images/pic/alipay.png" alt="alipay" />
+      </div>
+    </div>
+  </div>
+    <hr class="entry-article-hr" />
+    <ul class="entry-pager">
+      <li class="next">
+        <a href="https://honmaple.me/articles/2023/12/snowjing-tai-bo-ke-chu-li-duo-tu-pai-ban.html" title="Next article: Snow静态博客处理多图排版">
+          Snow静态博客处理多图排版
+          <i class="fa fa-chevron-right"></i>
+        </a>
+      </li>
+  </ul>
+    
+    <div class="entry-comment">
+      <div class="entry-btn">
+        <a>加载评论</a>
+      </div>
+      <div id="comment_thread" issue-term="使用Go重写MetingJS的API"></div>
+    </div>
+  </article><div class="footer">
+  <ul class="footer-left">
+    <li class="hidden-xs">© 2015-2023 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+        <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/project.html">项目</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+  <ul class="footer-right">
+    <li><a class="entry-switch-theme" title="切换主题" onclick="switchTheme()"><i class="fa fa-moon-o"></i></a></li>
+      <li><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/pages/music.html" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>
+      <li><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li><a href="https://honmaple.me/pages/contact.html" title="Contact"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+</div>
+<div class="back-to-top on">
+  <i class="fa fa-hand-o-up" title="back to top"></i>
+</div>
+
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'UA-88401692-2');
+  </script>
+
+
+      <script src="https://s.libforest.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
+  </body>
+</html>
