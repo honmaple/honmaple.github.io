@@ -1,0 +1,2040 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh">
+  <title>紅楓吟 - Geek</title>
+    <subtitle>风落花语风落天，花落风雨花落田.</subtitle>
+  <link href="https://honmaple.me/categories/tech/geek/atom.xml" rel="self" type="application/atom+xml"/>
+  <link href="https://honmaple.me"/>
+  <generator uri="https://github.com/honmaple/snow">Snow</generator>
+    <updated>Wed, 06 Mar 2024 15:09:26 +0000</updated>
+  <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>绿联Nas优化</title>
+      <link href="" rel="alternate"></link>
+      <published>Tue, 12 Dec 2023 21:54:12 +0000</published>
+      <updated>Wed, 06 Mar 2024 15:09:26 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/12/lu-lian-nasyou-hua.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/12/lu-lian-nasyou-hua.html</id>
+      <summary type="html">
+&lt;p&gt;
+记录一下，每次升级系统都要重新改一次
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;禁用迅雷&lt;/h2&gt;
+&lt;p&gt;
+   找到 &lt;code&gt;/ugreen/thunder/xunlei-pan/start.sh&lt;/code&gt; 文件，注释掉倒数第二行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;#su - $thunderName ...&lt;/pre&gt;
+
+&lt;p&gt;
+   运行 &lt;code&gt;/ugreen/thunder/xunlei-pan/stop.sh&lt;/code&gt; 关闭当前进程
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;禁用移动云盘&lt;/h2&gt;
+&lt;p&gt;
+   删除 &lt;code&gt;/data/nas_server/cmcc_svr&lt;/code&gt; 文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;mv /data/nas_server/cmcc_svr...&lt;/pre&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;禁用迅雷&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;禁用移动云盘&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;禁用p2px&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;ssh自启动&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;
+记录一下，每次升级系统都要重新改一次
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;禁用迅雷&lt;/h2&gt;
+&lt;p&gt;
+   找到 &lt;code&gt;/ugreen/thunder/xunlei-pan/start.sh&lt;/code&gt; 文件，注释掉倒数第二行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;#su - $thunderName ...&lt;/pre&gt;
+
+&lt;p&gt;
+   运行 &lt;code&gt;/ugreen/thunder/xunlei-pan/stop.sh&lt;/code&gt; 关闭当前进程
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;禁用移动云盘&lt;/h2&gt;
+&lt;p&gt;
+   删除 &lt;code&gt;/data/nas_server/cmcc_svr&lt;/code&gt; 文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;mv /data/nas_server/cmcc_svr /data/nas_server/cmcc_svr.bak&lt;/pre&gt;
+
+&lt;p&gt;
+   关闭当前进程
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ps axuf | grep cmcc | grep -v grep | awk &amp;#39;{printf $2}&amp;#39; | xargs kill -9&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;禁用p2px&lt;/h2&gt;
+&lt;p&gt;
+   新建一个脚本 &lt;code&gt;/root/script/myp2p&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;#!/bin/sh
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;
+&lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;[&lt;/span&gt; -e &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;/data/nas_server/p2px/p2px&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;]&lt;/span&gt;; &lt;span style=&quot;color:#66d9ef&quot;&gt;then&lt;/span&gt;
+    mv /data/nas_server/p2px/p2px /data/nas_server/p2px/p2px.bak
+&lt;span style=&quot;color:#66d9ef&quot;&gt;fi&lt;/span&gt;
+
+killall -q -9 p2px &lt;span style=&quot;color:#f92672&quot;&gt;||&lt;/span&gt; true&lt;/pre&gt;
+
+&lt;p&gt;
+   在 &lt;code&gt;/etc/crontabs/root&lt;/code&gt; 文件添加一个定时任务
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;*/3 * * * * /root/script/myp2p&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-4&quot;&gt;ssh自启动&lt;/h2&gt;
+&lt;p&gt;
+   新建一个脚本 &lt;code&gt;/root/script/myscript&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;#!/bin/sh
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;
+run_myscript&lt;span style=&quot;color:#f92672&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;{&lt;/span&gt;
+    mkdir -m &lt;span style=&quot;color:#ae81ff&quot;&gt;0700&lt;/span&gt; -p /var/empty
+    netstat -anp | grep 0.0.0.0:922 | grep sshd | grep -v grep &lt;span style=&quot;color:#f92672&quot;&gt;||&lt;/span&gt; /usr/sbin/sshd -D
+
+    sleep &lt;span style=&quot;color:#ae81ff&quot;&gt;10&lt;/span&gt;
+
+    &lt;span style=&quot;color:#75715e&quot;&gt;# zerotier相关&lt;/span&gt;
+    lsmod | grep tun | grep -v grep &lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; chmod &lt;span style=&quot;color:#ae81ff&quot;&gt;666&lt;/span&gt; /dev/net/tun &lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; docker restart zerotier
+
+    ip route | grep 10.8.235 | grep -v grep &lt;span style=&quot;color:#f92672&quot;&gt;||&lt;/span&gt; ip route add 10.8.235.0/24 via 192.168.100.2
+&lt;span style=&quot;color:#f92672&quot;&gt;}&lt;/span&gt;
+
+run_myscript &amp;amp;
+echo &lt;span style=&quot;color:#e6db74&quot;&gt;`&lt;/span&gt;date&lt;span style=&quot;color:#e6db74&quot;&gt;`&lt;/span&gt; &amp;gt; /tmp/myscript.txt&lt;/pre&gt;
+
+&lt;p&gt;
+   添加到自启动
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ln -s  /root/script/myscript /etc/rc.d/S99myscript&lt;/pre&gt;</content>
+        <category term="Tech/Geek"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>Zerotier笔记</title>
+      <link href="" rel="alternate"></link>
+      <published>Sun, 17 Sep 2023 15:41:40 +0000</published>
+      <updated>Sun, 24 Sep 2023 16:52:48 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/09/zerotier-note.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/09/zerotier-note.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;b&gt;zerotier&lt;/b&gt; 可谓是慕名许久，但之前一直没有太多内网穿透和异地组网的需求，此次准备在外网访问家里NAS部署的部分应用，所以也调研了一些相关的应用，最终选择了 &lt;b&gt;zerotier&lt;/b&gt; 来对我现有的机器进行组网
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;FRP&lt;/b&gt;: 需要将服务器的端口映射出去，不太喜欢这种暴力的方式。我目前的服务基本上只会在 &lt;code&gt;0.0.0.0&lt;/code&gt; 监听80、443等常用端口，其它服务一律监听 &lt;code&gt;127.0.0.1&lt;/code&gt;，通过nginx访问内部的服务
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;DDNS&lt;/b&gt;: 家里的NAS直接暴露在公网，这非常不安全，而且家用宽带无法使用80，443端口，只能使用高位端口
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;ZEROTIER&lt;/b&gt;: 使用 &lt;b&gt;P2P&lt;/b&gt; 的方式对多台服务器进行组网，映射的端口只允许加入组网的设备访问，这在速度和安全性上确实是我所需要的...&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/blockquote&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;相关概念&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;部署教程&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;UI界面&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;Zerotier客户端&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;私有Planet&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;私有Planet服务器加入组网&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.5&quot;&gt;UI和Zerotier分开部署&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;组网教程&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.1&quot;&gt;创建网络&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.2&quot;&gt;加入网络&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.3&quot;&gt;跨网段访问&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.4&quot;&gt;安全限制&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;FAQ&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4.1&quot;&gt;如何修改默认的9993端口?&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;参考资料&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;b&gt;zerotier&lt;/b&gt; 可谓是慕名许久，但之前一直没有太多内网穿透和异地组网的需求，此次准备在外网访问家里NAS部署的部分应用，所以也调研了一些相关的应用，最终选择了 &lt;b&gt;zerotier&lt;/b&gt; 来对我现有的机器进行组网
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;FRP&lt;/b&gt;: 需要将服务器的端口映射出去，不太喜欢这种暴力的方式。我目前的服务基本上只会在 &lt;code&gt;0.0.0.0&lt;/code&gt; 监听80、443等常用端口，其它服务一律监听 &lt;code&gt;127.0.0.1&lt;/code&gt;，通过nginx访问内部的服务
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;DDNS&lt;/b&gt;: 家里的NAS直接暴露在公网，这非常不安全，而且家用宽带无法使用80，443端口，只能使用高位端口
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;ZEROTIER&lt;/b&gt;: 使用 &lt;b&gt;P2P&lt;/b&gt; 的方式对多台服务器进行组网，映射的端口只允许加入组网的设备访问，这在速度和安全性上确实是我所需要的
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;相关概念&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Planet&lt;/b&gt;: 行星服务器，也称根服务器。主要用于管理 &lt;b&gt;zerotier&lt;/b&gt; 客户端的地址信息
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Moon&lt;/b&gt;: 月亮服务器，也称中继服务器、跳转服务器。主要用于当两台设备无法直连时，可以通过Moon中转连接
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Leaf&lt;/b&gt;: 组网使用的设备，可以是一台服务器，一台NAS，甚至一台手机
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;部署教程&lt;/h2&gt;
+&lt;p&gt;
+   现在我有三台设备需要进行组网，一台A在国外， 一台B在国内(腾讯云)，还有一台C在家里(NAS)。我准备将私有Planet部署到机器A，同时机器A也会加入到内网里，A、B、C三台设备可以通过内网相互访问
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.1&quot;&gt;UI界面&lt;/h3&gt;
+&lt;p&gt;
+    以 &lt;code&gt;jonnyan404/zerotier-planet&lt;/code&gt; 为例
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 创建目录
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;mkdir /opt/zerotier /opt/ztncui&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 部署服务
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name ztncui --restart always \
+-p 4000:4000 -p 9993:9993/tcp -p 9993:9993/udp \
+-e MYADDR={服务器公网IP} \
+-e HTTP_PORT=4000 \
+-e HTTP_ALL_INTERFACES=yes \
+-e ZTNCUI_PASSWD=mrdoc.fun \
+-v /opt/zerotier:/var/lib/zerotier-one \
+-v /opt/ztncui:/opt/key-networks/ztncui/etc \
+keynetworks/ztncui&lt;/pre&gt;
+&lt;p&gt;
+       然后就可以通过 &lt;code&gt;服务器公网IP:4000&lt;/code&gt; 访问UI管理界面，默认的用户名和密码: &lt;code&gt;admin,mrdoc.fun&lt;/code&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;heading-2.2&quot;&gt;Zerotier客户端&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Linux&lt;/b&gt;: 部署方式很简单，注意区分 &lt;b&gt;host网络&lt;/b&gt; 和 &lt;b&gt;bridge网络&lt;/b&gt;，这两个在安全性有所区别(具体在下面讲)
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run --name zerotier -d \
+--restart always \
+--net host \
+--cap-add NET_ADMIN \
+--device /dev/net/tun \
+-v /opt/zerotier:/var/lib/zerotier-one \
+zerotier/zerotier:latest&lt;/pre&gt;
+&lt;p&gt;
+      如果使用私有Planet，记得替换 &lt;code&gt;/opt/zerotier/planet&lt;/code&gt; 文件
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;Android&lt;/b&gt;: 推荐使用 &lt;a href=&quot;https://github.com/kaaass/ZerotierFix&quot;&gt;https://github.com/kaaass/ZerotierFix&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;heading-2.3&quot;&gt;私有Planet&lt;/h3&gt;
+&lt;p&gt;
+    默认的Planet信息是硬编码在zertier代码里，如果安装好客户端后会在 &lt;code&gt;zerotier-cli peers&lt;/code&gt; 看到官方的Planet服务器。
+&lt;/p&gt;
+
+&lt;p&gt;
+    而部署私有的Planet的目的:
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 官方的服务器基本都位于国外或者香港，服务连通性无法得到保证
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 安全性。试想一个陌生的设备加入到网络，而这个设备的许可只需要得到官方的认证即可。当然，官方是基本不可能发生这样的情况，但如果有一个完全控制的网络，何乐而不为呢
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+    如何生成私有Planet文件?
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;git clone https://github.com/jonnyan404/zerotier-planet --depth=1
+cd zerotier-planet
+docker cp mkmoonworld-x86_64 ztncui:/tmp
+docker cp patch.sh ztncui:/tmp
+docker exec -it ztncui bash /tmp/patch.sh
+docker restart ztncui&lt;/pre&gt;
+&lt;p&gt;
+    这样就会在挂载目录 &lt;code&gt;/opt/zerotier&lt;/code&gt; 下生成一个新的 &lt;b&gt;planet&lt;/b&gt; 文件，记得下载并备份。&lt;b&gt;所有加入组网的客户端都需要替换该文件&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.4&quot;&gt;私有Planet服务器加入组网&lt;/h3&gt;
+&lt;p&gt;
+    如果按照上述部署流程也可以正常使用 &lt;code&gt;zerotier&lt;/code&gt; 组网，&lt;b&gt;但是&lt;/b&gt;，如果想要把部署了私有Planet的设备也加入到内网，貌似没有一篇文章说到。 所以我专门研究了一下，想要把私有Planet的机器也加入到内网，大概是可以分为下面几种方式:
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ (&lt;b&gt;不推荐&lt;/b&gt;) 修改ztncui内部zerotier的默认端口9993 &lt;br/&gt;
+       在 &lt;code&gt;/opt/zerotier&lt;/code&gt; 目录下添加一个 &lt;code&gt;local.conf&lt;/code&gt;，并设置
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;settings&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;primaryPort&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;9995&lt;/span&gt;
+    }
+}&lt;/pre&gt;
+&lt;p&gt;
+       然后修改 &lt;code&gt;patch.sh&lt;/code&gt; 文件里的 &lt;code&gt;9993&lt;/code&gt; 端口，以及 &lt;code&gt;/start_ztncui.sh&lt;/code&gt; 添加一行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;echo &amp;#34;ZT_ADDR=localhost:$ZT_PORT&amp;#34; &amp;gt; /opt/key-networks/ztncui/.env&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 部署两个zerotier: 除了ztncui容器内部的一个zerotier，再在机器上部署一个客户端，并修改端口，避免端口冲突
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ (&lt;b&gt;推荐&lt;/b&gt;) ztncui镜像的UI和zerotier分开部署&lt;br/&gt;
+       我研究后才发现 &lt;code&gt;ztncui&lt;/code&gt; 的相关镜像把事情弄的很复杂，都把 &lt;code&gt;ztncui&lt;/code&gt; 和 &lt;code&gt;zerotier&lt;/code&gt; 放到同一个镜像，专门去连接 &lt;code&gt;localhost:9993&lt;/code&gt; 。其实是可以把两个镜像分开的，&lt;b&gt;UI&lt;/b&gt; 只做 &lt;b&gt;UI&lt;/b&gt; ，使用 &lt;b&gt;API&lt;/b&gt; 去连接 &lt;b&gt;zerotier&lt;/b&gt; 官方的镜像
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;heading-2.5&quot;&gt;UI和Zerotier分开部署&lt;/h3&gt;
+&lt;p&gt;
+    如果想要自己构建Docker镜像，可以参考 &lt;a href=&quot;https://github.com/honmaple/ztncui-aio&quot;&gt;honmaple/ztncui-aio&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 部署 &lt;b&gt;zerotier&lt;/b&gt; 的客户端(部署过的可以忽略)
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name zerotier --restart always --net=host --cap-add NET_ADMIN --device /dev/net/tun -v /opt/zerotier:/var/lib/zerotier-one zerotier/zerotier:latest&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 部署 &lt;b&gt;UI&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name ztncui --restart always \
+-e MYADDR={服务器IP} \
+-e HTTP_PORT=4000 \
+-e HTTP_ALL_INTERFACES=yes \
+-e ZT_ADDR={zerotier地址, 比如Docker网关:9993} \
+-e ZT_TOKEN={可以为空，但需要挂载zerotier-one的配置路径} \
+-v /opt/ztncui:/opt/ztncui/etc \
+-v /opt/zerotier:/var/lib/zerotier-one \
+-p 4000:4000 \
+honmaple/ztncui:latest&lt;/pre&gt;
+&lt;p&gt;
+       &lt;b&gt;ZT_ADDR&lt;/b&gt;: 由于 &lt;b&gt;zerotier&lt;/b&gt; 和 &lt;b&gt;ztncui&lt;/b&gt; 没有部署在一个容器，所以需要从UI内部访问宿主机的 &lt;b&gt;&lt;b&gt;9993&lt;/b&gt;&lt;/b&gt; 端口，这里可以使用UI容器的网关访问，比如UI容器的IP是 &lt;b&gt;&lt;b&gt;172.17.0.12&lt;/b&gt;&lt;/b&gt;，则访问 &lt;b&gt;&lt;b&gt;172.17.0.1&lt;/b&gt;&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+       另外，&lt;b&gt;zerotier&lt;/b&gt; 默认的API接口只允许 &lt;b&gt;&lt;b&gt;127.0.0.1&lt;/b&gt;&lt;/b&gt; 访问，所以需要在挂载目录 &lt;code&gt;/opt/zerotier&lt;/code&gt; 下新建一个 &lt;b&gt;&lt;b&gt;local.conf&lt;/b&gt;&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;settings&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;allowManagementFrom&amp;#34;&lt;/span&gt;: [&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;127.0.0.1/24&amp;#34;&lt;/span&gt;, &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;::1&amp;#34;&lt;/span&gt;, &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;172.17.0.1/24&amp;#34;&lt;/span&gt;]
+    }
+}&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 修改归属的用户和用户组
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec -it zerotier bash
+cd /var/lib/zerotier-one
+chown zerotier-one:zerotier-one local.conf
+exit&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 生成私有Planet文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;git clone https://github.com/honmaple/ztncui-aio --depth=1
+cd ztncui-aio
+docker cp script/mkmoonworld-x86_64 zerotier:/tmp
+docker cp script/patch.sh zerotier:/tmp
+docker exec -it zerotier bash /tmp/patch.sh {服务器IP}&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 重启
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker restart zerotier&lt;/pre&gt;
+&lt;p&gt;
+       这样就能使私有Planet和zerotier客户端共存，让Planet服务器也能加入到内网环境了
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&quot;heading-3&quot;&gt;组网教程&lt;/h2&gt;
+&lt;h3 id=&quot;heading-3.1&quot;&gt;创建网络&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 使用浏览器打开UI管理界面 &lt;code&gt;{服务器公网IP}:4000&lt;/code&gt;，&lt;code&gt;honmaple/ztncui&lt;/code&gt; 默认用户名密码是 &lt;code&gt;admin,password&lt;/code&gt;
+       
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 点击 &lt;code&gt;Add network&lt;/code&gt;，输入一个网络名称，比如 &lt;b&gt;testlab&lt;/b&gt;。然后选择 &lt;code&gt;Easy setup&lt;/code&gt;
+       
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-02.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-02.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 添加一个内网网段，记得这个内网网段不能和需要加入组网的设备网段相同，比如我的设备C网段是 &lt;code&gt;192.168.31.0/24&lt;/code&gt; ，就不能添加该网段，另外Docker所使用的网段 &lt;code&gt;172.0.0.0/8&lt;/code&gt; 也需要避免添加，所以我这里选择 &lt;code&gt;10.8.230.0/24&lt;/code&gt;。&lt;b&gt;不同的设备内网网段不同，请根据实际添加&lt;/b&gt;
+       
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-03.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-03.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;heading-3.2&quot;&gt;加入网络&lt;/h3&gt;
+&lt;p&gt;
+    创建好网络后就会得到一串网络ID，登录到设备，然后使用
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec zerotier zerotier-cli join {网络ID}&lt;/pre&gt;
+
+&lt;p&gt;
+    加入网络，正常情况下会得到
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;200 join OK&lt;/pre&gt;
+&lt;p&gt;
+    刷新管理界面就会出现一个新的成员
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-04.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-04.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+    然后勾选 &lt;b&gt;Authorizerd&lt;/b&gt; 允许加入，再次刷新，就能看到该设备分配了一个新的IP &lt;code&gt;10.8.230.170&lt;/code&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-05.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-05.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    返回设备，可以看到设备多了一个新的IP
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-06.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-06.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-3.3&quot;&gt;跨网段访问&lt;/h3&gt;
+&lt;p&gt;
+    什么是跨网段访问? 比如现在我可以通过 &lt;b&gt;10.8.230.0/24&lt;/b&gt; 访问已经加入组网的设备，但我想要在&lt;b&gt;设备B&lt;/b&gt;上访问我家里的其它设备，但是，我家里设备的网段是 &lt;b&gt;192.168.31.0/24&lt;/b&gt;，正常是无法访问的，只能访问已经加入组网的Nas。这时需要配置静态路由，让设备B访问 &lt;b&gt;192.168.31.0/24&lt;/b&gt; 网段时走zerotier配置好的IP。
+&lt;/p&gt;
+
+&lt;p&gt;
+    如果手动添加就是
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ip route add 192.168.31.0/24 via 10.8.230.170 dev {zerotier建立的网卡}&lt;/pre&gt;
+
+&lt;p&gt;
+    当然，也可以直接使用zerotier管理界面添加，选择 &lt;code&gt;Routes&lt;/code&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-07.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-07.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;b&gt;Target&lt;/b&gt; 输入想要访问的网段：&lt;code&gt;192.168.31.0/24&lt;/code&gt;，&lt;b&gt;Gateway&lt;/b&gt; 输入之前分配的IP：&lt;code&gt;10.8.230.170&lt;/code&gt;。
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/09/zerotier-08.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/09/zerotier-08.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    创建好后可以在设备B上执行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ping 192.168.31.XX(除设备C之外的内网设备IP)&lt;/pre&gt;
+&lt;p&gt;
+    查看网络是否连通
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-3.4&quot;&gt;安全限制&lt;/h3&gt;
+&lt;p&gt;
+    正因为跨网段访问只需要添加一个静态路由，就能访问我家里的其它设备，这无疑是非常不安全的。如果私有Planet服务器遭到入侵，我家里的所有联网设备都会暴露出去，即使加入组网只是其中的一台。基于此原因，我专门调整了一下zerotier的部署方式，不再使用 &lt;b&gt;host网络&lt;/b&gt; 的方式部署，而是创建一个新的Docker网络 &lt;code&gt;zerotier&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker network create --driver=bridge --subnet=192.168.100.0/24 --gateway=192.168.100.1 zerotier&lt;/pre&gt;
+&lt;p&gt;
+    注: &lt;code&gt;192.168.100.0/24&lt;/code&gt; 是一个全新的网段，不要使用172网段
+&lt;/p&gt;
+
+&lt;p&gt;
+    然后删除之前部署的 &lt;b&gt;zerotier&lt;/b&gt; 客户端，并使用 &lt;b&gt;zerotier网络&lt;/b&gt; 重新部署
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker stop zerotier
+docker rm zerotier
+docker run -d --name zerotier --restart always --net zerotier --cap-add NET_ADMIN --device /dev/net/tun -v /opt/zerotier:/var/lib/zerotier-one zerotier/zerotier:latest&lt;/pre&gt;
+&lt;p&gt;
+    细心的朋友应该会发现我这里没有将 &lt;b&gt;9993&lt;/b&gt; 端口映射给宿主机，这是由于我测试发现两台设备只需要其中一台开放 &lt;code&gt;9993&lt;/code&gt; 端口，两台设备之间就能直连。如果两台设备都不开放端口，则会通过开放了端口的其它设备进行跳转，查看 &lt;b&gt;peers&lt;/b&gt; 会看到一直是 &lt;b&gt;RELAY&lt;/b&gt; 状态
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;root@cf5f973bd294:/# zerotier-cli peers
+200 peers
+&amp;lt;ztaddr&amp;gt;   &amp;lt;ver&amp;gt;  &amp;lt;role&amp;gt; &amp;lt;lat&amp;gt; &amp;lt;link&amp;gt;   &amp;lt;lastTX&amp;gt; &amp;lt;lastRX&amp;gt; &amp;lt;path&amp;gt;
+xxxxxxxxx  1.12.1 LEAF      -1 RELAY&lt;/pre&gt;
+
+&lt;p&gt;
+    这时想要从设备B访问我家里其它联网的设备已是不可能，除非突破Docker的限制。而正常情况下，我想要从设备B上访问的是部署在设备C的其它服务(以Docker服务为主)，所以，现在可以添加一个新的路由 &lt;b&gt;192.168.100.0/24&lt;/b&gt; 指向 &lt;b&gt;10.8.230.170&lt;/b&gt;，然后修改其它镜像使用的网络为 &lt;b&gt;zerotier&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --rm --name=test-nginx --net=zerotier nginx:stable-alpine
+docker exec -it test-nginx ip a&lt;/pre&gt;
+
+&lt;p&gt;
+    接着在设备B上执行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ping 192.168.100.3(test-nginx的IP)
+curl 192.168.100.3&lt;/pre&gt;
+
+&lt;p&gt;
+    如果无法访问，需要在Docker所在宿主机上添加路由
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ip route add 10.8.230.0/24 via 192.168.100.2(zerotier客户端的IP)&lt;/pre&gt;
+
+&lt;p&gt;
+    另外，由于Docker的IP可能会发生改变，除创建容器时指定 &lt;code&gt;--ip&lt;/code&gt; 外，还可以将服务的端口映射出去，比如 &lt;b&gt;NasTools&lt;/b&gt; 使用端口为 3000，那么可以在创建容器时指定
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;-p 11300:3000&lt;/pre&gt;
+&lt;p&gt;
+    然后在设备B上访问 &lt;code&gt;192.168.100.1:11300&lt;/code&gt;，即&lt;b&gt;网关地址+映射的端口&lt;/b&gt;，这样就能避免Docker重启后IP发生改变而导致服务异常的情况
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-4&quot;&gt;FAQ&lt;/h2&gt;
+&lt;h3 id=&quot;heading-4.1&quot;&gt;如何修改默认的9993端口?&lt;/h3&gt;
+&lt;p&gt;
+    在 &lt;b&gt;zerotier&lt;/b&gt; 挂载的目录下新建一个 &lt;code&gt;local.conf&lt;/code&gt; 文件，并设置
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;settings&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;primaryPort&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;9995&lt;/span&gt;
+    }
+}&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-5&quot;&gt;参考资料&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;https://github.com/honmaple/ztncui-aio&quot;&gt;https://github.com/honmaple/ztncui-aio&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;https://github.com/jonnyan404/zerotier-planet&quot;&gt;https://github.com/jonnyan404/zerotier-planet&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;https://github.com/zerotier/ZeroTierOne/blob/dev/README.docker.md&quot;&gt;https://github.com/zerotier/ZeroTierOne/blob/dev/README.docker.md&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;https://docs.zerotier.com/zerotier/zerotier.conf/&quot;&gt;https://docs.zerotier.com/zerotier/zerotier.conf/&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+        <category term="Tech/Geek"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>绿联云Nas新版本v3.4.0固件开启SSH</title>
+      <link href="" rel="alternate"></link>
+      <published>Fri, 14 Jul 2023 17:51:50 +0000</published>
+      <updated>Mon, 11 Mar 2024 15:17:54 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+之前老的方式&lt;b&gt;固定前缀加远程协助验证码&lt;/b&gt;在更新到最新版本的&lt;b&gt;v3.4.0&lt;/b&gt;后已经失效，想要开启ssh只能使用另一种方式，也希望绿联云官方在系统更加完善(&lt;b&gt;权限管理、软件卸载&lt;/b&gt;)前不要再继续封堵开启的方式，当然，如果能提供官方的开启方式更好
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;免责声明：本教程所提供的内容仅供学习交流使用，请勿用于商业及非法用途，因此产生的任何法律纠纷均与本人无关！如有侵权，请您联系我，我将立刻删除该内容&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;b&gt;注：此教程可能会造成未知的后果，在此期间所造成的系统风险请自行承担&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;创建随机镜像&lt;/h2&gt;
+&lt;p&gt;
+   首先拉取一个镜像，我这里选择 &lt;code&gt;nginx:stable-alpine&lt;/code&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   然后点击创建容器，存储空间&lt;b&gt;添加一个任意目录&lt;/b&gt;，挂载到 &lt;code&gt;/data&lt;/code&gt; 下...&lt;/p&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;创建随机镜像&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;抓包获取Token&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;手动创建容器&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;修改SSH配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;SSH登录&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-6&quot;&gt;问题排查&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-7&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+之前老的方式&lt;b&gt;固定前缀加远程协助验证码&lt;/b&gt;在更新到最新版本的&lt;b&gt;v3.4.0&lt;/b&gt;后已经失效，想要开启ssh只能使用另一种方式，也希望绿联云官方在系统更加完善(&lt;b&gt;权限管理、软件卸载&lt;/b&gt;)前不要再继续封堵开启的方式，当然，如果能提供官方的开启方式更好
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;免责声明：本教程所提供的内容仅供学习交流使用，请勿用于商业及非法用途，因此产生的任何法律纠纷均与本人无关！如有侵权，请您联系我，我将立刻删除该内容&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;b&gt;注：此教程可能会造成未知的后果，在此期间所造成的系统风险请自行承担&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;创建随机镜像&lt;/h2&gt;
+&lt;p&gt;
+   首先拉取一个镜像，我这里选择 &lt;code&gt;nginx:stable-alpine&lt;/code&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   然后点击创建容器，存储空间&lt;b&gt;添加一个任意目录&lt;/b&gt;，挂载到 &lt;code&gt;/data&lt;/code&gt; 下，&lt;b&gt;其它参数为默认&lt;/b&gt;，然后下一步，先&lt;b&gt;不要点击完成&lt;/b&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;抓包获取Token&lt;/h2&gt;
+&lt;p&gt;
+   打开 &lt;b&gt;wireshark&lt;/b&gt; 进行抓包，输入筛选参数
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ip.dst_host == 192.168.31.65 and http and http.request.method==POST&lt;/pre&gt;
+
+&lt;p&gt;
+   然后返回绿联云，点击完成，这时会在 &lt;b&gt;wireshark&lt;/b&gt; 窗口看到一条HTTP请求
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   点击这条请求，然后 &lt;b&gt;右键 -&amp;gt; Follow -&amp;gt; HTTP Stream&lt;/b&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   这时会看到具体的&lt;b&gt;HTTP请求头和请求参数&lt;/b&gt;，在下方的Find里输入 &lt;code&gt;create&lt;/code&gt; 进行查找，然后将红色内容复制到本地，将请求参数 &lt;code&gt;{&amp;#34;_query&amp;#34;...}&lt;/code&gt; 复制到一个 &lt;b&gt;json&lt;/b&gt; 文件
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   接着修改 &lt;b&gt;json&lt;/b&gt; 文件，找到&lt;b&gt;HostConfig -&amp;gt; Mounts&lt;/b&gt;，将里面的 &lt;b&gt;Source&lt;/b&gt; 参数修改为 &lt;code&gt;/&lt;/code&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;手动创建容器&lt;/h2&gt;
+&lt;p&gt;
+   首先到绿联云删除刚开始创建的容器
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   然后使用命令行手动请求创建容器，其中 &lt;b&gt;ugreen.json&lt;/b&gt; 为抓包获取并修改后的参数文件，请求头保持一致
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   创建完成后，返回绿联云，刷新并查看详情，可以看到绿联系统的根目录已经挂载到容器内部
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-4&quot;&gt;修改SSH配置&lt;/h2&gt;
+&lt;p&gt;
+   使用终端进入Docker内部
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   然后添加公钥到root目录，怎么生成公私钥这里不再叙述。
+   查看sshd的配置，默认是不允许使用公钥匙登录的，所以需要修改 &lt;code&gt;PubkeyAuthentication no&lt;/code&gt; 为 &lt;code&gt;PubkeyAuthentication yes&lt;/code&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+   接着到&lt;b&gt;设备管理 -&amp;gt; 远程协助 -&amp;gt; 开启远程调试功能&lt;/b&gt;，重启sshd就是关闭远程调试然后重新打开
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-5&quot;&gt;SSH登录&lt;/h2&gt;
+&lt;p&gt;
+   最后就可以使用ssh公钥登录绿联云系统了
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-6&quot;&gt;问题排查&lt;/h2&gt;
+&lt;p&gt;
+   如果无法使用ssh公钥登录，可以查看系统的ssh登录日志
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;grep ssh /data/data/nas_server/log/system/*syslog | less&lt;/pre&gt;
+
+&lt;p&gt;
+   如果提示 &lt;code&gt;Authentication refused: bad ownership or modes for directory /root&lt;/code&gt;，则执行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;chmod go-w /data/root&lt;/pre&gt;
+
+&lt;p&gt;
+   如果提示 &lt;code&gt;ssh-rsa: signature algorithm not supported&lt;/code&gt;，则添加下面配置到&lt;b&gt;sshd_config&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;PubkeyAcceptedKeyTypes=+ssh-rsa&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-7&quot;&gt;其它&lt;/h2&gt;
+&lt;p&gt;
+   升级到&lt;b&gt;v3.4.0&lt;/b&gt;后，目前觉得还不错，其中&lt;b&gt;批量重命名，TMDB接口，自定义Hosts&lt;/b&gt;等都是非常有用的功能，也希望绿联能再接再厉，我们这些用户也能和绿联Nas一同成长。
+&lt;/p&gt;
+
+&lt;p&gt;
+   对了，之前文件同步会修改源文件权限的问题已经被修复，&lt;b&gt;Very Good&lt;/b&gt;
+&lt;/p&gt;</content>
+        <category term="Tech/Geek"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>绿联DX4600 Pro虚拟机探索</title>
+      <link href="" rel="alternate"></link>
+      <published>Thu, 06 Jul 2023 00:18:35 +0000</published>
+      <updated>Wed, 15 Nov 2023 15:15:48 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+本次探索源于上次发现可以&lt;b&gt;使用Docker来管理群晖虚拟机&lt;/b&gt;，而绿联本身是自带&lt;b&gt;kvm&lt;/b&gt;内核模块的，但是要等到绿联官方支持虚拟机，又不知道会等到猴年马月。所以我有一个大胆的想法，能否使用Docker搭建一个可以自由管理虚拟机的程序，最起码可以安装一个windows替换掉绿联内置的有着各种限制的迅雷
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;注意：非专业人士请勿模仿，除非你知道什么是KVM，在此期间所造成的系统风险请自行承担&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;虚拟机管理&lt;/h2&gt;
+&lt;p&gt;
+   选择了我之前使用过的 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 来管理 &lt;code&gt;KVM&lt;/code&gt;，说实话，这个管理程序比起威联通群晖这些官方自带确实不太好用，但用于测试还是足够了，如果有更好更方便的推荐请在评论区留言
+&lt;/p&gt;
+
+&lt;p&gt;
+   &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 没有官方的  &lt;code&gt;Docker&lt;/code&gt; 镜像，只能自己编译，虽然它本身带有一个 &lt;b&gt;Dockerfile&lt;/b&gt;，但如果自己构建会遇到各种各样的问题，下面是我遇到的部分问题
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-1.1&quot;&gt;Ubuntu版本问题&lt;/h3&gt;
+&lt;p&gt;
+    &lt;b&gt;retspen...&lt;/b&gt;&lt;/p&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;虚拟机管理&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;Ubuntu版本问题&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;Libvirt安装依赖&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;构建Docker&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;导入镜像&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;ssh登录&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;运行Docker&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;启动libvirtd&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;管理界面&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.1&quot;&gt;创建虚拟机&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+本次探索源于上次发现可以&lt;b&gt;使用Docker来管理群晖虚拟机&lt;/b&gt;，而绿联本身是自带&lt;b&gt;kvm&lt;/b&gt;内核模块的，但是要等到绿联官方支持虚拟机，又不知道会等到猴年马月。所以我有一个大胆的想法，能否使用Docker搭建一个可以自由管理虚拟机的程序，最起码可以安装一个windows替换掉绿联内置的有着各种限制的迅雷
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;注意：非专业人士请勿模仿，除非你知道什么是KVM，在此期间所造成的系统风险请自行承担&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;虚拟机管理&lt;/h2&gt;
+&lt;p&gt;
+   选择了我之前使用过的 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 来管理 &lt;code&gt;KVM&lt;/code&gt;，说实话，这个管理程序比起威联通群晖这些官方自带确实不太好用，但用于测试还是足够了，如果有更好更方便的推荐请在评论区留言
+&lt;/p&gt;
+
+&lt;p&gt;
+   &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 没有官方的  &lt;code&gt;Docker&lt;/code&gt; 镜像，只能自己编译，虽然它本身带有一个 &lt;b&gt;Dockerfile&lt;/b&gt;，但如果自己构建会遇到各种各样的问题，下面是我遇到的部分问题
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-1.1&quot;&gt;Ubuntu版本问题&lt;/h3&gt;
+&lt;p&gt;
+    &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 默认是基于一个 &lt;b&gt;Ubuntu22.04&lt;/b&gt; 的镜像构建，但是，如果自行构建会发现旧版本的 &lt;b&gt;Docker&lt;/b&gt; 和 &lt;b&gt;Ubuntu22.04&lt;/b&gt; 根本不兼容
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 报错一
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;The following signatures couldn&amp;#39;t be verified because the public key is not available: NO_PUBKEY 871920D1991BC93C&lt;/pre&gt;
+&lt;p&gt;
+      搜索了一下，说是可以使用 &lt;code&gt;apt-key&lt;/code&gt; 命令添加公钥解决，实际上
+      
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 报错二
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;/etc/apt/trusted.gpg.d/ubuntu-keyring-2012-cdimage.gpg are ignored as the file is not readable by user &amp;#39;_apt&amp;#39; executing apt-key.&lt;/pre&gt;
+&lt;p&gt;
+      这个报错可以通过&lt;b&gt;删除gpg文件忽略&lt;/b&gt;，但实际上没什么用。
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+    真正的解决方式是&lt;b&gt;升级自身的Docker版本&lt;/b&gt;，最小要到 &lt;code&gt;20.0&lt;/code&gt; 以上，因为我使用的Mac，最新版本的Docker也不过是 &lt;code&gt;19.03.13&lt;/code&gt;，所以没办法使用升级Docker的方式解决，只能降级Ubuntu的版本
+&lt;/p&gt;
+
+&lt;p&gt;
+    一开始我直接把版本降到最熟悉的18.04，但在安装Python库发现部分库的指定版本要求Python3.8，否则找不到指定版本
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    如果使用 &lt;code&gt;apt&lt;/code&gt; 直接安装 &lt;code&gt;Python3.8&lt;/code&gt;，会发现有两个问题：
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 其中一个依赖 &lt;code&gt;python3-lxml&lt;/code&gt; 没有3.8的版本，直接安装会同时安装 &lt;code&gt;Python3.6&lt;/code&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;code&gt;venv&lt;/code&gt; 无法使用
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+    后面甚至想要忽略Python版本强行安装
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;pip3 install -r conf/requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com --ignore-requires-python&lt;/pre&gt;
+
+&lt;p&gt;
+    但仍然是一堆报错
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    所以再次测试升级到 &lt;b&gt;20.04&lt;/b&gt; 的版本，还好 &lt;b&gt;20.04&lt;/b&gt; 安装的Python3正是 &lt;code&gt;Python3.8&lt;/code&gt;，故此正常
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-1.2&quot;&gt;Libvirt安装依赖&lt;/h3&gt;
+&lt;p&gt;
+    由于 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 是依赖libvirt对虚拟机进行管理的，而绿联使用的系统本身没有libvirt进程，所以我将在Docker内部安装，在此期间也遇到了部分问题，下面对部分依赖包统一说明一下
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;libvirt-daemon&lt;/b&gt; &lt;br/&gt;
+      libvirtd的进程包
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;libvirt-daemon-system&lt;/b&gt; &lt;br/&gt;
+      libvirtd的默认配置包，如果不安装需要手动编写配置
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;iptables&lt;/b&gt; &lt;br/&gt;
+      libvirtd的依赖，不安装启动libvirtd时会报错
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;dnsmasq&lt;/b&gt; &lt;br/&gt;
+      libvirtd的依赖，不安装kvm的默认网络无法启动，导致后续建立的虚拟机无法联网
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;qemu-kvm&lt;/b&gt; &lt;br/&gt;
+      不安装导致后续新建虚拟机时可选的架构和芯片组为空
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;qemu-utils&lt;/b&gt; &lt;br/&gt;
+      不安装导致虚拟机无法使用qcow2，只能使用raw格式
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;virt-manager(可选)&lt;/b&gt; &lt;br/&gt;
+      通过命令行管理虚拟机
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;构建Docker&lt;/h2&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   修改完 &lt;b&gt;Ubuntu版本&lt;/b&gt; 和添加 &lt;b&gt;KVM所需依赖&lt;/b&gt; 后，就能成功构建Docker(实际构建大小在&lt;b&gt;1.4G&lt;/b&gt;左右)。
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.1&quot;&gt;导入镜像&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 首先先导出镜像
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker save -o webvirtcloud.tar webvirtcloud:test-2&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 上传到绿联Nas，可以同时上传后面创建虚拟机所用的iso文件
+       
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 打开绿联Docker，在镜像管理里选择从设备导入镜像
+       
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;heading-2.2&quot;&gt;ssh登录&lt;/h3&gt;
+&lt;p&gt;
+    老传统了，这里就不再过多叙述，具体可看 &lt;del&gt;&lt;a href=&quot;https://honmaple.me/articles/2023/06/绿联DX4600%20Pro禁用迅雷和中国移动云盘进程.html&quot;&gt;绿联DX4600 Pro禁用迅雷和中国移动云盘进程&lt;/a&gt;&lt;/del&gt; &lt;a href=&quot;https://honmaple.me/articles/2023/07/ugreen-nas-open-ssh.html&quot;&gt;绿联云Nas新版本v3.4.0固件开启SSH&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.3&quot;&gt;运行Docker&lt;/h3&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run --rm -p 8088:80 -p 6080:6080 --device=/dev/kvm --privileged webvirtcloud:test-2&lt;/pre&gt;
+
+&lt;p&gt;
+    &lt;code&gt;8088&lt;/code&gt; 是 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 界面端口，启动后可以通过 &lt;code&gt;NasIP:8088&lt;/code&gt; 访问，&lt;code&gt;6080&lt;/code&gt; 是 &lt;b&gt;VNC&lt;/b&gt; 端口，启动虚拟机后可以直接使用浏览器访问
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-08.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-08.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.4&quot;&gt;启动libvirtd&lt;/h3&gt;
+&lt;p&gt;
+    由于我只修改了Dockerfile里的依赖，所以&lt;b&gt;libvirtd&lt;/b&gt;只能手动启动，如果想要自动启动的可以添加启动脚本到 &lt;code&gt;/etc/service&lt;/code&gt; 目录
+&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 进入&lt;b&gt;Docker内部&lt;/b&gt;：
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec -it {镜像名} bash&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 修改&lt;b&gt;配置文件&lt;/b&gt;: 使用 vi 打开 &lt;code&gt;/etc/libvirt/libvirtd.conf&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#f92672&quot;&gt;- unix_sock_group = &amp;#34;libvirt&amp;#34;
+&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+ unix_sock_group = &amp;#34;www-data&amp;#34;
+&lt;/span&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 启动&lt;b&gt;libvirtd&lt;/b&gt;:
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;libvirtd -d&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 启动&lt;b&gt;virtlogd&lt;/b&gt;：
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;virtlogd -d&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&quot;heading-3&quot;&gt;管理界面&lt;/h2&gt;
+&lt;p&gt;
+   通过 &lt;code&gt;NasIP:8088&lt;/code&gt; 访问管理界面，默认用户名和密码都是 &lt;b&gt;admin&lt;/b&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-09.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-09.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   登录成功后，点击&lt;b&gt;计算节点 -&amp;gt; 本地&lt;/b&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-10.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-10.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   然后添加一个&lt;b&gt;本地节点&lt;/b&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-11.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-11.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   添加后正常情况就会显示&lt;b&gt;已连接&lt;/b&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-12.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-12.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   接着继续点击右边的&lt;b&gt;眼睛图案 -&amp;gt; 选择存储 -&amp;gt; 右上角的+号&lt;/b&gt;，添加两个存储
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-13.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-13.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ test: 路径为 &lt;code&gt;/var/lib/libvirt/images&lt;/code&gt;，用于存放虚拟机文件
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ iso:  路径为 &lt;code&gt;/var/lib/libvirt/iso&lt;/code&gt;，存放iso镜像文件
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+   然后返回绿联Nas的ssh界面，复制iso文件到Docker内部，或者在执行Docker命令时使用 &lt;code&gt;-v /mnt/xxxx/Docker/webvirtcloud/iso:/var/lib/libvirt/iso&lt;/code&gt; 将文件提前挂载到Docker内部
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-14.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-14.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-3.1&quot;&gt;创建虚拟机&lt;/h3&gt;
+&lt;p&gt;
+    一切准备就绪，现在我们就能创建虚拟机了。
+&lt;/p&gt;
+
+&lt;p&gt;
+    选择&lt;b&gt;实例 -&amp;gt; 创建&lt;/b&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-15.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-15.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    点击下一个，注意：&lt;b&gt;webvirtcloud&lt;/b&gt; 这里的操作有些反人类，最好选择&lt;b&gt;规格 -&amp;gt; 应用&lt;/b&gt;，不要使用自定义和模版，否则无法挂载&lt;b&gt;CD-ROM&lt;/b&gt;。我这里选择30G的mini，存储一定要改成 &lt;b&gt;test&lt;/b&gt;，然后创建
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-16.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-16.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-17.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-17.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    点击创建后会到实例页面，先不要启动，到&lt;b&gt;设置 -&amp;gt; 磁盘&lt;/b&gt;挂载想要安装的系统iso文件，然后在旁边的启动顺序里确认&lt;b&gt;启动第一项&lt;/b&gt;是iso所在的磁盘
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-18.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-18.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-19.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-19.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-20.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-20.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    接着就可以开机了，开机后可以点击&lt;b&gt;访问 -&amp;gt; 控制台&lt;/b&gt;使用VNC打开系统安装界面，安装完成后记得重新调整启动顺序以及卸载iso镜像
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-21.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-21.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    至此，使用第三方Docker搭建的绿联Nas虚拟机管理也就完成了，如果急需使用虚拟机功能，又想保留绿联Nas的系统，随绿联一起“成长”的用户可以利用此功能创建虚拟机，如果不着急的可以等官方的实现
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-4&quot;&gt;其它&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 没有修改libvirtd里的 &lt;code&gt;unix_sock_group&lt;/code&gt; 配置为 &lt;b&gt;www-data&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;Failed to connect socket to &amp;#39;/var/run/libvirt/libvirt-sock&amp;#39;: Permission denied&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ Docker内部(不是绿联系统)执行 &lt;code&gt;chmod 666 /dev/kvm&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;libvirt 错误- internal error: process exited while connecting to monitor: Could not access KVM kernel module: Permission denied 2023-07-05T16:17:57.942238Z qemu-system-x86_64: failed to initialize KVM: Permission denied&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 未安装&lt;b&gt;dnsmasq&lt;/b&gt;，如果手动安装，使用 &lt;code&gt;virsh net-start default&lt;/code&gt; 手动启动
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;libbvirt 错误- Requested operation is not valid: network &amp;#39;default&amp;#39; is not active&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 未安装&lt;b&gt;qemu-utils&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;internal error: creation of non-raw file images is not supported without qemu-img.&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+   注意：文章中并未修改绿联Nas本身的系统，所有的安装包和修改文件配置都是在Docker内部进行
+&lt;/p&gt;</content>
+        <category term="Tech/Geek"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>绿联DX4600 Pro安装一个超酷超帅的Docker</title>
+      <link href="" rel="alternate"></link>
+      <published>Tue, 04 Jul 2023 12:37:02 +0000</published>
+      <updated>Tue, 04 Jul 2023 13:25:46 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro安装一个超酷超帅的Docker.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/07/绿联DX4600 Pro安装一个超酷超帅的Docker.html</id>
+      <summary type="html">
+&lt;p&gt;
+绿联Nas的系统真是一言难尽，所以最近几天我都在寻找一种安装群晖的教程，也知晓群晖其实也没那么容易安装，主要是安装群晖后，有很大的概率&lt;b&gt;导致机器指示灯，风扇，甚至M.2固态失效&lt;/b&gt;，也正因为此，虽然已经整理好了安装的教程，但迟迟没有动手，此次在网上搜寻教程时无意中发现了一个超酷超帅的Docker镜像，安装后真的会惊叹为何会有如此棒的东西，它就是
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;a href=&quot;https://github.com/kroese/virtual-dsm&quot;&gt;kroese/virtual-dsm&lt;/a&gt; ，一个利用Docker管理群晖虚拟机的镜像，对于没有虚拟机功能的绿联Nas来说，无疑是非常棒地既可以体验本地群晖系统，又不用刷机改引导，格式化硬盘的方法
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;安装教程&lt;/h2&gt;
+&lt;p&gt;
+   安装流程和之前的已有的一篇文章相差不大 &lt;a href=&quot;https://post.smzdm.com/p/an36zmz2/&quot;&gt;绿联DX4600安装docker黑群晖&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   当然这里也会写上部分我自己特别折腾的记录，大家可以放心食用
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-1.1&quot;&gt;下载镜像&lt;/h3&gt;
+&lt;p&gt;
+    打开绿联Docker，输入 &lt;code&gt;kroese/virtual-dsm&lt;/code&gt; 下载镜像
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-1.2&quot;&gt;使用ssh登录到后台...&lt;/h3&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;安装教程&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;下载镜像&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;使用ssh登录到后台&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3&quot;&gt;使用Docker命令行安装&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;折腾教程&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;群晖本地IP(macvlan)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;webdav挂载&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;
+绿联Nas的系统真是一言难尽，所以最近几天我都在寻找一种安装群晖的教程，也知晓群晖其实也没那么容易安装，主要是安装群晖后，有很大的概率&lt;b&gt;导致机器指示灯，风扇，甚至M.2固态失效&lt;/b&gt;，也正因为此，虽然已经整理好了安装的教程，但迟迟没有动手，此次在网上搜寻教程时无意中发现了一个超酷超帅的Docker镜像，安装后真的会惊叹为何会有如此棒的东西，它就是
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;a href=&quot;https://github.com/kroese/virtual-dsm&quot;&gt;kroese/virtual-dsm&lt;/a&gt; ，一个利用Docker管理群晖虚拟机的镜像，对于没有虚拟机功能的绿联Nas来说，无疑是非常棒地既可以体验本地群晖系统，又不用刷机改引导，格式化硬盘的方法
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;安装教程&lt;/h2&gt;
+&lt;p&gt;
+   安装流程和之前的已有的一篇文章相差不大 &lt;a href=&quot;https://post.smzdm.com/p/an36zmz2/&quot;&gt;绿联DX4600安装docker黑群晖&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   当然这里也会写上部分我自己特别折腾的记录，大家可以放心食用
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-1.1&quot;&gt;下载镜像&lt;/h3&gt;
+&lt;p&gt;
+    打开绿联Docker，输入 &lt;code&gt;kroese/virtual-dsm&lt;/code&gt; 下载镜像
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-1.2&quot;&gt;使用ssh登录到后台&lt;/h3&gt;
+&lt;p&gt;
+    其中登录教程在我之前的一篇文章中有介绍 &lt;a href=&quot;https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html&quot;&gt;绿联DX4600 Pro禁用迅雷和中国移动云盘进程&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    这里就再简单介绍一下:
+&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 开启远程协助，记住验证码
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 重启机器(注意先保存进行中的任务)
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 使用 &lt;b&gt;ssh&lt;/b&gt; 客户端登录，端口 &lt;b&gt;922&lt;/b&gt;，密码 &lt;code&gt;L#W$%W1uGa&lt;/code&gt; 加上验证码，用户 &lt;b&gt;root&lt;/b&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;heading-1.3&quot;&gt;使用Docker命令行安装&lt;/h3&gt;
+&lt;p&gt;
+    首先需要验证挂载的目录，我这里是找了两个已经创建并挂载了本地存储的镜像，使用
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker inspect --format &amp;#34;{{json .HostConfig.Mounts}}&amp;#34; 镜像名&lt;/pre&gt;
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    查看挂载的实际目录，可以看出Docker实际挂载的目录由
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;/mnt/media_rw/ + 硬盘UUID + /.ugreen_nas/ + 用户ID + 硬盘目录&lt;/pre&gt;
+&lt;p&gt;
+    这几部分构成，那么就好办了，首先创建一个&lt;b&gt;DSM的目录&lt;/b&gt;，用于存放群晖虚拟机文件，我这里选择&lt;b&gt;固态硬盘&lt;/b&gt;，避免使用机械硬盘&lt;b&gt;导致硬盘无法休眠&lt;/b&gt;，如果选择其它硬盘，需要先创建一个没什么用的Docker挂载目录，然后使用 &lt;code&gt;inspect&lt;/code&gt; 找到实际的路径
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    建立好目录后使用命令行安装镜像
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    其中的几个参数
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;DISK_SIZE=100G&lt;/b&gt;: 分配给群晖虚拟机100G的磁盘空间，这部分空间会作为&lt;b&gt;存储1&lt;/b&gt;使用
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;ALLOCATE=N&lt;/b&gt;: 是否预分配100G的大小(Y)，还是按照实际大小展示在绿联Nas上(N)(这个参数貌似没生效)
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;CPU_CORES=2&lt;/b&gt;: 分配给虚拟机的核数，我的是 &lt;b&gt;n6005&lt;/b&gt;，四核，所以分了两核给群晖
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;RAM_SIZE=8192M&lt;/b&gt;: 分配给虚拟机的内存大小
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;--network 实际的网络&lt;/b&gt;: 也可以不写，使用默认的 &lt;code&gt;Docker bridge&lt;/code&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+    创建完成后使用 &lt;code&gt;docker logs -f DSM&lt;/code&gt; 查看日志，直到日志显示
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    在此期间，也可以打开浏览器，使用绿联Nas &lt;b&gt;IP+端口5000&lt;/b&gt; 进行访问
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    然后就是正常的群晖初始化，至此，想要体验本地群晖系统的就可以行动了
+&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;b&gt;等等，后面还有&lt;/b&gt;。。。
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;折腾教程&lt;/h2&gt;
+&lt;h3 id=&quot;heading-2.1&quot;&gt;群晖本地IP(macvlan)&lt;/h3&gt;
+&lt;p&gt;
+    按照GitHub上的教程，我原本想要配置一个和局域网内其它设备相同网段的IP给群晖虚拟机，所以我创建了一个基于 &lt;code&gt;macvlan&lt;/code&gt; 的网络
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker network create -d macvlan --subnet=192.168.31.0/24 --gateway=192.168.31.1 --ip-range=192.168.31.66/32 -o parent=eth0  dsmnet&lt;/pre&gt;
+
+&lt;p&gt;
+    然后使用 &lt;code&gt;--network dsmnet&lt;/code&gt; 重新创建Docker，结果怎么着，报错了
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker: Error response from daemon: failed to create the macvlan port: operation not supported.&lt;/pre&gt;
+
+&lt;p&gt;
+    第一眼我还觉得这是由于docker打包脚本里的 &lt;code&gt;EXPOSE&lt;/code&gt; 的锅，甚至去搜索能否禁用该操作，结果也是显而易见的，什么都没找到。后来仔细看了一下报错信息：&lt;code&gt;operation not supported&lt;/code&gt;
+    好吧，确认一下 &lt;code&gt;macvlan&lt;/code&gt; 相关的模块是否被加载
+&lt;/p&gt;
+
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;lsmod | grep macvlan&lt;/pre&gt;
+
+&lt;p&gt;
+    果然，&lt;b&gt;绿联Nas默认是没有macvlan模块的&lt;/b&gt;，所以想用绿联Nas部署一个openwrt旁路由的可以先歇了。那么，我能否自己安装macvlan模块呢？
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-08.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-08.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    对不起，打扰了。不对，内核版本不符，那么我去下载一个和内核版本相符的文件，使用 &lt;b&gt;uname -r&lt;/b&gt; 看一下绿联用的版本
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;5.10.120&lt;/pre&gt;
+
+&lt;p&gt;
+    我直接去官方库里找，还好找到了，同样使用的 &lt;b&gt;5.10.120-1&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;wget https://downloads.openwrt.org/releases/22.03.0-rc4/targets/x86/64/packages/kmod-macvlan_5.10.120-1_x86_64.ipk&lt;/pre&gt;
+
+&lt;p&gt;
+    继续安装，结果还是一样
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-09.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-09.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+    因为我对openwrt不太熟悉，实在进行不下去了，&lt;b&gt;只好放弃&lt;/b&gt;。不过也能看出绿联还是编译了一些属于自己的东西的，没有直接使用默认的openwrt内核，不过现在大概只能等绿联自己升级固件来默认支持macvlan了，或者有没有大佬能够解答一下这个问题
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.2&quot;&gt;webdav挂载&lt;/h3&gt;
+&lt;p&gt;
+    因为docker安装的群晖无法直接使用插入的硬盘，甚至不能映射某个目录到群晖虚拟机，所以如果想用群晖来操作绿联Nas上面的文件，只能通过网络挂载
+&lt;/p&gt;
+
+&lt;p&gt;
+    绿联本身支持的网络挂载有限，不支持&lt;code&gt;NFS&lt;/code&gt;，但是还好可以支持&lt;code&gt;webdav&lt;/code&gt;和&lt;code&gt;ftp&lt;/code&gt;，那么可以去群晖web管理界面，打开 &lt;b&gt;file station -&amp;gt; 工具 -&amp;gt; 远程连接 -&amp;gt; 连接设置 -&amp;gt; ftp/webdav&lt;/b&gt; 进行配置
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-10.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-10.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-11.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-11.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    你以为我要说的就这，这不是&lt;b&gt;显而易见，浅显易懂，入口即化&lt;/b&gt;的吗？实际上，除了&lt;code&gt;ftp&lt;/code&gt;可以正常挂载外，&lt;code&gt;webdav&lt;/code&gt;却是死活挂载不了，总是提示&lt;b&gt;连接被服务器拒绝&lt;/b&gt;，搞得我还以为绿联是不是连一个基础的webdav都没做好，但我用我的mac连接又可以正常挂载，差点把我整emo
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-12.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-12.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    我可以确认我的配置是对的，那到底是哪里出了问题，打开群晖的&lt;b&gt;ssh&lt;/b&gt;，也确认了是可以正常和宿主机通信的
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-13.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-13.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    最后搞得实在没办法了，抓包吧，还好群晖默认已经安装了&lt;b&gt;tcpdump&lt;/b&gt;，只需要生成&lt;b&gt;pcap&lt;/b&gt;文件就行
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;tcpdump -i eth0 host 192.168.31.65 -w ugreen/webdav.pcap&lt;/pre&gt;
+
+&lt;p&gt;
+    终端运行抓包命令，另一边在群晖界面进行添加webdav的操作，等待再次提示连接被服务器拒绝后，再等待5s，暂停抓包，然后把 &lt;b&gt;webdav.pcap&lt;/b&gt; 下载到本地，使用 &lt;b&gt;wireshark&lt;/b&gt; 查看
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-14.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-14.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    乍一看没什么问题，都是正常的&lt;b&gt;DNS查询&lt;/b&gt;和&lt;b&gt;TCP握手&lt;/b&gt;，可仔细一看，怎么会&lt;b&gt;多了一个斜杆&lt;/b&gt;，而且服务端返回了401错误
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-15.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-15.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    原来群晖挂载webdav的路径&lt;b&gt;一定不能使用斜杆开头&lt;/b&gt;，&lt;b&gt;一定不能使用斜杆开头&lt;/b&gt;，&lt;b&gt;一定不能使用斜杆开头&lt;/b&gt;，重要的事情说三遍，需要把 &lt;code&gt;/dav/share/&lt;/code&gt; 改成 &lt;code&gt;dav/share/&lt;/code&gt; (注意，绿联webdav路径后必须有一个斜杆)
+&lt;/p&gt;
+
+&lt;p&gt;
+    至此，webdav挂载也ok了
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;其它&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 在使用 &lt;b&gt;非macvlan&lt;/b&gt; 网络创建的群晖系统里内置的 &lt;b&gt;IP 20.20.20.21&lt;/b&gt; 以及 &lt;b&gt;网关20.20.20.1&lt;/b&gt; 是不能修改的，修改后可能会导致无法从浏览器访问群晖
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 可以修改DNS服务为&lt;b&gt;局域网网关&lt;/b&gt;或者&lt;b&gt;自建DNS的IP&lt;/b&gt;，修改后记得重启群晖系统
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 功耗，启动 &lt;code&gt;virtual-dsm&lt;/code&gt; 前我的机器功耗大概是&lt;b&gt;18W&lt;/b&gt;，启动后在&lt;b&gt;26W&lt;/b&gt;左右，一段时间后又会变成&lt;b&gt;19W&lt;/b&gt;，这应该和系统内运行的任务有关
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;</content>
+        <category term="Tech/Geek"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>重大BUG——绿联NAS用户暂时不要使用文件同步功能</title>
+      <link href="" rel="alternate"></link>
+      <published>Tue, 27 Jun 2023 22:58:05 +0000</published>
+      <updated>Tue, 27 Jun 2023 23:09:58 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/06/重大BUG——绿联NAS用户暂时不要使用文件同步功能.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/06/重大BUG——绿联NAS用户暂时不要使用文件同步功能.html</id>
+      <summary type="html">
+&lt;p&gt;
+前不久 &lt;b&gt;618&lt;/b&gt; 入手了一个&lt;b&gt;绿联 DX4600 Pro&lt;/b&gt;，差不多用了快一个月，具体吐槽的点就不说了，毕竟平时 &lt;b&gt;Docker&lt;/b&gt; 用的比较多，自带的应用只能说能用，昨天测试了一下文件同步和时间机器的功能，却无意中发现了一个&lt;b&gt;重大BUG&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+绿联的文件同步会修改本地源文件的权限，本地文件原来是 &lt;b&gt;644&lt;/b&gt; 的权限，使用文件同步会被直接修改成 &lt;b&gt;755&lt;/b&gt;，还好我只测试了一个目录，而且这个目录使用了Git进行管理，可以快速恢复，如果是整机备份并且没有用Git或者其它版本系统进行管理的话，我只能说，你们有福了，一个文件一个文件地恢复吧
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;复现步骤：&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;本地创建一个测试目录&lt;/h2&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;客户端文件同步里添加该目录&lt;/h2&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   设置完成后可以看到原始目录下会多出几个目录，这个不用管
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;h2 id=&quot;heading-3&quot;&gt;修改文件并等待文件同步完成&lt;/h2&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   这时会发现&lt;b&gt;无论修改多少次...&lt;/b&gt;&lt;/p&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;本地创建一个测试目录&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;客户端文件同步里添加该目录&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;修改文件并等待文件同步完成&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;
+前不久 &lt;b&gt;618&lt;/b&gt; 入手了一个&lt;b&gt;绿联 DX4600 Pro&lt;/b&gt;，差不多用了快一个月，具体吐槽的点就不说了，毕竟平时 &lt;b&gt;Docker&lt;/b&gt; 用的比较多，自带的应用只能说能用，昨天测试了一下文件同步和时间机器的功能，却无意中发现了一个&lt;b&gt;重大BUG&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+绿联的文件同步会修改本地源文件的权限，本地文件原来是 &lt;b&gt;644&lt;/b&gt; 的权限，使用文件同步会被直接修改成 &lt;b&gt;755&lt;/b&gt;，还好我只测试了一个目录，而且这个目录使用了Git进行管理，可以快速恢复，如果是整机备份并且没有用Git或者其它版本系统进行管理的话，我只能说，你们有福了，一个文件一个文件地恢复吧
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;复现步骤：&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;本地创建一个测试目录&lt;/h2&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;客户端文件同步里添加该目录&lt;/h2&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   设置完成后可以看到原始目录下会多出几个目录，这个不用管
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;h2 id=&quot;heading-3&quot;&gt;修改文件并等待文件同步完成&lt;/h2&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   这时会发现&lt;b&gt;无论修改多少次&lt;/b&gt;，无论是手动刷新还是自动同步，文件权限都不会被修改
+&lt;/p&gt;
+
+&lt;p&gt;
+   但是，如果这时候打开绿联云客户端自带的文件管理，并打开同步的目录(&lt;b&gt;不用打开文件，只打开目录&lt;/b&gt;)，然后手动刷新同步，或者等待自动同步完成，就会发现本地文件的权限已经被更改
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   这么严重的BUG，我觉得真的不应该出现，&lt;b&gt;如果已经使用了文件同步的用户，千万千万不要打开绿联云文件管理里的同步目录&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+   我目前使用的是&lt;b&gt;MacOS v4.3.0 版本&lt;/b&gt;，其它系统暂时不清楚是否有同样的问题
+&lt;/p&gt;</content>
+        <category term="Tech/Geek"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>绿联DX4600 Pro禁用迅雷和中国移动云盘进程</title>
+      <link href="" rel="alternate"></link>
+      <published>Mon, 12 Jun 2023 15:48:46 +0000</published>
+      <updated>Wed, 14 Jun 2023 13:16:43 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+前不久入手了一个绿联的 &lt;b&gt;DX4600Pro&lt;/b&gt; nas, 外观和硬件确实很精致，但同样发现系统也挺简陋的
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;为什么要禁用？&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 对于&lt;b&gt;中国移动云盘&lt;/b&gt;，因为我目前没有使用也暂时不准备使用，但是在任务管理器里可以看到相关进程一直在运行，去了进程眼不见心不烦
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 对于 &lt;b&gt;迅雷下载&lt;/b&gt;，我只能说真的恶心，每个硬盘都要新建一个迅雷下载目录不说，我明明已经是白金会员，但是下载却完全没速度，试用超级会员又能满宽带下载，删又删不掉，只好禁用掉进程
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;禁用流程&lt;/h2&gt;
+&lt;p&gt;
+   &lt;b&gt;注意：禁用服务可能会造成未知的后果，所引发的风险，请自行承担&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.1&quot;&gt;开启远程协助&lt;/h3&gt;
+&lt;p&gt;
+    首先到设备管理开启远程协助，得到验证码
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.2&quot;&gt;ssh登录&lt;/h3&gt;
+&lt;p&gt;
+    我这边使用的是MacOS自带的ssh
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ssh root@192.168.31.65...&lt;/pre&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;为什么要禁用？&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;禁用流程&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;开启远程协助&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;ssh登录&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;禁用迅雷&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;禁用中国移动云盘&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+前不久入手了一个绿联的 &lt;b&gt;DX4600Pro&lt;/b&gt; nas, 外观和硬件确实很精致，但同样发现系统也挺简陋的
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;为什么要禁用？&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 对于&lt;b&gt;中国移动云盘&lt;/b&gt;，因为我目前没有使用也暂时不准备使用，但是在任务管理器里可以看到相关进程一直在运行，去了进程眼不见心不烦
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 对于 &lt;b&gt;迅雷下载&lt;/b&gt;，我只能说真的恶心，每个硬盘都要新建一个迅雷下载目录不说，我明明已经是白金会员，但是下载却完全没速度，试用超级会员又能满宽带下载，删又删不掉，只好禁用掉进程
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;禁用流程&lt;/h2&gt;
+&lt;p&gt;
+   &lt;b&gt;注意：禁用服务可能会造成未知的后果，所引发的风险，请自行承担&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.1&quot;&gt;开启远程协助&lt;/h3&gt;
+&lt;p&gt;
+    首先到设备管理开启远程协助，得到验证码
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.2&quot;&gt;ssh登录&lt;/h3&gt;
+&lt;p&gt;
+    我这边使用的是MacOS自带的ssh
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ssh root@192.168.31.65 -p 922&lt;/pre&gt;
+
+&lt;p&gt;
+    用户默认为&lt;code&gt;root&lt;/code&gt;，端口默认为&lt;code&gt;922&lt;/code&gt;，IP地址可以在设备信息里查看
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    如果提示拒绝连接(&lt;code&gt;ssh: connect to host 192.168.31.65 port 922: Connection refused&lt;/code&gt;)， 则需要重启设备，注意重启前保存运行的任务，重启完成后正常即可登录。
+    ssh登录密码前缀为 &lt;code&gt;L#W$%W1uGa&lt;/code&gt;，后缀为开启远程协助时的验证码，比如验证码是&lt;code&gt;XXX&lt;/code&gt;，则密码为 &lt;code&gt;L#W$%W1uGaXXX&lt;/code&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    登录后可以使用正常的Linux命令，比如查看cpu信息、使用htop查看进程等
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.3&quot;&gt;禁用迅雷&lt;/h3&gt;
+&lt;p&gt;
+    在 &lt;code&gt;/ugreen/thunder/xunlei-pan/&lt;/code&gt; 目录下有两个脚本: &lt;code&gt;start.sh&lt;/code&gt; 和 &lt;code&gt;stop.sh&lt;/code&gt;, 根据文件名称以及查看其内容可以看出 &lt;code&gt;stop.sh&lt;/code&gt; 用于停止迅雷服务，&lt;code&gt;start.sh&lt;/code&gt; 用于开启服务，并且在 &lt;code&gt;start.sh&lt;/code&gt; 里有这么一段
+&lt;/p&gt;
+
+&lt;p&gt;
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+    那么问题就简单了，使用 &lt;b&gt;vi&lt;/b&gt; 修改 &lt;code&gt;/ugreen/thunder/xunlei-pan/start.sh&lt;/code&gt; 的内容，注释掉倒数第二行的代码(在 &lt;code&gt;su - $thunderName&lt;/code&gt; 前加一个 &lt;b&gt;#&lt;/b&gt;)，然后执行 &lt;code&gt;/ugreen/thunder/xunlei-pan/stop.sh&lt;/code&gt;，到任务管理器里查看迅雷进程就消失了且不会重新出现
+&lt;/p&gt;
+
+&lt;h3 id=&quot;heading-2.4&quot;&gt;禁用中国移动云盘&lt;/h3&gt;
+&lt;p&gt;
+    中国移动云盘的启动文件在 &lt;code&gt;/data/nas_server/cmcc_svr&lt;/code&gt;，由于这是个二进制文件，无法修改其内容，原本想去除可执行权限，但测试发现使用 &lt;code&gt;chmod -x /data/nas_server/cmcc_svr&lt;/code&gt; 后会被其他进程恢复, 所以通过修改文件名称来禁用进程
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;cd /data/nas_server/ &amp;amp;&amp;amp; mv cmcc_svr cmcc_svr.backup&lt;/pre&gt;
+&lt;p&gt;
+    然后kill掉原来的进程即可
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ps axuf | grep cmcc | grep -v grep | awk &amp;#39;{printf $2}&amp;#39; | xargs kill -9&lt;/pre&gt;
+
+&lt;p&gt;
+    这样在任务管理器里看不到中国移动云盘的进程，百度网盘同理
+    
+&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;其它&lt;/h2&gt;
+&lt;p&gt;
+   吐槽一下绿联云影院，各种识别错误，把伪恋识别成十二怒汉，十一罗汉也就算了，还把原盘下的花絮识别成错误的影片，识别错也就算了，还不支持多选，只能一个一个地解除匹配信息
+&lt;/p&gt;
+
+&lt;p&gt;
+   绿联系统能用，但确实不太好用，还好 &lt;b&gt;Docker&lt;/b&gt; 用起来还算不错，希望绿联能继续优化，尤其是进程管理、权限管理以及云影院的识别，另外就是坐等大佬出一期刷其它系统的教程
+&lt;/p&gt;</content>
+        <category term="Tech/Geek"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>黑客丛林之旅</title>
+      <link href="" rel="alternate"></link>
+      <published>Tue, 21 Jun 2016 00:00:00 +0000</published>
+      <updated>Tue, 21 Jun 2016 00:00:00 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2016/06/黑客丛林之旅.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2016/06/黑客丛林之旅.html</id>
+      <summary type="html">
+&lt;p&gt;
+无意间看到，试了一下,结果&lt;a href=&quot;http://www.fj543.com/hack/&quot;&gt;http://www.fj543.com/hack/&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h1 id=&quot;heading-1&quot;&gt;第一关&lt;/h1&gt;
+&lt;p&gt;
+  没什么好说的,查看源码
+&lt;/p&gt;
+
+&lt;p&gt;
+  
+&lt;a href=&quot;https://static.honmaple.com/images/2018/08/one_2016-06-21_21-59-19.png?type=show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://static.honmaple.com/images/2018/08/one_2016-06-21_21-59-19.png?type=thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h1 id=&quot;heading-2&quot;&gt;第二关&lt;/h1&gt;
+&lt;p&gt;
+  还是查看源码,结果发现
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;onSubmit=&amp;#34;return chkPassword()&amp;#34;&lt;/pre&gt;
+&lt;p&gt;
+  Ok,f12进入 &lt;b&gt;console&lt;/b&gt;,输入
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;chkPassword&lt;/span&gt;(){
+&lt;span style=&quot;color:#a6e22e&quot;&gt;alert&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;adas&amp;#39;&lt;/span&gt;);
+}
+&lt;/pre&gt;
+&lt;p&gt;
+  覆盖原有js
+&lt;/p&gt;
+
+&lt;h1 id=&quot;heading-3&quot;&gt;第三关&lt;/h1&gt;
+&lt;p&gt;
+  这关我也没想到，后来百度之，原来是cookie的原因
+&lt;/p&gt;
+
+&lt;p&gt;
+  还是进 &lt;b&gt;console...&lt;/b&gt;&lt;/p&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;第一关&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;第二关&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;第三关&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;第四关&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;第五关&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-6&quot;&gt;第六关&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-7&quot;&gt;第七关&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-8&quot;&gt;第八关&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-9&quot;&gt;第九关&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-9.1&quot;&gt;修改 &lt;b&gt;user-agent&lt;/b&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-10&quot;&gt;第十关&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;
+无意间看到，试了一下,结果&lt;a href=&quot;http://www.fj543.com/hack/&quot;&gt;http://www.fj543.com/hack/&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h1 id=&quot;heading-1&quot;&gt;第一关&lt;/h1&gt;
+&lt;p&gt;
+  没什么好说的,查看源码
+&lt;/p&gt;
+
+&lt;p&gt;
+  
+&lt;a href=&quot;https://static.honmaple.com/images/2018/08/one_2016-06-21_21-59-19.png?type=show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://static.honmaple.com/images/2018/08/one_2016-06-21_21-59-19.png?type=thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h1 id=&quot;heading-2&quot;&gt;第二关&lt;/h1&gt;
+&lt;p&gt;
+  还是查看源码,结果发现
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;onSubmit=&amp;#34;return chkPassword()&amp;#34;&lt;/pre&gt;
+&lt;p&gt;
+  Ok,f12进入 &lt;b&gt;console&lt;/b&gt;,输入
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;chkPassword&lt;/span&gt;(){
+&lt;span style=&quot;color:#a6e22e&quot;&gt;alert&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;adas&amp;#39;&lt;/span&gt;);
+}
+&lt;/pre&gt;
+&lt;p&gt;
+  覆盖原有js
+&lt;/p&gt;
+
+&lt;h1 id=&quot;heading-3&quot;&gt;第三关&lt;/h1&gt;
+&lt;p&gt;
+  这关我也没想到，后来百度之，原来是cookie的原因
+&lt;/p&gt;
+
+&lt;p&gt;
+  还是进 &lt;b&gt;console&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;document.&lt;span style=&quot;color:#a6e22e&quot;&gt;cookie&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;login=yes&amp;#34;&lt;/span&gt;
+&lt;/pre&gt;
+
+&lt;h1 id=&quot;heading-4&quot;&gt;第四关&lt;/h1&gt;
+&lt;p&gt;
+  
+&lt;a href=&quot;https://static.honmaple.com/images/2018/08/fourth_2016-06-21_22-01-37.png?type=show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://static.honmaple.com/images/2018/08/fourth_2016-06-21_22-01-37.png?type=thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+  看到这里是不是很熟悉，摩尔斯密码,google一下
+  对应的密码就是 &lt;b&gt;iamok&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h1 id=&quot;heading-5&quot;&gt;第五关&lt;/h1&gt;
+&lt;p&gt;
+  根据提示,密文为成 &lt;b&gt;YmFzZTY0aXNvaw==&lt;/b&gt; 或 &lt;b&gt;ad93c1d102ae60f4&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+  第一个很熟悉为base64加密,第二个为md5加密,解密后的密文为
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;    └──╼ base64 -d
+YmFzZTY0aXNvaw&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;
+&lt;span style=&quot;color:#f92672&quot;&gt;(&lt;/span&gt;C-D&lt;span style=&quot;color:#f92672&quot;&gt;)&lt;/span&gt;base64isok&lt;/pre&gt;
+
+&lt;h1 id=&quot;heading-6&quot;&gt;第六关&lt;/h1&gt;
+&lt;p&gt;
+  what?这是什么,实在是想不出来,百度一下, 原来
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;password = sum(port)&lt;/pre&gt;
+&lt;p&gt;
+  密码为各数据库port之和
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;password = MSSQL(1433)+MySQL(3306)+Oracle(1521) = 6260&lt;/pre&gt;
+
+&lt;h1 id=&quot;heading-7&quot;&gt;第七关&lt;/h1&gt;
+&lt;p&gt;
+  
+&lt;a href=&quot;https://static.honmaple.com/images/2018/08/seven_2016-06-21_22-03-39.png?type=show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://static.honmaple.com/images/2018/08/seven_2016-06-21_22-03-39.png?type=thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+  很明显,考察的是对图片的处理,但是我不会,不会，会....
+&lt;/p&gt;
+
+&lt;p&gt;
+  文本打开,拉到最后面你会发现“爸鼻我们去哪儿”(vim打开乱码,emacs打开还是图片,C-c C-c转换后乱码)
+  feh打开，发现&amp;#34;8b&amp;#34;
+  OK,key应该就是 &lt;b&gt;8bwmqne&lt;/b&gt;
+  （待会儿试试将emacs的编码转成windows的）
+&lt;/p&gt;
+
+&lt;h1 id=&quot;heading-8&quot;&gt;第八关&lt;/h1&gt;
+&lt;p&gt;
+  社工,百度
+&lt;/p&gt;
+
+&lt;p&gt;
+  其实只要右上角，查看作者介绍就能知道
+  吴世昌的弟弟叫吴其昌,网名 &lt;b&gt;fj573&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h1 id=&quot;heading-9&quot;&gt;第九关&lt;/h1&gt;
+&lt;p&gt;
+  &lt;b&gt;提示语&lt;/b&gt; ：使用IE 5.43版本的浏览器访问?level=9token可以得到令牌。(Use IE 5.43 version to browse ?level=9token)
+&lt;/p&gt;
+
+&lt;p&gt;
+  直接访问 &lt;a href=&quot;http://www.fj543.com/hack/?level=9token&quot;&gt;http://www.fj543.com/hack/?level=9token&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+  得到提示:您的浏览器不是IE 5.43版本！(Your browser is not IE 5.43)
+  OK，知道了，这关考察 &lt;b&gt;user-agent&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-9.1&quot;&gt;修改 &lt;b&gt;user-agent&lt;/b&gt;&lt;/h2&gt;
+&lt;p&gt;
+   f12，关闭按钮旁边 &lt;b&gt;More tools&lt;/b&gt; 选择 &lt;b&gt;Network conditions&lt;/b&gt;
+   选择IE7,将MSIE 7.0改成MSIE 5.43.
+   注意:直接点击无法复制,选择Nerwork,刷新后随意点一个查看 &lt;b&gt;Headers&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;h1 id=&quot;heading-10&quot;&gt;第十关&lt;/h1&gt;
+&lt;p&gt;
+  需要下载运行文件，算了
+&lt;/p&gt;</content>
+        <category term="Tech/Geek"></category>
+    </entry>
+</feed>

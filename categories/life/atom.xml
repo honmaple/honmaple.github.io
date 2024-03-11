@@ -5,485 +5,8 @@
   <link href="https://honmaple.me/categories/life/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Tue, 26 Dec 2023 20:58:32 +0000</updated>
+    <updated>Thu, 21 Sep 2023 11:13:21 +0000</updated>
   <id>https://honmaple.me</id>
-    <entry xml:lang="zh">
-      <title>使用Go重写MetingJS的API</title>
-      <link href="" rel="alternate"></link>
-      <published>Tue, 26 Dec 2023 13:23:00 +0000</published>
-      <updated>Tue, 26 Dec 2023 20:58:32 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/12/shi-yong-gozhong-xie-metingjsde-api.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/12/shi-yong-gozhong-xie-metingjsde-api.html</id>
-      <summary type="html">
-&lt;p&gt;
-&lt;b&gt;MetingJS&lt;/b&gt; 是一款通过获取网易云音乐或者QQ音乐等服务的歌单、歌手、歌曲、歌词等信息，然后使用开源HTML5播放器 &lt;b&gt;APlayer&lt;/b&gt; 进行播放的插件。而 &lt;b&gt;MetingJS&lt;/b&gt; 是一段很小的JS代码，它提供了一个默认的API接口：&lt;a href=&quot;https://api.i-meto.com/meting/api&quot;&gt;https://api.i-meto.com/meting/api&lt;/a&gt; , 但很不幸，该接口偶尔会出问题，作者也很久没有回复issue了。
-&lt;/p&gt;
-
-&lt;p&gt;
-现在也有一个开源的 &lt;a href=&quot;https://github.com/injahow/meting-api&quot;&gt;injahow/meting-api&lt;/a&gt;，该服务同样使用PHP编写，我不太懂PHP，我只是想要设置一个缓存，来缓存所有的歌曲信息，而不仅仅是歌单列表，另外是可以支持内存缓存和本地磁盘缓存，而不是直接从本地文件中读取。
-&lt;/p&gt;
-
-&lt;p&gt;
-基于此，与其自己改不是太懂的PHP，说不定会出现一些意想不到的漏洞...&lt;/p&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;功能&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;使用&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;手动部署&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;Docker部署&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;配置说明&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;命令行参数&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.5&quot;&gt;网页端设置&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;演示&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;
-&lt;b&gt;MetingJS&lt;/b&gt; 是一款通过获取网易云音乐或者QQ音乐等服务的歌单、歌手、歌曲、歌词等信息，然后使用开源HTML5播放器 &lt;b&gt;APlayer&lt;/b&gt; 进行播放的插件。而 &lt;b&gt;MetingJS&lt;/b&gt; 是一段很小的JS代码，它提供了一个默认的API接口：&lt;a href=&quot;https://api.i-meto.com/meting/api&quot;&gt;https://api.i-meto.com/meting/api&lt;/a&gt; , 但很不幸，该接口偶尔会出问题，作者也很久没有回复issue了。
-&lt;/p&gt;
-
-&lt;p&gt;
-现在也有一个开源的 &lt;a href=&quot;https://github.com/injahow/meting-api&quot;&gt;injahow/meting-api&lt;/a&gt;，该服务同样使用PHP编写，我不太懂PHP，我只是想要设置一个缓存，来缓存所有的歌曲信息，而不仅仅是歌单列表，另外是可以支持内存缓存和本地磁盘缓存，而不是直接从本地文件中读取。
-&lt;/p&gt;
-
-&lt;p&gt;
-基于此，与其自己改不是太懂的PHP，说不定会出现一些意想不到的漏洞(源自某安全公司多次CTF换来的教训)，不如使用熟悉的Go重写实现，毕竟核心代码也不是太多
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;功能&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 支持网易云音乐，QQ音乐
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 支持新服务接口扩展
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 支持所有请求结果的缓存
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 更方便的配置(环境变量+配置文件)，而不用修改源文件
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 基于 &lt;b&gt;Go&lt;/b&gt; 编写，一次编译，到处运行
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-2&quot;&gt;使用&lt;/h2&gt;
-&lt;h3 id=&quot;heading-2.1&quot;&gt;手动部署&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 下载仓库
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;git clone https://github.com/honmaple/meting-api&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 编译可执行文件
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;go mod download
-go build -o meting-api .&lt;/pre&gt;
-&lt;p&gt;
-      或者使用 &lt;b&gt;Docker&lt;/b&gt; 进行编译, 编译后的文件在 &lt;code&gt;/usr/bin/meting-api&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker build -t meting-api .&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 运行
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api -D&lt;/pre&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;heading-2.2&quot;&gt;Docker部署&lt;/h3&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run --name meting-api --restart=always -d -p 8000:8000 -v /tmp/meting-cache:/opt/meting-api/cache honmaple/meting-api&lt;/pre&gt;
-&lt;h3 id=&quot;heading-2.3&quot;&gt;配置说明&lt;/h3&gt;
-&lt;p&gt;
-    配置可以使用环境变量或者配置文件设置
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 环境变量: 使用 &lt;code&gt;METING_XXXX&lt;/code&gt;, 比如 &lt;code&gt;METING_CACHE_TTL&lt;/code&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 配置文件: 默认使用当前目录下的 &lt;code&gt;config.yaml&lt;/code&gt;, 如果使用 &lt;b&gt;Docker&lt;/b&gt; 部署，需要文件挂载到 &lt;code&gt;/opt/meting-api/config.yaml&lt;/code&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 具体配置:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;# 缓存过期时间&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;cache.ttl&lt;/span&gt;:                  &lt;span style=&quot;color:#ae81ff&quot;&gt;3600&lt;/span&gt;
-&lt;span style=&quot;color:#75715e&quot;&gt;# 缓存路径，设置为空是禁用缓存&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;cache.path&lt;/span&gt;:                 &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;./cache&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#75715e&quot;&gt;# 是否激活缓存&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;cache.enabled&lt;/span&gt;:              &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;
-
-&lt;span style=&quot;color:#75715e&quot;&gt;# 服务监听地址，:8000 表示监听 0.0.0.0:8000&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;server.addr&lt;/span&gt;:                &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;:8000&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#75715e&quot;&gt;# 对外服务地址，比如 https://api.xxxx.com/meting&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;server.host&lt;/span&gt;:                &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
-
-&lt;span style=&quot;color:#75715e&quot;&gt;## cors设置&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;server.cors.allow_headers&lt;/span&gt;:
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;*&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;server.cors.allow_origins&lt;/span&gt;:
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;*&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;server.cors.allow_methods&lt;/span&gt;:
-  - &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;*&amp;#34;&lt;/span&gt;
-
-&lt;span style=&quot;color:#75715e&quot;&gt;# 日志相关, out可选stdout,stderr,file，或者使用|分隔多个，比如stderr|file&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;logger.out&lt;/span&gt;:                 &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;stdout&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#75715e&quot;&gt;# 日志级别&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;logger.level&lt;/span&gt;:               &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;info&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#75715e&quot;&gt;# 日志文件名格式&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;logger.file_format&lt;/span&gt;:         &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;%Y%m%d&amp;#34;&lt;/span&gt;
-&lt;span style=&quot;color:#75715e&quot;&gt;# 日志文件保留数量&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;logger.file_rotation_count&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;3&lt;/span&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;heading-2.4&quot;&gt;命令行参数&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 查看支持的服务
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api --list&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 指定监听地址
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api -a :8001
-./meting-api --addr :8001&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 显示请求记录
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api -D
-./meting-api --debug&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 指定配置文件
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api -c /etc/meting.yaml
-./meting-api --config /etc/meting.yaml&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 显示当前配置
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api config&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 删除指定缓存
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;./meting-api delete-cache &amp;#39;server:netease:type:${type}:id:${id}&amp;#39;&lt;/pre&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;heading-2.5&quot;&gt;网页端设置&lt;/h3&gt;
-&lt;p&gt;
-    其中 &lt;code&gt;http://localhost:8000/&lt;/code&gt; 是对外服务的接口
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;meting-js&lt;/span&gt;
-  &lt;span style=&quot;color:#a6e22e&quot;&gt;server&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;netease&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#a6e22e&quot;&gt;type&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;artist&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#a6e22e&quot;&gt;id&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;6452&amp;#34;&lt;/span&gt;&amp;gt;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;meting-js&lt;/span&gt;&amp;gt;
-&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;type&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;text/javascript&amp;#34;&lt;/span&gt;&amp;gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;var&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;meting_api&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;http://localhost:8000/?server=:server&amp;amp;type=:type&amp;amp;id=:id&amp;amp;auth=:auth&amp;amp;r=:r&amp;#39;&lt;/span&gt;;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt;&amp;gt;
-&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js&amp;#34;&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt;&amp;gt;
-&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js&amp;#34;&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;script&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;演示&lt;/h2&gt;
-   
-  &lt;meting-js server=&quot;netease&quot; type=&quot;playlist&quot; id=&quot;9085878380&quot;&gt;&lt;/meting-js&gt;
-&lt;script type=&quot;text/javascript&quot;&gt;
- if (!shortcodes) {
-     var shortcodes = {};
- }
- if (!shortcodes[&quot;music&quot;] &amp;&amp; document.querySelector(&quot;meting-js&quot;)) {
-     var meting_api = &#39;https://api.honmaple.com/meting?server=:server&amp;type=:type&amp;id=:id&amp;auth=:auth&amp;r=:r&#39;;
-
-     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/APlayer.min.js&quot;, false, true);
-     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/Meting.min.js&quot;, false, true);
-
-     shortcodes.loadCSS(&quot;https://honmaple.me/static/lib/css/APlayer.min.css&quot;);
-     shortcodes.loadCSS(&quot;https://honmaple.me/static/css/aplayer.css&quot;);
- }
- shortcodes[&quot;music&quot;] = true;
-&lt;/script&gt;
-</content>
-        <category term="Life/Coding"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>Snow静态博客处理多图排版</title>
-      <link href="" rel="alternate"></link>
-      <published>Sun, 17 Dec 2023 17:04:52 +0000</published>
-      <updated>Sun, 17 Dec 2023 20:54:41 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/12/snowjing-tai-bo-ke-chu-li-duo-tu-pai-ban.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/12/snowjing-tai-bo-ke-chu-li-duo-tu-pai-ban.html</id>
-      <summary type="html">
-&lt;p&gt;
-事情的缘由是我无意中发现之前写的部分文章里的图片没有渲染出来，才想起之前博客系统改版，从 &lt;b&gt;Pelican&lt;/b&gt; 切换到 &lt;b&gt;Snow&lt;/b&gt; 时竟然忘记了，看了一下原文，大部分都是以下形式
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;row&amp;#34;&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;col-md-4&amp;#34;&lt;/span&gt;&amp;gt;
-    [[https://s.libforest.com/images/pic/西湖/日落(二...&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;解析原始链接&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;并排显示&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;多行显示&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;图片懒加载和点击全屏&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;显示效果&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-6&quot;&gt;参考资料&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;
-事情的缘由是我无意中发现之前写的部分文章里的图片没有渲染出来，才想起之前博客系统改版，从 &lt;b&gt;Pelican&lt;/b&gt; 切换到 &lt;b&gt;Snow&lt;/b&gt; 时竟然忘记了，看了一下原文，大部分都是以下形式
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;row&amp;#34;&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;col-md-4&amp;#34;&lt;/span&gt;&amp;gt;
-    [[https://s.libforest.com/images/pic/西湖/日落(二).jpg]]
-  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;col-md-4&amp;#34;&lt;/span&gt;&amp;gt;
-    [[https://s.libforest.com/images/pic/西湖/日落(三).jpg]]
-  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;col-md-4&amp;#34;&lt;/span&gt;&amp;gt;
-    [[https://s.libforest.com/images/pic/西湖/日落(一).jpg]]
-  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt;&amp;gt;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-&lt;p&gt;
-因为我之前的博客主题使用了 &lt;b&gt;Bootstrap&lt;/b&gt;，为了能够让多张图片并排显示，所以用了 &lt;b&gt;Bootstrap&lt;/b&gt; 里的 &lt;code&gt;.row .col-*&lt;/code&gt;。但前不久移除了全部的 &lt;b&gt;Bootstrap&lt;/b&gt;，现在当然不会生效。另外一点是我之前用的 &lt;b&gt;org mode&lt;/b&gt; 解析器可以直接解析 &lt;b&gt;HTML&lt;/b&gt; 中的链接，但更换了新的解析器 &lt;a href=&quot;https://github.com/honmaple/org-golang&quot;&gt;org-golang&lt;/a&gt; 后，已经无法不能解析HTML中的原始链接
-&lt;/p&gt;
-
-&lt;p&gt;
-此次利用 &lt;b&gt;Snow&lt;/b&gt; 博客系统中的 &lt;b&gt;shortcode&lt;/b&gt; 功能实现多图排版，让图片可以并排显示，多行显示。
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;解析原始链接&lt;/h2&gt;
-&lt;p&gt;
-   首先在主题下创建一个名为 &lt;code&gt;img-layout&lt;/code&gt; 的 &lt;b&gt;shortcode&lt;/b&gt;，比如我使用的主题叫做 &lt;b&gt;snow&lt;/b&gt;，所以在 &lt;code&gt;themes/snow/templates/shortcodes&lt;/code&gt; 目录下创建一个 &lt;code&gt;img-layout.html&lt;/code&gt; 文件，并添加 &lt;code&gt;markdown&lt;/code&gt; 或者 &lt;code&gt;org&lt;/code&gt; 的 &lt;b&gt;filter&lt;/b&gt; 将原始文本解析成HTML
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;img-layout&amp;#34;&lt;/span&gt;&amp;gt;
-  {%- if params.type == &amp;#34;markdown&amp;#34; %}
-  {{ body | markdown | safe }}
-  {%- else %}
-  {{ body | org | safe }}
-  {%- endif %}
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-
-&lt;p&gt;
-   接着修改原始文章
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;#+begin_export html
-&amp;lt;shortcode _name=&amp;#34;img-layout&amp;#34;&amp;gt;
-[[https://s.libforest.com/images/pic/西湖/日落(二).jpg]]
-[[https://s.libforest.com/images/pic/西湖/日落(三).jpg]]
-[[https://s.libforest.com/images/pic/西湖/日落(一).jpg]]
-&amp;lt;/shortcode&amp;gt;
-#+end_export&lt;/pre&gt;
-
-&lt;p&gt;
-   经过修改，原始文章中的内容将会自动渲染成
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;img-layout&amp;#34;&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt;&amp;gt;
-    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;img&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;https://s.libforest.com/images/pic/西湖/日落(二).jpg&amp;#34;&lt;/span&gt; /&amp;gt;
-    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;img&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;https://s.libforest.com/images/pic/西湖/日落(三).jpg&amp;#34;&lt;/span&gt; /&amp;gt;
-    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;img&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;https://s.libforest.com/images/pic/西湖/日落(一).jpg&amp;#34;&lt;/span&gt; /&amp;gt;
-  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt;&amp;gt;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;并排显示&lt;/h2&gt;
-&lt;p&gt;
-   有了固定结构的HTML， 接着就可以添加 &lt;b&gt;css&lt;/b&gt;，使多张图片可以并排显示
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;img-layout&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt; {
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;display&lt;/span&gt;: &lt;span style=&quot;color:#66d9ef&quot;&gt;flex&lt;/span&gt;;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;flex-wrap&lt;/span&gt;: &lt;span style=&quot;color:#66d9ef&quot;&gt;wrap&lt;/span&gt;;
-}
-
-.&lt;span style=&quot;color:#a6e22e&quot;&gt;img-layout&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;img&lt;/span&gt; {
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;width&lt;/span&gt;: &lt;span style=&quot;color:#66d9ef&quot;&gt;auto&lt;/span&gt;;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;min-width&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;max-width&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;100&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;%&lt;/span&gt;;
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;flex&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;10000&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;%&lt;/span&gt;;
-}
-
-&lt;span style=&quot;color:#75715e&quot;&gt;/* 处理手机等设备图片显示问题 */&lt;/span&gt;
-@&lt;span style=&quot;color:#66d9ef&quot;&gt;media&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;screen&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;and&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;max-width&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;600px&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;)&lt;/span&gt; {
-    .&lt;span style=&quot;color:#a6e22e&quot;&gt;img-layout&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;img&lt;/span&gt; {
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;min-width&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;100&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;%&lt;/span&gt;
-    }
-}
-
-&lt;span style=&quot;color:#75715e&quot;&gt;/* 添加图片上下左右间隔 */&lt;/span&gt;
-.&lt;span style=&quot;color:#a6e22e&quot;&gt;img-layout&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt; {
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;margin&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;-0.25&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;rem&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;-0.25&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;rem&lt;/span&gt; &lt;span style=&quot;color:#75715e&quot;&gt;!important&lt;/span&gt;;
-}
-
-.&lt;span style=&quot;color:#a6e22e&quot;&gt;img-layout&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt; {
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;margin&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;0.5&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;rem&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0.25&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;rem&lt;/span&gt; &lt;span style=&quot;color:#75715e&quot;&gt;!important&lt;/span&gt;;
-}&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;多行显示&lt;/h2&gt;
-&lt;p&gt;
-   多行显示可以利用文件解析时每次遇到空行都会生成一个新的段落，比如
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;[[https://s.libforest.com/images/pic/西湖/日落(一).jpg]]
-
-[[https://s.libforest.com/images/pic/西湖/日落(二).jpg]]&lt;/pre&gt;
-&lt;p&gt;
-   就会生成
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;img&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;https://s.libforest.com/images/pic/西湖/日落(一).jpg&amp;#34;&lt;/span&gt; /&amp;gt;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt;&amp;gt;
-&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;img&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;https://s.libforest.com/images/pic/西湖/日落(二).jpg&amp;#34;&lt;/span&gt; /&amp;gt;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;p&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-&lt;p&gt;
-   故如果需要多行显示，只用在多张图片中间添加一个空行即可
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-4&quot;&gt;图片懒加载和点击全屏&lt;/h2&gt;
-&lt;p&gt;
-   之前的图片懒加载和点击全屏的功能我也是利用 &lt;b&gt;Snow&lt;/b&gt; 中的 &lt;b&gt;shortcode&lt;/b&gt; 功能实现的，我在 &lt;code&gt;themes/snow/templates/shortcodes&lt;/code&gt; 目录下建立了一个 &lt;code&gt;img.html&lt;/code&gt; 的文件
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;a&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;href&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{{ params.src }}&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;data-fancybox&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;image&amp;#34;&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;img&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;data-src&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{{ params.src + &amp;#39;-thumb&amp;#39; }}&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;lazyload&amp;#34;&lt;/span&gt; /&amp;gt;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;a&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-&lt;p&gt;
-   这样，文章内所有的 &lt;code&gt;img&lt;/code&gt; 标签的图片都会加上懒加载和点击全屏的功能(基于 &lt;b&gt;lazysizes&lt;/b&gt; 和 &lt;b&gt;fancybox&lt;/b&gt;)
-&lt;/p&gt;
-
-&lt;p&gt;
-   但是，由于 &lt;b&gt;Snow&lt;/b&gt; 中 &lt;b&gt;shortcode&lt;/b&gt; 的实现是一次性遍历 &lt;b&gt;HTML DOM&lt;/b&gt;，无法在一个 &lt;b&gt;shortcode&lt;/b&gt; 内部调用另一个 &lt;b&gt;shortcode&lt;/b&gt;。
-   所幸 &lt;b&gt;Snow&lt;/b&gt; 是我自己写的，思索片刻，我在 &lt;b&gt;shortcode&lt;/b&gt; 实现中加入了三行代码，这样就能在一个 &lt;b&gt;shortcode&lt;/b&gt; 中重复调用其它的 &lt;b&gt;shortcode&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;vars := map[string]interface{}{
-...
-&lt;span style=&quot;color:#a6e22e&quot;&gt;+	&amp;#34;_shortcode&amp;#34;: func(s string) string {
-&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+		return self.shortcode(page, s)
-&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+	},
-&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;&lt;/span&gt;}
-&lt;/pre&gt;
-
-&lt;p&gt;
-   然后修改 &lt;code&gt;img-layout.html&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;img-layout&amp;#34;&lt;/span&gt;&amp;gt;
-  {%- if params.type == &amp;#34;markdown&amp;#34; %}
-  {{ _shortcode(body | markdown) | safe }}
-  {%- else %}
-  {{ _shortcode(body | org) | safe }}
-  {%- endif %}
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-
-&lt;p&gt;
-   最后添加 &lt;b&gt;css&lt;/b&gt; 样式
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#f92672&quot;&gt;- .img-layout p &amp;gt; img {
-&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+ .img-layout p &amp;gt; img, .img-layout p &amp;gt; a {
-&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;&lt;/span&gt;
-&lt;span style=&quot;color:#a6e22e&quot;&gt;+ .img-layout p &amp;gt; a &amp;gt; img {
-&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+     height: 100%;
-&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+ }
-&lt;/span&gt;&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-5&quot;&gt;显示效果&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 两张图片
-&lt;/p&gt;
-     &lt;div class=&quot;img-layout&quot;&gt;
-&lt;p&gt;
-     
-&lt;a href=&quot;https://s.libforest.com/images/pic/西湖/日落(三).jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/pic/西湖/日落(三).jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-     
-&lt;a href=&quot;https://s.libforest.com/images/pic/西湖/日落(一).jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/pic/西湖/日落(一).jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;/div&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 三张图片
-&lt;/p&gt;
-     &lt;div class=&quot;img-layout&quot;&gt;
-&lt;p&gt;
-     
-&lt;a href=&quot;https://s.libforest.com/images/pic/西湖/日落(二).jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/pic/西湖/日落(二).jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-     
-&lt;a href=&quot;https://s.libforest.com/images/pic/西湖/日落(三).jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/pic/西湖/日落(三).jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-     
-&lt;a href=&quot;https://s.libforest.com/images/pic/西湖/日落(一).jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/pic/西湖/日落(一).jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;/div&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 多行显示
-&lt;/p&gt;
-     &lt;div class=&quot;img-layout&quot;&gt;
-&lt;p&gt;
-     
-&lt;a href=&quot;https://s.libforest.com/images/pic/西湖/日落(二).jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/pic/西湖/日落(二).jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-     
-&lt;a href=&quot;https://s.libforest.com/images/pic/西湖/日落(三).jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/pic/西湖/日落(三).jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-     
-&lt;a href=&quot;https://s.libforest.com/images/pic/西湖/日落(一).jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/pic/西湖/日落(一).jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-     
-&lt;a href=&quot;https://s.libforest.com/images/pic/西湖/日落(二).jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/pic/西湖/日落(二).jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-     
-&lt;a href=&quot;https://s.libforest.com/images/pic/西湖/日落(三).jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/pic/西湖/日落(三).jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-6&quot;&gt;参考资料&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;a href=&quot;https://immmmm.com/about-images-gird/&quot;&gt;https://immmmm.com/about-images-gird/&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;</content>
-        <category term="Life/Coding"></category>
-    </entry>
     <entry xml:lang="zh">
       <title>文件同步和备份</title>
       <link href="" rel="alternate"></link>
@@ -791,1557 +314,899 @@ go build -o meting-api .&lt;/pre&gt;
         <category term="Life"></category>
     </entry>
     <entry xml:lang="zh">
-      <title>绿联云Nas新版本v3.4.0固件开启SSH</title>
+      <title>搭建Memos作为私人笔记</title>
       <link href="" rel="alternate"></link>
-      <published>Fri, 14 Jul 2023 17:51:50 +0000</published>
-      <updated>Thu, 20 Jul 2023 09:54:51 +0000</updated>
+      <published>Fri, 10 Mar 2023 00:16:03 +0000</published>
+      <updated>Sun, 17 Dec 2023 16:29:24 +0000</updated>
       <author>
         <name>honmaple</name>
       </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html</id>
+      <link rel="alternate" href="https://honmaple.me/articles/2023/03/搭建Memos作为私人笔记.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2023/03/搭建Memos作为私人笔记.html</id>
       <summary type="html">
 &lt;blockquote&gt;
 &lt;p&gt;
-之前老的方式&lt;b&gt;固定前缀加远程协助验证码&lt;/b&gt;在更新到最新版本的&lt;b&gt;v3.4.0&lt;/b&gt;后已经失效，想要开启ssh只能使用另一种方式，也希望绿联云官方在系统更加完善(&lt;b&gt;权限管理、软件卸载&lt;/b&gt;)前不要再继续封堵开启的方式，当然，如果能提供官方的开启方式更好
+类似我之前实现的时间轴, 也是一个私人的说说或者是私人的微博，可以用来记录一些临时的想法或者分享某一时刻的精彩瞬间，毕竟数据在自己手上&lt;b&gt;相当酷不是&lt;/b&gt;
 &lt;/p&gt;
 &lt;/blockquote&gt;
 
+&lt;h2 id=&quot;heading-1&quot;&gt;如何搭建&lt;/h2&gt;
 &lt;p&gt;
-&lt;b&gt;免责声明：本教程所提供的内容仅供学习交流使用，请勿用于商业及非法用途，因此产生的任何法律纠纷均与本人无关！如有侵权，请您联系我，我将立刻删除该内容&lt;/b&gt;
+   根据&lt;a href=&quot;https://github.com/usememos/memos&quot;&gt;memos文档&lt;/a&gt;, 搭建也非常简单, 直接使用 &lt;code&gt;docker&lt;/code&gt; 即可
 &lt;/p&gt;
-
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name memos -p 5230:5230 -v ~/.memos/:/var/opt/memos neosmemo/memos:latest&lt;/pre&gt;
 &lt;p&gt;
-&lt;b&gt;注：此教程可能会造成未知的后果，在此期间所造成的系统风险请自行承担&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;创建随机镜像&lt;/h2&gt;
-&lt;p&gt;
-   首先拉取一个镜像，我这里选择 &lt;code&gt;nginx:stable-alpine&lt;/code&gt;
    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;a href=&quot;https://s.libforest.com/images/2023/03/memos.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/memos.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
 &lt;/a&gt;
 &lt;/p&gt;
 
+&lt;h2 id=&quot;heading-2&quot;&gt;docker-compose&lt;/h2&gt;
 &lt;p&gt;
-   然后点击创建容器，存储空间&lt;b&gt;添加一个任意目录&lt;/b&gt;，挂载到 &lt;code&gt;/data&lt;/code&gt; 下...&lt;/p&gt;</summary>
+   因为我需要和我之前的搭建好一些服务(&lt;b&gt;Blog&lt;/b&gt;, &lt;b&gt;DNS&lt;/b&gt;等)统一管理...&lt;/p&gt;</summary>
       <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;创建随机镜像&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;抓包获取Token&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;手动创建容器&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;修改SSH配置&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;SSH登录&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-6&quot;&gt;问题排查&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-7&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-之前老的方式&lt;b&gt;固定前缀加远程协助验证码&lt;/b&gt;在更新到最新版本的&lt;b&gt;v3.4.0&lt;/b&gt;后已经失效，想要开启ssh只能使用另一种方式，也希望绿联云官方在系统更加完善(&lt;b&gt;权限管理、软件卸载&lt;/b&gt;)前不要再继续封堵开启的方式，当然，如果能提供官方的开启方式更好
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-&lt;b&gt;免责声明：本教程所提供的内容仅供学习交流使用，请勿用于商业及非法用途，因此产生的任何法律纠纷均与本人无关！如有侵权，请您联系我，我将立刻删除该内容&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-&lt;b&gt;注：此教程可能会造成未知的后果，在此期间所造成的系统风险请自行承担&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;创建随机镜像&lt;/h2&gt;
-&lt;p&gt;
-   首先拉取一个镜像，我这里选择 &lt;code&gt;nginx:stable-alpine&lt;/code&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   然后点击创建容器，存储空间&lt;b&gt;添加一个任意目录&lt;/b&gt;，挂载到 &lt;code&gt;/data&lt;/code&gt; 下，&lt;b&gt;其它参数为默认&lt;/b&gt;，然后下一步，先&lt;b&gt;不要点击完成&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;抓包获取Token&lt;/h2&gt;
-&lt;p&gt;
-   打开 &lt;b&gt;wireshark&lt;/b&gt; 进行抓包，输入筛选参数
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ip.dst_host == 192.168.31.65 and http and http.request.method==POST&lt;/pre&gt;
-
-&lt;p&gt;
-   然后返回绿联云，点击完成，这时会在 &lt;b&gt;wireshark&lt;/b&gt; 窗口看到一条HTTP请求
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   点击这条请求，然后 &lt;b&gt;右键 -&amp;gt; Follow -&amp;gt; HTTP Stream&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   这时会看到具体的&lt;b&gt;HTTP请求头和请求参数&lt;/b&gt;，在下方的Find里输入 &lt;code&gt;create&lt;/code&gt; 进行查找，然后将红色内容复制到本地，将请求参数 &lt;code&gt;{&amp;#34;_query&amp;#34;...}&lt;/code&gt; 复制到一个 &lt;b&gt;json&lt;/b&gt; 文件
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   接着修改 &lt;b&gt;json&lt;/b&gt; 文件，找到&lt;b&gt;HostConfig -&amp;gt; Mounts&lt;/b&gt;，将里面的 &lt;b&gt;Source&lt;/b&gt; 参数修改为 &lt;code&gt;/&lt;/code&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;手动创建容器&lt;/h2&gt;
-&lt;p&gt;
-   首先到绿联云删除刚开始创建的容器
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   然后使用命令行手动请求创建容器，其中 &lt;b&gt;ugreen.json&lt;/b&gt; 为抓包获取并修改后的参数文件，请求头保持一致
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   创建完成后，返回绿联云，刷新并查看详情，可以看到绿联系统的根目录已经挂载到容器内部
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-4&quot;&gt;修改SSH配置&lt;/h2&gt;
-&lt;p&gt;
-   使用终端进入Docker内部
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   然后添加公钥到root目录，怎么生成公私钥这里不再叙述。
-   查看sshd的配置，默认是不允许使用公钥匙登录的，所以需要修改 &lt;code&gt;PubkeyAuthentication no&lt;/code&gt; 为 &lt;code&gt;PubkeyAuthentication yes&lt;/code&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-   接着到&lt;b&gt;设备管理 -&amp;gt; 远程协助 -&amp;gt; 开启远程调试功能&lt;/b&gt;，重启sshd就是关闭远程调试然后重新打开
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-5&quot;&gt;SSH登录&lt;/h2&gt;
-&lt;p&gt;
-   最后就可以使用ssh公钥登录绿联云系统了
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-6&quot;&gt;问题排查&lt;/h2&gt;
-&lt;p&gt;
-   如果无法使用ssh公钥登录，可以查看系统的ssh登录日志
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;grep ssh /data/data/nas_server/log/system/*syslog | less&lt;/pre&gt;
-
-&lt;p&gt;
-   如果提示 &lt;code&gt;Authentication refused: bad ownership or modes for directory /root&lt;/code&gt;，则执行
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;chmod go-w /data/root&lt;/pre&gt;
-
-&lt;p&gt;
-   如果提示 &lt;code&gt;ssh-rsa: signature algorithm not supported&lt;/code&gt;，则添加下面配置到&lt;b&gt;sshd_config&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;PubkeyAcceptedKeyTypes=+ssh-rsa&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-7&quot;&gt;其它&lt;/h2&gt;
-&lt;p&gt;
-   升级到&lt;b&gt;v3.4.0&lt;/b&gt;后，目前觉得还不错，其中&lt;b&gt;批量重命名，TMDB接口，自定义Hosts&lt;/b&gt;等都是非常有用的功能，也希望绿联能再接再厉，我们这些用户也能和绿联Nas一同成长。
-&lt;/p&gt;
-
-&lt;p&gt;
-   对了，之前文件同步会修改源文件权限的问题已经被修复，&lt;b&gt;Very Good&lt;/b&gt;
-&lt;/p&gt;</content>
-        <category term="Life"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>绿联DX4600 Pro虚拟机探索</title>
-      <link href="" rel="alternate"></link>
-      <published>Thu, 06 Jul 2023 00:18:35 +0000</published>
-      <updated>Wed, 15 Nov 2023 15:15:48 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;p&gt;
-本次探索源于上次发现可以&lt;b&gt;使用Docker来管理群晖虚拟机&lt;/b&gt;，而绿联本身是自带&lt;b&gt;kvm&lt;/b&gt;内核模块的，但是要等到绿联官方支持虚拟机，又不知道会等到猴年马月。所以我有一个大胆的想法，能否使用Docker搭建一个可以自由管理虚拟机的程序，最起码可以安装一个windows替换掉绿联内置的有着各种限制的迅雷
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-&lt;b&gt;注意：非专业人士请勿模仿，除非你知道什么是KVM，在此期间所造成的系统风险请自行承担&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;虚拟机管理&lt;/h2&gt;
-&lt;p&gt;
-   选择了我之前使用过的 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 来管理 &lt;code&gt;KVM&lt;/code&gt;，说实话，这个管理程序比起威联通群晖这些官方自带确实不太好用，但用于测试还是足够了，如果有更好更方便的推荐请在评论区留言
-&lt;/p&gt;
-
-&lt;p&gt;
-   &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 没有官方的  &lt;code&gt;Docker&lt;/code&gt; 镜像，只能自己编译，虽然它本身带有一个 &lt;b&gt;Dockerfile&lt;/b&gt;，但如果自己构建会遇到各种各样的问题，下面是我遇到的部分问题
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.1&quot;&gt;Ubuntu版本问题&lt;/h3&gt;
-&lt;p&gt;
-    &lt;b&gt;retspen...&lt;/b&gt;&lt;/p&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;虚拟机管理&lt;/a&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;如何搭建&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;docker-compose&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;nginx和https配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;移动端支持&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;FAQ&lt;/a&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;Ubuntu版本问题&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;Libvirt安装依赖&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-5.1&quot;&gt;重置密码&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;构建Docker&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;导入镜像&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;ssh登录&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;运行Docker&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;启动libvirtd&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;管理界面&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3.1&quot;&gt;创建虚拟机&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;blockquote&gt;
 &lt;p&gt;
-本次探索源于上次发现可以&lt;b&gt;使用Docker来管理群晖虚拟机&lt;/b&gt;，而绿联本身是自带&lt;b&gt;kvm&lt;/b&gt;内核模块的，但是要等到绿联官方支持虚拟机，又不知道会等到猴年马月。所以我有一个大胆的想法，能否使用Docker搭建一个可以自由管理虚拟机的程序，最起码可以安装一个windows替换掉绿联内置的有着各种限制的迅雷
+类似我之前实现的时间轴, 也是一个私人的说说或者是私人的微博，可以用来记录一些临时的想法或者分享某一时刻的精彩瞬间，毕竟数据在自己手上&lt;b&gt;相当酷不是&lt;/b&gt;
 &lt;/p&gt;
 &lt;/blockquote&gt;
 
+&lt;h2 id=&quot;heading-1&quot;&gt;如何搭建&lt;/h2&gt;
 &lt;p&gt;
-&lt;b&gt;注意：非专业人士请勿模仿，除非你知道什么是KVM，在此期间所造成的系统风险请自行承担&lt;/b&gt;
+   根据&lt;a href=&quot;https://github.com/usememos/memos&quot;&gt;memos文档&lt;/a&gt;, 搭建也非常简单, 直接使用 &lt;code&gt;docker&lt;/code&gt; 即可
 &lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;虚拟机管理&lt;/h2&gt;
-&lt;p&gt;
-   选择了我之前使用过的 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 来管理 &lt;code&gt;KVM&lt;/code&gt;，说实话，这个管理程序比起威联通群晖这些官方自带确实不太好用，但用于测试还是足够了，如果有更好更方便的推荐请在评论区留言
-&lt;/p&gt;
-
-&lt;p&gt;
-   &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 没有官方的  &lt;code&gt;Docker&lt;/code&gt; 镜像，只能自己编译，虽然它本身带有一个 &lt;b&gt;Dockerfile&lt;/b&gt;，但如果自己构建会遇到各种各样的问题，下面是我遇到的部分问题
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.1&quot;&gt;Ubuntu版本问题&lt;/h3&gt;
-&lt;p&gt;
-    &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 默认是基于一个 &lt;b&gt;Ubuntu22.04&lt;/b&gt; 的镜像构建，但是，如果自行构建会发现旧版本的 &lt;b&gt;Docker&lt;/b&gt; 和 &lt;b&gt;Ubuntu22.04&lt;/b&gt; 根本不兼容
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 报错一
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;The following signatures couldn&amp;#39;t be verified because the public key is not available: NO_PUBKEY 871920D1991BC93C&lt;/pre&gt;
-&lt;p&gt;
-      搜索了一下，说是可以使用 &lt;code&gt;apt-key&lt;/code&gt; 命令添加公钥解决，实际上
-      
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 报错二
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;/etc/apt/trusted.gpg.d/ubuntu-keyring-2012-cdimage.gpg are ignored as the file is not readable by user &amp;#39;_apt&amp;#39; executing apt-key.&lt;/pre&gt;
-&lt;p&gt;
-      这个报错可以通过&lt;b&gt;删除gpg文件忽略&lt;/b&gt;，但实际上没什么用。
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-    真正的解决方式是&lt;b&gt;升级自身的Docker版本&lt;/b&gt;，最小要到 &lt;code&gt;20.0&lt;/code&gt; 以上，因为我使用的Mac，最新版本的Docker也不过是 &lt;code&gt;19.03.13&lt;/code&gt;，所以没办法使用升级Docker的方式解决，只能降级Ubuntu的版本
-&lt;/p&gt;
-
-&lt;p&gt;
-    一开始我直接把版本降到最熟悉的18.04，但在安装Python库发现部分库的指定版本要求Python3.8，否则找不到指定版本
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    如果使用 &lt;code&gt;apt&lt;/code&gt; 直接安装 &lt;code&gt;Python3.8&lt;/code&gt;，会发现有两个问题：
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 其中一个依赖 &lt;code&gt;python3-lxml&lt;/code&gt; 没有3.8的版本，直接安装会同时安装 &lt;code&gt;Python3.6&lt;/code&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;code&gt;venv&lt;/code&gt; 无法使用
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;
-    后面甚至想要忽略Python版本强行安装
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;pip3 install -r conf/requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com --ignore-requires-python&lt;/pre&gt;
-
-&lt;p&gt;
-    但仍然是一堆报错
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    所以再次测试升级到 &lt;b&gt;20.04&lt;/b&gt; 的版本，还好 &lt;b&gt;20.04&lt;/b&gt; 安装的Python3正是 &lt;code&gt;Python3.8&lt;/code&gt;，故此正常
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.2&quot;&gt;Libvirt安装依赖&lt;/h3&gt;
-&lt;p&gt;
-    由于 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 是依赖libvirt对虚拟机进行管理的，而绿联使用的系统本身没有libvirt进程，所以我将在Docker内部安装，在此期间也遇到了部分问题，下面对部分依赖包统一说明一下
-&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;libvirt-daemon&lt;/b&gt; &lt;br/&gt;
-      libvirtd的进程包
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;libvirt-daemon-system&lt;/b&gt; &lt;br/&gt;
-      libvirtd的默认配置包，如果不安装需要手动编写配置
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;iptables&lt;/b&gt; &lt;br/&gt;
-      libvirtd的依赖，不安装启动libvirtd时会报错
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;dnsmasq&lt;/b&gt; &lt;br/&gt;
-      libvirtd的依赖，不安装kvm的默认网络无法启动，导致后续建立的虚拟机无法联网
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;qemu-kvm&lt;/b&gt; &lt;br/&gt;
-      不安装导致后续新建虚拟机时可选的架构和芯片组为空
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;qemu-utils&lt;/b&gt; &lt;br/&gt;
-      不安装导致虚拟机无法使用qcow2，只能使用raw格式
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;virt-manager(可选)&lt;/b&gt; &lt;br/&gt;
-      通过命令行管理虚拟机
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-2&quot;&gt;构建Docker&lt;/h2&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run -d --name memos -p 5230:5230 -v ~/.memos/:/var/opt/memos neosmemo/memos:latest&lt;/pre&gt;
 &lt;p&gt;
    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;a href=&quot;https://s.libforest.com/images/2023/03/memos.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/memos.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
 &lt;/a&gt;
 &lt;/p&gt;
 
+&lt;h2 id=&quot;heading-2&quot;&gt;docker-compose&lt;/h2&gt;
 &lt;p&gt;
-   修改完 &lt;b&gt;Ubuntu版本&lt;/b&gt; 和添加 &lt;b&gt;KVM所需依赖&lt;/b&gt; 后，就能成功构建Docker(实际构建大小在&lt;b&gt;1.4G&lt;/b&gt;左右)。
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
+   因为我需要和我之前的搭建好一些服务(&lt;b&gt;Blog&lt;/b&gt;, &lt;b&gt;DNS&lt;/b&gt;等)统一管理, 所以转成了 &lt;code&gt;docker-compose&lt;/code&gt; 配置
 &lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;version&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;3&amp;#34;&lt;/span&gt;
 
-&lt;h3 id=&quot;heading-2.1&quot;&gt;导入镜像&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 首先先导出镜像
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker save -o webvirtcloud.tar webvirtcloud:test-2&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 上传到绿联Nas，可以同时上传后面创建虚拟机所用的iso文件
-       
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 打开绿联Docker，在镜像管理里选择从设备导入镜像
-       
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&quot;heading-2.2&quot;&gt;ssh登录&lt;/h3&gt;
-&lt;p&gt;
-    老传统了，这里就不再过多叙述，具体可看 &lt;del&gt;&lt;a href=&quot;https://honmaple.me/articles/2023/06/绿联DX4600%20Pro禁用迅雷和中国移动云盘进程.html&quot;&gt;绿联DX4600 Pro禁用迅雷和中国移动云盘进程&lt;/a&gt;&lt;/del&gt; &lt;a href=&quot;https://honmaple.me/articles/2023/07/ugreen-nas-open-ssh.html&quot;&gt;绿联云Nas新版本v3.4.0固件开启SSH&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.3&quot;&gt;运行Docker&lt;/h3&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run --rm -p 8088:80 -p 6080:6080 --device=/dev/kvm --privileged webvirtcloud:test-2&lt;/pre&gt;
-
-&lt;p&gt;
-    &lt;code&gt;8088&lt;/code&gt; 是 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 界面端口，启动后可以通过 &lt;code&gt;NasIP:8088&lt;/code&gt; 访问，&lt;code&gt;6080&lt;/code&gt; 是 &lt;b&gt;VNC&lt;/b&gt; 端口，启动虚拟机后可以直接使用浏览器访问
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-08.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-08.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.4&quot;&gt;启动libvirtd&lt;/h3&gt;
-&lt;p&gt;
-    由于我只修改了Dockerfile里的依赖，所以&lt;b&gt;libvirtd&lt;/b&gt;只能手动启动，如果想要自动启动的可以添加启动脚本到 &lt;code&gt;/etc/service&lt;/code&gt; 目录
-&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 进入&lt;b&gt;Docker内部&lt;/b&gt;：
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec -it {镜像名} bash&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 修改&lt;b&gt;配置文件&lt;/b&gt;: 使用 vi 打开 &lt;code&gt;/etc/libvirt/libvirtd.conf&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#f92672&quot;&gt;- unix_sock_group = &amp;#34;libvirt&amp;#34;
-&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+ unix_sock_group = &amp;#34;www-data&amp;#34;
-&lt;/span&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 启动&lt;b&gt;libvirtd&lt;/b&gt;:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;libvirtd -d&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 启动&lt;b&gt;virtlogd&lt;/b&gt;：
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;virtlogd -d&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&quot;heading-3&quot;&gt;管理界面&lt;/h2&gt;
-&lt;p&gt;
-   通过 &lt;code&gt;NasIP:8088&lt;/code&gt; 访问管理界面，默认用户名和密码都是 &lt;b&gt;admin&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-09.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-09.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   登录成功后，点击&lt;b&gt;计算节点 -&amp;gt; 本地&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-10.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-10.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   然后添加一个&lt;b&gt;本地节点&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-11.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-11.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   添加后正常情况就会显示&lt;b&gt;已连接&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-12.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-12.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   接着继续点击右边的&lt;b&gt;眼睛图案 -&amp;gt; 选择存储 -&amp;gt; 右上角的+号&lt;/b&gt;，添加两个存储
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-13.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-13.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- test: 路径为 &lt;code&gt;/var/lib/libvirt/images&lt;/code&gt;，用于存放虚拟机文件
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- iso:  路径为 &lt;code&gt;/var/lib/libvirt/iso&lt;/code&gt;，存放iso镜像文件
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;
-   然后返回绿联Nas的ssh界面，复制iso文件到Docker内部，或者在执行Docker命令时使用 &lt;code&gt;-v /mnt/xxxx/Docker/webvirtcloud/iso:/var/lib/libvirt/iso&lt;/code&gt; 将文件提前挂载到Docker内部
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-14.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-14.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-3.1&quot;&gt;创建虚拟机&lt;/h3&gt;
-&lt;p&gt;
-    一切准备就绪，现在我们就能创建虚拟机了。
-&lt;/p&gt;
-
-&lt;p&gt;
-    选择&lt;b&gt;实例 -&amp;gt; 创建&lt;/b&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-15.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-15.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    点击下一个，注意：&lt;b&gt;webvirtcloud&lt;/b&gt; 这里的操作有些反人类，最好选择&lt;b&gt;规格 -&amp;gt; 应用&lt;/b&gt;，不要使用自定义和模版，否则无法挂载&lt;b&gt;CD-ROM&lt;/b&gt;。我这里选择30G的mini，存储一定要改成 &lt;b&gt;test&lt;/b&gt;，然后创建
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-16.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-16.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-17.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-17.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    点击创建后会到实例页面，先不要启动，到&lt;b&gt;设置 -&amp;gt; 磁盘&lt;/b&gt;挂载想要安装的系统iso文件，然后在旁边的启动顺序里确认&lt;b&gt;启动第一项&lt;/b&gt;是iso所在的磁盘
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-18.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-18.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-19.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-19.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-20.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-20.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    接着就可以开机了，开机后可以点击&lt;b&gt;访问 -&amp;gt; 控制台&lt;/b&gt;使用VNC打开系统安装界面，安装完成后记得重新调整启动顺序以及卸载iso镜像
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-21.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-21.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    至此，使用第三方Docker搭建的绿联Nas虚拟机管理也就完成了，如果急需使用虚拟机功能，又想保留绿联Nas的系统，随绿联一起“成长”的用户可以利用此功能创建虚拟机，如果不着急的可以等官方的实现
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-4&quot;&gt;其它&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 没有修改libvirtd里的 &lt;code&gt;unix_sock_group&lt;/code&gt; 配置为 &lt;b&gt;www-data&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;Failed to connect socket to &amp;#39;/var/run/libvirt/libvirt-sock&amp;#39;: Permission denied&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- Docker内部(不是绿联系统)执行 &lt;code&gt;chmod 666 /dev/kvm&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;libvirt 错误- internal error: process exited while connecting to monitor: Could not access KVM kernel module: Permission denied 2023-07-05T16:17:57.942238Z qemu-system-x86_64: failed to initialize KVM: Permission denied&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 未安装&lt;b&gt;dnsmasq&lt;/b&gt;，如果手动安装，使用 &lt;code&gt;virsh net-start default&lt;/code&gt; 手动启动
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;libbvirt 错误- Requested operation is not valid: network &amp;#39;default&amp;#39; is not active&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 未安装&lt;b&gt;qemu-utils&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;internal error: creation of non-raw file images is not supported without qemu-img.&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;
-   注意：文章中并未修改绿联Nas本身的系统，所有的安装包和修改文件配置都是在Docker内部进行
-&lt;/p&gt;</content>
-        <category term="Life"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>绿联DX4600 Pro安装一个超酷超帅的Docker</title>
-      <link href="" rel="alternate"></link>
-      <published>Tue, 04 Jul 2023 12:37:02 +0000</published>
-      <updated>Tue, 04 Jul 2023 13:25:46 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro安装一个超酷超帅的Docker.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/07/绿联DX4600 Pro安装一个超酷超帅的Docker.html</id>
-      <summary type="html">
-&lt;p&gt;
-绿联Nas的系统真是一言难尽，所以最近几天我都在寻找一种安装群晖的教程，也知晓群晖其实也没那么容易安装，主要是安装群晖后，有很大的概率&lt;b&gt;导致机器指示灯，风扇，甚至M.2固态失效&lt;/b&gt;，也正因为此，虽然已经整理好了安装的教程，但迟迟没有动手，此次在网上搜寻教程时无意中发现了一个超酷超帅的Docker镜像，安装后真的会惊叹为何会有如此棒的东西，它就是
-&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;a href=&quot;https://github.com/kroese/virtual-dsm&quot;&gt;kroese/virtual-dsm&lt;/a&gt; ，一个利用Docker管理群晖虚拟机的镜像，对于没有虚拟机功能的绿联Nas来说，无疑是非常棒地既可以体验本地群晖系统，又不用刷机改引导，格式化硬盘的方法
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;安装教程&lt;/h2&gt;
-&lt;p&gt;
-   安装流程和之前的已有的一篇文章相差不大 &lt;a href=&quot;https://post.smzdm.com/p/an36zmz2/&quot;&gt;绿联DX4600安装docker黑群晖&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   当然这里也会写上部分我自己特别折腾的记录，大家可以放心食用
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.1&quot;&gt;下载镜像&lt;/h3&gt;
-&lt;p&gt;
-    打开绿联Docker，输入 &lt;code&gt;kroese/virtual-dsm&lt;/code&gt; 下载镜像
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.2&quot;&gt;使用ssh登录到后台...&lt;/h3&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;安装教程&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;下载镜像&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;使用ssh登录到后台&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.3&quot;&gt;使用Docker命令行安装&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;折腾教程&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;群晖本地IP(macvlan)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;webdav挂载&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;
-绿联Nas的系统真是一言难尽，所以最近几天我都在寻找一种安装群晖的教程，也知晓群晖其实也没那么容易安装，主要是安装群晖后，有很大的概率&lt;b&gt;导致机器指示灯，风扇，甚至M.2固态失效&lt;/b&gt;，也正因为此，虽然已经整理好了安装的教程，但迟迟没有动手，此次在网上搜寻教程时无意中发现了一个超酷超帅的Docker镜像，安装后真的会惊叹为何会有如此棒的东西，它就是
-&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;a href=&quot;https://github.com/kroese/virtual-dsm&quot;&gt;kroese/virtual-dsm&lt;/a&gt; ，一个利用Docker管理群晖虚拟机的镜像，对于没有虚拟机功能的绿联Nas来说，无疑是非常棒地既可以体验本地群晖系统，又不用刷机改引导，格式化硬盘的方法
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;安装教程&lt;/h2&gt;
-&lt;p&gt;
-   安装流程和之前的已有的一篇文章相差不大 &lt;a href=&quot;https://post.smzdm.com/p/an36zmz2/&quot;&gt;绿联DX4600安装docker黑群晖&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   当然这里也会写上部分我自己特别折腾的记录，大家可以放心食用
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.1&quot;&gt;下载镜像&lt;/h3&gt;
-&lt;p&gt;
-    打开绿联Docker，输入 &lt;code&gt;kroese/virtual-dsm&lt;/code&gt; 下载镜像
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.2&quot;&gt;使用ssh登录到后台&lt;/h3&gt;
-&lt;p&gt;
-    其中登录教程在我之前的一篇文章中有介绍 &lt;a href=&quot;https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html&quot;&gt;绿联DX4600 Pro禁用迅雷和中国移动云盘进程&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    这里就再简单介绍一下:
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 开启远程协助，记住验证码
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 重启机器(注意先保存进行中的任务)
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 使用 &lt;b&gt;ssh&lt;/b&gt; 客户端登录，端口 &lt;b&gt;922&lt;/b&gt;，密码 &lt;code&gt;L#W$%W1uGa&lt;/code&gt; 加上验证码，用户 &lt;b&gt;root&lt;/b&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&quot;heading-1.3&quot;&gt;使用Docker命令行安装&lt;/h3&gt;
-&lt;p&gt;
-    首先需要验证挂载的目录，我这里是找了两个已经创建并挂载了本地存储的镜像，使用
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker inspect --format &amp;#34;{{json .HostConfig.Mounts}}&amp;#34; 镜像名&lt;/pre&gt;
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    查看挂载的实际目录，可以看出Docker实际挂载的目录由
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;/mnt/media_rw/ + 硬盘UUID + /.ugreen_nas/ + 用户ID + 硬盘目录&lt;/pre&gt;
-&lt;p&gt;
-    这几部分构成，那么就好办了，首先创建一个&lt;b&gt;DSM的目录&lt;/b&gt;，用于存放群晖虚拟机文件，我这里选择&lt;b&gt;固态硬盘&lt;/b&gt;，避免使用机械硬盘&lt;b&gt;导致硬盘无法休眠&lt;/b&gt;，如果选择其它硬盘，需要先创建一个没什么用的Docker挂载目录，然后使用 &lt;code&gt;inspect&lt;/code&gt; 找到实际的路径
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    建立好目录后使用命令行安装镜像
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    其中的几个参数
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;DISK_SIZE=100G&lt;/b&gt;: 分配给群晖虚拟机100G的磁盘空间，这部分空间会作为&lt;b&gt;存储1&lt;/b&gt;使用
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;ALLOCATE=N&lt;/b&gt;: 是否预分配100G的大小(Y)，还是按照实际大小展示在绿联Nas上(N)(这个参数貌似没生效)
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;CPU_CORES=2&lt;/b&gt;: 分配给虚拟机的核数，我的是 &lt;b&gt;n6005&lt;/b&gt;，四核，所以分了两核给群晖
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;RAM_SIZE=8192M&lt;/b&gt;: 分配给虚拟机的内存大小
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;--network 实际的网络&lt;/b&gt;: 也可以不写，使用默认的 &lt;code&gt;Docker bridge&lt;/code&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-    创建完成后使用 &lt;code&gt;docker logs -f DSM&lt;/code&gt; 查看日志，直到日志显示
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    在此期间，也可以打开浏览器，使用绿联Nas &lt;b&gt;IP+端口5000&lt;/b&gt; 进行访问
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    然后就是正常的群晖初始化，至此，想要体验本地群晖系统的就可以行动了
-&lt;/p&gt;
-
-&lt;p&gt;
-    &lt;b&gt;等等，后面还有&lt;/b&gt;。。。
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;折腾教程&lt;/h2&gt;
-&lt;h3 id=&quot;heading-2.1&quot;&gt;群晖本地IP(macvlan)&lt;/h3&gt;
-&lt;p&gt;
-    按照GitHub上的教程，我原本想要配置一个和局域网内其它设备相同网段的IP给群晖虚拟机，所以我创建了一个基于 &lt;code&gt;macvlan&lt;/code&gt; 的网络
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker network create -d macvlan --subnet=192.168.31.0/24 --gateway=192.168.31.1 --ip-range=192.168.31.66/32 -o parent=eth0  dsmnet&lt;/pre&gt;
-
-&lt;p&gt;
-    然后使用 &lt;code&gt;--network dsmnet&lt;/code&gt; 重新创建Docker，结果怎么着，报错了
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker: Error response from daemon: failed to create the macvlan port: operation not supported.&lt;/pre&gt;
-
-&lt;p&gt;
-    第一眼我还觉得这是由于docker打包脚本里的 &lt;code&gt;EXPOSE&lt;/code&gt; 的锅，甚至去搜索能否禁用该操作，结果也是显而易见的，什么都没找到。后来仔细看了一下报错信息：&lt;code&gt;operation not supported&lt;/code&gt;
-    好吧，确认一下 &lt;code&gt;macvlan&lt;/code&gt; 相关的模块是否被加载
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;lsmod | grep macvlan&lt;/pre&gt;
-
-&lt;p&gt;
-    果然，&lt;b&gt;绿联Nas默认是没有macvlan模块的&lt;/b&gt;，所以想用绿联Nas部署一个openwrt旁路由的可以先歇了。那么，我能否自己安装macvlan模块呢？
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-08.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-08.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    对不起，打扰了。不对，内核版本不符，那么我去下载一个和内核版本相符的文件，使用 &lt;b&gt;uname -r&lt;/b&gt; 看一下绿联用的版本
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;5.10.120&lt;/pre&gt;
-
-&lt;p&gt;
-    我直接去官方库里找，还好找到了，同样使用的 &lt;b&gt;5.10.120-1&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;wget https://downloads.openwrt.org/releases/22.03.0-rc4/targets/x86/64/packages/kmod-macvlan_5.10.120-1_x86_64.ipk&lt;/pre&gt;
-
-&lt;p&gt;
-    继续安装，结果还是一样
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-09.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-09.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    因为我对openwrt不太熟悉，实在进行不下去了，&lt;b&gt;只好放弃&lt;/b&gt;。不过也能看出绿联还是编译了一些属于自己的东西的，没有直接使用默认的openwrt内核，不过现在大概只能等绿联自己升级固件来默认支持macvlan了，或者有没有大佬能够解答一下这个问题
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.2&quot;&gt;webdav挂载&lt;/h3&gt;
-&lt;p&gt;
-    因为docker安装的群晖无法直接使用插入的硬盘，甚至不能映射某个目录到群晖虚拟机，所以如果想用群晖来操作绿联Nas上面的文件，只能通过网络挂载
-&lt;/p&gt;
-
-&lt;p&gt;
-    绿联本身支持的网络挂载有限，不支持&lt;code&gt;NFS&lt;/code&gt;，但是还好可以支持&lt;code&gt;webdav&lt;/code&gt;和&lt;code&gt;ftp&lt;/code&gt;，那么可以去群晖web管理界面，打开 &lt;b&gt;file station -&amp;gt; 工具 -&amp;gt; 远程连接 -&amp;gt; 连接设置 -&amp;gt; ftp/webdav&lt;/b&gt; 进行配置
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-10.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-10.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-11.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-11.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    你以为我要说的就这，这不是&lt;b&gt;显而易见，浅显易懂，入口即化&lt;/b&gt;的吗？实际上，除了&lt;code&gt;ftp&lt;/code&gt;可以正常挂载外，&lt;code&gt;webdav&lt;/code&gt;却是死活挂载不了，总是提示&lt;b&gt;连接被服务器拒绝&lt;/b&gt;，搞得我还以为绿联是不是连一个基础的webdav都没做好，但我用我的mac连接又可以正常挂载，差点把我整emo
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-12.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-12.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    我可以确认我的配置是对的，那到底是哪里出了问题，打开群晖的&lt;b&gt;ssh&lt;/b&gt;，也确认了是可以正常和宿主机通信的
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-13.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-13.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    最后搞得实在没办法了，抓包吧，还好群晖默认已经安装了&lt;b&gt;tcpdump&lt;/b&gt;，只需要生成&lt;b&gt;pcap&lt;/b&gt;文件就行
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;tcpdump -i eth0 host 192.168.31.65 -w ugreen/webdav.pcap&lt;/pre&gt;
-
-&lt;p&gt;
-    终端运行抓包命令，另一边在群晖界面进行添加webdav的操作，等待再次提示连接被服务器拒绝后，再等待5s，暂停抓包，然后把 &lt;b&gt;webdav.pcap&lt;/b&gt; 下载到本地，使用 &lt;b&gt;wireshark&lt;/b&gt; 查看
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-14.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-14.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    乍一看没什么问题，都是正常的&lt;b&gt;DNS查询&lt;/b&gt;和&lt;b&gt;TCP握手&lt;/b&gt;，可仔细一看，怎么会&lt;b&gt;多了一个斜杆&lt;/b&gt;，而且服务端返回了401错误
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-15.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-15.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    原来群晖挂载webdav的路径&lt;b&gt;一定不能使用斜杆开头&lt;/b&gt;，&lt;b&gt;一定不能使用斜杆开头&lt;/b&gt;，&lt;b&gt;一定不能使用斜杆开头&lt;/b&gt;，重要的事情说三遍，需要把 &lt;code&gt;/dav/share/&lt;/code&gt; 改成 &lt;code&gt;dav/share/&lt;/code&gt; (注意，绿联webdav路径后必须有一个斜杆)
-&lt;/p&gt;
-
-&lt;p&gt;
-    至此，webdav挂载也ok了
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;其它&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 在使用 &lt;b&gt;非macvlan&lt;/b&gt; 网络创建的群晖系统里内置的 &lt;b&gt;IP 20.20.20.21&lt;/b&gt; 以及 &lt;b&gt;网关20.20.20.1&lt;/b&gt; 是不能修改的，修改后可能会导致无法从浏览器访问群晖
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 可以修改DNS服务为&lt;b&gt;局域网网关&lt;/b&gt;或者&lt;b&gt;自建DNS的IP&lt;/b&gt;，修改后记得重启群晖系统
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 功耗，启动 &lt;code&gt;virtual-dsm&lt;/code&gt; 前我的机器功耗大概是&lt;b&gt;18W&lt;/b&gt;，启动后在&lt;b&gt;26W&lt;/b&gt;左右，一段时间后又会变成&lt;b&gt;19W&lt;/b&gt;，这应该和系统内运行的任务有关
-&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;</content>
-        <category term="Life"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>关于Snow静态博客的常见问题</title>
-      <link href="" rel="alternate"></link>
-      <published>Wed, 28 Jun 2023 11:14:08 +0000</published>
-      <updated>Fri, 28 Jul 2023 14:03:47 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/06/snow-faq.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/06/snow-faq.html</id>
-      <summary type="html">
-&lt;h2 id=&quot;heading-1&quot;&gt;如何进行显示日期的本地化？&lt;/h2&gt;
-&lt;p&gt;
-   比如显示文章发表于 &lt;code&gt;2021年06月05日 周六&lt;/code&gt;。
-&lt;/p&gt;
-
-&lt;p&gt;
-   因为 &lt;code&gt;Snow&lt;/code&gt; 基于 &lt;code&gt;Go&lt;/code&gt; 开发，日期的格式化也是基于Go时间语法。 日期格式&lt;code&gt;2006年01月02日&lt;/code&gt;也会渲染为&lt;code&gt;2021年06月05日&lt;/code&gt;，但是星期几无法直接使用Go时间格式，不过 &lt;code&gt;Snow&lt;/code&gt; 支持 &lt;b&gt;i18n&lt;/b&gt; 模版翻译，所以可以使用
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{{ _(page.Date | date:&amp;#34;Mon&amp;#34;) }}&lt;/pre&gt;
-&lt;p&gt;
-   然后在主题目录下新建一个 &lt;b&gt;i18n/zh.yaml&lt;/b&gt; 文件，并增加如下内容
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;---
-- &lt;span style=&quot;color:#66d9ef&quot;&gt;id&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;...&lt;/span&gt;&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;如何进行显示日期的本地化？&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;如何进行显示日期的本地化？&lt;/h2&gt;
-&lt;p&gt;
-   比如显示文章发表于 &lt;code&gt;2021年06月05日 周六&lt;/code&gt;。
-&lt;/p&gt;
-
-&lt;p&gt;
-   因为 &lt;code&gt;Snow&lt;/code&gt; 基于 &lt;code&gt;Go&lt;/code&gt; 开发，日期的格式化也是基于Go时间语法。 日期格式&lt;code&gt;2006年01月02日&lt;/code&gt;也会渲染为&lt;code&gt;2021年06月05日&lt;/code&gt;，但是星期几无法直接使用Go时间格式，不过 &lt;code&gt;Snow&lt;/code&gt; 支持 &lt;b&gt;i18n&lt;/b&gt; 模版翻译，所以可以使用
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{{ _(page.Date | date:&amp;#34;Mon&amp;#34;) }}&lt;/pre&gt;
-&lt;p&gt;
-   然后在主题目录下新建一个 &lt;b&gt;i18n/zh.yaml&lt;/b&gt; 文件，并增加如下内容
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;---
-- &lt;span style=&quot;color:#66d9ef&quot;&gt;id&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;Sun&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;tr&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;周日&amp;#34;&lt;/span&gt;
-- &lt;span style=&quot;color:#66d9ef&quot;&gt;id&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;Mon&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;tr&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;周一&amp;#34;&lt;/span&gt;
-- &lt;span style=&quot;color:#66d9ef&quot;&gt;id&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;Tue&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;tr&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;周二&amp;#34;&lt;/span&gt;
-- &lt;span style=&quot;color:#66d9ef&quot;&gt;id&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;Wed&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;tr&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;周三&amp;#34;&lt;/span&gt;
-- &lt;span style=&quot;color:#66d9ef&quot;&gt;id&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;Thu&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;tr&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;周四&amp;#34;&lt;/span&gt;
-- &lt;span style=&quot;color:#66d9ef&quot;&gt;id&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;Fri&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;tr&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;周五&amp;#34;&lt;/span&gt;
-- &lt;span style=&quot;color:#66d9ef&quot;&gt;id&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;Sat&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;tr&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;周六&amp;#34;&lt;/span&gt;&lt;/pre&gt;
-&lt;p&gt;
-   这样，在英文&lt;code&gt;EN&lt;/code&gt;文章下还是会显示原来的英文缩写，但是在中文&lt;code&gt;ZH&lt;/code&gt;文章下就会显示周几
-&lt;/p&gt;</content>
-        <category term="Life/Coding"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>重大BUG——绿联NAS用户暂时不要使用文件同步功能</title>
-      <link href="" rel="alternate"></link>
-      <published>Tue, 27 Jun 2023 22:58:05 +0000</published>
-      <updated>Tue, 27 Jun 2023 23:09:58 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/06/重大BUG——绿联NAS用户暂时不要使用文件同步功能.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/06/重大BUG——绿联NAS用户暂时不要使用文件同步功能.html</id>
-      <summary type="html">
-&lt;p&gt;
-前不久 &lt;b&gt;618&lt;/b&gt; 入手了一个&lt;b&gt;绿联 DX4600 Pro&lt;/b&gt;，差不多用了快一个月，具体吐槽的点就不说了，毕竟平时 &lt;b&gt;Docker&lt;/b&gt; 用的比较多，自带的应用只能说能用，昨天测试了一下文件同步和时间机器的功能，却无意中发现了一个&lt;b&gt;重大BUG&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-绿联的文件同步会修改本地源文件的权限，本地文件原来是 &lt;b&gt;644&lt;/b&gt; 的权限，使用文件同步会被直接修改成 &lt;b&gt;755&lt;/b&gt;，还好我只测试了一个目录，而且这个目录使用了Git进行管理，可以快速恢复，如果是整机备份并且没有用Git或者其它版本系统进行管理的话，我只能说，你们有福了，一个文件一个文件地恢复吧
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-&lt;b&gt;复现步骤：&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;本地创建一个测试目录&lt;/h2&gt;
-&lt;p&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-&lt;h2 id=&quot;heading-2&quot;&gt;客户端文件同步里添加该目录&lt;/h2&gt;
-&lt;p&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   设置完成后可以看到原始目录下会多出几个目录，这个不用管
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-&lt;h2 id=&quot;heading-3&quot;&gt;修改文件并等待文件同步完成&lt;/h2&gt;
-&lt;p&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   这时会发现&lt;b&gt;无论修改多少次...&lt;/b&gt;&lt;/p&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;本地创建一个测试目录&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;客户端文件同步里添加该目录&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;修改文件并等待文件同步完成&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;
-前不久 &lt;b&gt;618&lt;/b&gt; 入手了一个&lt;b&gt;绿联 DX4600 Pro&lt;/b&gt;，差不多用了快一个月，具体吐槽的点就不说了，毕竟平时 &lt;b&gt;Docker&lt;/b&gt; 用的比较多，自带的应用只能说能用，昨天测试了一下文件同步和时间机器的功能，却无意中发现了一个&lt;b&gt;重大BUG&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-绿联的文件同步会修改本地源文件的权限，本地文件原来是 &lt;b&gt;644&lt;/b&gt; 的权限，使用文件同步会被直接修改成 &lt;b&gt;755&lt;/b&gt;，还好我只测试了一个目录，而且这个目录使用了Git进行管理，可以快速恢复，如果是整机备份并且没有用Git或者其它版本系统进行管理的话，我只能说，你们有福了，一个文件一个文件地恢复吧
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-&lt;b&gt;复现步骤：&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;本地创建一个测试目录&lt;/h2&gt;
-&lt;p&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-&lt;h2 id=&quot;heading-2&quot;&gt;客户端文件同步里添加该目录&lt;/h2&gt;
-&lt;p&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   设置完成后可以看到原始目录下会多出几个目录，这个不用管
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-&lt;h2 id=&quot;heading-3&quot;&gt;修改文件并等待文件同步完成&lt;/h2&gt;
-&lt;p&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   这时会发现&lt;b&gt;无论修改多少次&lt;/b&gt;，无论是手动刷新还是自动同步，文件权限都不会被修改
-&lt;/p&gt;
-
-&lt;p&gt;
-   但是，如果这时候打开绿联云客户端自带的文件管理，并打开同步的目录(&lt;b&gt;不用打开文件，只打开目录&lt;/b&gt;)，然后手动刷新同步，或者等待自动同步完成，就会发现本地文件的权限已经被更改
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-filesync-bug-07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   这么严重的BUG，我觉得真的不应该出现，&lt;b&gt;如果已经使用了文件同步的用户，千万千万不要打开绿联云文件管理里的同步目录&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   我目前使用的是&lt;b&gt;MacOS v4.3.0 版本&lt;/b&gt;，其它系统暂时不清楚是否有同样的问题
-&lt;/p&gt;</content>
-        <category term="Life"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>绿联DX4600 Pro禁用迅雷和中国移动云盘进程</title>
-      <link href="" rel="alternate"></link>
-      <published>Mon, 12 Jun 2023 15:48:46 +0000</published>
-      <updated>Wed, 14 Jun 2023 13:16:43 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;p&gt;
-前不久入手了一个绿联的 &lt;b&gt;DX4600Pro&lt;/b&gt; nas, 外观和硬件确实很精致，但同样发现系统也挺简陋的
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;为什么要禁用？&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 对于&lt;b&gt;中国移动云盘&lt;/b&gt;，因为我目前没有使用也暂时不准备使用，但是在任务管理器里可以看到相关进程一直在运行，去了进程眼不见心不烦
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 对于 &lt;b&gt;迅雷下载&lt;/b&gt;，我只能说真的恶心，每个硬盘都要新建一个迅雷下载目录不说，我明明已经是白金会员，但是下载却完全没速度，试用超级会员又能满宽带下载，删又删不掉，只好禁用掉进程
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-2&quot;&gt;禁用流程&lt;/h2&gt;
-&lt;p&gt;
-   &lt;b&gt;注意：禁用服务可能会造成未知的后果，所引发的风险，请自行承担&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.1&quot;&gt;开启远程协助&lt;/h3&gt;
-&lt;p&gt;
-    首先到设备管理开启远程协助，得到验证码
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.2&quot;&gt;ssh登录&lt;/h3&gt;
-&lt;p&gt;
-    我这边使用的是MacOS自带的ssh
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ssh root@192.168.31.65...&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;为什么要禁用？&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;禁用流程&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;开启远程协助&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;ssh登录&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;禁用迅雷&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;禁用中国移动云盘&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-前不久入手了一个绿联的 &lt;b&gt;DX4600Pro&lt;/b&gt; nas, 外观和硬件确实很精致，但同样发现系统也挺简陋的
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;为什么要禁用？&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 对于&lt;b&gt;中国移动云盘&lt;/b&gt;，因为我目前没有使用也暂时不准备使用，但是在任务管理器里可以看到相关进程一直在运行，去了进程眼不见心不烦
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 对于 &lt;b&gt;迅雷下载&lt;/b&gt;，我只能说真的恶心，每个硬盘都要新建一个迅雷下载目录不说，我明明已经是白金会员，但是下载却完全没速度，试用超级会员又能满宽带下载，删又删不掉，只好禁用掉进程
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-2&quot;&gt;禁用流程&lt;/h2&gt;
-&lt;p&gt;
-   &lt;b&gt;注意：禁用服务可能会造成未知的后果，所引发的风险，请自行承担&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.1&quot;&gt;开启远程协助&lt;/h3&gt;
-&lt;p&gt;
-    首先到设备管理开启远程协助，得到验证码
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.2&quot;&gt;ssh登录&lt;/h3&gt;
-&lt;p&gt;
-    我这边使用的是MacOS自带的ssh
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ssh root@192.168.31.65 -p 922&lt;/pre&gt;
-
-&lt;p&gt;
-    用户默认为&lt;code&gt;root&lt;/code&gt;，端口默认为&lt;code&gt;922&lt;/code&gt;，IP地址可以在设备信息里查看
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    如果提示拒绝连接(&lt;code&gt;ssh: connect to host 192.168.31.65 port 922: Connection refused&lt;/code&gt;)， 则需要重启设备，注意重启前保存运行的任务，重启完成后正常即可登录。
-    ssh登录密码前缀为 &lt;code&gt;L#W$%W1uGa&lt;/code&gt;，后缀为开启远程协助时的验证码，比如验证码是&lt;code&gt;XXX&lt;/code&gt;，则密码为 &lt;code&gt;L#W$%W1uGaXXX&lt;/code&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    登录后可以使用正常的Linux命令，比如查看cpu信息、使用htop查看进程等
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.3&quot;&gt;禁用迅雷&lt;/h3&gt;
-&lt;p&gt;
-    在 &lt;code&gt;/ugreen/thunder/xunlei-pan/&lt;/code&gt; 目录下有两个脚本: &lt;code&gt;start.sh&lt;/code&gt; 和 &lt;code&gt;stop.sh&lt;/code&gt;, 根据文件名称以及查看其内容可以看出 &lt;code&gt;stop.sh&lt;/code&gt; 用于停止迅雷服务，&lt;code&gt;start.sh&lt;/code&gt; 用于开启服务，并且在 &lt;code&gt;start.sh&lt;/code&gt; 里有这么一段
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    那么问题就简单了，使用 &lt;b&gt;vi&lt;/b&gt; 修改 &lt;code&gt;/ugreen/thunder/xunlei-pan/start.sh&lt;/code&gt; 的内容，注释掉倒数第二行的代码(在 &lt;code&gt;su - $thunderName&lt;/code&gt; 前加一个 &lt;b&gt;#&lt;/b&gt;)，然后执行 &lt;code&gt;/ugreen/thunder/xunlei-pan/stop.sh&lt;/code&gt;，到任务管理器里查看迅雷进程就消失了且不会重新出现
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.4&quot;&gt;禁用中国移动云盘&lt;/h3&gt;
-&lt;p&gt;
-    中国移动云盘的启动文件在 &lt;code&gt;/data/nas_server/cmcc_svr&lt;/code&gt;，由于这是个二进制文件，无法修改其内容，原本想去除可执行权限，但测试发现使用 &lt;code&gt;chmod -x /data/nas_server/cmcc_svr&lt;/code&gt; 后会被其他进程恢复, 所以通过修改文件名称来禁用进程
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;cd /data/nas_server/ &amp;amp;&amp;amp; mv cmcc_svr cmcc_svr.backup&lt;/pre&gt;
-&lt;p&gt;
-    然后kill掉原来的进程即可
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ps axuf | grep cmcc | grep -v grep | awk &amp;#39;{printf $2}&amp;#39; | xargs kill -9&lt;/pre&gt;
-
-&lt;p&gt;
-    这样在任务管理器里看不到中国移动云盘的进程，百度网盘同理
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/06/DX4600Pro-07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;其它&lt;/h2&gt;
-&lt;p&gt;
-   吐槽一下绿联云影院，各种识别错误，把伪恋识别成十二怒汉，十一罗汉也就算了，还把原盘下的花絮识别成错误的影片，识别错也就算了，还不支持多选，只能一个一个地解除匹配信息
-&lt;/p&gt;
-
-&lt;p&gt;
-   绿联系统能用，但确实不太好用，还好 &lt;b&gt;Docker&lt;/b&gt; 用起来还算不错，希望绿联能继续优化，尤其是进程管理、权限管理以及云影院的识别，另外就是坐等大佬出一期刷其它系统的教程
-&lt;/p&gt;</content>
-        <category term="Life"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>基于Quasar实现一个树状选择器TreeSelect</title>
-      <link href="" rel="alternate"></link>
-      <published>Tue, 09 May 2023 23:23:52 +0000</published>
-      <updated>Sun, 17 Dec 2023 16:30:39 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/05/基于Quasar实现一个树状选择器TreeSelect.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/05/基于Quasar实现一个树状选择器TreeSelect.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;p&gt;
-&lt;code&gt;Quasar&lt;/code&gt; 默认没有树状选择器的支持，而在 &lt;code&gt;Vue&lt;/code&gt; 中通常会使用一个现成的&lt;a href=&quot;https://github.com/riophae/vue-treeselect&quot;&gt;vue-treeselect&lt;/a&gt;, 这是一个非常不错的 &lt;code&gt;Select&lt;/code&gt; 组件, 此次不使用该组件，而是利用 &lt;code&gt;Quasar&lt;/code&gt; 中的 &lt;code&gt;q-select&lt;/code&gt; 和 &lt;code&gt;q-tree&lt;/code&gt; 结合，实现一个类似的树状选择器
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;源数据结构&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{
-    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;,
-    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;admin&amp;#34;&lt;/span&gt;,
-    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;desc&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;...&lt;/span&gt;&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;源数据结构&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;组件模版&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;组件选项&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;最终实现&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-&lt;code&gt;Quasar&lt;/code&gt; 默认没有树状选择器的支持，而在 &lt;code&gt;Vue&lt;/code&gt; 中通常会使用一个现成的&lt;a href=&quot;https://github.com/riophae/vue-treeselect&quot;&gt;vue-treeselect&lt;/a&gt;, 这是一个非常不错的 &lt;code&gt;Select&lt;/code&gt; 组件, 此次不使用该组件，而是利用 &lt;code&gt;Quasar&lt;/code&gt; 中的 &lt;code&gt;q-select&lt;/code&gt; 和 &lt;code&gt;q-tree&lt;/code&gt; 结合，实现一个类似的树状选择器
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;源数据结构&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{
-    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;,
-    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;admin&amp;#34;&lt;/span&gt;,
-    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;desc&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;管理员&amp;#34;&lt;/span&gt;,
-    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;children&amp;#34;&lt;/span&gt;: [{
-        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;6&lt;/span&gt;,
-        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;superadmin&amp;#34;&lt;/span&gt;,
-        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;desc&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;超级管理员&amp;#34;&lt;/span&gt;,
-        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;children&amp;#34;&lt;/span&gt;: [{
-            &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#ae81ff&quot;&gt;10&lt;/span&gt;,
-            &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;vvvvv&amp;#34;&lt;/span&gt;,
-            &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;desc&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;dddd&amp;#34;&lt;/span&gt;,
-        }]
-    }]
-}&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;组件模版&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;
-  &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-select&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;dense&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;outlined&lt;/span&gt;
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;emit-value&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;map-options&lt;/span&gt;
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;option-value&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;option-label&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;label&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;角色列表&amp;#34;&lt;/span&gt;
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;:options&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;list&amp;#34;&lt;/span&gt;
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;:loading&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.loading&amp;#34;&lt;/span&gt;
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;:multiple&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;multiple&amp;#34;&lt;/span&gt;
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;:use-chips&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;multiple&amp;#34;&lt;/span&gt;
-            &lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;@&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;filter&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;filterFn&amp;#34;&lt;/span&gt;
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;:model-value&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;modelValue&amp;#34;&lt;/span&gt;
-            &lt;span style=&quot;color:#960050;background-color:#1e0010&quot;&gt;@&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;update:model-value&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;value =&amp;gt; $emit(&amp;#39;update:modelValue&amp;#39;, value)&amp;#34;&lt;/span&gt; &amp;gt;
-    &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-slot:option&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;{ itemProps, opt, selected, toggleOption }&amp;#34;&lt;/span&gt;&amp;gt;
-      &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;q-tree&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;:nodes&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;[opt]&amp;#34;&lt;/span&gt;
-              &lt;span style=&quot;color:#a6e22e&quot;&gt;node-key&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;
-              &lt;span style=&quot;color:#a6e22e&quot;&gt;label-key&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;
-              &lt;span style=&quot;color:#a6e22e&quot;&gt;:tick-strategy&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;multiple?&amp;#39;strict&amp;#39;:&amp;#39;none&amp;#39;&amp;#34;&lt;/span&gt;
-              &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model:ticked&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.ticked&amp;#34;&lt;/span&gt;
-              &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model:selected&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;table.selected&amp;#34;&lt;/span&gt;
-              &lt;span style=&quot;color:#a6e22e&quot;&gt;v-if&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;opt.parent_id == 0&amp;#34;&lt;/span&gt;&amp;gt;
-        &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-slot:default-header&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;prop&amp;#34;&lt;/span&gt;&amp;gt;
-          &amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;class&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;items-center&amp;#34;&lt;/span&gt;&amp;gt;
-            {{ prop.node.desc }}({{ prop.node.name }})
-          &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;div&lt;/span&gt;&amp;gt;
-        &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;
-      &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-tree&lt;/span&gt;&amp;gt;
-    &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;
-  &amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;q-select&lt;/span&gt;&amp;gt;
-&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;template&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-&lt;p&gt;
-   这里利用 &lt;code&gt;slot&lt;/code&gt; 方式添加 &lt;code&gt;q-tree&lt;/code&gt; 组件, 由于只能传递单个选项(&lt;code&gt;option&lt;/code&gt;), 所以在传递给 &lt;code&gt;q-tree&lt;/code&gt; 的参数 &lt;code&gt;nodes&lt;/code&gt; 需要修改成 &lt;code&gt;[opt]&lt;/code&gt;。
-&lt;/p&gt;
-
-&lt;p&gt;
-   而在 &lt;code&gt;q-tree&lt;/code&gt; 中，单选和多选同样有区别，单选所使用的参数为 &lt;code&gt;v-model:ticked&lt;/code&gt;, 点击选项即可选中，多选所使用的参数为 &lt;code&gt;v-model:selected&lt;/code&gt;, 配置为多选状态时每个树状列表选项前会添加一个 &lt;code&gt;checkbox&lt;/code&gt;，多选状态需要配置 &lt;code&gt;tick-strategy&lt;/code&gt; 参数
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;code&gt;strict&lt;/code&gt;: 父选项和子选项的选中状态相互独立
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;code&gt;leaf&lt;/code&gt;: 选中父选项同时选中父选项下的子选项
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;code&gt;none&lt;/code&gt;: 禁用多选
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-3&quot;&gt;组件选项&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;props&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;defineProps&lt;/span&gt;({
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;multiple&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; {
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;type&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; Boolean,
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;default&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;false&lt;/span&gt;,
-    },
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;modelValue&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; {
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;default&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;null&lt;/span&gt;,
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;required&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;,
-    },
-})
-&lt;/pre&gt;
-&lt;p&gt;
-   父组件可以使用
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;&lt;span style=&quot;color:#f92672&quot;&gt;role-select&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;multiple&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;v-model&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;form.roles&amp;#34;&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span style=&quot;color:#f92672&quot;&gt;role-select&lt;/span&gt;&amp;gt;&lt;/pre&gt;
-
-&lt;p&gt;
-   同时，为了区分多选和单选, 需要将没有用到的选项设置为 &lt;code&gt;undefined&lt;/code&gt;, 同时监听选项的修改
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;emit&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;defineEmits&lt;/span&gt;([&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;update:model-value&amp;#39;&lt;/span&gt;])
-&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; { &lt;span style=&quot;color:#a6e22e&quot;&gt;modelValue&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;multiple&lt;/span&gt; } &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;toRefs&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;props&lt;/span&gt;)
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;multiple&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;) {
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;selected&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;undefined&lt;/span&gt;
-
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;watch&lt;/span&gt;(() =&amp;gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;ticked&lt;/span&gt;, (&lt;span style=&quot;color:#a6e22e&quot;&gt;val&lt;/span&gt;) =&amp;gt; {
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;emit&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;update:model-value&amp;#39;&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;val&lt;/span&gt;)
-    })
-
-} &lt;span style=&quot;color:#66d9ef&quot;&gt;else&lt;/span&gt; {
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;ticked&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;undefined&lt;/span&gt;
-
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;watch&lt;/span&gt;(() =&amp;gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;selected&lt;/span&gt;, (&lt;span style=&quot;color:#a6e22e&quot;&gt;val&lt;/span&gt;) =&amp;gt; {
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;emit&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;update:model-value&amp;#39;&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;val&lt;/span&gt;)
-    })
-}
-&lt;/pre&gt;
-
-&lt;p&gt;
-   为了让子选项在选中状态时也能够显示 &lt;code&gt;.name&lt;/code&gt;，而不是 &lt;code&gt;.id&lt;/code&gt;，需要遍历所有选项，将其合成一个列表，在 &lt;code&gt;q-tree&lt;/code&gt; 组件中通过判断 &lt;code&gt;row.parent_id&lt;/code&gt; 只显示父组件, 这里也可以通过定义 &lt;code&gt;q-select&lt;/code&gt; 的 &lt;code&gt;selected&lt;/code&gt; 或者是 &lt;code&gt;selected-item&lt;/code&gt; 插槽来显示正确的名称
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;function&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;) {
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#f92672&quot;&gt;!&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;) {
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; []
-    }
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;let&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; []
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;rows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;forEach&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt; =&amp;gt; {
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;push&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;)
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;children&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;children&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;length&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;) {
-            &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;concat&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;row&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;children&lt;/span&gt;))
-        }
-    })
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;newRows&lt;/span&gt;
-}
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;computed&lt;/span&gt;(() =&amp;gt; {
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;makeRows&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;)
-})
-&lt;/pre&gt;
-
-&lt;p&gt;
-   最后就是从后端获取列表数据
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;ref&lt;/span&gt;({
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; [],
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;ticked&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; [],
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;expanded&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; [],
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;selected&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; [],
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;loading&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;:&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;false&lt;/span&gt;,
-})
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;handleFetch&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;props&lt;/span&gt;) =&amp;gt; {
+&lt;span style=&quot;color:#66d9ef&quot;&gt;services&lt;/span&gt;:
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;blog&lt;/span&gt;:
     ...
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;loading&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;api&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;fetchList&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;query&lt;/span&gt;).&lt;span style=&quot;color:#a6e22e&quot;&gt;then&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;response&lt;/span&gt; =&amp;gt; {
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;response&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;data&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;
-    }).&lt;span style=&quot;color:#66d9ef&quot;&gt;finally&lt;/span&gt;(() =&amp;gt; {
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;loading&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;false&lt;/span&gt;
-    })
-}
+  &lt;span style=&quot;color:#66d9ef&quot;&gt;memos&lt;/span&gt;:
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;image&lt;/span&gt;: neosmemo/memos:latest
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;container_name&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;memos&amp;#34;&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;ports&lt;/span&gt;:
+      - &lt;span style=&quot;color:#ae81ff&quot;&gt;127.0&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;.0&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;.1&lt;/span&gt;:&lt;span style=&quot;color:#ae81ff&quot;&gt;8005&lt;/span&gt;:&lt;span style=&quot;color:#ae81ff&quot;&gt;5230&lt;/span&gt;
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;volumes&lt;/span&gt;:
+      - ./memos:/var/opt/memos
+    &lt;span style=&quot;color:#66d9ef&quot;&gt;network_mode&lt;/span&gt;: bridge&lt;/pre&gt;
+&lt;p&gt;
+   需要注意的是 &lt;code&gt;./memos&lt;/code&gt; 目录用来作为数据持久化
+&lt;/p&gt;
 
-&lt;span style=&quot;color:#66d9ef&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;filterFn&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;val&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;update&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;abort&lt;/span&gt;) =&amp;gt; {
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;table&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;value&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;length&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;) {
-        &lt;span style=&quot;color:#a6e22e&quot;&gt;update&lt;/span&gt;()
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt;
+&lt;h2 id=&quot;heading-3&quot;&gt;nginx和https配置&lt;/h2&gt;
+&lt;p&gt;
+   这也是和我之前的服务保持一致, 我的 &lt;code&gt;nginx&lt;/code&gt; 配置目录格式如下
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;/etc/nginx/
+├── nginx.conf
+├── conf.d
+│   ├── default.conf
+│   ├── upsteam.conf
+│   ├── blog.conf
+│   ├── cloud.conf
+│   ├── ...
+│   ├── memos.conf
+│   └── ssl
+│       ├── xxx.com.conf&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 使用 &lt;b&gt;HTTPS&lt;/b&gt; 连接
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;server&lt;/span&gt; {
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;       &lt;span style=&quot;color:#ae81ff&quot;&gt;80&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;  &lt;span style=&quot;color:#e6db74&quot;&gt;[::]:80&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;server_name&lt;/span&gt;  &lt;span style=&quot;color:#e6db74&quot;&gt;xxx.com&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;*.xxx.com&lt;/span&gt;;
+
+    &lt;span style=&quot;color:#f92672&quot;&gt;location&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/&lt;/span&gt; {
+        &lt;span style=&quot;color:#f92672&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;301&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;https://&lt;/span&gt;$host$request_uri;
     }
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;update&lt;/span&gt;(() =&amp;gt; {&lt;span style=&quot;color:#a6e22e&quot;&gt;handleFetch&lt;/span&gt;()})
-}
-&lt;/pre&gt;
+    &lt;span style=&quot;color:#f92672&quot;&gt;location&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;^~&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/.well-known/acme-challenge&lt;/span&gt; {
+        &lt;span style=&quot;color:#f92672&quot;&gt;alias&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/home/xxx/app/acme.sh/xxx.com/.well-known/acme-challenge&lt;/span&gt;;
+    }
+}&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 添加 &lt;code&gt;upstream&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;upstream&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;memos.xxx.com&lt;/span&gt; {
+    &lt;span style=&quot;color:#f92672&quot;&gt;server&lt;/span&gt; 127.0.0.1:&lt;span style=&quot;color:#ae81ff&quot;&gt;8005&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;max_fails=3&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;fail_timeout=30s&lt;/span&gt;;
+}&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 添加 &lt;code&gt;memos.conf&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;server&lt;/span&gt; {
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;       &lt;span style=&quot;color:#ae81ff&quot;&gt;443&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;ssl&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;listen&lt;/span&gt;       &lt;span style=&quot;color:#e6db74&quot;&gt;[::]:443&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;ssl&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;server_name&lt;/span&gt;  &lt;span style=&quot;color:#e6db74&quot;&gt;memos.xxx.com&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;include&lt;/span&gt;      &lt;span style=&quot;color:#e6db74&quot;&gt;/etc/nginx/conf.d/ssl/xxx.com.conf&lt;/span&gt;;
 
-&lt;h2 id=&quot;heading-4&quot;&gt;最终实现&lt;/h2&gt;
+    &lt;span style=&quot;color:#f92672&quot;&gt;access_log&lt;/span&gt;  &lt;span style=&quot;color:#e6db74&quot;&gt;/home/xxx/app/logs/memos_nginx_access.log&lt;/span&gt;;
+    &lt;span style=&quot;color:#f92672&quot;&gt;error_log&lt;/span&gt;   &lt;span style=&quot;color:#e6db74&quot;&gt;/home/xxx/app/logs/memos_nginx_error.log&lt;/span&gt;;
+
+    &lt;span style=&quot;color:#f92672&quot;&gt;location&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;/&lt;/span&gt; {
+        &lt;span style=&quot;color:#f92672&quot;&gt;proxy_pass&lt;/span&gt;       &lt;span style=&quot;color:#e6db74&quot;&gt;http://memos.xxx.com&lt;/span&gt;;
+        &lt;span style=&quot;color:#f92672&quot;&gt;proxy_redirect&lt;/span&gt;   &lt;span style=&quot;color:#66d9ef&quot;&gt;off&lt;/span&gt;;
+        &lt;span style=&quot;color:#f92672&quot;&gt;proxy_set_header&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;Host&lt;/span&gt; $host;
+        &lt;span style=&quot;color:#f92672&quot;&gt;proxy_set_header&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;X-Real-IP&lt;/span&gt; $remote_addr;
+        &lt;span style=&quot;color:#f92672&quot;&gt;proxy_set_header&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;X-Forwarded-For&lt;/span&gt; $proxy_add_x_forwarded_for;
+    }
+}&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;添加DNS记录&lt;/b&gt;: 到 &lt;code&gt;CloudFlare&lt;/code&gt; 添加一个 &lt;code&gt;memos&lt;/code&gt; 的 &lt;b&gt;CNAME&lt;/b&gt; 记录到 &lt;code&gt;cname.xxx.com&lt;/code&gt;, 等待一分钟即可
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;添加SSL证书&lt;/b&gt;: 如果使用了 &lt;code&gt;CloudFlare&lt;/code&gt;, 这一步可以忽略。 因为我很早就建好了一个 &lt;code&gt;acme.sh&lt;/code&gt; 服务，现在可以使用它来增加一个证书，首先需要重启 &lt;code&gt;nginx&lt;/code&gt;， 生成证书前也可以使用 &lt;b&gt;dig memos.xxx.com&lt;/b&gt; 验证 &lt;code&gt;DNS&lt;/code&gt; 是否生效, 我这里使用的是 &lt;code&gt;webroot&lt;/code&gt; 方式
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec acme.sh --issue -d xxx.com -d www.xxx.com,memos.xxx.com -w /acme.sh/xxx.com --preferred-chain &amp;#34;ISRG&amp;#34; --server  letsencrypt&lt;/pre&gt;
+&lt;p&gt;
+     然后重启nginx
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-4&quot;&gt;移动端支持&lt;/h2&gt;
+&lt;p&gt;
+   既然要记录一些临时的想法，肯定不能只有web平台，否则有了新想法，等打开浏览器，登录，然后输入，这时候想法早没了，虽然 &lt;code&gt;Memos&lt;/code&gt; 本身自带的web界面在手机浏览器上也能渲染得很好，但是有一个手机APP还是会更方便一些，目前有一个 &lt;a href=&quot;https://memos.moe&quot;&gt;memos.moe&lt;/a&gt; 可供使用，我也安装使用过，确实流畅，但还有一些基础功能比如资源管理和系统管理没有实现，为此，我自己写了一个 &lt;b&gt;专属APP&lt;/b&gt;, 添加了这一部分的实现
+&lt;/p&gt;
+
    &lt;div class=&quot;img-layout&quot;&gt;
 &lt;p&gt;
    
-&lt;a href=&quot;https://s.libforest.com/images/2023/05/quasar-tree-select.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/05/quasar-tree-select.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;a href=&quot;https://s.libforest.com/images/2023/03/memos-app-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/memos-app-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
 &lt;/a&gt;
    
-&lt;a href=&quot;https://s.libforest.com/images/2023/05/quasar-tree-select-multiple.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/05/quasar-tree-select-multiple.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;a href=&quot;https://s.libforest.com/images/2023/03/memos-app-02.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/memos-app-02.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/03/memos-app-03.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/memos-app-03.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2023/03/memos-app-04.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2023/03/memos-app-04.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
 &lt;/a&gt;
 &lt;/p&gt;
 
-&lt;/div&gt;</content>
-        <category term="Life/Coding"></category>
+&lt;/div&gt;
+
+&lt;h2 id=&quot;heading-5&quot;&gt;FAQ&lt;/h2&gt;
+&lt;h3 id=&quot;heading-5.1&quot;&gt;重置密码&lt;/h3&gt;
+&lt;p&gt;
+    升级到 &lt;code&gt;0.12.0&lt;/code&gt; 后无法登录，总是提示 &lt;code&gt;Incorrect login credentials&lt;/code&gt;, 因为使用的 &lt;code&gt;Docker&lt;/code&gt; 部署，找到挂载目录下的 &lt;code&gt;memos_prod.db&lt;/code&gt; 文件(&lt;b&gt;请先备份好&lt;/b&gt;), 我的机器上没有安装 &lt;code&gt;sqlite&lt;/code&gt;, 所以需要
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 拷贝到本地
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ scp xxx:~/app/memos/memos_prod.db ./&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 然后使用 &lt;code&gt;sqlite&lt;/code&gt; 打开文件并手动更新
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ sqlite3 memos_prod.db
+SQLite version 3.32.2 2021-07-12 15:00:17
+Enter &amp;#34;.help&amp;#34; for usage hints.
+sqlite&amp;gt; select * from user;
+...
+sqlite&amp;gt; update user set password_hash=&amp;#34;$2a$14$ajq8Q7fbtFRQvXpdCq7Jcuy.Rx1h/L4J60Otx.gyNLbAYctGMJ9tK&amp;#34; where id=1;
+sqlite&amp;gt; .quit&lt;/pre&gt;
+&lt;p&gt;
+      这时候密码会被设置成 &lt;b&gt;secret&lt;/b&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 覆盖原文件(需要先暂停服务)
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ scp ./memos_prod.db xxx:~/app/memos/memos_prod.db&lt;/pre&gt;
+&lt;p&gt;
+      重启服务，重新登录后修改新密码即可
+&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+        <category term="Life"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>人生中的第一台组装电脑</title>
+      <link href="" rel="alternate"></link>
+      <published>Fri, 04 Nov 2022 19:32:45 +0000</published>
+      <updated>Sun, 23 Jul 2023 20:03:05 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2022/11/人生中的第一台组装电脑.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2022/11/人生中的第一台组装电脑.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+前两天双11，终于是给自己配了人生中的第一台台式电脑，从毕业后就一直想要一台属于自己的机器(游戏机)，犹记得人生中的第一台电脑还是上大学时买的，虽然只是3000多，720m的显卡，但它陪伴了我6年多时间，曾经使用它学习编程，娱乐，算是我的导师和娱乐伙伴，后来毕业后才购买了一台macbook pro，一直陪伴我至今。
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1 id=&quot;heading-1&quot;&gt;配件选购&lt;/h1&gt;
+
+&lt;table&gt;
+&lt;tr&gt;
+&lt;th&gt;配件&lt;/th&gt;
+&lt;th&gt;型号&lt;/th&gt;
+&lt;th&gt;价格&lt;/th&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;CPU&lt;/td&gt;
+&lt;td&gt;12600KF&lt;/td&gt;
+&lt;td&gt;1535.65&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;主板&lt;/td&gt;
+&lt;td&gt;微星B660M迫击炮WIFI&lt;/td&gt;
+&lt;td&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;显卡&lt;/td&gt;
+&lt;td&gt;七彩虹3070 ULTRA W&lt;/td&gt;
+&lt;td&gt;4490.7(+主板)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;电源&lt;/td&gt;
+&lt;td&gt;海韵GX750&lt;/td&gt;
+&lt;td&gt;627.7&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;机箱...&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;配件选购&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;CPU和主板&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;显卡&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.3&quot;&gt;显示器&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1.4&quot;&gt;机箱和散热&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;装机&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;硬件组装&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;BIOS设置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;系统安装&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;一次点亮&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+前两天双11，终于是给自己配了人生中的第一台台式电脑，从毕业后就一直想要一台属于自己的机器(游戏机)，犹记得人生中的第一台电脑还是上大学时买的，虽然只是3000多，720m的显卡，但它陪伴了我6年多时间，曾经使用它学习编程，娱乐，算是我的导师和娱乐伙伴，后来毕业后才购买了一台macbook pro，一直陪伴我至今。
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1 id=&quot;heading-1&quot;&gt;配件选购&lt;/h1&gt;
+
+&lt;table&gt;
+&lt;tr&gt;
+&lt;th&gt;配件&lt;/th&gt;
+&lt;th&gt;型号&lt;/th&gt;
+&lt;th&gt;价格&lt;/th&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;CPU&lt;/td&gt;
+&lt;td&gt;12600KF&lt;/td&gt;
+&lt;td&gt;1535.65&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;主板&lt;/td&gt;
+&lt;td&gt;微星B660M迫击炮WIFI&lt;/td&gt;
+&lt;td&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;显卡&lt;/td&gt;
+&lt;td&gt;七彩虹3070 ULTRA W&lt;/td&gt;
+&lt;td&gt;4490.7(+主板)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;电源&lt;/td&gt;
+&lt;td&gt;海韵GX750&lt;/td&gt;
+&lt;td&gt;627.7&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;机箱&lt;/td&gt;
+&lt;td&gt;乔思伯D30 白色&lt;/td&gt;
+&lt;td&gt;317.8&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;散热&lt;/td&gt;
+&lt;td&gt;利民PA120 白色&lt;/td&gt;
+&lt;td&gt;185&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;SSD&lt;/td&gt;
+&lt;td&gt;宏碁GM7000 1T&lt;/td&gt;
+&lt;td&gt;605.7&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;内存&lt;/td&gt;
+&lt;td&gt;光威天策3600 8G*2&lt;/td&gt;
+&lt;td&gt;268&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;风扇&lt;/td&gt;
+&lt;td&gt;乔思伯ZF120三联&lt;/td&gt;
+&lt;td&gt;112&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;键盘&lt;/td&gt;
+&lt;td&gt;京东京造K3&lt;/td&gt;
+&lt;td&gt;340.98&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;音响&lt;/td&gt;
+&lt;td&gt;漫步者S880&lt;/td&gt;
+&lt;td&gt;788.24&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;显示器&lt;/td&gt;
+&lt;td&gt;AOC 273QXP/D&lt;/td&gt;
+&lt;td&gt;1768.1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;U盘&lt;/td&gt;
+&lt;td&gt;闪迪酷豆32G&lt;/td&gt;
+&lt;td&gt;26.9&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;p&gt;
+  &lt;b&gt;总计：11066.77&lt;/b&gt;, 因为是第一次配电脑，所以全部都是在京东购买，也许PDD会更便宜，但电子产品还是更信任京东
+&lt;/p&gt;
+
+&lt;p&gt;
+  
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-family.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-family.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1.1&quot;&gt;CPU和主板&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;CPU&lt;/b&gt;:  主要在12400，12400F，12490F和12600KF中选，由于想要性能更强一些，价格也要适中的，124xx性能稍弱，13600KF刚发布价格还有些贵，所以选了12600KF，至于为什么要选择带F(不带核显)的CPU，因为我第一台笔记本就是带双显卡，windows下还好，基本不用折腾，但是如果安装Linux，双显卡却非常麻烦，至今还记得大黄蜂(&lt;b&gt;bumblebee&lt;/b&gt;)和当初想要在Linux下玩游戏而折腾的岁月
+&lt;/p&gt;
+
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-cpu.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-cpu.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;主板&lt;/b&gt;: 主板基本上就是在微星迫击炮和华硕重炮手中选，主要是想要带WIFI的主板，这样就不用再单独购买WIFI模块，后面看了评测，说是重炮手的显卡插槽会更靠下一些，由于我购买的是MATX机箱，所以选了迫击炮，至于为什么选了带K的CPU却又选了不能超频的主板，只能说如果有12600F我是相当愿意的
+&lt;/p&gt;
+
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-board.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-board.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-1.2&quot;&gt;显卡&lt;/h2&gt;
+&lt;p&gt;
+   由于众所周知的原因，最近几年的显卡市场只能说是一言难尽，除3050之外的30系显卡都是矿卡重灾区，京东上显卡的价格也是一直居高不下，618前，我基本上只敢看一下3060和3060TI，还好后面停止挖矿，显卡价格稍微所有下降，才选择七彩虹这款3070 ULTRA W，虽然这款显卡只能算是低端，但它是白色(漂亮)的啊，其它白色的显卡像铭瑄3070TI瑷珈在双11前后就一直没货，花嫁听说叫声有点大，我怕玩游戏时别人误会。。。而有一款黑色的红魔6750虽然早早加入购物车，但31号晚上只关注了其他硬件，导致错过了24xx的好价，真是心痛到无法呼(fu)吸
+&lt;/p&gt;
+
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-gpu.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-gpu.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1.3&quot;&gt;显示器&lt;/h2&gt;
+&lt;p&gt;
+   显示器主要关注27寸高刷，所以备选LG 850，LG 83B，AOC 273QXP/D，虽然对AOC更换面板事件有所耳闻，而LG的面板调教会更好，但LG的显示器外观确实不符合我的审美，而且LG不支持左右旋转，外置一个大大的电源，83B不支持USB接口，最终在相似价格下还是选了AOC
+&lt;/p&gt;
+
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-display.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-display.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1.4&quot;&gt;机箱和散热&lt;/h2&gt;
+&lt;p&gt;
+   说实话，其它硬件我觉得都好选，但机箱的选择属于选择困难证的灾难，各种尺寸，各种形状，各种颜色，最重要的还要散热要好，在各种机箱重挑花了眼，刚开始京东上第一眼就挑中爱国者M2，感觉确实好看，但后来看评测说M2是一个闷罐又不得不重新选择，最后备选的机箱挺多，像SKTC S200，乔思伯D30，先马的MINI系列等，S200看了评测感觉还挺好的，但这货在双11前几天偷偷涨了20快，怒删之，先马的MINI系列网上评测比较少，D30评测比较多，而且确实好看，不过由于我这边想要上风冷散热，所以一开始对D30还挺犹豫的，虽然最后还是为它的颜值买单，至于华硕冰立方这种全身洞洞的机箱，我只能说散热挺好，但真心丑
+&lt;/p&gt;
+
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-sanre.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-sanre.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h1 id=&quot;heading-2&quot;&gt;装机&lt;/h1&gt;
+&lt;p&gt;
+  装机过程就没怎么拍照了，只因为第一次装机就装了3天，虽然也有配件没有同时到齐的原因，但更多的是装的时候&lt;b&gt;真的好小心翼翼&lt;/b&gt;，尤其是主板元器件显露在外面，生怕不小心就弄坏了，剩下的就是装机的一些记录和感受:
+&lt;/p&gt;
+&lt;h2 id=&quot;heading-2.1&quot;&gt;硬件组装&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;机箱&lt;/b&gt;: 由于是小机箱，大双塔最好在主板放进机箱后再装，否则很影响接线和理线；底部没有装风扇，也庆幸没装，否则显卡没法斜着放进去
+     
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-04.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-04.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;理线&lt;/b&gt;: 装机半小时，理线一整天不是吹的
+     
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-05.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-05.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;SSD&lt;/b&gt;: 购买SSD记得看清是否自带散热片，我买的这款自带散热，与主板带的冲突，只能手动撕下
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;散热&lt;/b&gt;: 只装了顶部和背部三个出风风扇，CPU FPU单烤15分钟稳定在77℃，显卡甜甜圈20分钟稳定67℃(感觉还行？)
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;其它&lt;/b&gt;: D30开关机键有灯，windows睡眠模式下还会闪烁，放在卧室会影响睡眠，为啥网上测评D30的那么多，就没有一个提到这一点
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-guizhi.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-guizhi.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-2.2&quot;&gt;BIOS设置&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;内存&lt;/b&gt;: 默认2400频率，进入BIOS设置XMP就能稳定使用3600，不过颗粒是nanya的，不知道更高频率会如何
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;风扇&lt;/b&gt;: 转速也是进入BIOS设置，散热风扇转速我没改，机箱风扇默认40℃以下50%，感觉有些吵，改成30%，日常使用几乎听不到声音
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-bios-fan.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-bios-fan.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-2.3&quot;&gt;系统安装&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;系统&lt;/b&gt;: 安装时&lt;b&gt;一定要备有线键盘和有线鼠标，一定要备有线键盘和有线鼠标，一定要备有线键盘和有线鼠标&lt;/b&gt;，跳过联网可以使用 &lt;b&gt;shift+F10&lt;/b&gt;，输入 &lt;code&gt;OOBE\BYPASSNRO&lt;/code&gt;，无鼠标跳过联网无法输入命令记得使用&lt;b&gt;win+tab&lt;/b&gt;切换窗口
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;驱动&lt;/b&gt;: 提前下好蓝牙和WIIFI驱动，装好系统后连接U盘安装，连接WIFI后显卡驱动会自动下载安装，安装好蓝牙驱动后终于可以使用蓝牙鼠标(没装好前设置里不会显示蓝牙开关)
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;b&gt;分区&lt;/b&gt;: 因为是新系统安装，安装时先分了100G+116M的空间，后续本地磁盘会显示99.9G，强迫症可以到磁盘管理扩展卷，每100G记得加7M，本地磁盘要显示为整数，则扩展为102407M，200G则是204814M
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-2.4&quot;&gt;一次点亮&lt;/h2&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-01.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-01.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-02.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-02.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2022/11/computer-03.jpeg-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2022/11/computer-03.jpeg-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;</content>
+        <category term="Life"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>公共DNS</title>
+      <link href="" rel="alternate"></link>
+      <published>Wed, 14 Apr 2021 11:32:29 +0000</published>
+      <updated>Thu, 27 Jul 2023 22:35:27 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2021/04/公共DNS.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2021/04/公共DNS.html</id>
+      <summary type="html">
+&lt;table&gt;
+
+&lt;tr&gt;
+&lt;th&gt;提供商&lt;/th&gt;
+&lt;th&gt;IPv4&lt;/th&gt;
+&lt;th&gt;IPv6&lt;/th&gt;
+&lt;th&gt;DoH/DoT&lt;/th&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;百度DNS&lt;/td&gt;
+&lt;td&gt;180.76.76.76&lt;/td&gt;
+&lt;td&gt;2400:da00::6666&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;阿里DNS&lt;/td&gt;
+&lt;td&gt;223.5.5.5,223.6.6.6&lt;/td&gt;
+&lt;td&gt;2400:3200::1,2400:3200:baba::1&lt;/td&gt;
+&lt;td&gt;dns.alidns.com&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;谷歌DNS&lt;/td&gt;
+&lt;td&gt;8.8.8...&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</summary>
+      <content type="html">
+&lt;table&gt;
+
+&lt;tr&gt;
+&lt;th&gt;提供商&lt;/th&gt;
+&lt;th&gt;IPv4&lt;/th&gt;
+&lt;th&gt;IPv6&lt;/th&gt;
+&lt;th&gt;DoH/DoT&lt;/th&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;百度DNS&lt;/td&gt;
+&lt;td&gt;180.76.76.76&lt;/td&gt;
+&lt;td&gt;2400:da00::6666&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;阿里DNS&lt;/td&gt;
+&lt;td&gt;223.5.5.5,223.6.6.6&lt;/td&gt;
+&lt;td&gt;2400:3200::1,2400:3200:baba::1&lt;/td&gt;
+&lt;td&gt;dns.alidns.com&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;谷歌DNS&lt;/td&gt;
+&lt;td&gt;8.8.8.8,8.8.4.4&lt;/td&gt;
+&lt;td&gt;2001:4860:4860::8888,2001:4860:4860::8844&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;</content>
+        <category term="Life"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>时代</title>
+      <link href="" rel="alternate"></link>
+      <published>Wed, 07 Apr 2021 01:08:36 +0000</published>
+      <updated>Wed, 08 Mar 2023 10:46:14 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2021/04/时代.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2021/04/时代.html</id>
+      <summary type="html">
+&lt;div style=&quot;text-align:center;&quot;&gt;
+
+  &lt;meting-js server=&quot;netease&quot; type=&quot;song&quot; id=&quot;30841464&quot;&gt;&lt;/meting-js&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+ if (!shortcodes) {
+     var shortcodes = {};
+ }
+ if (!shortcodes[&quot;music&quot;] &amp;&amp; document.querySelector(&quot;meting-js&quot;)) {
+     var meting_api = &#39;https://api.honmaple.com/meting?server=:server&amp;type=:type&amp;id=:id&amp;auth=:auth&amp;r=:r&#39;;
+
+     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/APlayer.min.js&quot;, false, true);
+     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/Meting.min.js&quot;, false, true);
+
+     shortcodes.loadCSS(&quot;https://honmaple.me/static/lib/css/APlayer.min.css&quot;);
+     shortcodes.loadCSS(&quot;https://honmaple.me/static/css/aplayer.css&quot;);
+ }
+ shortcodes[&quot;music&quot;] = true;
+&lt;/script&gt;
+
+&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+有时候总是忍不住思考&lt;br/&gt;我是不是把自己隐私保护的太好&lt;br/&gt;以至于在这个时代&lt;br/&gt;一个最好也是最坏的时代&lt;br/&gt;感到那么的不适应&lt;br/&gt;...
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;</summary>
+      <content type="html">
+&lt;div style=&quot;text-align:center;&quot;&gt;
+
+  &lt;meting-js server=&quot;netease&quot; type=&quot;song&quot; id=&quot;30841464&quot;&gt;&lt;/meting-js&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+ if (!shortcodes) {
+     var shortcodes = {};
+ }
+ if (!shortcodes[&quot;music&quot;] &amp;&amp; document.querySelector(&quot;meting-js&quot;)) {
+     var meting_api = &#39;https://api.honmaple.com/meting?server=:server&amp;type=:type&amp;id=:id&amp;auth=:auth&amp;r=:r&#39;;
+
+     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/APlayer.min.js&quot;, false, true);
+     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/Meting.min.js&quot;, false, true);
+
+     shortcodes.loadCSS(&quot;https://honmaple.me/static/lib/css/APlayer.min.css&quot;);
+     shortcodes.loadCSS(&quot;https://honmaple.me/static/css/aplayer.css&quot;);
+ }
+ shortcodes[&quot;music&quot;] = true;
+&lt;/script&gt;
+
+&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+有时候总是忍不住思考&lt;br/&gt;我是不是把自己隐私保护的太好&lt;br/&gt;以至于在这个时代&lt;br/&gt;一个最好也是最坏的时代&lt;br/&gt;感到那么的不适应&lt;br/&gt;...
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;</content>
+        <category term="Life"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>龟虽寿</title>
+      <link href="" rel="alternate"></link>
+      <published>Sat, 15 Jun 2019 23:25:44 +0000</published>
+      <updated>Sat, 15 Jun 2019 23:57:06 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2019/06/龟虽寿.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2019/06/龟虽寿.html</id>
+      <summary type="html">&lt;div class=&quot;encrypt-container entry-encrypt&quot;&gt;
+  &lt;div class=&quot;encrypt-form entry-form&quot;&gt;
+    &lt;input type=&quot;password&quot; class=&quot;encrypt-password&quot; placeholder=&quot;请输入密码&quot; /&gt;
+    &lt;i class=&quot;fa fa-key encrypt-button&quot;&gt;&lt;/i&gt;
+  &lt;/div&gt;&lt;div class=&quot;encrypt-desc&quot;&gt;龟虽寿，意犹千里可近，生死两忘。&lt;/div&gt;
+  &lt;div class=&quot;encrypt-content&quot; style=&quot;display:none;&quot;&gt;fxxToVRCp6QmC1SK2svYxZTQ8jqdJRlaWdiNfSiQNlaMmy5vnmkStctxkQL16MI2584qbQFO0UorUPhy/4bnACu1M13ZATLwCA5ttW5yLNjki0L20mrhINHMAkq2LcX17q/+XionhcA6OwDhQ+wG+k7Jm2mqdjzQkYqOF9u1n7w8wrPTi9Wd0je4t5lixwy77VVpSK7j2ilD9L6Io4KHuUgV1j/GzvFGz+lkZLNu465cn9ZMlOgQa0AhRuiM/VTJwDdB5b+EaqoOTQfS62r0MlHFifaUW5Zwd9gtNMuVogaAmR9a/rQq/Z0Q88YX7AzPJTaRHUxZ7wGGClvnCQM397czsDGt4ZMF8nn5mo5A52YGNr3puvIJQ9LIakmh8aM4OeSqZ9oZ7yU7T2/IHkMu2hfn6UHrYLrGmI1TdM7DFFIvlWyDU1l7cjO5e6s8wlMYjG8lfcZrR0SUQYpGolMgE1h2nbMEbSQSL1InPMtyDJxmnOEDE3/mc6puWR4vddaii4nH8ingdGzqBR2VEhRsEcIh3Ww1yKIoiyv5EIngXNZnUjeugVTkKq6Afq0bbRic++mjOBg7o/KkTXxBFD77/Dt4m/x+1WnGvEbYyjQddI9d7VeoRmUG2vdPFJ9Ow+kPxypTkcnwNbVqNFDkPfOzEnO3VdB41jEQnyYPnwqv2Gti37sLOT9KMhW+NVao+TVWF+IZ6cNMLvBiVN13CfZ87+ygT/iuYz3c1+Biz/AJxuVoe52OPqdTF70OE46I/q1uTMFftoE+RiRJprOS80uEoWu9kGEoOlrHkp61AJG2dWtTy68pAwbVfF8GKAdqIQ3zd5oRSdss1GDaeHW3PSWl+wbkVrKoCbzzPGG84lcAf18TZoe0P+6bEXXJ2wTHYJWNGX+SHFnQxcTvVzUnx7q8h+54N+kqw8MXlXoJYnPGJYxKr6/UMofdQiECF1ija8vQQROMMFCk9Rrua+GE37J+ysieFVzbDkUdpeiI0yqYpKMTwc7+CdBIq5slzbPvUBpd/QhrS/FPOul26ZmNY3NeAHbYj0VyDK/KbzfwEgdlUIDoKe+HLRvQhLIdgzlvPAKHpF2V1dB6pL85pgPIMPKRuXbAdzU2kZlm0UPOrOERjJo9CHTnV4Lef/6j8VVbn3+EcVp61z6+MAdbprvG67DqHKgmirmdqnlhcafeG59EMD8lLwmcQSl9aEKAvzOkBov3HJipSUY4tDZIE10JsIC0rnWmXrseOvynJh7vNyCzMg5Nv4ua6KxLs2Tv+4b49tagG8btjqhaD1u5sVW8N3apMgld0CtdQPegSjZv+N2fhFkfwfQG5v1l77j5x+Wj4UDObjWahgH851j9YfWBz9mS5GuLln6Ao7D+6hzNsyf30aYjgdLk5ofuCIDif1usL65gI/pxasDbRKdEJr4jBvCwco2Q6O/pIuMcET/p9iSZ5GPK42mWTaqJtjPuYLnRd7vzRYkPUqUU5q6k968gd4rbDIDsEAtvW9HoKEsicDvB5UXfMejYYxnKbBFrAYYl9dllEvnKKVx9mW+h4U0uY89HzQ==&lt;/div&gt;
+&lt;/div&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+ if (!shortcodes) {
+     var shortcodes = {};
+ }
+ if (!shortcodes[&quot;encrypt&quot;] &amp;&amp; document.querySelector(&quot;.encrypt-container&quot;)) {
+     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/crypto-js.min.js&quot;);
+     shortcodes.loadJS(&quot;https://honmaple.me/static/js/encrypt.js&quot;);
+ }
+ shortcodes[&quot;encrypt&quot;] = true;
+&lt;/script&gt;
+</summary>
+      <content type="html">&lt;div class=&quot;encrypt-container entry-encrypt&quot;&gt;
+  &lt;div class=&quot;encrypt-form entry-form&quot;&gt;
+    &lt;input type=&quot;password&quot; class=&quot;encrypt-password&quot; placeholder=&quot;请输入密码&quot; /&gt;
+    &lt;i class=&quot;fa fa-key encrypt-button&quot;&gt;&lt;/i&gt;
+  &lt;/div&gt;&lt;div class=&quot;encrypt-desc&quot;&gt;龟虽寿，意犹千里可近，生死两忘。&lt;/div&gt;
+  &lt;div class=&quot;encrypt-content&quot; style=&quot;display:none;&quot;&gt;fxxToVRCp6QmC1SK2svYxZTQ8jqdJRlaWdiNfSiQNlaMmy5vnmkStctxkQL16MI2584qbQFO0UorUPhy/4bnACu1M13ZATLwCA5ttW5yLNjki0L20mrhINHMAkq2LcX17q/+XionhcA6OwDhQ+wG+k7Jm2mqdjzQkYqOF9u1n7w8wrPTi9Wd0je4t5lixwy77VVpSK7j2ilD9L6Io4KHuUgV1j/GzvFGz+lkZLNu465cn9ZMlOgQa0AhRuiM/VTJwDdB5b+EaqoOTQfS62r0MlHFifaUW5Zwd9gtNMuVogaAmR9a/rQq/Z0Q88YX7AzPJTaRHUxZ7wGGClvnCQM397czsDGt4ZMF8nn5mo5A52YGNr3puvIJQ9LIakmh8aM4OeSqZ9oZ7yU7T2/IHkMu2hfn6UHrYLrGmI1TdM7DFFIvlWyDU1l7cjO5e6s8wlMYjG8lfcZrR0SUQYpGolMgE1h2nbMEbSQSL1InPMtyDJxmnOEDE3/mc6puWR4vddaii4nH8ingdGzqBR2VEhRsEcIh3Ww1yKIoiyv5EIngXNZnUjeugVTkKq6Afq0bbRic++mjOBg7o/KkTXxBFD77/Dt4m/x+1WnGvEbYyjQddI9d7VeoRmUG2vdPFJ9Ow+kPxypTkcnwNbVqNFDkPfOzEnO3VdB41jEQnyYPnwqv2Gti37sLOT9KMhW+NVao+TVWF+IZ6cNMLvBiVN13CfZ87+ygT/iuYz3c1+Biz/AJxuVoe52OPqdTF70OE46I/q1uTMFftoE+RiRJprOS80uEoWu9kGEoOlrHkp61AJG2dWtTy68pAwbVfF8GKAdqIQ3zd5oRSdss1GDaeHW3PSWl+wbkVrKoCbzzPGG84lcAf18TZoe0P+6bEXXJ2wTHYJWNGX+SHFnQxcTvVzUnx7q8h+54N+kqw8MXlXoJYnPGJYxKr6/UMofdQiECF1ija8vQQROMMFCk9Rrua+GE37J+ysieFVzbDkUdpeiI0yqYpKMTwc7+CdBIq5slzbPvUBpd/QhrS/FPOul26ZmNY3NeAHbYj0VyDK/KbzfwEgdlUIDoKe+HLRvQhLIdgzlvPAKHpF2V1dB6pL85pgPIMPKRuXbAdzU2kZlm0UPOrOERjJo9CHTnV4Lef/6j8VVbn3+EcVp61z6+MAdbprvG67DqHKgmirmdqnlhcafeG59EMD8lLwmcQSl9aEKAvzOkBov3HJipSUY4tDZIE10JsIC0rnWmXrseOvynJh7vNyCzMg5Nv4ua6KxLs2Tv+4b49tagG8btjqhaD1u5sVW8N3apMgld0CtdQPegSjZv+N2fhFkfwfQG5v1l77j5x+Wj4UDObjWahgH851j9YfWBz9mS5GuLln6Ao7D+6hzNsyf30aYjgdLk5ofuCIDif1usL65gI/pxasDbRKdEJr4jBvCwco2Q6O/pIuMcET/p9iSZ5GPK42mWTaqJtjPuYLnRd7vzRYkPUqUU5q6k968gd4rbDJ4lBK2uyDG++vBGEJFIuITdwTM/LGQoLF74W0THOlzq+vZ9VJ7uy+QOhVeka79c2f+OL2xgSRm600CxEcAWIXICMnTDqJ/XsZu457AbIRMIZAdTHFUWGX/gBw3cmB8crictUjEBYR8gGX6SdqjXbVMz0s2EsokYSkJ4syTn7v77a+ZFC8yf7JHWKF5vJgvW9EBtu9VBxPkyw1AgEWpHc8PXsgbNHQdkrMXIUsNmubVmo8ZakV3s7CZSSriWWPYsHhjXZFsk9nSZxqg4AgsgbKuGNnWlECQTg5HeoYaAmbWQ3Wz7k7rwuLx2SjW+Vf4A/qd3ebMXZLWt6tn4DATd+XtWHxS9z6NForE04MuYBwz2UGCCwFRXOR1khu7kCS3jLw==&lt;/div&gt;
+&lt;/div&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+ if (!shortcodes) {
+     var shortcodes = {};
+ }
+ if (!shortcodes[&quot;encrypt&quot;] &amp;&amp; document.querySelector(&quot;.encrypt-container&quot;)) {
+     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/crypto-js.min.js&quot;);
+     shortcodes.loadJS(&quot;https://honmaple.me/static/js/encrypt.js&quot;);
+ }
+ shortcodes[&quot;encrypt&quot;] = true;
+&lt;/script&gt;
+</content>
+        <category term="Life/Recall"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>联想——一家中国的外国企业</title>
+      <link href="" rel="alternate"></link>
+      <published>Mon, 27 May 2019 15:38:20 +0000</published>
+      <updated>Wed, 21 Apr 2021 12:04:43 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2019/05/联想——一家中国的外国企业.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2019/05/联想——一家中国的外国企业.html</id>
+      <summary type="html">&lt;div class=&quot;encrypt-container entry-encrypt&quot;&gt;
+  &lt;div class=&quot;encrypt-form entry-form&quot;&gt;
+    &lt;input type=&quot;password&quot; class=&quot;encrypt-password&quot; placeholder=&quot;请输入密码&quot; /&gt;
+    &lt;i class=&quot;fa fa-key encrypt-button&quot;&gt;&lt;/i&gt;
+  &lt;/div&gt;&lt;div class=&quot;encrypt-desc&quot;&gt;美帝良心想&lt;/div&gt;
+  &lt;div class=&quot;encrypt-content&quot; style=&quot;display:none;&quot;&gt;OVZHOW2k/HoSNvsHcCGozdnN+9l1wHajNV2NJbdZD3XfXvMb+FC6Qeo8tiF8BJ3e6bygsoNMoP+qNokJ3ablOw9G1wm1C834weaxX+R9Ob5JCUD93Y4orKfihkWDl7JJjJ8DiIj9P5kNMkF0KwlTgba2VC1GWDbfZr8hzHOMLDUTBGYDk775NyU6lxoxRo2rt5l9SKgxgXZyvPCbibc5Yidya+vaemlBTY9hqci5/f4j7cUy6uzr9roRj42TZFgxgiuDDh/Ldqyb7fyjggwIeEOcfvCRrqNvpkJHbHzbg7utNQUTxVFHiQOSAXNlWfRcb/c0rAwxCY7SxxG1xQ3PLt3M6cAsQ9pE378jWFMHnAI4dlK2QOxVzvtv5RbYlnKz9p6M+rvGnofmt+L9tlXi4x7EraNkhrHcikweJLD1ClflwHjjpYMD7aiYnjK6vf64bbAEBA7hGf4GGVylsPqap7K2aOk4AxZfL62W9jTYidkc3n9NnC7mqWKM4I/POf6UWSSEjxpvALYcdMrTUz9HXZhMF3/i4w0DCj5e4j/u2TGPa9aWt6wxRL/a784BlWnhTDlldfc1YY9vox6VvwkqxcYNQlDozW4s8fYgmRJ1RwmqlTKa3hoNN0hJc1h7bp+XD/kYGJOObNwdF0LhuManTiXihYLFk3cmrPUwzAoV0cWR8XcbfcgmW6andmXIUnssA8UYzONfizl+7H5qIpMNprkig7sr5IkKZdvKm1KpLBSn9oH4mUOM5R+wsPV4R/XmHa+hjsyO/V4B9gfS5jcKJlfoZ/R29RvfYl4mw/aJcZ2n6zPCxPEVg0FQ8TCDHsRFvYEGUnoyktumkijS5pkPKrKSby1R5Env/yD3p3YmrgGJ2D/OOoY+mQlGUusRcQ4DFxOJzw7SVonCgL0H8qvZejsnDg1g60H1ijI3ueESFukBBgprHb9Q8aNOG/YCKE7sOQS+Vgj70an4Gi76XyQVuv2KEFQ+75jCeXuVGVS9klRGXqcQ5moJ5lIRl4F0U7zrDqJ+yms4F+pVVaVjiAIvOg==&lt;/div&gt;
+&lt;/div&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+ if (!shortcodes) {
+     var shortcodes = {};
+ }
+ if (!shortcodes[&quot;encrypt&quot;] &amp;&amp; document.querySelector(&quot;.encrypt-container&quot;)) {
+     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/crypto-js.min.js&quot;);
+     shortcodes.loadJS(&quot;https://honmaple.me/static/js/encrypt.js&quot;);
+ }
+ shortcodes[&quot;encrypt&quot;] = true;
+&lt;/script&gt;
+</summary>
+      <content type="html">&lt;div class=&quot;encrypt-container entry-encrypt&quot;&gt;
+  &lt;div class=&quot;encrypt-form entry-form&quot;&gt;
+    &lt;input type=&quot;password&quot; class=&quot;encrypt-password&quot; placeholder=&quot;请输入密码&quot; /&gt;
+    &lt;i class=&quot;fa fa-key encrypt-button&quot;&gt;&lt;/i&gt;
+  &lt;/div&gt;&lt;div class=&quot;encrypt-desc&quot;&gt;美帝良心想&lt;/div&gt;
+  &lt;div class=&quot;encrypt-content&quot; style=&quot;display:none;&quot;&gt;OVZHOW2k/HoSNvsHcCGozdnN+9l1wHajNV2NJbdZD3XfXvMb+FC6Qeo8tiF8BJ3e6bygsoNMoP+qNokJ3ablOw9G1wm1C834weaxX+R9Ob5JCUD93Y4orKfihkWDl7JJjJ8DiIj9P5kNMkF0KwlTgba2VC1GWDbfZr8hzHOMLDUTBGYDk775NyU6lxoxRo2rt5l9SKgxgXZyvPCbibc5Yidya+vaemlBTY9hqci5/f4j7cUy6uzr9roRj42TZFgxgiuDDh/Ldqyb7fyjggwIeEOcfvCRrqNvpkJHbHzbg7utNQUTxVFHiQOSAXNlWfRcb/c0rAwxCY7SxxG1xQ3PLt3M6cAsQ9pE378jWFMHnAI4dlK2QOxVzvtv5RbYlnKz9p6M+rvGnofmt+L9tlXi4x7EraNkhrHcikweJLD1ClflwHjjpYMD7aiYnjK6vf64bbAEBA7hGf4GGVylsPqap7K2aOk4AxZfL62W9jTYidkc3n9NnC7mqWKM4I/POf6UWSSEjxpvALYcdMrTUz9HXZhMF3/i4w0DCj5e4j/u2TGPa9aWt6wxRL/a784BlWnhTDlldfc1YY9vox6VvwkqxcYNQlDozW4s8fYgmRJ1RwmqlTKa3hoNN0hJc1h7bp+XD/kYGJOObNwdF0LhuManTiXihYLFk3cmrPUwzAoV0cWR8XcbfcgmW6andmXIUnssA8UYzONfizl+7H5qIpMNprkig7sr5IkKZdvKm1KpLBSn9oH4mUOM5R+wsPV4R/XmHa+hjsyO/V4B9gfS5jcKJlfoZ/R29RvfYl4mw/aJcZ2n6zPCxPEVg0FQ8TCDHsRFvYEGUnoyktumkijS5pkPKrKSby1R5Env/yD3p3YmrgGJ2D/OOoY+mQlGUusRcQ4DFxOJzw7SVonCgL0H8qvZejsnDg1g60H1ijI3ueESFukBBgprHb9Q8aNOG/YCKE7sOQS+Vgj70an4Gi76XyQVuv2KEFQ+75jCeXuVGVS9klRGXqcQ5moJ5lIRl4F0U7zrMqhnxzyrJBL1aMahWV+FvzhfmBN3ioGW8ov/FWjKQnvJ7kWfN0JF6kdgq9Xe5iXfi+KNC541OsNzqGfDB49pSZyl19k7dwuuk17hP0GIF03HTnYDrfczjsh8u9JoxUoc6hnJX4J/vqLOoz89K6o7IuFRUCCzUoFOeQjV7FuYRteBPtBGXvwmAqGvq/v0pcjdIWm+Iy+QyNl7LkUUKxkHFXhHALozuN2tgoJRSPjYELIwXGpYPyRZTU2nbe9PLag0h6kC93PrMkCVFi5KvqlACddTuMvEEk8/ZOsKMOdliXRQ+o/ZNuagwToFjeXxBkr9WVtZ8R5tVJAgQjeG94Xa7oRPB0idJEAVua97ALm96lwgU2YmjFNyDb5enoKgPXlxbjXUwV4VBFXYR/nGqjrm/SChLXziDDvxamiWCiPUp4oCa9O4PwHB+qK2tfV7lRFgSS4GNxI/bsekTTc7yLpLpT/M2LvocLWeUNZwZ5d6+C9UW4vAarr9gECXxJx6XUGuArqBKwYAP8Cp27MTFVuCxhIO57Dr8E9eBW+tkDoettoeT+8HLbhtw/6CTNswPtql8frIFgkhofYNHsYx4U8HuhOnc0sYo9Ohdrca22N0g60VYiTYP9zzUUXsqiv6plvBEYdImFkbaCOC7dA1ky+r3nSlj6UzEzGhmHsqHihQ4ZXAeOWK5RXfq9IyufM3qNB70ddQjy50BT1aZXvtvT0IHvPAkUrmdaEIO9fH4ekXK3p1YUD/TAmQSxCT4VQ0//U2aZUGCSbrxScEX6mUGYUZ1NcT+iAt6FTSWBpXcaXKIdOpIF++T89/InRXOxITX0La9FCXIfH96GXF9T1n6dAgsgZJkKs/TDkCRUkJfMAkbuNX4Ue+4oJRQ2l0MYG7GgQvDlZDVJuMpw3ubQESuQuvGgCxbXX+tsjx8iNtttvU6OaNwWvJFQBgLtLzRjBExIk0Av+DDUJ3WtP/iWx+/gk5A3fp856neHxLATtBHaibcBoYKTtndpVOQhdDYx3MbqLaFkZYZk0AZ2C1o35nk5p32kvWKKXk+hsRa3YTKAxUbAmpiYKTAsSsuXobkgYOHd5cyRIkaZpjgaQmg8Ev3W9KvBIg4B/c9lfcB0k+CnJHSRSAnez2QsQIz3UFqsIreIuaOCL9Fk2EJ37i15p0Kn9ji74sPuR2OJpwomlIFpySJSD5Hf6umXj/1zAYf3SPNZDIpKqyXv7NQ8Ojn1Yx252pjTTOBPyOmolms6rcoQDvyJ6OanQsoaF3SRUlGT8tag0EhTzm4cPatiTEST6xOkXoL6GfEBukSrtdL5TLcNZoHP/KCFdsQUMvtOO2o8sMRw61Hxv5au44tw/jxTQL05UIGhfZbcEmTs0pGC6IA+GefCZmYB6C4BLFeprpwa0oBEXEIzRSQi2Eo58eiRvES4IQXrGcC60Amq6eFFhvAI+1ZJNqSaDWRykmituoybxDXErRFcYp1tJhVJHjvQaqjoHZDP5/dqr+CrGWPngG2OtRU7Wyl3zKhSQNcms4wQq2MNUZyfj/E3fHbvV6Y54HV+j4JlJCpYxVfdvik5vavJJZMO3qE33YR2/UkmgLZxPBJk/nClog/c7BEw5L0A0fI/Tw+PkgZnzXftPBsfsEXiyJVN+Dkmu0xVK4I5zGra8zjNtICVoFJsgT+CZsT/GgJ6TyGQ==&lt;/div&gt;
+&lt;/div&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+ if (!shortcodes) {
+     var shortcodes = {};
+ }
+ if (!shortcodes[&quot;encrypt&quot;] &amp;&amp; document.querySelector(&quot;.encrypt-container&quot;)) {
+     shortcodes.loadJS(&quot;https://honmaple.me/static/lib/js/crypto-js.min.js&quot;);
+     shortcodes.loadJS(&quot;https://honmaple.me/static/js/encrypt.js&quot;);
+ }
+ shortcodes[&quot;encrypt&quot;] = true;
+&lt;/script&gt;
+</content>
+        <category term="Life"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>曾经</title>
+      <link href="" rel="alternate"></link>
+      <published>Mon, 20 May 2019 00:31:18 +0000</published>
+      <updated>Thu, 27 Jul 2023 22:19:45 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2019/05/曾经.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2019/05/曾经.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+曾经&lt;br/&gt;她问我&lt;br/&gt;谁考了全校第二&lt;br/&gt;&lt;br/&gt;我笑着&lt;br/&gt;指了指旁边&lt;br/&gt;是他&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;听说他们走得很近&lt;br/&gt;&lt;br/&gt;明明考了全校第二的人是我
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+曾经&lt;br/&gt;她问我&lt;br/&gt;谁是运动会上得分最多的人&lt;br/&gt;&lt;br/&gt;我笑着&lt;br/&gt;指了指旁边&lt;br/&gt;是他&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;听说他们在一起了&lt;br/&gt;&lt;br/&gt;明明得分最多的人是我
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+后来&lt;br/&gt;她不再问我了&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;我没有她了
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;</summary>
+      <content type="html">
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+曾经&lt;br/&gt;她问我&lt;br/&gt;谁考了全校第二&lt;br/&gt;&lt;br/&gt;我笑着&lt;br/&gt;指了指旁边&lt;br/&gt;是他&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;听说他们走得很近&lt;br/&gt;&lt;br/&gt;明明考了全校第二的人是我
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+曾经&lt;br/&gt;她问我&lt;br/&gt;谁是运动会上得分最多的人&lt;br/&gt;&lt;br/&gt;我笑着&lt;br/&gt;指了指旁边&lt;br/&gt;是他&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;听说他们在一起了&lt;br/&gt;&lt;br/&gt;明明得分最多的人是我
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+后来&lt;br/&gt;她不再问我了&lt;br/&gt;&lt;br/&gt;后来&lt;br/&gt;我没有她了
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;</content>
+        <category term="Life/Love"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>鱼</title>
+      <link href="" rel="alternate"></link>
+      <published>Mon, 29 Apr 2019 20:44:10 +0000</published>
+      <updated>Mon, 06 May 2019 13:37:00 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2019/04/鱼.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2019/04/鱼.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+莫相逢&lt;br/&gt;只道人生初见&lt;br/&gt;寻归里&lt;br/&gt;岂敢天涯&lt;br/&gt;且听风雨且听云
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;
+
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+庄周，意逍遥
+&lt;/p&gt;
+&lt;/div&gt;
+</summary>
+      <content type="html">
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+莫相逢&lt;br/&gt;只道人生初见&lt;br/&gt;寻归里&lt;br/&gt;岂敢天涯&lt;br/&gt;且听风雨且听云
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;
+
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+庄周，意逍遥
+&lt;/p&gt;
+&lt;/div&gt;
+</content>
+        <category term="Life"></category>
+    </entry>
+    <entry xml:lang="zh">
+      <title>路</title>
+      <link href="" rel="alternate"></link>
+      <published>Thu, 18 Apr 2019 10:11:43 +0000</published>
+      <updated>Thu, 18 Apr 2019 10:16:42 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2019/04/路.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2019/04/路.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+当你不断超越前方的人&lt;br/&gt;在更前方&lt;br/&gt;总会有那么一盏红灯&lt;br/&gt;&lt;br/&gt;也许是为了安全&lt;br/&gt;也许是为了公平&lt;br/&gt;&lt;br/&gt;谁知道呢&lt;br/&gt;&lt;br/&gt;你，终归是只能等着
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;</summary>
+      <content type="html">
+&lt;blockquote&gt;
+&lt;div style=&quot;text-align:center;&quot;&gt;
+&lt;p&gt;
+当你不断超越前方的人&lt;br/&gt;在更前方&lt;br/&gt;总会有那么一盏红灯&lt;br/&gt;&lt;br/&gt;也许是为了安全&lt;br/&gt;也许是为了公平&lt;br/&gt;&lt;br/&gt;谁知道呢&lt;br/&gt;&lt;br/&gt;你，终归是只能等着
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/blockquote&gt;</content>
+        <category term="Life"></category>
     </entry>
 </feed>
