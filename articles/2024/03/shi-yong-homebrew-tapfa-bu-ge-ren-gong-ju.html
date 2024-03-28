@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>使用Homebrew Tap发布个人工具 · 紅楓吟</title>
+      <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+      <script src="https://honmaple.me/static/lib/js/before.min.js"></script>
+  </head>
+  <body>
+    <div class="scrollbar"></div>
+
+    <div class="wrapper"><nav class="entry-navbar">
+  <div class="entry-navbar-top">
+    <a href="https://honmaple.me">
+      <img class="entry-navbar-logo" src="https://s.libforest.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="entry-navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+    <button class="entry-navbar-collapse" data-target=".entry-navbar-bottom" data-toggle="collapse">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
+    </button>
+  </div>
+  <div class="entry-navbar-bottom">
+    <ul class="entry-navbar-menu">
+            <li class="entry-dropdown">
+              <a href="https://honmaple.me/categories/life/index.html">生活随笔</a>
+              <ul class="entry-dropdown-content">
+                  <li><a href="https://honmaple.me/categories/life/love/index.html">你不懂我</a></li>
+                  <li><a href="https://honmaple.me/categories/life/recall/index.html">我不怪你</a></li>
+              </ul>
+            </li>
+            <li class="entry-dropdown">
+              <a href="https://honmaple.me/categories/tech/index.html">技术分享</a>
+              <ul class="entry-dropdown-content">
+                  <li><a href="https://honmaple.me/categories/tech/geek/index.html">极客安全</a></li>
+                  <li><a href="https://honmaple.me/categories/tech/linux/index.html">字符艺术</a></li>
+                  <li><a href="https://honmaple.me/categories/tech/python/index.html">人生苦短</a></li>
+              </ul>
+            </li>
+          <li class="entry-dropdown">
+            <a href="https://honmaple.me/archives/index.html">文章归档</a>
+            <ul class="entry-dropdown-content">
+                <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+                <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+                <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+            </ul>
+          </li>
+          <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form class="entry-navbar-form" action="https://honmaple.me/search.html">
+      <input name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''" />
+      <i class="fa fa-search"></i>
+    </form>
+  </div>
+</nav>
+
+  <article class="entry-article">
+    <div class="entry-article-header">
+    <h1 class="entry-article-title">
+      <a href="https://honmaple.me/articles/2024/03/shi-yong-homebrew-tapfa-bu-ge-ren-gong-ju.html" rel="bookmark" title="Permalink to 使用Homebrew Tap发布个人工具">使用Homebrew Tap发布个人工具</a>
+    </h1>
+      <div class="entry-article-info">
+        <span title="Updated at 2024-03-28">
+          <i class="fa fa-calendar-o"></i>
+          2024年03月28日 周四
+        </span>
+          <span class="hidden-xs">|</span>
+          <span class="hidden-xs">
+            <i class="fa fa-user-o"></i>
+            By
+              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-folder-o"></i>
+            In
+              <a href="https://honmaple.me/categories/tech/index.html">Tech</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-bookmark-o"></i>
+            0f
+              <a href="https://honmaple.me/tags/macos/index.html">macos</a>
+              <a href="https://honmaple.me/tags/homebrew/index.html">homebrew</a>
+          </span>
+      </div>
+  </div>
+    <hr class="entry-article-hr" />
+    <div class="entry-article-content">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">创建Tap</a></li>
+<li><a href="#heading-2">生成模版</a></li>
+<li><a href="#heading-3">修改模版</a></li>
+<li><a href="#heading-4">安装软件</a></li>
+<li><a href="#heading-5">上传到Github</a></li>
+<li><a href="#heading-6">结语</a></li>
+</ul></div></div>
+
+<blockquote>
+<p>
+作为MacOS用户，<b>Homebrew</b> 是必不可少的工具之一，正如它的描述所示 <code>The missing package manager for macOS</code> —— 它提供了很多 <b>App Store</b> 没有的软件和工具。
+</p>
+
+<p>
+而什么是 <b>Tap</b>？<b>Tap</b> 全称 <code>Third-Party Repositories</code>，顾名思义为第三方仓库，它可以创建属于自己的软件集合，不用将软件发布到官方仓库，避免了和官方仓库的其它软件同名，也不用发PR，等审核等诸多优势。此次，我将创建一个 <b>Homebrew Tap</b>，用于为我自己开发的部分软件和工具提供更加方便的安装方式。
+</p>
+</blockquote>
+
+<h2 id="heading-1">创建Tap</h2>
+<p>
+   使用 <code>brew</code> 命令创建
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">└──╼ brew tap-new honmaple/tap
+Initialized empty Git repository in /usr/local/Homebrew/Library/Taps/honmaple/homebrew-tap/.git/
+[main (root-commit) 7d893ca] Create honmaple/tap tap
+ 3 files changed, 90 insertions(+)
+ create mode 100644 .github/workflows/publish.yml
+ create mode 100644 .github/workflows/tests.yml
+ create mode 100644 README.md
+==&gt; Created honmaple/tap
+/usr/local/Homebrew/Library/Taps/honmaple/homebrew-tap
+
+When a pull request making changes to a formula (or formulae) becomes green
+(all checks passed), then you can publish the built bottles.
+To do so, label your PR as `pr-pull` and the workflow will be triggered.</pre>
+
+<p>
+   创建后会提示在 <code>/usr/local/Homebrew/Library/Taps/honmaple/homebrew-tap/</code> 目录生成一个 <b>Git</b> 仓库
+</p>
+
+<h2 id="heading-2">生成模版</h2>
+<p>
+   比如我想要为已经打包好的工具 <b>Snow 0.1.2</b> 生成模版，注意指定 <code>--tap</code> 参数
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">└──╼ brew create https://github.com/honmaple/snow/releases/download/v0.1.2/snow-darwin.tar.gz --tap honmaple/tap
+Formula name [snow]:
+...</pre>
+<p>
+   在输入提示的工具名称后（也可以保持默认），这时会生成并使用默认编辑器打开 <code>/usr/local/Homebrew/Library/Taps/honmaple/homebrew-tap/Formula/snow.rb</code>，内容如下:
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e"># Documentation: https://docs.brew.sh/Formula-Cookbook</span>
+<span style="color:#75715e">#                https://rubydoc.brew.sh/Formula</span>
+<span style="color:#75715e"># PLEASE REMOVE ALL GENERATED COMMENTS BEFORE SUBMITTING YOUR PULL REQUEST!</span>
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Snow</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">Formula</span>
+  desc <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">static site generator</span><span style="color:#e6db74">&#34;</span>
+  homepage <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&#34;</span>
+  url <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">https://github.com/honmaple/snow/releases/download/v0.1.2/snow-darwin.tar.gz</span><span style="color:#e6db74">&#34;</span>
+  sha256 <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">78a65c740eff24193132e063654bd1d7023f6687c94ce852e50a03a43eaba558</span><span style="color:#e6db74">&#34;</span>
+  license <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">BSD-3-Clause</span><span style="color:#e6db74">&#34;</span>
+
+  <span style="color:#75715e"># depends_on &#34;cmake&#34; =&gt; :build</span>
+
+  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e"></span><span style="color:#f92672"></span><span style="color:#a6e22e">install</span>
+    <span style="color:#75715e"># Remove unrecognized options if they cause configure to fail</span>
+    <span style="color:#75715e"># https://rubydoc.brew.sh/Formula.html#std_configure_args-instance_method</span>
+    system <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">./configure</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">--disable-silent-rules</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">*</span>std_configure_args
+    <span style="color:#75715e"># system &#34;cmake&#34;, &#34;-S&#34;, &#34;.&#34;, &#34;-B&#34;, &#34;build&#34;, *std_cmake_args</span>
+  <span style="color:#66d9ef">end</span>
+
+  test <span style="color:#66d9ef">do</span>
+    <span style="color:#75715e"># `test do` will create, run in and delete a temporary directory.</span>
+    <span style="color:#75715e"># ...</span>
+    system <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">false</span><span style="color:#e6db74">&#34;</span>
+  <span style="color:#66d9ef">end</span>
+<span style="color:#66d9ef">end</span></pre>
+
+<h2 id="heading-3">修改模版</h2>
+<p>
+   因为我此次发布的只是一个 <b>Go</b> 编译的二进制文件，只用将文件添加到可执行目录即可。如需其它操作，请查阅<a href="https://docs.brew.sh/Taps">Homebrew Tap官方文档</a>。
+</p>
+
+<p>
+   修改模版后内容如下：
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Snow</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">Formula</span>
+  homepage <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">https://github.com/honmaple/snow</span><span style="color:#e6db74">&#34;</span>
+  desc <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">static site generator</span><span style="color:#e6db74">&#34;</span>
+  url <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">https://github.com/honmaple/snow/releases/download/v0.1.2/snow-darwin.tar.gz</span><span style="color:#e6db74">&#34;</span>
+  sha256 <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">78a65c740eff24193132e063654bd1d7023f6687c94ce852e50a03a43eaba558</span><span style="color:#e6db74">&#34;</span>
+  license <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">BSD-3-Clause</span><span style="color:#e6db74">&#34;</span>
+
+  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e"></span><span style="color:#f92672"></span><span style="color:#a6e22e">install</span>
+    bin<span style="color:#f92672">.</span>install <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">snow</span><span style="color:#e6db74">&#34;</span>
+  <span style="color:#66d9ef">end</span>
+
+  test <span style="color:#66d9ef">do</span>
+    assert_match <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">snow version </span><span style="color:#e6db74">#{</span>version<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>, shell_output(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">#{</span>bin<span style="color:#e6db74">}</span><span style="color:#e6db74">/snow --version</span><span style="color:#e6db74">&#34;</span>)
+  <span style="color:#66d9ef">end</span>
+<span style="color:#66d9ef">end</span></pre>
+
+<p>
+   从模版文件中就能看出，如果我们需要发布下一版本，只需要修改 <code>url</code> 和 <code>sha256</code> 两个参数，其中 <code>sha256</code> 可以使用 <code>sh256sum v0.1.2/snow-darwin.tar.gz</code> 获得
+</p>
+
+<h2 id="heading-4">安装软件</h2>
+<pre style="color:#f8f8f2;background-color:#272822">brew install honmaple/tap/snow</pre>
+<p>
+   <b>注意</b>：不能直接使用 <code>brew install snow</code>，因为如果在 <code>homebrew/core</code> 有相同名称的包，默认将会安装 <code>homebrew/core</code> 上的包，所以必须指明使用哪个 <b>Tap</b>
+</p>
+
+<h2 id="heading-5">上传到Github</h2>
+<ol>
+<li>
+<p>
+ 首先需要到 <b>Github</b> 创建一个公共仓库，取名 <code>homebrew-{Tap名称}</code>, 比如我的是 <code>honmaple/homebrew-tap</code>，注意名称必须是 <code>homebrew-</code> 开头，方便后续直接使用 <code>{用户名}/{Tap名称}</code>。创建好后先不要克隆到本地
+      
+<a href="https://s.libforest.com/images/2024/03/homebrew-tap-01.jpg-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2024/03/homebrew-tap-01.jpg-thumb" class="lazyload" />
+</a>
+</p>
+</li>
+<li>
+<p>
+ 复制之前创建好的 <code>honmaple/tap</code> 目录，方便后续维护
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">cp -r /usr/local/Homebrew/Library/Taps/honmaple/homebrew-tap ~/Git/</pre></li>
+<li>
+<p>
+ 修改仓库
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">cd ~/Git/homebrew-tap
+# 删除默认的Github Action
+rm -rf .github
+# 添加远程
+git remote add origin git@github.com:honmaple/homebrew-tap.git
+# 添加软件
+git add Formula/snow.rb
+git commit -m &#34;add snow.rb&#34;
+git push origin master</pre></li>
+<li>
+<p>
+ 重置本地tap，首先需要卸载之前创建好的 <code>honmaple/tap</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">brew untap honmaple/tap</pre>
+<p>
+      如果已经安装了 <code>homebrew/tap/snow</code>, 需要先卸载
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">brew uninstall honmaple/tap/snow</pre>
+
+<p>
+      在执行完 <b>修改仓库</b> 这一步后，就可以重新添加 <b>tap</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">brew tap honmaple/tap</pre>
+<p>
+      并重新安装想要的软件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">brew install honample/tap/snow</pre>
+</li>
+</ol>
+<h2 id="heading-6">结语</h2>
+<p>
+   至此，创建一个私人使用的 MacOS 软件包集合就此结束，我可以往里面添加一些自己写的软件和工具，可以是 <b>Bash</b> 脚本，也可以是 <b>Go</b> 编译好的二进制等，后面就不用再指定具体目录或者手动复制文件到 <code>$PATH/bin</code> 目录下了。OK
+</p>
+    </div>
+    <div class="entry-copyright">
+        <div>
+          <span><i class="fa fa-user-o"></i>作者:</span>
+            <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+        </div>
+    <div>
+      <span><i class="fa fa-link"></i>链接:</span>
+      <a href="https://honmaple.me/articles/2024/03/shi-yong-homebrew-tapfa-bu-ge-ren-gong-ju.html">https://honmaple.me/articles/2024/03/shi-yong-homebrew-tapfa-bu-ge-ren-gong-ju.html</a>
+    </div>
+    <div>
+      <span><i class="fa fa-copyright"></i>版权:</span>
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+        <img src="https://s.libforest.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+        知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+      </a>
+    </div>
+  </div>
+  <div class="entry-honor">
+    <button data-target=".entry-honor-content" data-toggle="collapse" aria-expanded="false">赞</button>
+    <div class="entry-honor-content collapse">
+      <div class="entry-honor-wechat">
+        <img class="lazyload" data-src="https://s.libforest.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+      <div class="entry-honor-alipay">
+        <img class="lazyload" data-src="https://s.libforest.com/images/pic/alipay.png" alt="alipay" />
+      </div>
+    </div>
+  </div>
+    <hr class="entry-article-hr" />
+    <ul class="entry-pager">
+      <li class="next">
+        <a href="https://honmaple.me/articles/2023/12/shi-yong-gozhong-xie-metingjsde-api.html" title="Next article: 使用Go重写MetingJS的API">
+          使用Go重写MetingJS的API
+          <i class="fa fa-chevron-right"></i>
+        </a>
+      </li>
+  </ul>
+    
+    <div class="entry-comment">
+      <div class="entry-btn">
+        <a>加载评论</a>
+      </div>
+      <div id="comment_thread" issue-term="使用Homebrew Tap发布个人工具"></div>
+    </div>
+  </article><div class="footer">
+  <ul class="footer-left">
+    <li class="hidden-xs">© 2015-2024 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+        <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+  <ul class="footer-right">
+    <li><a class="entry-switch-theme" title="切换主题" onclick="switchTheme()"><i class="fa fa-moon-o"></i></a></li>
+      <li><a href="https://honmaple.me/pages/music.html" title="Music"><i class="fa fa-music"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>
+      <li><a href="https://honmaple.me/pages/travel.html" title="Camera"><i class="fa fa-camera"></i></a></li>
+      <li><a href="https://honmaple.me/pages/contact.html" title="Contact"><i class="fa fa-envelope"></i></a></li>
+  </ul>
+</div>
+<div class="back-to-top on">
+  <i class="fa fa-hand-o-up" title="back to top"></i>
+</div>
+
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'UA-88401692-2');
+  </script>
+
+
+      <script src="https://s.libforest.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
+  </body>
+</html>
