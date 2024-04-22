@@ -5,8 +5,146 @@
   <link href="https://honmaple.me/categories/tech/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Thu, 28 Mar 2024 10:56:02 +0000</updated>
+    <updated>Mon, 22 Apr 2024 23:14:41 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>为maple-translate增加更友好的sdcv离线翻译</title>
+      <link href="" rel="alternate"></link>
+      <published>Mon, 22 Apr 2024 21:51:27 +0000</published>
+      <updated>Mon, 22 Apr 2024 23:14:41 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2024/04/wei-maple-translatezeng-jia-geng-you-hao-de-sdcvchi-xian-fan-yi.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2024/04/wei-maple-translatezeng-jia-geng-you-hao-de-sdcvchi-xian-fan-yi.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+之前我写的Emacs翻译插件 &lt;b&gt;maple-translate&lt;/b&gt; 有一个 &lt;b&gt;sdcv&lt;/b&gt; 离线翻译的功能，它使用了 &lt;code&gt;Elisp&lt;/code&gt; 解析 &lt;b&gt;StarDict&lt;/b&gt; 的字典文件，所以不需要安装其它任何依赖。但是也是因为此原因，首次使用离线翻译需要等待字典文件加载到内存，这不是很友好，此次我将添加 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件的支持，使离线翻译能够更加快捷方便
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+首先是安装 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew install sdcv
+└──╼ sdcv --help
+用法：
+  sdcv [选项…]  words
+
+帮助选项：
+  -h, --help...&lt;/pre&gt;</summary>
+      <content type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+之前我写的Emacs翻译插件 &lt;b&gt;maple-translate&lt;/b&gt; 有一个 &lt;b&gt;sdcv&lt;/b&gt; 离线翻译的功能，它使用了 &lt;code&gt;Elisp&lt;/code&gt; 解析 &lt;b&gt;StarDict&lt;/b&gt; 的字典文件，所以不需要安装其它任何依赖。但是也是因为此原因，首次使用离线翻译需要等待字典文件加载到内存，这不是很友好，此次我将添加 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件的支持，使离线翻译能够更加快捷方便
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+首先是安装 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew install sdcv
+└──╼ sdcv --help
+用法：
+  sdcv [选项…]  words
+
+帮助选项：
+  -h, --help                     显示帮助选项
+
+应用程序选项：
+  -v, --version                  display version information and exit
+  -l, --list-dicts               display list of available dictionaries and exit
+  -u, --use-dict=bookname        for search use only dictionary with this bookname
+  -n, --non-interactive          for use in scripts
+  -j, --json-output              print the result formatted as JSON
+  --json                         print the result formatted as JSON
+  -e, --exact-search             do not fuzzy-search for similar words, only return exact matches
+  -0, --utf8-output              output must be in utf8
+  -1, --utf8-input               input of sdcv in utf8
+  -2, --data-dir=path/to/dir     use this directory as path to stardict data directory
+  -x, --only-data-dir            only use the dictionaries in data-dir, do not search in user and system directories
+  -c, --color                    colorize the output&lt;/pre&gt;
+
+&lt;p&gt;
+然后定义二进制文件的路径，如果 &lt;b&gt;sdcv&lt;/b&gt; 未安装，则返回为 &lt;code&gt;nil&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defvar maple-translate-sdcv-program (executable-find &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;sdcv&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))&lt;/pre&gt;
+
+&lt;p&gt;
+接着修改之前写好的 &lt;code&gt;maple-translate-sdcv&lt;/code&gt; 函数，通过判断 &lt;code&gt;maple-translate-sdcv-program&lt;/code&gt; 是否为空采取不同的翻译操作
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple-translate-sdcv(word &lt;span style=&quot;color:#66d9ef&quot;&gt;&amp;amp;optional&lt;/span&gt; callback)
+  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Search WORD with sdcv, use async request if CALLBACK non-nil.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+  (if maple-translate-sdcv-program
+      (maple-translate-execute maple-translate-sdcv-program
+        :args (&lt;span style=&quot;color:#a6e22e&quot;&gt;append&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-x&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-j&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-0&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-1&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+                      (cl-loop for dict in maple-translate-sdcv-dicts
+                               collect (&lt;span style=&quot;color:#a6e22e&quot;&gt;expand-file-name&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;cdr&lt;/span&gt; dict) maple-translate-sdcv-dir))
+                      (&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; word))
+        :format (maple-translate-sdcv-format)
+        :callback callback)
+    &lt;span style=&quot;color:#75715e&quot;&gt;;; ...&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;;; 使用ELisp解析并翻译&lt;/span&gt;
+    ))&lt;/pre&gt;
+&lt;p&gt;
+需要说明的是，由于该函数接收一个 &lt;code&gt;callback&lt;/code&gt; 的变量，用于处理异步翻译，如果是同步翻译，可以直接使用 &lt;code&gt;call-process&lt;/code&gt; 获取结果
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(with-temp-buffer
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;apply&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;call-process&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;sdcv&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;t&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-x&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-j&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-0&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-1&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;/Users/xxx/.emacs.d/stardict/stardict-lazyworm-ec-2.4.2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;word&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;buffer-string&lt;/span&gt;))&lt;/pre&gt;
+
+&lt;p&gt;
+但如果是异步翻译，则需要使用 &lt;code&gt;start-process&lt;/code&gt; ，再通过监听进程状态在进程结束后再获取翻译结果
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(let ((name (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;maple-translate-process %s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;program)))
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;set-process-sentinel&lt;/span&gt;
+   (&lt;span style=&quot;color:#a6e22e&quot;&gt;apply&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;start-process&lt;/span&gt; name (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;*%s*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; name) &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;program &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;args)
+   (lambda(process _)
+     (unless (process-live-p process)
+       (with-current-buffer (&lt;span style=&quot;color:#a6e22e&quot;&gt;process-buffer&lt;/span&gt; process)
+         (prog1 (&lt;span style=&quot;color:#a6e22e&quot;&gt;funcall&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;callback &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt;)
+           (&lt;span style=&quot;color:#a6e22e&quot;&gt;kill-buffer&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;current-buffer&lt;/span&gt;))))))))&lt;/pre&gt;
+&lt;p&gt;
+这里的 &lt;b&gt;buffer&lt;/b&gt; 名称也可以通过 &lt;code&gt;(generate-new-buffer &amp;#34; *temp*&amp;#34; t)&lt;/code&gt; 生成一个临时 &lt;b&gt;buffer&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+最后就是翻译结果的展示，由于输出的是多行 &lt;b&gt;json&lt;/b&gt;，比如:
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;[]
+[{&amp;#34;dict&amp;#34;: &amp;#34;懒虫简明英汉词典&amp;#34;,&amp;#34;word&amp;#34;:&amp;#34;word&amp;#34;,&amp;#34;definition&amp;#34;:&amp;#34;\n[wә:d]\nn.\n字, 词, 话, 消息, 诺言, 命令\nvt.\n为...措辞&amp;#34;}]&lt;/pre&gt;
+&lt;p&gt;
+所以我在解析翻译结果时取了个巧，没有使用 &lt;code&gt;(buffer-string)&lt;/code&gt; 而是直接在 &lt;b&gt;buffer&lt;/b&gt; 里操作，每次都跳到开始位置，再依次向下移动 &lt;b&gt;n&lt;/b&gt; 行，这个 &lt;b&gt;n&lt;/b&gt; 即是字典的数量，最后使用 &lt;code&gt;(thing-at-point &amp;#39;line t)&lt;/code&gt; 获取当前行的数据
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple-translate-sdcv-format()
+  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Format result with sdcv output.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+  (let ((results (cl-loop for index from &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;
+                          for dicts in maple-translate-sdcv-dicts
+                          collect
+                          (progn
+                            (&lt;span style=&quot;color:#a6e22e&quot;&gt;goto-char&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;point-min&lt;/span&gt;))
+                            (&lt;span style=&quot;color:#a6e22e&quot;&gt;forward-line&lt;/span&gt; index)
+                            (string-join (cl-loop for child across-ref (json-read-from-string (&lt;span style=&quot;color:#a6e22e&quot;&gt;decode-coding-string&lt;/span&gt; (thing-at-point &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;line&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;t&lt;/span&gt;) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;utf-8&lt;/span&gt;))
+                                                  collect (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;%s: %s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                                                  (alist-get &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;dict&lt;/span&gt; child)
+                                                                  (alist-get &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;definition&lt;/span&gt; child)))
+                                         &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))))
+    (unless (&lt;span style=&quot;color:#a6e22e&quot;&gt;null&lt;/span&gt; results)
+      (string-join (cl-remove &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; results) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))))&lt;/pre&gt;
+
+&lt;p&gt;
+最终效果
+&lt;/p&gt;
+&lt;video width=&quot;100%&quot; controls=&quot;&quot;&gt;
+  &lt;source src=&quot;https://s.libforest.com/images/2024/04/maple-translate-sdcv.mov&quot; type=&quot;video/mp4&quot;&gt;
+&lt;/video&gt;
+
+&lt;p&gt;
+&lt;b&gt;maple-translate&lt;/b&gt;的具体修改可见: &lt;a href=&quot;https://github.com/honmaple/emacs-maple-translate/commit/dfd0eae6486d62c26a3fa3fb07ee7e5f4640eb16&quot;&gt;dfd0eae&lt;/a&gt;
+&lt;/p&gt;</content>
+        <category term="Tech/Linux/Emacs"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>使用Homebrew Tap发布个人工具</title>
       <link href="" rel="alternate"></link>
@@ -2351,367 +2489,6 @@ curl 192.168.100.3&lt;/pre&gt;
 &lt;p&gt;
    注意：文章中并未修改绿联Nas本身的系统，所有的安装包和修改文件配置都是在Docker内部进行
 &lt;/p&gt;</content>
-        <category term="Tech/Geek"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>绿联DX4600 Pro安装一个超酷超帅的Docker</title>
-      <link href="" rel="alternate"></link>
-      <published>Tue, 04 Jul 2023 12:37:02 +0000</published>
-      <updated>Tue, 04 Jul 2023 13:25:46 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro安装一个超酷超帅的Docker.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/07/绿联DX4600 Pro安装一个超酷超帅的Docker.html</id>
-      <summary type="html">
-&lt;p&gt;
-绿联Nas的系统真是一言难尽，所以最近几天我都在寻找一种安装群晖的教程，也知晓群晖其实也没那么容易安装，主要是安装群晖后，有很大的概率&lt;b&gt;导致机器指示灯，风扇，甚至M.2固态失效&lt;/b&gt;，也正因为此，虽然已经整理好了安装的教程，但迟迟没有动手，此次在网上搜寻教程时无意中发现了一个超酷超帅的Docker镜像，安装后真的会惊叹为何会有如此棒的东西，它就是
-&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;a href=&quot;https://github.com/kroese/virtual-dsm&quot;&gt;kroese/virtual-dsm&lt;/a&gt; ，一个利用Docker管理群晖虚拟机的镜像，对于没有虚拟机功能的绿联Nas来说，无疑是非常棒地既可以体验本地群晖系统，又不用刷机改引导，格式化硬盘的方法
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;安装教程&lt;/h2&gt;
-&lt;p&gt;
-   安装流程和之前的已有的一篇文章相差不大 &lt;a href=&quot;https://post.smzdm.com/p/an36zmz2/&quot;&gt;绿联DX4600安装docker黑群晖&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   当然这里也会写上部分我自己特别折腾的记录，大家可以放心食用
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.1&quot;&gt;下载镜像&lt;/h3&gt;
-&lt;p&gt;
-    打开绿联Docker，输入 &lt;code&gt;kroese/virtual-dsm&lt;/code&gt; 下载镜像
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.2&quot;&gt;使用ssh登录到后台...&lt;/h3&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;安装教程&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;下载镜像&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;使用ssh登录到后台&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.3&quot;&gt;使用Docker命令行安装&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;折腾教程&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;群晖本地IP(macvlan)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;webdav挂载&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;
-绿联Nas的系统真是一言难尽，所以最近几天我都在寻找一种安装群晖的教程，也知晓群晖其实也没那么容易安装，主要是安装群晖后，有很大的概率&lt;b&gt;导致机器指示灯，风扇，甚至M.2固态失效&lt;/b&gt;，也正因为此，虽然已经整理好了安装的教程，但迟迟没有动手，此次在网上搜寻教程时无意中发现了一个超酷超帅的Docker镜像，安装后真的会惊叹为何会有如此棒的东西，它就是
-&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;a href=&quot;https://github.com/kroese/virtual-dsm&quot;&gt;kroese/virtual-dsm&lt;/a&gt; ，一个利用Docker管理群晖虚拟机的镜像，对于没有虚拟机功能的绿联Nas来说，无疑是非常棒地既可以体验本地群晖系统，又不用刷机改引导，格式化硬盘的方法
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;安装教程&lt;/h2&gt;
-&lt;p&gt;
-   安装流程和之前的已有的一篇文章相差不大 &lt;a href=&quot;https://post.smzdm.com/p/an36zmz2/&quot;&gt;绿联DX4600安装docker黑群晖&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   当然这里也会写上部分我自己特别折腾的记录，大家可以放心食用
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.1&quot;&gt;下载镜像&lt;/h3&gt;
-&lt;p&gt;
-    打开绿联Docker，输入 &lt;code&gt;kroese/virtual-dsm&lt;/code&gt; 下载镜像
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.2&quot;&gt;使用ssh登录到后台&lt;/h3&gt;
-&lt;p&gt;
-    其中登录教程在我之前的一篇文章中有介绍 &lt;a href=&quot;https://honmaple.me/articles/2023/06/绿联DX4600 Pro禁用迅雷和中国移动云盘进程.html&quot;&gt;绿联DX4600 Pro禁用迅雷和中国移动云盘进程&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    这里就再简单介绍一下:
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 开启远程协助，记住验证码
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 重启机器(注意先保存进行中的任务)
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 使用 &lt;b&gt;ssh&lt;/b&gt; 客户端登录，端口 &lt;b&gt;922&lt;/b&gt;，密码 &lt;code&gt;L#W$%W1uGa&lt;/code&gt; 加上验证码，用户 &lt;b&gt;root&lt;/b&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&quot;heading-1.3&quot;&gt;使用Docker命令行安装&lt;/h3&gt;
-&lt;p&gt;
-    首先需要验证挂载的目录，我这里是找了两个已经创建并挂载了本地存储的镜像，使用
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker inspect --format &amp;#34;{{json .HostConfig.Mounts}}&amp;#34; 镜像名&lt;/pre&gt;
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    查看挂载的实际目录，可以看出Docker实际挂载的目录由
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;/mnt/media_rw/ + 硬盘UUID + /.ugreen_nas/ + 用户ID + 硬盘目录&lt;/pre&gt;
-&lt;p&gt;
-    这几部分构成，那么就好办了，首先创建一个&lt;b&gt;DSM的目录&lt;/b&gt;，用于存放群晖虚拟机文件，我这里选择&lt;b&gt;固态硬盘&lt;/b&gt;，避免使用机械硬盘&lt;b&gt;导致硬盘无法休眠&lt;/b&gt;，如果选择其它硬盘，需要先创建一个没什么用的Docker挂载目录，然后使用 &lt;code&gt;inspect&lt;/code&gt; 找到实际的路径
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    建立好目录后使用命令行安装镜像
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    其中的几个参数
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;DISK_SIZE=100G&lt;/b&gt;: 分配给群晖虚拟机100G的磁盘空间，这部分空间会作为&lt;b&gt;存储1&lt;/b&gt;使用
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;ALLOCATE=N&lt;/b&gt;: 是否预分配100G的大小(Y)，还是按照实际大小展示在绿联Nas上(N)(这个参数貌似没生效)
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;CPU_CORES=2&lt;/b&gt;: 分配给虚拟机的核数，我的是 &lt;b&gt;n6005&lt;/b&gt;，四核，所以分了两核给群晖
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;RAM_SIZE=8192M&lt;/b&gt;: 分配给虚拟机的内存大小
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;--network 实际的网络&lt;/b&gt;: 也可以不写，使用默认的 &lt;code&gt;Docker bridge&lt;/code&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-    创建完成后使用 &lt;code&gt;docker logs -f DSM&lt;/code&gt; 查看日志，直到日志显示
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    在此期间，也可以打开浏览器，使用绿联Nas &lt;b&gt;IP+端口5000&lt;/b&gt; 进行访问
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    然后就是正常的群晖初始化，至此，想要体验本地群晖系统的就可以行动了
-&lt;/p&gt;
-
-&lt;p&gt;
-    &lt;b&gt;等等，后面还有&lt;/b&gt;。。。
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;折腾教程&lt;/h2&gt;
-&lt;h3 id=&quot;heading-2.1&quot;&gt;群晖本地IP(macvlan)&lt;/h3&gt;
-&lt;p&gt;
-    按照GitHub上的教程，我原本想要配置一个和局域网内其它设备相同网段的IP给群晖虚拟机，所以我创建了一个基于 &lt;code&gt;macvlan&lt;/code&gt; 的网络
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker network create -d macvlan --subnet=192.168.31.0/24 --gateway=192.168.31.1 --ip-range=192.168.31.66/32 -o parent=eth0  dsmnet&lt;/pre&gt;
-
-&lt;p&gt;
-    然后使用 &lt;code&gt;--network dsmnet&lt;/code&gt; 重新创建Docker，结果怎么着，报错了
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker: Error response from daemon: failed to create the macvlan port: operation not supported.&lt;/pre&gt;
-
-&lt;p&gt;
-    第一眼我还觉得这是由于docker打包脚本里的 &lt;code&gt;EXPOSE&lt;/code&gt; 的锅，甚至去搜索能否禁用该操作，结果也是显而易见的，什么都没找到。后来仔细看了一下报错信息：&lt;code&gt;operation not supported&lt;/code&gt;
-    好吧，确认一下 &lt;code&gt;macvlan&lt;/code&gt; 相关的模块是否被加载
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;lsmod | grep macvlan&lt;/pre&gt;
-
-&lt;p&gt;
-    果然，&lt;b&gt;绿联Nas默认是没有macvlan模块的&lt;/b&gt;，所以想用绿联Nas部署一个openwrt旁路由的可以先歇了。那么，我能否自己安装macvlan模块呢？
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-08.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-08.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    对不起，打扰了。不对，内核版本不符，那么我去下载一个和内核版本相符的文件，使用 &lt;b&gt;uname -r&lt;/b&gt; 看一下绿联用的版本
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;5.10.120&lt;/pre&gt;
-
-&lt;p&gt;
-    我直接去官方库里找，还好找到了，同样使用的 &lt;b&gt;5.10.120-1&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;wget https://downloads.openwrt.org/releases/22.03.0-rc4/targets/x86/64/packages/kmod-macvlan_5.10.120-1_x86_64.ipk&lt;/pre&gt;
-
-&lt;p&gt;
-    继续安装，结果还是一样
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-09.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-09.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    因为我对openwrt不太熟悉，实在进行不下去了，&lt;b&gt;只好放弃&lt;/b&gt;。不过也能看出绿联还是编译了一些属于自己的东西的，没有直接使用默认的openwrt内核，不过现在大概只能等绿联自己升级固件来默认支持macvlan了，或者有没有大佬能够解答一下这个问题
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.2&quot;&gt;webdav挂载&lt;/h3&gt;
-&lt;p&gt;
-    因为docker安装的群晖无法直接使用插入的硬盘，甚至不能映射某个目录到群晖虚拟机，所以如果想用群晖来操作绿联Nas上面的文件，只能通过网络挂载
-&lt;/p&gt;
-
-&lt;p&gt;
-    绿联本身支持的网络挂载有限，不支持&lt;code&gt;NFS&lt;/code&gt;，但是还好可以支持&lt;code&gt;webdav&lt;/code&gt;和&lt;code&gt;ftp&lt;/code&gt;，那么可以去群晖web管理界面，打开 &lt;b&gt;file station -&amp;gt; 工具 -&amp;gt; 远程连接 -&amp;gt; 连接设置 -&amp;gt; ftp/webdav&lt;/b&gt; 进行配置
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-10.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-10.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-11.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-11.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    你以为我要说的就这，这不是&lt;b&gt;显而易见，浅显易懂，入口即化&lt;/b&gt;的吗？实际上，除了&lt;code&gt;ftp&lt;/code&gt;可以正常挂载外，&lt;code&gt;webdav&lt;/code&gt;却是死活挂载不了，总是提示&lt;b&gt;连接被服务器拒绝&lt;/b&gt;，搞得我还以为绿联是不是连一个基础的webdav都没做好，但我用我的mac连接又可以正常挂载，差点把我整emo
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-12.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-12.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    我可以确认我的配置是对的，那到底是哪里出了问题，打开群晖的&lt;b&gt;ssh&lt;/b&gt;，也确认了是可以正常和宿主机通信的
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-13.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-13.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    最后搞得实在没办法了，抓包吧，还好群晖默认已经安装了&lt;b&gt;tcpdump&lt;/b&gt;，只需要生成&lt;b&gt;pcap&lt;/b&gt;文件就行
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;tcpdump -i eth0 host 192.168.31.65 -w ugreen/webdav.pcap&lt;/pre&gt;
-
-&lt;p&gt;
-    终端运行抓包命令，另一边在群晖界面进行添加webdav的操作，等待再次提示连接被服务器拒绝后，再等待5s，暂停抓包，然后把 &lt;b&gt;webdav.pcap&lt;/b&gt; 下载到本地，使用 &lt;b&gt;wireshark&lt;/b&gt; 查看
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-14.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-14.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    乍一看没什么问题，都是正常的&lt;b&gt;DNS查询&lt;/b&gt;和&lt;b&gt;TCP握手&lt;/b&gt;，可仔细一看，怎么会&lt;b&gt;多了一个斜杆&lt;/b&gt;，而且服务端返回了401错误
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-15.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-DSM-15.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    原来群晖挂载webdav的路径&lt;b&gt;一定不能使用斜杆开头&lt;/b&gt;，&lt;b&gt;一定不能使用斜杆开头&lt;/b&gt;，&lt;b&gt;一定不能使用斜杆开头&lt;/b&gt;，重要的事情说三遍，需要把 &lt;code&gt;/dav/share/&lt;/code&gt; 改成 &lt;code&gt;dav/share/&lt;/code&gt; (注意，绿联webdav路径后必须有一个斜杆)
-&lt;/p&gt;
-
-&lt;p&gt;
-    至此，webdav挂载也ok了
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;其它&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 在使用 &lt;b&gt;非macvlan&lt;/b&gt; 网络创建的群晖系统里内置的 &lt;b&gt;IP 20.20.20.21&lt;/b&gt; 以及 &lt;b&gt;网关20.20.20.1&lt;/b&gt; 是不能修改的，修改后可能会导致无法从浏览器访问群晖
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 可以修改DNS服务为&lt;b&gt;局域网网关&lt;/b&gt;或者&lt;b&gt;自建DNS的IP&lt;/b&gt;，修改后记得重启群晖系统
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 功耗，启动 &lt;code&gt;virtual-dsm&lt;/code&gt; 前我的机器功耗大概是&lt;b&gt;18W&lt;/b&gt;，启动后在&lt;b&gt;26W&lt;/b&gt;左右，一段时间后又会变成&lt;b&gt;19W&lt;/b&gt;，这应该和系统内运行的任务有关
-&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;</content>
         <category term="Tech/Geek"></category>
     </entry>
 </feed>

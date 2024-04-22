@@ -5,8 +5,146 @@
   <link href="https://honmaple.me/categories/tech/linux/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Wed, 15 Nov 2023 15:21:38 +0000</updated>
+    <updated>Mon, 22 Apr 2024 23:14:41 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>为maple-translate增加更友好的sdcv离线翻译</title>
+      <link href="" rel="alternate"></link>
+      <published>Mon, 22 Apr 2024 21:51:27 +0000</published>
+      <updated>Mon, 22 Apr 2024 23:14:41 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2024/04/wei-maple-translatezeng-jia-geng-you-hao-de-sdcvchi-xian-fan-yi.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2024/04/wei-maple-translatezeng-jia-geng-you-hao-de-sdcvchi-xian-fan-yi.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+之前我写的Emacs翻译插件 &lt;b&gt;maple-translate&lt;/b&gt; 有一个 &lt;b&gt;sdcv&lt;/b&gt; 离线翻译的功能，它使用了 &lt;code&gt;Elisp&lt;/code&gt; 解析 &lt;b&gt;StarDict&lt;/b&gt; 的字典文件，所以不需要安装其它任何依赖。但是也是因为此原因，首次使用离线翻译需要等待字典文件加载到内存，这不是很友好，此次我将添加 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件的支持，使离线翻译能够更加快捷方便
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+首先是安装 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew install sdcv
+└──╼ sdcv --help
+用法：
+  sdcv [选项…]  words
+
+帮助选项：
+  -h, --help...&lt;/pre&gt;</summary>
+      <content type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+之前我写的Emacs翻译插件 &lt;b&gt;maple-translate&lt;/b&gt; 有一个 &lt;b&gt;sdcv&lt;/b&gt; 离线翻译的功能，它使用了 &lt;code&gt;Elisp&lt;/code&gt; 解析 &lt;b&gt;StarDict&lt;/b&gt; 的字典文件，所以不需要安装其它任何依赖。但是也是因为此原因，首次使用离线翻译需要等待字典文件加载到内存，这不是很友好，此次我将添加 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件的支持，使离线翻译能够更加快捷方便
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+首先是安装 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew install sdcv
+└──╼ sdcv --help
+用法：
+  sdcv [选项…]  words
+
+帮助选项：
+  -h, --help                     显示帮助选项
+
+应用程序选项：
+  -v, --version                  display version information and exit
+  -l, --list-dicts               display list of available dictionaries and exit
+  -u, --use-dict=bookname        for search use only dictionary with this bookname
+  -n, --non-interactive          for use in scripts
+  -j, --json-output              print the result formatted as JSON
+  --json                         print the result formatted as JSON
+  -e, --exact-search             do not fuzzy-search for similar words, only return exact matches
+  -0, --utf8-output              output must be in utf8
+  -1, --utf8-input               input of sdcv in utf8
+  -2, --data-dir=path/to/dir     use this directory as path to stardict data directory
+  -x, --only-data-dir            only use the dictionaries in data-dir, do not search in user and system directories
+  -c, --color                    colorize the output&lt;/pre&gt;
+
+&lt;p&gt;
+然后定义二进制文件的路径，如果 &lt;b&gt;sdcv&lt;/b&gt; 未安装，则返回为 &lt;code&gt;nil&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defvar maple-translate-sdcv-program (executable-find &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;sdcv&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))&lt;/pre&gt;
+
+&lt;p&gt;
+接着修改之前写好的 &lt;code&gt;maple-translate-sdcv&lt;/code&gt; 函数，通过判断 &lt;code&gt;maple-translate-sdcv-program&lt;/code&gt; 是否为空采取不同的翻译操作
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple-translate-sdcv(word &lt;span style=&quot;color:#66d9ef&quot;&gt;&amp;amp;optional&lt;/span&gt; callback)
+  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Search WORD with sdcv, use async request if CALLBACK non-nil.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+  (if maple-translate-sdcv-program
+      (maple-translate-execute maple-translate-sdcv-program
+        :args (&lt;span style=&quot;color:#a6e22e&quot;&gt;append&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-x&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-j&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-0&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-1&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+                      (cl-loop for dict in maple-translate-sdcv-dicts
+                               collect (&lt;span style=&quot;color:#a6e22e&quot;&gt;expand-file-name&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;cdr&lt;/span&gt; dict) maple-translate-sdcv-dir))
+                      (&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; word))
+        :format (maple-translate-sdcv-format)
+        :callback callback)
+    &lt;span style=&quot;color:#75715e&quot;&gt;;; ...&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;;; 使用ELisp解析并翻译&lt;/span&gt;
+    ))&lt;/pre&gt;
+&lt;p&gt;
+需要说明的是，由于该函数接收一个 &lt;code&gt;callback&lt;/code&gt; 的变量，用于处理异步翻译，如果是同步翻译，可以直接使用 &lt;code&gt;call-process&lt;/code&gt; 获取结果
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(with-temp-buffer
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;apply&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;call-process&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;sdcv&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;t&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-x&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-j&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-0&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-1&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;/Users/xxx/.emacs.d/stardict/stardict-lazyworm-ec-2.4.2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;word&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;buffer-string&lt;/span&gt;))&lt;/pre&gt;
+
+&lt;p&gt;
+但如果是异步翻译，则需要使用 &lt;code&gt;start-process&lt;/code&gt; ，再通过监听进程状态在进程结束后再获取翻译结果
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(let ((name (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;maple-translate-process %s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;program)))
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;set-process-sentinel&lt;/span&gt;
+   (&lt;span style=&quot;color:#a6e22e&quot;&gt;apply&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;start-process&lt;/span&gt; name (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;*%s*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; name) &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;program &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;args)
+   (lambda(process _)
+     (unless (process-live-p process)
+       (with-current-buffer (&lt;span style=&quot;color:#a6e22e&quot;&gt;process-buffer&lt;/span&gt; process)
+         (prog1 (&lt;span style=&quot;color:#a6e22e&quot;&gt;funcall&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;callback &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt;)
+           (&lt;span style=&quot;color:#a6e22e&quot;&gt;kill-buffer&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;current-buffer&lt;/span&gt;))))))))&lt;/pre&gt;
+&lt;p&gt;
+这里的 &lt;b&gt;buffer&lt;/b&gt; 名称也可以通过 &lt;code&gt;(generate-new-buffer &amp;#34; *temp*&amp;#34; t)&lt;/code&gt; 生成一个临时 &lt;b&gt;buffer&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+最后就是翻译结果的展示，由于输出的是多行 &lt;b&gt;json&lt;/b&gt;，比如:
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;[]
+[{&amp;#34;dict&amp;#34;: &amp;#34;懒虫简明英汉词典&amp;#34;,&amp;#34;word&amp;#34;:&amp;#34;word&amp;#34;,&amp;#34;definition&amp;#34;:&amp;#34;\n[wә:d]\nn.\n字, 词, 话, 消息, 诺言, 命令\nvt.\n为...措辞&amp;#34;}]&lt;/pre&gt;
+&lt;p&gt;
+所以我在解析翻译结果时取了个巧，没有使用 &lt;code&gt;(buffer-string)&lt;/code&gt; 而是直接在 &lt;b&gt;buffer&lt;/b&gt; 里操作，每次都跳到开始位置，再依次向下移动 &lt;b&gt;n&lt;/b&gt; 行，这个 &lt;b&gt;n&lt;/b&gt; 即是字典的数量，最后使用 &lt;code&gt;(thing-at-point &amp;#39;line t)&lt;/code&gt; 获取当前行的数据
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple-translate-sdcv-format()
+  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Format result with sdcv output.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+  (let ((results (cl-loop for index from &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;
+                          for dicts in maple-translate-sdcv-dicts
+                          collect
+                          (progn
+                            (&lt;span style=&quot;color:#a6e22e&quot;&gt;goto-char&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;point-min&lt;/span&gt;))
+                            (&lt;span style=&quot;color:#a6e22e&quot;&gt;forward-line&lt;/span&gt; index)
+                            (string-join (cl-loop for child across-ref (json-read-from-string (&lt;span style=&quot;color:#a6e22e&quot;&gt;decode-coding-string&lt;/span&gt; (thing-at-point &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;line&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;t&lt;/span&gt;) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;utf-8&lt;/span&gt;))
+                                                  collect (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;%s: %s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                                                  (alist-get &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;dict&lt;/span&gt; child)
+                                                                  (alist-get &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;definition&lt;/span&gt; child)))
+                                         &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))))
+    (unless (&lt;span style=&quot;color:#a6e22e&quot;&gt;null&lt;/span&gt; results)
+      (string-join (cl-remove &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; results) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))))&lt;/pre&gt;
+
+&lt;p&gt;
+最终效果
+&lt;/p&gt;
+&lt;video width=&quot;100%&quot; controls=&quot;&quot;&gt;
+  &lt;source src=&quot;https://s.libforest.com/images/2024/04/maple-translate-sdcv.mov&quot; type=&quot;video/mp4&quot;&gt;
+&lt;/video&gt;
+
+&lt;p&gt;
+&lt;b&gt;maple-translate&lt;/b&gt;的具体修改可见: &lt;a href=&quot;https://github.com/honmaple/emacs-maple-translate/commit/dfd0eae6486d62c26a3fa3fb07ee7e5f4640eb16&quot;&gt;dfd0eae&lt;/a&gt;
+&lt;/p&gt;</content>
+        <category term="Tech/Linux/Emacs"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>重复造轮子之Emacs翻译插件maple-translate</title>
       <link href="" rel="alternate"></link>
@@ -1035,190 +1173,5 @@ maple-explorer-project   ;; 已打开的项目浏览&lt;/pre&gt;
 &lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</content>
         <category term="Tech/Linux/Emacs"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>ansible笔记</title>
-      <link href="" rel="alternate"></link>
-      <published>Tue, 04 Sep 2018 10:53:51 +0000</published>
-      <updated>Fri, 20 Dec 2019 17:52:45 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2018/09/ansible笔记.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2018/09/ansible笔记.html</id>
-      <summary type="html">
-&lt;h1 id=&quot;heading-1&quot;&gt;ansible动态解析inventory&lt;/h1&gt;
-&lt;p&gt;
-  &lt;b&gt;ansible&lt;/b&gt;调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）
-&lt;/p&gt;
-
-&lt;p&gt;
-  但问题是&lt;b&gt;ansible&lt;/b&gt;没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可
-&lt;/p&gt;
-
-&lt;p&gt;
-  查找源码, 根据 &lt;code&gt;InventoryManager&lt;/code&gt; 传递的&lt;b&gt;source&lt;/b&gt;变量找到&lt;code&gt;parse_sources&lt;/code&gt;这个函数
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;InventoryManager&lt;/span&gt;(object):
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;parse_sources&lt;/span&gt;(self, cache&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;False):
-        &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&amp;#39;...&lt;/span&gt;&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;ansible动态解析inventory&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;ansible自定义模块传递list变量会变成字符串&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;常见问题FAQ&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h1 id=&quot;heading-1&quot;&gt;ansible动态解析inventory&lt;/h1&gt;
-&lt;p&gt;
-  &lt;b&gt;ansible&lt;/b&gt;调用inventory模块时总会调用一个文件或脚本来进行处理, 但我想要动态的解析inventory, 即直接传入一个字符串而不是文件, 直接调用ansible的接口来进行解析（不同格式的inventory也可以手动解析，比如yaml格式可以使用pyyaml解析，不过直接使用ansible接口会更方便一些）
-&lt;/p&gt;
-
-&lt;p&gt;
-  但问题是&lt;b&gt;ansible&lt;/b&gt;没有直接可供调用的接口, 不过可以直接查看ansible源码，找到相应的解析函数，封装一下即可
-&lt;/p&gt;
-
-&lt;p&gt;
-  查找源码, 根据 &lt;code&gt;InventoryManager&lt;/code&gt; 传递的&lt;b&gt;source&lt;/b&gt;变量找到&lt;code&gt;parse_sources&lt;/code&gt;这个函数
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;InventoryManager&lt;/span&gt;(object):
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;parse_sources&lt;/span&gt;(self, cache&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;False):
-        &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt; iterate over inventory sources and parse each one to populate it&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
-
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_setup_inventory_plugins()
-        &lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;&lt;/pre&gt;
-
-&lt;p&gt;
-  然后再根据
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;_setup_inventory_plugins&lt;/span&gt;(self):
-    &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt; sets up loaded inventory plugins for usage &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
-
-    inventory_loader &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; PluginLoader(&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;InventoryModule&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;, &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;ansible.plugins.inventory&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;, C&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;DEFAULT_INVENTORY_PLUGIN_PATH, &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;inventory_plugins&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;)
-    &lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;&lt;/pre&gt;
-&lt;p&gt;
-  找到对应的解析&lt;b&gt;plugin&lt;/b&gt;, 我使用的是&lt;b&gt;ini&lt;/b&gt;格式的inventory, 所以自定义一下&lt;code&gt;ansible.plugins.inventory.ini.InventoryModule&lt;/code&gt;这个模块即可
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; ansible.plugins.inventory.ini &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; InventoryModule
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; ansible.inventory.data &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; InventoryData
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; ansible.parsing.dataloader &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; DataLoader
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; ansible.module_utils._text &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; to_text
-&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; ansible.template &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; Templar
-
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;InventoryCustomModule&lt;/span&gt;(InventoryModule):
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;mine_parse&lt;/span&gt;(self, b_data):
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;loader &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; DataLoader()
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;inventory &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; InventoryData()
-        self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;templar &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; Templar(loader&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;loader)
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;try&lt;/span&gt;:
-            data &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; to_text(b_data, errors&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;surrogate_or_strict&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;)&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;splitlines()
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;except&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;UnicodeError&lt;/span&gt;:
-            data &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; []
-            &lt;span style=&quot;color:#66d9ef&quot;&gt;for&lt;/span&gt; line &lt;span style=&quot;color:#f92672&quot;&gt;in&lt;/span&gt; b_data&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;splitlines():
-                &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; line &lt;span style=&quot;color:#f92672&quot;&gt;and&lt;/span&gt; line[&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;] &lt;span style=&quot;color:#f92672&quot;&gt;in&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;b_COMMENT_MARKERS:
-                    data&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;append(&lt;span style=&quot;color:#e6db74&quot;&gt;u&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;)
-                &lt;span style=&quot;color:#66d9ef&quot;&gt;else&lt;/span&gt;:
-                    data&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;append(to_text(line, errors&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;surrogate_or_strict&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;))
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; self&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;_parse(&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;, data)&lt;/pre&gt;
-
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;如何使用&lt;/b&gt;:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;text &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;\
-&lt;/span&gt;&lt;span style=&quot;color:#ae81ff&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;[MY-HOST]&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;MY_HOST-1 ansible_ssh_host=127.0.0.1&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;MY_HOST-2 ansible_ssh_host=127.0.0.2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;MY_HOST-3 ansible_ssh_host=127.0.0.3&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;MY_HOST-4 ansible_ssh_host=127.0.0.4&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;[MY-HOST:vars]&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;vip=127.0.0.10&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;ppp=test&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;[MY-HOST1]&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;MY_HOST1-1 ansible_ssh_host=127.0.0.11&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;MY_HOST1-2 ansible_ssh_host=127.0.0.12&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;[MY-HOST:children]&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;MY-HOST1&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;
-&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;
-module &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; InventoryCustomModule()
-module&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;mine_parse(text)
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;for&lt;/span&gt; _, group &lt;span style=&quot;color:#f92672&quot;&gt;in&lt;/span&gt; module&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;inventory&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;groups&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;items():
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;print&lt;/span&gt;(group, group&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;child_groups, group&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;vars)
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;for&lt;/span&gt; host &lt;span style=&quot;color:#f92672&quot;&gt;in&lt;/span&gt; group&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;hosts:
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;print&lt;/span&gt;(host, host&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;vars)&lt;/pre&gt;
-&lt;p&gt;
-    &lt;b&gt;结果&lt;/b&gt;:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(ungrouped, [], {})
-(all, [ungrouped], {})
-(MY-HOST, [MY-HOST1], {u&amp;#39;vip&amp;#39;: u&amp;#39;127.0.0.10&amp;#39;, u&amp;#39;ppp&amp;#39;: u&amp;#39;test&amp;#39;})
-(MY_HOST-1, {u&amp;#39;ansible_ssh_host&amp;#39;: u&amp;#39;127.0.0.1&amp;#39;, &amp;#39;inventory_file&amp;#39;: None, &amp;#39;inventory_dir&amp;#39;: None})
-(MY_HOST-2, {u&amp;#39;ansible_ssh_host&amp;#39;: u&amp;#39;127.0.0.2&amp;#39;, &amp;#39;inventory_file&amp;#39;: None, &amp;#39;inventory_dir&amp;#39;: None})
-(MY_HOST-3, {u&amp;#39;ansible_ssh_host&amp;#39;: u&amp;#39;127.0.0.3&amp;#39;, &amp;#39;inventory_file&amp;#39;: None, &amp;#39;inventory_dir&amp;#39;: None})
-(MY_HOST-4, {u&amp;#39;ansible_ssh_host&amp;#39;: u&amp;#39;127.0.0.4&amp;#39;, &amp;#39;inventory_file&amp;#39;: None, &amp;#39;inventory_dir&amp;#39;: None})
-(MY-HOST1, [], {})
-(MY_HOST1-1, {u&amp;#39;ansible_ssh_host&amp;#39;: u&amp;#39;127.0.0.11&amp;#39;, &amp;#39;inventory_file&amp;#39;: None, &amp;#39;inventory_dir&amp;#39;: None})
-(MY_HOST1-2, {u&amp;#39;ansible_ssh_host&amp;#39;: u&amp;#39;127.0.0.12&amp;#39;, &amp;#39;inventory_file&amp;#39;: None, &amp;#39;inventory_dir&amp;#39;: None})&lt;/pre&gt;
-
-&lt;p&gt;
-    可以看出已经没什么大的问题了, 但有一个点, &lt;b&gt;all&lt;/b&gt;组下的groups列表只有&lt;code&gt;ungrouped&lt;/code&gt;, 正常情况下&lt;code&gt;MY-HOST&lt;/code&gt;组也应该继承&lt;code&gt;all&lt;/code&gt;组, &lt;del&gt;可能是还需要一些其他的操作吧&lt;/del&gt;，继续翻源码，找到了&lt;code&gt;InventoryData&lt;/code&gt;的&lt;code&gt;reconcile_inventory&lt;/code&gt;方法, 修改一下即可
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;module &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; InventoryCustomModule()
-module&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;mine_parse(text)
-module&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;inventory&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;reconcile_inventory()&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h1 id=&quot;heading-2&quot;&gt;ansible自定义模块传递list变量会变成字符串&lt;/h1&gt;
-&lt;p&gt;
-  我自定义了一个模块，需要传入一个&lt;b&gt;list&lt;/b&gt;变量&lt;code&gt;group_names&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#f92672&quot;&gt;from&lt;/span&gt; ansible.module_utils.basic &lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; AnsibleModule
-
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;main&lt;/span&gt;():
-    module &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; AnsibleModule(
-        argument_spec&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;dict(group_names&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;{
-            &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;required&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;: True
-        }))
-
-    i &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; module&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;params&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;get(&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;group_names&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;)
-    msg &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; {&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;group_names&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;: i, &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;type&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;: str(type(i))}
-    module&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;fail_json(changed&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;False, msg&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;msg)
-
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; __name__ &lt;span style=&quot;color:#f92672&quot;&gt;==&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;__main__&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;:
-    main()&lt;/pre&gt;
-&lt;p&gt;
-  但发现传入的变量最后变成的&lt;code&gt;str type&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;FAILED! =&amp;gt; {&amp;#34;changed&amp;#34;: false, &amp;#34;failed&amp;#34;: true, &amp;#34;msg&amp;#34;: {&amp;#34;group_names&amp;#34;: &amp;#34;[&amp;#39;test&amp;#39;]&amp;#34;, &amp;#34;type&amp;#34;: &amp;#34;&amp;lt;type &amp;#39;str&amp;#39;&amp;gt;&amp;#34;}}&lt;/pre&gt;
-&lt;p&gt;
-  最后查找资料后才知道, 传递的变量需要增加&lt;code&gt;type&lt;/code&gt;参数, 否则都是&lt;b&gt;str&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;module &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; AnsibleModule(
-    argument_spec&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;dict(group_names&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;{
-        &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;required&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;: True,
-        &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;type&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;list&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-    }))&lt;/pre&gt;
-
-&lt;h1 id=&quot;heading-3&quot;&gt;常见问题FAQ&lt;/h1&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;Aborting, target uses selinux but python bindings (libselinux-python) aren&amp;#39;t installed!&lt;/pre&gt;
-
-&lt;p&gt;
-  查看目标机器是否安装 &lt;code&gt;libselinux-python&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;yum install libselinux-python&lt;/pre&gt;
-
-&lt;p&gt;
-  修改&lt;code&gt;ansible.cfg&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;interpreter_python = /usr/bin/python&lt;/pre&gt;</content>
-        <category term="Tech/Linux"></category>
     </entry>
 </feed>

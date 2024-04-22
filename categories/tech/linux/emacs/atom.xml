@@ -5,8 +5,146 @@
   <link href="https://honmaple.me/categories/tech/linux/emacs/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Wed, 15 Nov 2023 15:21:38 +0000</updated>
+    <updated>Mon, 22 Apr 2024 23:14:41 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>为maple-translate增加更友好的sdcv离线翻译</title>
+      <link href="" rel="alternate"></link>
+      <published>Mon, 22 Apr 2024 21:51:27 +0000</published>
+      <updated>Mon, 22 Apr 2024 23:14:41 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2024/04/wei-maple-translatezeng-jia-geng-you-hao-de-sdcvchi-xian-fan-yi.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2024/04/wei-maple-translatezeng-jia-geng-you-hao-de-sdcvchi-xian-fan-yi.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+之前我写的Emacs翻译插件 &lt;b&gt;maple-translate&lt;/b&gt; 有一个 &lt;b&gt;sdcv&lt;/b&gt; 离线翻译的功能，它使用了 &lt;code&gt;Elisp&lt;/code&gt; 解析 &lt;b&gt;StarDict&lt;/b&gt; 的字典文件，所以不需要安装其它任何依赖。但是也是因为此原因，首次使用离线翻译需要等待字典文件加载到内存，这不是很友好，此次我将添加 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件的支持，使离线翻译能够更加快捷方便
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+首先是安装 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew install sdcv
+└──╼ sdcv --help
+用法：
+  sdcv [选项…]  words
+
+帮助选项：
+  -h, --help...&lt;/pre&gt;</summary>
+      <content type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+之前我写的Emacs翻译插件 &lt;b&gt;maple-translate&lt;/b&gt; 有一个 &lt;b&gt;sdcv&lt;/b&gt; 离线翻译的功能，它使用了 &lt;code&gt;Elisp&lt;/code&gt; 解析 &lt;b&gt;StarDict&lt;/b&gt; 的字典文件，所以不需要安装其它任何依赖。但是也是因为此原因，首次使用离线翻译需要等待字典文件加载到内存，这不是很友好，此次我将添加 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件的支持，使离线翻译能够更加快捷方便
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+首先是安装 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew install sdcv
+└──╼ sdcv --help
+用法：
+  sdcv [选项…]  words
+
+帮助选项：
+  -h, --help                     显示帮助选项
+
+应用程序选项：
+  -v, --version                  display version information and exit
+  -l, --list-dicts               display list of available dictionaries and exit
+  -u, --use-dict=bookname        for search use only dictionary with this bookname
+  -n, --non-interactive          for use in scripts
+  -j, --json-output              print the result formatted as JSON
+  --json                         print the result formatted as JSON
+  -e, --exact-search             do not fuzzy-search for similar words, only return exact matches
+  -0, --utf8-output              output must be in utf8
+  -1, --utf8-input               input of sdcv in utf8
+  -2, --data-dir=path/to/dir     use this directory as path to stardict data directory
+  -x, --only-data-dir            only use the dictionaries in data-dir, do not search in user and system directories
+  -c, --color                    colorize the output&lt;/pre&gt;
+
+&lt;p&gt;
+然后定义二进制文件的路径，如果 &lt;b&gt;sdcv&lt;/b&gt; 未安装，则返回为 &lt;code&gt;nil&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defvar maple-translate-sdcv-program (executable-find &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;sdcv&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))&lt;/pre&gt;
+
+&lt;p&gt;
+接着修改之前写好的 &lt;code&gt;maple-translate-sdcv&lt;/code&gt; 函数，通过判断 &lt;code&gt;maple-translate-sdcv-program&lt;/code&gt; 是否为空采取不同的翻译操作
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple-translate-sdcv(word &lt;span style=&quot;color:#66d9ef&quot;&gt;&amp;amp;optional&lt;/span&gt; callback)
+  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Search WORD with sdcv, use async request if CALLBACK non-nil.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+  (if maple-translate-sdcv-program
+      (maple-translate-execute maple-translate-sdcv-program
+        :args (&lt;span style=&quot;color:#a6e22e&quot;&gt;append&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-x&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-j&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-0&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-1&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+                      (cl-loop for dict in maple-translate-sdcv-dicts
+                               collect (&lt;span style=&quot;color:#a6e22e&quot;&gt;expand-file-name&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;cdr&lt;/span&gt; dict) maple-translate-sdcv-dir))
+                      (&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; word))
+        :format (maple-translate-sdcv-format)
+        :callback callback)
+    &lt;span style=&quot;color:#75715e&quot;&gt;;; ...&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;;; 使用ELisp解析并翻译&lt;/span&gt;
+    ))&lt;/pre&gt;
+&lt;p&gt;
+需要说明的是，由于该函数接收一个 &lt;code&gt;callback&lt;/code&gt; 的变量，用于处理异步翻译，如果是同步翻译，可以直接使用 &lt;code&gt;call-process&lt;/code&gt; 获取结果
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(with-temp-buffer
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;apply&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;call-process&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;sdcv&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;t&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-x&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-j&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-0&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-1&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;/Users/xxx/.emacs.d/stardict/stardict-lazyworm-ec-2.4.2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;word&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;buffer-string&lt;/span&gt;))&lt;/pre&gt;
+
+&lt;p&gt;
+但如果是异步翻译，则需要使用 &lt;code&gt;start-process&lt;/code&gt; ，再通过监听进程状态在进程结束后再获取翻译结果
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(let ((name (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;maple-translate-process %s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;program)))
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;set-process-sentinel&lt;/span&gt;
+   (&lt;span style=&quot;color:#a6e22e&quot;&gt;apply&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;start-process&lt;/span&gt; name (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;*%s*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; name) &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;program &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;args)
+   (lambda(process _)
+     (unless (process-live-p process)
+       (with-current-buffer (&lt;span style=&quot;color:#a6e22e&quot;&gt;process-buffer&lt;/span&gt; process)
+         (prog1 (&lt;span style=&quot;color:#a6e22e&quot;&gt;funcall&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;callback &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt;)
+           (&lt;span style=&quot;color:#a6e22e&quot;&gt;kill-buffer&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;current-buffer&lt;/span&gt;))))))))&lt;/pre&gt;
+&lt;p&gt;
+这里的 &lt;b&gt;buffer&lt;/b&gt; 名称也可以通过 &lt;code&gt;(generate-new-buffer &amp;#34; *temp*&amp;#34; t)&lt;/code&gt; 生成一个临时 &lt;b&gt;buffer&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+最后就是翻译结果的展示，由于输出的是多行 &lt;b&gt;json&lt;/b&gt;，比如:
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;[]
+[{&amp;#34;dict&amp;#34;: &amp;#34;懒虫简明英汉词典&amp;#34;,&amp;#34;word&amp;#34;:&amp;#34;word&amp;#34;,&amp;#34;definition&amp;#34;:&amp;#34;\n[wә:d]\nn.\n字, 词, 话, 消息, 诺言, 命令\nvt.\n为...措辞&amp;#34;}]&lt;/pre&gt;
+&lt;p&gt;
+所以我在解析翻译结果时取了个巧，没有使用 &lt;code&gt;(buffer-string)&lt;/code&gt; 而是直接在 &lt;b&gt;buffer&lt;/b&gt; 里操作，每次都跳到开始位置，再依次向下移动 &lt;b&gt;n&lt;/b&gt; 行，这个 &lt;b&gt;n&lt;/b&gt; 即是字典的数量，最后使用 &lt;code&gt;(thing-at-point &amp;#39;line t)&lt;/code&gt; 获取当前行的数据
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple-translate-sdcv-format()
+  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Format result with sdcv output.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+  (let ((results (cl-loop for index from &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;
+                          for dicts in maple-translate-sdcv-dicts
+                          collect
+                          (progn
+                            (&lt;span style=&quot;color:#a6e22e&quot;&gt;goto-char&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;point-min&lt;/span&gt;))
+                            (&lt;span style=&quot;color:#a6e22e&quot;&gt;forward-line&lt;/span&gt; index)
+                            (string-join (cl-loop for child across-ref (json-read-from-string (&lt;span style=&quot;color:#a6e22e&quot;&gt;decode-coding-string&lt;/span&gt; (thing-at-point &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;line&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;t&lt;/span&gt;) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;utf-8&lt;/span&gt;))
+                                                  collect (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;%s: %s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                                                  (alist-get &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;dict&lt;/span&gt; child)
+                                                                  (alist-get &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;definition&lt;/span&gt; child)))
+                                         &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))))
+    (unless (&lt;span style=&quot;color:#a6e22e&quot;&gt;null&lt;/span&gt; results)
+      (string-join (cl-remove &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; results) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))))&lt;/pre&gt;
+
+&lt;p&gt;
+最终效果
+&lt;/p&gt;
+&lt;video width=&quot;100%&quot; controls=&quot;&quot;&gt;
+  &lt;source src=&quot;https://s.libforest.com/images/2024/04/maple-translate-sdcv.mov&quot; type=&quot;video/mp4&quot;&gt;
+&lt;/video&gt;
+
+&lt;p&gt;
+&lt;b&gt;maple-translate&lt;/b&gt;的具体修改可见: &lt;a href=&quot;https://github.com/honmaple/emacs-maple-translate/commit/dfd0eae6486d62c26a3fa3fb07ee7e5f4640eb16&quot;&gt;dfd0eae&lt;/a&gt;
+&lt;/p&gt;</content>
+        <category term="Tech/Linux/Emacs"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>重复造轮子之Emacs翻译插件maple-translate</title>
       <link href="" rel="alternate"></link>
@@ -1034,185 +1172,6 @@ maple-explorer-project   ;; 已打开的项目浏览&lt;/pre&gt;
   ➌ 更多我可以控制和自定义的地方
 &lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</content>
-        <category term="Tech/Linux/Emacs"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>emacs自动更新文件头</title>
-      <link href="" rel="alternate"></link>
-      <published>Tue, 09 Jan 2018 16:00:45 +0000</published>
-      <updated>Fri, 24 Feb 2023 08:19:20 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2018/01/emacs自动更新文件头.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2018/01/emacs自动更新文件头.html</id>
-      <summary type="html">
-&lt;p&gt;
-前面已经说过，可以使用&lt;b&gt;auto-insert&lt;/b&gt;自动添加文件头，今天来说一说自动更新文件头，比如说每次保存时自动更新&lt;b&gt;last updated&lt;/b&gt;字段
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;自动更新Last Updated&lt;/h2&gt;
-&lt;p&gt;
-   如果使用的是header2,直接设置相关的变量就可，假如使用的是&lt;b&gt;auto-insert&lt;/b&gt;，同样也可以使用emacs内置的&lt;b&gt;time-stamp&lt;/b&gt;对Last Updated进行自动更新
-&lt;/p&gt;
-
-&lt;p&gt;
-   time-stamp默认使用&lt;code&gt;Time-stamp:&lt;/code&gt;,如果要对&lt;code&gt;Last Updated&lt;/code&gt;进行自动更新，只需要简单的设置
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(setq time-stamp-active &lt;span style=&quot;color:#66d9ef&quot;&gt;t...&lt;/span&gt;&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;自动更新Last Updated&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;自动更新Filename&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;自动更新Email&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;
-前面已经说过，可以使用&lt;b&gt;auto-insert&lt;/b&gt;自动添加文件头，今天来说一说自动更新文件头，比如说每次保存时自动更新&lt;b&gt;last updated&lt;/b&gt;字段
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;自动更新Last Updated&lt;/h2&gt;
-&lt;p&gt;
-   如果使用的是header2,直接设置相关的变量就可，假如使用的是&lt;b&gt;auto-insert&lt;/b&gt;，同样也可以使用emacs内置的&lt;b&gt;time-stamp&lt;/b&gt;对Last Updated进行自动更新
-&lt;/p&gt;
-
-&lt;p&gt;
-   time-stamp默认使用&lt;code&gt;Time-stamp:&lt;/code&gt;,如果要对&lt;code&gt;Last Updated&lt;/code&gt;进行自动更新，只需要简单的设置
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(setq time-stamp-active &lt;span style=&quot;color:#66d9ef&quot;&gt;t&lt;/span&gt;)
-(setq time-stamp-line-limit &lt;span style=&quot;color:#ae81ff&quot;&gt;11&lt;/span&gt;)
-(setq time-stamp-start &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;[lL]ast[ -][uU]pdate[ &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\t&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;]*:?&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
-(setq time-stamp-end &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
-(setq time-stamp-format &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt; %#A %Y-%02m-%02d %02H:%02M:%02S (%Z)&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)&lt;/pre&gt;
-
-&lt;p&gt;
-   然后添加
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(add-hook &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;before-save-hook&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;time-stamp&lt;/span&gt;)&lt;/pre&gt;
-
-&lt;p&gt;
-   这样就能在每次保存时自动更新相应的字段了
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;自动更新Filename&lt;/h2&gt;
-&lt;p&gt;
-   之前遇到过，使用&lt;b&gt;auto-insert&lt;/b&gt;在每次创建新文件时自动添加了文件头，但后面文件名被修改了，文件头里的文件名却不会自动更改，基于这个原因需要自己实现一个函数(我没有找到可以使用的已经存在的package)
-&lt;/p&gt;
-
-&lt;p&gt;
-   先理一理逻辑: 只需要查找当前文件前几行信息，如果找到&lt;code&gt;File Name:&lt;/code&gt;字段，获取字段信息，与当前文件名进行对比，如果不一致则替换为当前文件名,直接给出代码吧
-&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 查找当前文件前几行
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(save-excursion
-    (&lt;span style=&quot;color:#a6e22e&quot;&gt;goto-char&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;point-min&lt;/span&gt;)) &lt;span style=&quot;color:#75715e&quot;&gt;;;跳转到开头&lt;/span&gt;
-    (let ((lines &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;))
-    (while (&lt;span style=&quot;color:#a6e22e&quot;&gt;&amp;lt;&lt;/span&gt; lines line-limit)
-        &lt;span style=&quot;color:#75715e&quot;&gt;;; 查找&lt;/span&gt;
-        (setq lines (&lt;span style=&quot;color:#a6e22e&quot;&gt;1+&lt;/span&gt; lines))
-        (&lt;span style=&quot;color:#a6e22e&quot;&gt;forward-line&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;))))&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 获取当前文件名
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;file-name-nondirectory&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;buffer-file-name&lt;/span&gt;))&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 查找File Name
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;.*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;(File Name:&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;(.*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 对文件名进行比对与替换
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(let ((beg (&lt;span style=&quot;color:#a6e22e&quot;&gt;match-beginning&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;2&lt;/span&gt;))
-      (end (&lt;span style=&quot;color:#a6e22e&quot;&gt;match-end&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;2&lt;/span&gt;)))
-  (when (not (string= 文件名 (string-trim-left (match-string &lt;span style=&quot;color:#ae81ff&quot;&gt;2&lt;/span&gt;))))
-    (&lt;span style=&quot;color:#a6e22e&quot;&gt;goto-char&lt;/span&gt; beg)
-    (&lt;span style=&quot;color:#a6e22e&quot;&gt;delete-region&lt;/span&gt; beg end)
-    (&lt;span style=&quot;color:#a6e22e&quot;&gt;insert&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt; &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; name)))&lt;/pre&gt;
-
-&lt;p&gt;
-     即可得到相关的完整函数(完整函数后面再讲)
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-3&quot;&gt;自动更新Email&lt;/h2&gt;
-&lt;p&gt;
-   工作和平时使用的邮箱不一样，我虽然设置了&lt;b&gt;&lt;b&gt;at_home&lt;/b&gt;&lt;/b&gt;变量区分工作与平时的邮箱,但不是每次我都记得要更新这个变量，所以有了这个需要，自动将文件头里的email信息更改为平时所用的邮箱，大致逻辑与自动更新Filename相同，所以我写了一个&lt;b&gt;macro&lt;/b&gt;来自动生成相关的代码
-&lt;/p&gt;
-
-&lt;p&gt;
-   直接给出代码
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/header-update-action(name)
-  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;A.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  (let ((beg (&lt;span style=&quot;color:#a6e22e&quot;&gt;match-beginning&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;2&lt;/span&gt;))
-        (end (&lt;span style=&quot;color:#a6e22e&quot;&gt;match-end&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;2&lt;/span&gt;)))
-    (when (not (string= name (string-trim-left (match-string &lt;span style=&quot;color:#ae81ff&quot;&gt;2&lt;/span&gt;))))
-      (&lt;span style=&quot;color:#a6e22e&quot;&gt;goto-char&lt;/span&gt; beg)
-      (&lt;span style=&quot;color:#a6e22e&quot;&gt;delete-region&lt;/span&gt; beg end)
-      (&lt;span style=&quot;color:#a6e22e&quot;&gt;insert&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt; &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; name))))
-(defun maple/header-update(regex default line-limit)
-  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;B.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  (interactive)
-  (save-excursion
-    (&lt;span style=&quot;color:#a6e22e&quot;&gt;goto-char&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;point-min&lt;/span&gt;))
-    (let ((lines &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;))
-      (while (&lt;span style=&quot;color:#a6e22e&quot;&gt;&amp;lt;&lt;/span&gt; lines line-limit)
-        (when (and (&lt;span style=&quot;color:#a6e22e&quot;&gt;looking-at&lt;/span&gt; regex))
-          (maple/header-update-action default))
-        (setq lines (&lt;span style=&quot;color:#a6e22e&quot;&gt;1+&lt;/span&gt; lines))
-        (&lt;span style=&quot;color:#a6e22e&quot;&gt;forward-line&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;)))))
-(defmacro maple/header-update-engine (name regex default &lt;span style=&quot;color:#66d9ef&quot;&gt;&amp;amp;optional&lt;/span&gt; line-limit)
-  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;C.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#f92672&quot;&gt;`&lt;/span&gt;(defun &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;intern&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;maple/header-update-%s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; name)) ()
-     &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Update %s with regex.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; name)
-     (interactive)
-     (maple/header-update &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;regex &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;default &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;(or line-limit &lt;span style=&quot;color:#ae81ff&quot;&gt;7&lt;/span&gt;))))&lt;/pre&gt;
-
-&lt;p&gt;
-   这样，我就可以调用&lt;b&gt;macro&lt;/b&gt;来生成代码
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 自动更新Filename
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(maple/header-update-engine &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;filename&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-                            &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;.*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;(File Name:&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;(.*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-                            (&lt;span style=&quot;color:#a6e22e&quot;&gt;file-name-nondirectory&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;buffer-file-name&lt;/span&gt;)) &lt;span style=&quot;color:#ae81ff&quot;&gt;7&lt;/span&gt;)&lt;/pre&gt;
-
-&lt;p&gt;
-     生成一个&lt;code&gt;maple/header-update-filename&lt;/code&gt;的函数,只要调用它即可更新文件名信息
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 自动更新email
-     同样的
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(maple/header-update-engine &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;email&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-                            &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;.*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;(Email:&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;(.*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\\&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;)&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-                            &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;youemail@gmail.com&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;7&lt;/span&gt;)&lt;/pre&gt;
-&lt;p&gt;
-     生成一个可供调用的&lt;code&gt;maple/header-update-email&lt;/code&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-   如果想要添加其它功能，只要使用&lt;code&gt;maple/header-update-engine&lt;/code&gt;即可
-&lt;/p&gt;
-
-&lt;p&gt;
-相关的配置可以在我的&lt;a href=&quot;https://github.com/honmaple/dotfiles/blob/master/emacs.d/site-lisp/header/header.el&quot;&gt;github&lt;/a&gt;上找到
-&lt;/p&gt;</content>
         <category term="Tech/Linux/Emacs"></category>
     </entry>
 </feed>

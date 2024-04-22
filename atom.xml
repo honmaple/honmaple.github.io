@@ -5,8 +5,146 @@
   <link href="https://honmaple.me/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me/index.html"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Thu, 28 Mar 2024 10:56:02 +0000</updated>
+    <updated>Mon, 22 Apr 2024 23:14:41 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>为maple-translate增加更友好的sdcv离线翻译</title>
+      <link href="" rel="alternate"></link>
+      <published>Mon, 22 Apr 2024 21:51:27 +0000</published>
+      <updated>Mon, 22 Apr 2024 23:14:41 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2024/04/wei-maple-translatezeng-jia-geng-you-hao-de-sdcvchi-xian-fan-yi.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2024/04/wei-maple-translatezeng-jia-geng-you-hao-de-sdcvchi-xian-fan-yi.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+之前我写的Emacs翻译插件 &lt;b&gt;maple-translate&lt;/b&gt; 有一个 &lt;b&gt;sdcv&lt;/b&gt; 离线翻译的功能，它使用了 &lt;code&gt;Elisp&lt;/code&gt; 解析 &lt;b&gt;StarDict&lt;/b&gt; 的字典文件，所以不需要安装其它任何依赖。但是也是因为此原因，首次使用离线翻译需要等待字典文件加载到内存，这不是很友好，此次我将添加 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件的支持，使离线翻译能够更加快捷方便
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+首先是安装 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew install sdcv
+└──╼ sdcv --help
+用法：
+  sdcv [选项…]  words
+
+帮助选项：
+  -h, --help...&lt;/pre&gt;</summary>
+      <content type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+之前我写的Emacs翻译插件 &lt;b&gt;maple-translate&lt;/b&gt; 有一个 &lt;b&gt;sdcv&lt;/b&gt; 离线翻译的功能，它使用了 &lt;code&gt;Elisp&lt;/code&gt; 解析 &lt;b&gt;StarDict&lt;/b&gt; 的字典文件，所以不需要安装其它任何依赖。但是也是因为此原因，首次使用离线翻译需要等待字典文件加载到内存，这不是很友好，此次我将添加 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件的支持，使离线翻译能够更加快捷方便
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+首先是安装 &lt;b&gt;sdcv&lt;/b&gt; 二进制文件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew install sdcv
+└──╼ sdcv --help
+用法：
+  sdcv [选项…]  words
+
+帮助选项：
+  -h, --help                     显示帮助选项
+
+应用程序选项：
+  -v, --version                  display version information and exit
+  -l, --list-dicts               display list of available dictionaries and exit
+  -u, --use-dict=bookname        for search use only dictionary with this bookname
+  -n, --non-interactive          for use in scripts
+  -j, --json-output              print the result formatted as JSON
+  --json                         print the result formatted as JSON
+  -e, --exact-search             do not fuzzy-search for similar words, only return exact matches
+  -0, --utf8-output              output must be in utf8
+  -1, --utf8-input               input of sdcv in utf8
+  -2, --data-dir=path/to/dir     use this directory as path to stardict data directory
+  -x, --only-data-dir            only use the dictionaries in data-dir, do not search in user and system directories
+  -c, --color                    colorize the output&lt;/pre&gt;
+
+&lt;p&gt;
+然后定义二进制文件的路径，如果 &lt;b&gt;sdcv&lt;/b&gt; 未安装，则返回为 &lt;code&gt;nil&lt;/code&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defvar maple-translate-sdcv-program (executable-find &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;sdcv&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))&lt;/pre&gt;
+
+&lt;p&gt;
+接着修改之前写好的 &lt;code&gt;maple-translate-sdcv&lt;/code&gt; 函数，通过判断 &lt;code&gt;maple-translate-sdcv-program&lt;/code&gt; 是否为空采取不同的翻译操作
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple-translate-sdcv(word &lt;span style=&quot;color:#66d9ef&quot;&gt;&amp;amp;optional&lt;/span&gt; callback)
+  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Search WORD with sdcv, use async request if CALLBACK non-nil.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+  (if maple-translate-sdcv-program
+      (maple-translate-execute maple-translate-sdcv-program
+        :args (&lt;span style=&quot;color:#a6e22e&quot;&gt;append&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-x&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-j&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-0&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-1&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+                      (cl-loop for dict in maple-translate-sdcv-dicts
+                               collect (&lt;span style=&quot;color:#a6e22e&quot;&gt;expand-file-name&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;cdr&lt;/span&gt; dict) maple-translate-sdcv-dir))
+                      (&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; word))
+        :format (maple-translate-sdcv-format)
+        :callback callback)
+    &lt;span style=&quot;color:#75715e&quot;&gt;;; ...&lt;/span&gt;
+    &lt;span style=&quot;color:#75715e&quot;&gt;;; 使用ELisp解析并翻译&lt;/span&gt;
+    ))&lt;/pre&gt;
+&lt;p&gt;
+需要说明的是，由于该函数接收一个 &lt;code&gt;callback&lt;/code&gt; 的变量，用于处理异步翻译，如果是同步翻译，可以直接使用 &lt;code&gt;call-process&lt;/code&gt; 获取结果
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(with-temp-buffer
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;apply&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;call-process&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;sdcv&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;t&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-x&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-j&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-0&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-1&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;/Users/xxx/.emacs.d/stardict/stardict-lazyworm-ec-2.4.2&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;word&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;buffer-string&lt;/span&gt;))&lt;/pre&gt;
+
+&lt;p&gt;
+但如果是异步翻译，则需要使用 &lt;code&gt;start-process&lt;/code&gt; ，再通过监听进程状态在进程结束后再获取翻译结果
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(let ((name (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;maple-translate-process %s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;program)))
+  (&lt;span style=&quot;color:#a6e22e&quot;&gt;set-process-sentinel&lt;/span&gt;
+   (&lt;span style=&quot;color:#a6e22e&quot;&gt;apply&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;start-process&lt;/span&gt; name (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;*%s*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; name) &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;program &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;args)
+   (lambda(process _)
+     (unless (process-live-p process)
+       (with-current-buffer (&lt;span style=&quot;color:#a6e22e&quot;&gt;process-buffer&lt;/span&gt; process)
+         (prog1 (&lt;span style=&quot;color:#a6e22e&quot;&gt;funcall&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;callback &lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt;)
+           (&lt;span style=&quot;color:#a6e22e&quot;&gt;kill-buffer&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;current-buffer&lt;/span&gt;))))))))&lt;/pre&gt;
+&lt;p&gt;
+这里的 &lt;b&gt;buffer&lt;/b&gt; 名称也可以通过 &lt;code&gt;(generate-new-buffer &amp;#34; *temp*&amp;#34; t)&lt;/code&gt; 生成一个临时 &lt;b&gt;buffer&lt;/b&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+最后就是翻译结果的展示，由于输出的是多行 &lt;b&gt;json&lt;/b&gt;，比如:
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;[]
+[{&amp;#34;dict&amp;#34;: &amp;#34;懒虫简明英汉词典&amp;#34;,&amp;#34;word&amp;#34;:&amp;#34;word&amp;#34;,&amp;#34;definition&amp;#34;:&amp;#34;\n[wә:d]\nn.\n字, 词, 话, 消息, 诺言, 命令\nvt.\n为...措辞&amp;#34;}]&lt;/pre&gt;
+&lt;p&gt;
+所以我在解析翻译结果时取了个巧，没有使用 &lt;code&gt;(buffer-string)&lt;/code&gt; 而是直接在 &lt;b&gt;buffer&lt;/b&gt; 里操作，每次都跳到开始位置，再依次向下移动 &lt;b&gt;n&lt;/b&gt; 行，这个 &lt;b&gt;n&lt;/b&gt; 即是字典的数量，最后使用 &lt;code&gt;(thing-at-point &amp;#39;line t)&lt;/code&gt; 获取当前行的数据
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple-translate-sdcv-format()
+  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Format result with sdcv output.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+  (let ((results (cl-loop for index from &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;
+                          for dicts in maple-translate-sdcv-dicts
+                          collect
+                          (progn
+                            (&lt;span style=&quot;color:#a6e22e&quot;&gt;goto-char&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;point-min&lt;/span&gt;))
+                            (&lt;span style=&quot;color:#a6e22e&quot;&gt;forward-line&lt;/span&gt; index)
+                            (string-join (cl-loop for child across-ref (json-read-from-string (&lt;span style=&quot;color:#a6e22e&quot;&gt;decode-coding-string&lt;/span&gt; (thing-at-point &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;line&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;t&lt;/span&gt;) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;utf-8&lt;/span&gt;))
+                                                  collect (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;%s: %s&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                                                  (alist-get &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;dict&lt;/span&gt; child)
+                                                                  (alist-get &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;definition&lt;/span&gt; child)))
+                                         &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))))
+    (unless (&lt;span style=&quot;color:#a6e22e&quot;&gt;null&lt;/span&gt; results)
+      (string-join (cl-remove &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; results) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;\n&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))))&lt;/pre&gt;
+
+&lt;p&gt;
+最终效果
+&lt;/p&gt;
+&lt;video width=&quot;100%&quot; controls=&quot;&quot;&gt;
+  &lt;source src=&quot;https://s.libforest.com/images/2024/04/maple-translate-sdcv.mov&quot; type=&quot;video/mp4&quot;&gt;
+&lt;/video&gt;
+
+&lt;p&gt;
+&lt;b&gt;maple-translate&lt;/b&gt;的具体修改可见: &lt;a href=&quot;https://github.com/honmaple/emacs-maple-translate/commit/dfd0eae6486d62c26a3fa3fb07ee7e5f4640eb16&quot;&gt;dfd0eae&lt;/a&gt;
+&lt;/p&gt;</content>
+        <category term="Tech/Linux/Emacs"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>使用Homebrew Tap发布个人工具</title>
       <link href="" rel="alternate"></link>
@@ -2240,422 +2378,6 @@ curl 192.168.100.3&lt;/pre&gt;
 
 &lt;p&gt;
    对了，之前文件同步会修改源文件权限的问题已经被修复，&lt;b&gt;Very Good&lt;/b&gt;
-&lt;/p&gt;</content>
-        <category term="Tech/Geek"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>绿联DX4600 Pro虚拟机探索</title>
-      <link href="" rel="alternate"></link>
-      <published>Thu, 06 Jul 2023 00:18:35 +0000</published>
-      <updated>Wed, 15 Nov 2023 15:15:48 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/07/绿联DX4600 Pro虚拟机探索.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;p&gt;
-本次探索源于上次发现可以&lt;b&gt;使用Docker来管理群晖虚拟机&lt;/b&gt;，而绿联本身是自带&lt;b&gt;kvm&lt;/b&gt;内核模块的，但是要等到绿联官方支持虚拟机，又不知道会等到猴年马月。所以我有一个大胆的想法，能否使用Docker搭建一个可以自由管理虚拟机的程序，最起码可以安装一个windows替换掉绿联内置的有着各种限制的迅雷
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-&lt;b&gt;注意：非专业人士请勿模仿，除非你知道什么是KVM，在此期间所造成的系统风险请自行承担&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;虚拟机管理&lt;/h2&gt;
-&lt;p&gt;
-   选择了我之前使用过的 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 来管理 &lt;code&gt;KVM&lt;/code&gt;，说实话，这个管理程序比起威联通群晖这些官方自带确实不太好用，但用于测试还是足够了，如果有更好更方便的推荐请在评论区留言
-&lt;/p&gt;
-
-&lt;p&gt;
-   &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 没有官方的  &lt;code&gt;Docker&lt;/code&gt; 镜像，只能自己编译，虽然它本身带有一个 &lt;b&gt;Dockerfile&lt;/b&gt;，但如果自己构建会遇到各种各样的问题，下面是我遇到的部分问题
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.1&quot;&gt;Ubuntu版本问题&lt;/h3&gt;
-&lt;p&gt;
-    &lt;b&gt;retspen...&lt;/b&gt;&lt;/p&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;虚拟机管理&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.1&quot;&gt;Ubuntu版本问题&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1.2&quot;&gt;Libvirt安装依赖&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;构建Docker&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;导入镜像&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;ssh登录&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;运行Docker&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;启动libvirtd&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;管理界面&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3.1&quot;&gt;创建虚拟机&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-本次探索源于上次发现可以&lt;b&gt;使用Docker来管理群晖虚拟机&lt;/b&gt;，而绿联本身是自带&lt;b&gt;kvm&lt;/b&gt;内核模块的，但是要等到绿联官方支持虚拟机，又不知道会等到猴年马月。所以我有一个大胆的想法，能否使用Docker搭建一个可以自由管理虚拟机的程序，最起码可以安装一个windows替换掉绿联内置的有着各种限制的迅雷
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-&lt;b&gt;注意：非专业人士请勿模仿，除非你知道什么是KVM，在此期间所造成的系统风险请自行承担&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;虚拟机管理&lt;/h2&gt;
-&lt;p&gt;
-   选择了我之前使用过的 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 来管理 &lt;code&gt;KVM&lt;/code&gt;，说实话，这个管理程序比起威联通群晖这些官方自带确实不太好用，但用于测试还是足够了，如果有更好更方便的推荐请在评论区留言
-&lt;/p&gt;
-
-&lt;p&gt;
-   &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 没有官方的  &lt;code&gt;Docker&lt;/code&gt; 镜像，只能自己编译，虽然它本身带有一个 &lt;b&gt;Dockerfile&lt;/b&gt;，但如果自己构建会遇到各种各样的问题，下面是我遇到的部分问题
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.1&quot;&gt;Ubuntu版本问题&lt;/h3&gt;
-&lt;p&gt;
-    &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 默认是基于一个 &lt;b&gt;Ubuntu22.04&lt;/b&gt; 的镜像构建，但是，如果自行构建会发现旧版本的 &lt;b&gt;Docker&lt;/b&gt; 和 &lt;b&gt;Ubuntu22.04&lt;/b&gt; 根本不兼容
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 报错一
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;The following signatures couldn&amp;#39;t be verified because the public key is not available: NO_PUBKEY 871920D1991BC93C&lt;/pre&gt;
-&lt;p&gt;
-      搜索了一下，说是可以使用 &lt;code&gt;apt-key&lt;/code&gt; 命令添加公钥解决，实际上
-      
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 报错二
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;/etc/apt/trusted.gpg.d/ubuntu-keyring-2012-cdimage.gpg are ignored as the file is not readable by user &amp;#39;_apt&amp;#39; executing apt-key.&lt;/pre&gt;
-&lt;p&gt;
-      这个报错可以通过&lt;b&gt;删除gpg文件忽略&lt;/b&gt;，但实际上没什么用。
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-    真正的解决方式是&lt;b&gt;升级自身的Docker版本&lt;/b&gt;，最小要到 &lt;code&gt;20.0&lt;/code&gt; 以上，因为我使用的Mac，最新版本的Docker也不过是 &lt;code&gt;19.03.13&lt;/code&gt;，所以没办法使用升级Docker的方式解决，只能降级Ubuntu的版本
-&lt;/p&gt;
-
-&lt;p&gt;
-    一开始我直接把版本降到最熟悉的18.04，但在安装Python库发现部分库的指定版本要求Python3.8，否则找不到指定版本
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    如果使用 &lt;code&gt;apt&lt;/code&gt; 直接安装 &lt;code&gt;Python3.8&lt;/code&gt;，会发现有两个问题：
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 其中一个依赖 &lt;code&gt;python3-lxml&lt;/code&gt; 没有3.8的版本，直接安装会同时安装 &lt;code&gt;Python3.6&lt;/code&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;code&gt;venv&lt;/code&gt; 无法使用
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;
-    后面甚至想要忽略Python版本强行安装
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;pip3 install -r conf/requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com --ignore-requires-python&lt;/pre&gt;
-
-&lt;p&gt;
-    但仍然是一堆报错
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    所以再次测试升级到 &lt;b&gt;20.04&lt;/b&gt; 的版本，还好 &lt;b&gt;20.04&lt;/b&gt; 安装的Python3正是 &lt;code&gt;Python3.8&lt;/code&gt;，故此正常
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-1.2&quot;&gt;Libvirt安装依赖&lt;/h3&gt;
-&lt;p&gt;
-    由于 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 是依赖libvirt对虚拟机进行管理的，而绿联使用的系统本身没有libvirt进程，所以我将在Docker内部安装，在此期间也遇到了部分问题，下面对部分依赖包统一说明一下
-&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;libvirt-daemon&lt;/b&gt; &lt;br/&gt;
-      libvirtd的进程包
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;libvirt-daemon-system&lt;/b&gt; &lt;br/&gt;
-      libvirtd的默认配置包，如果不安装需要手动编写配置
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;iptables&lt;/b&gt; &lt;br/&gt;
-      libvirtd的依赖，不安装启动libvirtd时会报错
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;dnsmasq&lt;/b&gt; &lt;br/&gt;
-      libvirtd的依赖，不安装kvm的默认网络无法启动，导致后续建立的虚拟机无法联网
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;qemu-kvm&lt;/b&gt; &lt;br/&gt;
-      不安装导致后续新建虚拟机时可选的架构和芯片组为空
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;qemu-utils&lt;/b&gt; &lt;br/&gt;
-      不安装导致虚拟机无法使用qcow2，只能使用raw格式
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- &lt;b&gt;virt-manager(可选)&lt;/b&gt; &lt;br/&gt;
-      通过命令行管理虚拟机
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;heading-2&quot;&gt;构建Docker&lt;/h2&gt;
-&lt;p&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   修改完 &lt;b&gt;Ubuntu版本&lt;/b&gt; 和添加 &lt;b&gt;KVM所需依赖&lt;/b&gt; 后，就能成功构建Docker(实际构建大小在&lt;b&gt;1.4G&lt;/b&gt;左右)。
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.1&quot;&gt;导入镜像&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 首先先导出镜像
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker save -o webvirtcloud.tar webvirtcloud:test-2&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 上传到绿联Nas，可以同时上传后面创建虚拟机所用的iso文件
-       
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 打开绿联Docker，在镜像管理里选择从设备导入镜像
-       
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&quot;heading-2.2&quot;&gt;ssh登录&lt;/h3&gt;
-&lt;p&gt;
-    老传统了，这里就不再过多叙述，具体可看 &lt;del&gt;&lt;a href=&quot;https://honmaple.me/articles/2023/06/绿联DX4600%20Pro禁用迅雷和中国移动云盘进程.html&quot;&gt;绿联DX4600 Pro禁用迅雷和中国移动云盘进程&lt;/a&gt;&lt;/del&gt; &lt;a href=&quot;https://honmaple.me/articles/2023/07/ugreen-nas-open-ssh.html&quot;&gt;绿联云Nas新版本v3.4.0固件开启SSH&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.3&quot;&gt;运行Docker&lt;/h3&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker run --rm -p 8088:80 -p 6080:6080 --device=/dev/kvm --privileged webvirtcloud:test-2&lt;/pre&gt;
-
-&lt;p&gt;
-    &lt;code&gt;8088&lt;/code&gt; 是 &lt;b&gt;retspen/webvirtcloud&lt;/b&gt; 界面端口，启动后可以通过 &lt;code&gt;NasIP:8088&lt;/code&gt; 访问，&lt;code&gt;6080&lt;/code&gt; 是 &lt;b&gt;VNC&lt;/b&gt; 端口，启动虚拟机后可以直接使用浏览器访问
-&lt;/p&gt;
-
-&lt;p&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-08.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-08.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-2.4&quot;&gt;启动libvirtd&lt;/h3&gt;
-&lt;p&gt;
-    由于我只修改了Dockerfile里的依赖，所以&lt;b&gt;libvirtd&lt;/b&gt;只能手动启动，如果想要自动启动的可以添加启动脚本到 &lt;code&gt;/etc/service&lt;/code&gt; 目录
-&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 进入&lt;b&gt;Docker内部&lt;/b&gt;：
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;docker exec -it {镜像名} bash&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 修改&lt;b&gt;配置文件&lt;/b&gt;: 使用 vi 打开 &lt;code&gt;/etc/libvirt/libvirtd.conf&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#f92672&quot;&gt;- unix_sock_group = &amp;#34;libvirt&amp;#34;
-&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;+ unix_sock_group = &amp;#34;www-data&amp;#34;
-&lt;/span&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 启动&lt;b&gt;libvirtd&lt;/b&gt;:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;libvirtd -d&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 启动&lt;b&gt;virtlogd&lt;/b&gt;：
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;virtlogd -d&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&quot;heading-3&quot;&gt;管理界面&lt;/h2&gt;
-&lt;p&gt;
-   通过 &lt;code&gt;NasIP:8088&lt;/code&gt; 访问管理界面，默认用户名和密码都是 &lt;b&gt;admin&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-09.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-09.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   登录成功后，点击&lt;b&gt;计算节点 -&amp;gt; 本地&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-10.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-10.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   然后添加一个&lt;b&gt;本地节点&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-11.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-11.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   添加后正常情况就会显示&lt;b&gt;已连接&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-12.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-12.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   接着继续点击右边的&lt;b&gt;眼睛图案 -&amp;gt; 选择存储 -&amp;gt; 右上角的+号&lt;/b&gt;，添加两个存储
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-13.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-13.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- test: 路径为 &lt;code&gt;/var/lib/libvirt/images&lt;/code&gt;，用于存放虚拟机文件
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- iso:  路径为 &lt;code&gt;/var/lib/libvirt/iso&lt;/code&gt;，存放iso镜像文件
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;
-   然后返回绿联Nas的ssh界面，复制iso文件到Docker内部，或者在执行Docker命令时使用 &lt;code&gt;-v /mnt/xxxx/Docker/webvirtcloud/iso:/var/lib/libvirt/iso&lt;/code&gt; 将文件提前挂载到Docker内部
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-14.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-14.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h3 id=&quot;heading-3.1&quot;&gt;创建虚拟机&lt;/h3&gt;
-&lt;p&gt;
-    一切准备就绪，现在我们就能创建虚拟机了。
-&lt;/p&gt;
-
-&lt;p&gt;
-    选择&lt;b&gt;实例 -&amp;gt; 创建&lt;/b&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-15.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-15.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    点击下一个，注意：&lt;b&gt;webvirtcloud&lt;/b&gt; 这里的操作有些反人类，最好选择&lt;b&gt;规格 -&amp;gt; 应用&lt;/b&gt;，不要使用自定义和模版，否则无法挂载&lt;b&gt;CD-ROM&lt;/b&gt;。我这里选择30G的mini，存储一定要改成 &lt;b&gt;test&lt;/b&gt;，然后创建
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-16.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-16.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-17.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-17.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    点击创建后会到实例页面，先不要启动，到&lt;b&gt;设置 -&amp;gt; 磁盘&lt;/b&gt;挂载想要安装的系统iso文件，然后在旁边的启动顺序里确认&lt;b&gt;启动第一项&lt;/b&gt;是iso所在的磁盘
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-18.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-18.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-19.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-19.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-20.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-20.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    接着就可以开机了，开机后可以点击&lt;b&gt;访问 -&amp;gt; 控制台&lt;/b&gt;使用VNC打开系统安装界面，安装完成后记得重新调整启动顺序以及卸载iso镜像
-    
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-21.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-KVM-21.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-    至此，使用第三方Docker搭建的绿联Nas虚拟机管理也就完成了，如果急需使用虚拟机功能，又想保留绿联Nas的系统，随绿联一起“成长”的用户可以利用此功能创建虚拟机，如果不着急的可以等官方的实现
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-4&quot;&gt;其它&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 没有修改libvirtd里的 &lt;code&gt;unix_sock_group&lt;/code&gt; 配置为 &lt;b&gt;www-data&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;Failed to connect socket to &amp;#39;/var/run/libvirt/libvirt-sock&amp;#39;: Permission denied&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- Docker内部(不是绿联系统)执行 &lt;code&gt;chmod 666 /dev/kvm&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;libvirt 错误- internal error: process exited while connecting to monitor: Could not access KVM kernel module: Permission denied 2023-07-05T16:17:57.942238Z qemu-system-x86_64: failed to initialize KVM: Permission denied&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 未安装&lt;b&gt;dnsmasq&lt;/b&gt;，如果手动安装，使用 &lt;code&gt;virsh net-start default&lt;/code&gt; 手动启动
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;libbvirt 错误- Requested operation is not valid: network &amp;#39;default&amp;#39; is not active&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 未安装&lt;b&gt;qemu-utils&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;internal error: creation of non-raw file images is not supported without qemu-img.&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;
-   注意：文章中并未修改绿联Nas本身的系统，所有的安装包和修改文件配置都是在Docker内部进行
 &lt;/p&gt;</content>
         <category term="Tech/Geek"></category>
     </entry>
