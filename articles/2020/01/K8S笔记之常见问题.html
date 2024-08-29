@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>K8S笔记之常见问题 · 紅楓吟</title>
+      <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+      <script src="https://honmaple.me/static/lib/js/before.min.js"></script>
+  </head>
+  <body>
+    <div class="scrollbar"></div>
+
+    <div class="wrapper"><nav class="entry-navbar">
+  <div class="entry-navbar-top">
+    <a href="https://honmaple.me">
+      <img class="entry-navbar-logo" src="https://s.libforest.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="entry-navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+    <button class="entry-navbar-collapse" data-target=".entry-navbar-bottom" data-toggle="collapse">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
+    </button>
+  </div>
+  <div class="entry-navbar-bottom">
+    <ul class="entry-navbar-menu">
+          <li class="entry-dropdown">
+            <a href="https://honmaple.me/categories/life/index.html">生活随笔</a>
+            <ul class="entry-dropdown-content">
+                <li><a href="https://honmaple.me/categories/life/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/categories/life/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li class="entry-dropdown">
+            <a href="https://honmaple.me/categories/tech/index.html">技术分享</a>
+            <ul class="entry-dropdown-content">
+                <li><a href="https://honmaple.me/categories/tech/coding/index.html">代码世界</a></li>
+                <li><a href="https://honmaple.me/categories/tech/geek/index.html">极客安全</a></li>
+                <li><a href="https://honmaple.me/categories/tech/linux/index.html">字符艺术</a></li>
+            </ul>
+          </li>
+          <li class="entry-dropdown">
+            <a href="https://honmaple.me/archives/index.html">文章归档</a>
+            <ul class="entry-dropdown-content">
+                <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+                <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+                <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+            </ul>
+          </li>
+          <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form class="entry-navbar-form" action="https://honmaple.me/search.html">
+      <input name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''" />
+      <i class="fa fa-search"></i>
+    </form>
+  </div>
+</nav>
+
+  <article class="entry-article">
+    <div class="entry-article-header">
+    <h1 class="entry-article-title">
+      <a href="https://honmaple.me/articles/2020/01/K8S笔记之常见问题.html" rel="bookmark" title="Permalink to K8S笔记之常见问题">K8S笔记之常见问题</a>
+    </h1>
+      <div class="entry-article-info">
+        <span title="Updated at 2024-08-29">
+          <i class="fa fa-calendar-o"></i>
+          2020年01月10日 周五
+        </span>
+          <span class="hidden-xs">|</span>
+          <span class="hidden-xs">
+            <i class="fa fa-user-o"></i>
+            By
+              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-folder-o"></i>
+            In
+              <a href="https://honmaple.me/categories/tech/linux/index.html">Tech/Linux</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-bookmark-o"></i>
+            0f
+              <a href="https://honmaple.me/tags/linux/index.html">linux</a>
+              <a href="https://honmaple.me/tags/k8s/index.html">k8s</a>
+          </span>
+      </div>
+  </div>
+    <hr class="entry-article-hr" />
+    <div class="entry-article-content">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">修改dashboard显示语言为中文</a></li>
+<li><a href="#heading-2">获取token</a></li>
+<li><a href="#heading-3">修改token过期时间</a></li>
+<li><a href="#heading-4">自签名证书</a>
+<ul>
+<li><a href="#heading-4.1">多域名</a></li>
+</ul></li>
+<li><a href="#heading-5">nginx服务DNS解析</a></li>
+<li><a href="#heading-6">K8S证书过期问题</a></li>
+</ul></div></div>
+
+<h2 id="heading-1">修改dashboard显示语言为中文</h2>
+<ul>
+<li>
+<p>
+ 修改浏览器语言:
+     dashboard的显示语言会根据浏览器的语言自动切换，但需要注意的是chrome需要切换语言为 <b>中文</b> 而不是 <b>中文（简体）</b>
+</p>
+</li>
+<li>
+<p>
+ 设置环境变量(推荐):
+     修改dashboard的<b>Deployments</b> yaml文件, 添加环境变量
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">containers</span>:
+  ...
+  <span style="color:#66d9ef">ports</span>:
+    - <span style="color:#66d9ef">containerPort</span>: <span style="color:#ae81ff">8443</span>
+      ...
+      <span style="color:#66d9ef">env</span>:
+        - <span style="color:#66d9ef">name</span>: ACCEPT_LANGUAGE
+          <span style="color:#66d9ef">value</span>: zh</pre>
+</li>
+</ul>
+<h2 id="heading-2">获取token</h2>
+<p>
+   获取名为 <b>admin</b> 的账号 <b>token</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl -n kube-system describe secret <span style="color:#66d9ef">$(</span>kubectl -n kube-system get secret | grep admin | awk <span style="color:#e6db74">&#39;{print $1}&#39;</span><span style="color:#66d9ef">)</span>
+kubectl -n kubernetes-dashboard describe secret <span style="color:#66d9ef">$(</span>kubectl -n kubernetes-dashboard get secret | grep admin | awk <span style="color:#e6db74">&#39;{print $1}&#39;</span><span style="color:#66d9ef">)</span></pre>
+
+<h2 id="heading-3">修改token过期时间</h2>
+<p>
+   参考: <a href="https://blog.csdn.net/u013201439/article/details/80930285">https://blog.csdn.net/u013201439/article/details/80930285</a>
+</p>
+
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">args</span>:
+  ....
+  - --token-ttl=<span style="color:#ae81ff">86400</span> <span style="color:#75715e"># 一天</span></pre>
+
+<ul>
+<li>
+<p>
+ 重新创建dashboard
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl apply -f dashboard.yaml</pre>
+</li>
+<li>
+<p>
+ 获取token
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl -n kube-system describe secret <span style="color:#66d9ef">$(</span>kubectl -n kube-system get secret | grep admin | awk <span style="color:#e6db74">&#39;{print $1}&#39;</span><span style="color:#66d9ef">)</span></pre>
+</li>
+</ul>
+<h2 id="heading-4">自签名证书</h2>
+<h3 id="heading-4.1">多域名</h3>
+<ul>
+<li>
+<p>
+ <a href="https://blog.csdn.net/qq_21359467/article/details/102731032">https://blog.csdn.net/qq_21359467/article/details/102731032</a>
+</p></li>
+<li>
+<p>
+ <a href="https://security.stackexchange.com/questions/74345/provide-subjectaltname-to-openssl-directly-on-the-command-line/91556#91556">https://security.stackexchange.com/questions/74345/provide-subjectaltname-to-openssl-directly-on-the-command-line/91556#91556</a>
+</p></li>
+</ul>
+<pre style="color:#f8f8f2;background-color:#272822">cp /etc/pki/tls/openssl.conf ./</pre>
+
+<pre style="color:#f8f8f2;background-color:#272822">openssl req -new -sha256 -key xxx.com.key -out xxx.com.csr -extension v3_req -config openssl.cnf</pre>
+
+<p>
+    注意: <code>-extension v3_req</code> 参数
+</p>
+
+<h2 id="heading-5">nginx服务DNS解析</h2>
+<p>
+   <a href="https://stackoverflow.com/questions/51090684/nginx-wont-resolve-hostname-in-k8s">https://stackoverflow.com/questions/51090684/nginx-wont-resolve-hostname-in-k8s</a> <a href="https://github.com/openresty/openresty/issues/298">https://github.com/openresty/openresty/issues/298</a>
+</p>
+
+<p>
+   resolver相关
+   <a href="https://blog.csdn.net/cjfeii/article/details/77987004">https://blog.csdn.net/cjfeii/article/details/77987004</a>
+</p>
+
+<h2 id="heading-6">K8S证书过期问题</h2>
+<p>
+   周末服务不能访问,
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">[root@k8s-master ~]# kubectl get nodes
+Unable to connect to the server: x509: certificate has expired or is not yet valid</pre>
+
+<p>
+   首先想到是证书过期了，
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">[root@k8s-master pki]# ls
+apiserver.crt              apiserver.key                 ca.crt  front-proxy-ca.crt      front-proxy-client.key
+apiserver-etcd-client.crt  apiserver-kubelet-client.crt  ca.key  front-proxy-ca.key      sa.key
+apiserver-etcd-client.key  apiserver-kubelet-client.key  etcd    front-proxy-client.crt  sa.pub</pre>
+
+<pre style="color:#f8f8f2;background-color:#272822">[root@k8s-master pki]# openssl x509 -in apiserver.crt -text
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 3850906911950301514 (0x35712b6ef5e4e94a)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=kubernetes
+        Validity
+            Not Before: Mar 20 09:24:02 2020 GMT
+            Not After : Mar 20 09:24:02 2021 GMT
+        Subject: CN=kube-apiserver
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption</pre>
+
+<p>
+   查找了一下
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">https://github.com/kubernetes/kubeadm/issues/581#issuecomment-596097725</pre>
+
+<p>
+   可以直接通过
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">[root@k8s-master backup]# kubeadm alpha certs check-expiration
+[check-expiration] Reading configuration from the cluster...
+[check-expiration] FYI: You can look at this config file with &#39;kubectl -n kube-system get cm kubeadm-config -oyaml&#39;
+[check-expiration] Error reading configuration from the Cluster. Falling back to default configuration
+
+W0321 15:42:19.113957   11330 validation.go:28] Cannot validate kube-proxy config - no validator is available
+W0321 15:42:19.114213   11330 validation.go:28] Cannot validate kubelet config - no validator is available
+CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE AUTHORITY   EXTERNALLY MANAGED
+admin.conf                 Mar 20, 2021 09:24 UTC   &lt;invalid&gt;                               no
+apiserver                  Mar 20, 2021 09:24 UTC   &lt;invalid&gt;       ca                      no
+apiserver-etcd-client      Mar 20, 2021 09:24 UTC   &lt;invalid&gt;       etcd-ca                 no
+apiserver-kubelet-client   Mar 20, 2021 09:24 UTC   &lt;invalid&gt;       ca                      no
+controller-manager.conf    Mar 20, 2021 09:24 UTC   &lt;invalid&gt;                               no
+etcd-healthcheck-client    Mar 20, 2021 09:24 UTC   &lt;invalid&gt;       etcd-ca                 no
+etcd-peer                  Mar 20, 2021 09:24 UTC   &lt;invalid&gt;       etcd-ca                 no
+etcd-server                Mar 20, 2021 09:24 UTC   &lt;invalid&gt;       etcd-ca                 no
+front-proxy-client         Mar 20, 2021 09:24 UTC   &lt;invalid&gt;       front-proxy-ca          no
+scheduler.conf             Mar 20, 2021 09:24 UTC   &lt;invalid&gt;                               no
+
+CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY MANAGED
+ca                      Mar 18, 2030 09:24 UTC   8y              no
+etcd-ca                 Mar 18, 2030 09:24 UTC   8y              no
+front-proxy-ca          Mar 18, 2030 09:24 UTC   8y              no</pre>
+
+<p>
+   备份
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">cp -r /etc/kubernetes /backup/</pre>
+
+<p>
+   更新
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">kubeadm alpha certs renew all</pre>
+
+<p>
+   继续查看
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">[root@k8s-master ~]# kubectl get nodes
+error: You must be logged in to the server (Unauthorized)</pre>
+
+<pre style="color:#f8f8f2;background-color:#272822">[root@k8s-master backup]# cp /etc/kubernetes/admin.conf ~/.kube/config
+cp：是否覆盖&#34;/root/.kube/config&#34;？ y
+[root@k8s-master backup]# kubectl get nodes
+NAME          STATUS   ROLES    AGE    VERSION
+k8s-master    Ready    master   365d   v1.17.4
+k8s-node-01   Ready    &lt;none&gt;   365d   v1.17.0
+k8s-node-02   Ready    &lt;none&gt;   365d   v1.17.0
+k8s-node-03   Ready    &lt;none&gt;   335d   v1.17.4
+k8s-node-04   Ready    &lt;none&gt;   335d   v1.17.4
+k8s-node-05   Ready    &lt;none&gt;   365d   v1.17.4
+k8s-node-06   Ready    &lt;none&gt;   365d   v1.17.4
+k8s-node-07   Ready    &lt;none&gt;   363d   v1.17.4
+k8s-node-08   Ready    &lt;none&gt;   363d   v1.17.4</pre>
+
+<p>
+   登录rancher发现点击重新部署后无反应
+</p>
+
+<p>
+   重启 <b>apiserver</b>、<b>scheduler</b>、<b>controller</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">docker restart <span style="color:#e6db74">`</span>docker ps | grep kube-apiserver  | awk <span style="color:#e6db74">&#39;{ print $1 }&#39;</span><span style="color:#e6db74">`</span>
+docker restart <span style="color:#e6db74">`</span>docker ps | grep kube-scheduler  | awk <span style="color:#e6db74">&#39;{ print $1 }&#39;</span><span style="color:#e6db74">`</span>
+docker restart <span style="color:#e6db74">`</span>docker ps | grep kube-controller  | awk <span style="color:#e6db74">&#39;{ print $1 }&#39;</span><span style="color:#e6db74">`</span>
+systemctl restart kubelet</pre>
+    </div>
+    <div class="entry-copyright">
+        <div>
+          <span><i class="fa fa-user-o"></i>作者:</span>
+            <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+        </div>
+    <div>
+      <span><i class="fa fa-link"></i>链接:</span>
+      <a href="https://honmaple.me/articles/2020/01/K8S笔记之常见问题.html">https://honmaple.me/articles/2020/01/K8S笔记之常见问题.html</a>
+    </div>
+    <div>
+      <span><i class="fa fa-copyright"></i>版权:</span>
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+        <img src="https://s.libforest.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+        知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+      </a>
+    </div>
+  </div>
+  <div class="entry-honor">
+    <button data-target=".entry-honor-content" data-toggle="collapse" aria-expanded="false">赞</button>
+    <div class="entry-honor-content collapse">
+      <div class="entry-honor-wechat">
+        <img class="lazyload" data-src="https://s.libforest.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+      <div class="entry-honor-alipay">
+        <img class="lazyload" data-src="https://s.libforest.com/images/pic/alipay.png" alt="alipay" />
+      </div>
+    </div>
+  </div>
+    <hr class="entry-article-hr" />
+    <ul class="entry-pager">
+      <li class="prev">
+        <a href="https://honmaple.me/articles/2020/02/K8S笔记之私有仓库搭建.html" title="Previous article: K8S笔记之私有仓库搭建">
+          <i class="fa fa-chevron-left"></i>
+          K8S笔记之私有仓库搭建
+        </a>
+      </li>
+      <li class="next">
+        <a href="https://honmaple.me/articles/2020/01/KVM笔记之磁盘扩容.html" title="Next article: KVM笔记之磁盘扩容">
+          KVM笔记之磁盘扩容
+          <i class="fa fa-chevron-right"></i>
+        </a>
+      </li>
+  </ul>
+    
+    <div class="entry-comment">
+      <div class="entry-btn">
+        <a>加载评论</a>
+      </div>
+      <div id="comment_thread" issue-term="K8S笔记之常见问题"></div>
+    </div>
+  </article><div class="footer">
+  <ul class="footer-left">
+    <li class="hidden-xs">© 2015-2024 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+        <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+  <ul class="footer-right">
+    <li><a class="entry-switch-theme" title="切换主题" onclick="switchTheme()"><i class="fa fa-moon-o"></i></a></li>
+      <li><a href="https://honmaple.me/pages/music.html" title="音乐"><i class="fa fa-music"></i></a></li>
+      <li><a href="https://honmaple.me/pages/travel.html" title="旅行"><i class="fa fa-camera"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>
+  </ul>
+</div>
+<div class="back-to-top on">
+  <i class="fa fa-hand-o-up" title="back to top"></i>
+</div>
+
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'UA-88401692-2');
+  </script>
+
+
+      <script src="https://s.libforest.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
+  </body>
+</html>

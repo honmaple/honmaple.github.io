@@ -22,17 +22,20 @@ function Cover() {
     if ($(window).width() > 768) {
         $.ajax({
             type: "GET",
-            url: "https://poem.honmaple.com/api/poem/random",
+            url: "https://shici.honmaple.com/api/poems?sort=random&limit=1",
             dataType: "json",
             success: function (response) {
-                var title = '<h3>{0}</h3>'.format(response.data.title);
-                var author = '<p>{0}</p>'.format(response.data.author);
-                var paragraphs = '<div>{0}</div>'.format(response.data.paragraphs.map(function (item) {
-                    return "<p>{0}</p>".format(item);
-                }).join(""));
-                $(".entry-cover > .entry-cover-right").fadeOut(500, function () {
-                    $(this).html(title + author + paragraphs).fadeIn(500);
-                });
+                if (response.data.list.length > 0) {
+                    var data = response.data.list[0];
+                    var title = '<h3>{0}</h3>'.format(data.title);
+                    var author = '<p>{0}</p>'.format(data.author.name);
+                    var content = '<div>{0}</div>'.format(data.content.split("\n").map(function (item) {
+                        return "<p>{0}</p>".format(item);
+                    }).join(""));
+                    $(".entry-cover > .entry-cover-right").fadeOut(500, function () {
+                        $(this).html(title + author + content).fadeIn(500);
+                    });
+                }
             }
         });
     };

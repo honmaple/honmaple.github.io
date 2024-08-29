@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>rust笔记 · 紅楓吟</title>
+    <title>K8S笔记之集群管理 · 紅楓吟</title>
       <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
         <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
       <script src="https://honmaple.me/static/lib/js/before.min.js"></script>
@@ -59,12 +59,12 @@
   <article class="entry-article">
     <div class="entry-article-header">
     <h1 class="entry-article-title">
-      <a href="https://honmaple.me/articles/2020/09/rust笔记.html" rel="bookmark" title="Permalink to rust笔记">rust笔记</a>
+      <a href="https://honmaple.me/articles/2020/09/K8S笔记之集群管理.html" rel="bookmark" title="Permalink to K8S笔记之集群管理">K8S笔记之集群管理</a>
     </h1>
       <div class="entry-article-info">
-        <span title="Updated at 2024-08-21">
+        <span title="Updated at 2024-08-29">
           <i class="fa fa-calendar-o"></i>
-          2020年09月08日 周二
+          2020年09月02日 周三
         </span>
           <span class="hidden-xs">|</span>
           <span class="hidden-xs">
@@ -76,107 +76,101 @@
           <span>
             <i class="fa fa-folder-o"></i>
             In
-              <a href="https://honmaple.me/categories/tech/coding/rust/index.html">Tech/Coding/Rust</a>
+              <a href="https://honmaple.me/categories/tech/linux/index.html">Tech/Linux</a>
           </span>
           <span>|</span>
           <span>
             <i class="fa fa-bookmark-o"></i>
             0f
               <a href="https://honmaple.me/tags/linux/index.html">linux</a>
-              <a href="https://honmaple.me/tags/rust/index.html">rust</a>
+              <a href="https://honmaple.me/tags/k8s/index.html">k8s</a>
           </span>
       </div>
   </div>
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">安装</a></li>
-<li><a href="#heading-2">更新</a></li>
-<li><a href="#heading-3">交叉编译</a></li>
+<li><a href="#heading-1">pod</a>
+<ul>
+<li><a href="#heading-1.1">查看对外开放pod和port</a></li>
+<li><a href="#heading-1.2">清理所有状态为Failed或者Evicted的pod</a></li>
+<li><a href="#heading-1.3">查看pod id</a></li>
+<li><a href="#heading-1.4">查看pod所在节点</a></li>
+<li><a href="#heading-1.5">孤立pod解决</a></li>
+</ul></li>
+<li><a href="#heading-2">节点</a>
+<ul>
+<li><a href="#heading-2.1">禁止节点调度</a></li>
+<li><a href="#heading-2.2">Label添加删除和修改</a></li>
+</ul></li>
 </ul></div></div>
 
-<h2 id="heading-1">安装</h2>
+<h2 id="heading-1">pod</h2>
+<h3 id="heading-1.1">查看对外开放pod和port</h3>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl get svc --all-namespaces | grep -v ClusterIP</pre>
+
+<pre style="color:#f8f8f2;background-color:#272822">kubectl get svc --all-namespaces -o go-template=&#39;{{range .items}}{{ $save := . }}{{range.spec.ports}}{{if .nodePort}}{{$save.metadata.namespace}}{{&#34;/&#34;}}{{$save.metadata.name}}{{&#34; - &#34;}}{{.name}}{{&#34;: &#34;}}{{.nodePort}}{{&#34;\n&#34;}}{{end}}{{end}}{{end}}&#39;</pre>
+
+<h3 id="heading-1.2">清理所有状态为Failed或者Evicted的pod</h3>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e">#!/bin/bash
+</span><span style="color:#75715e"></span>kubectl get pods --all-namespaces -o go-template<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;{{range .items}} \
+</span><span style="color:#e6db74">{{if eq .status.phase &#34;Failed&#34;}} {{if eq .status.reason &#34;Evicted&#34;}} {{.metadata.name}}{{&#34; &#34;}} {{.metadata.namespace}}{{&#34;\n&#34;}} \
+</span><span style="color:#e6db74">{{end}} \
+</span><span style="color:#e6db74">{{end}} \
+</span><span style="color:#e6db74">{{end}}&#39;</span> | <span style="color:#66d9ef">while</span> read epod namespace; <span style="color:#66d9ef">do</span> kubectl -n $namespace delete pod $epod; <span style="color:#66d9ef">done</span></pre>
+
+<h3 id="heading-1.3">查看pod id</h3>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl get pods --all-namespaces -o custom-columns=PodName:.metadata.name,PodUID:.metadata.uid,NODE:.spec.nodeName</pre>
+
+<h3 id="heading-1.4">查看pod所在节点</h3>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl get pod -o wide --all-namespaces
+# 或者
+kubectl get pod -o=custom-columns=NODE:.spec.nodeName,NAME:.metadata.name --all-namespaces</pre>
+
+<h3 id="heading-1.5">孤立pod解决</h3>
+<p>
+    找到所有运行中的pod id
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl get pods --all-namespaces -o custom-columns=PodUID:.metadata.uid | tail -n +2 &gt; pods.txt</pre>
+
+<pre style="color:#f8f8f2;background-color:#272822">ls -d1 /var/lib/kubelet/pods/* | xargs -I % bash -c &#39;[ ! -f %/etc-hosts ] &amp;&amp; echo %&#39;</pre>
+
+<pre style="color:#f8f8f2;background-color:#272822">cat /var/log/messages|grep -i &#39;Orphaned pod&#39;|awk -F &#39;&#34;&#39; &#39;{print $2}&#39;|uniq</pre>
+
+<pre style="color:#f8f8f2;background-color:#272822">kubectl get pods --all-namespaces -o custom-columns=PodName:.metadata.name,PodUID:.metadata.uid | egrep -f /tmp/pods.txt</pre>
+
+<h2 id="heading-2">节点</h2>
+<h3 id="heading-2.1">禁止节点调度</h3>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl cordon master   # 禁止节点调度</pre>
+
+<pre style="color:#f8f8f2;background-color:#272822">kubeclt uncordon master # 允许节点调度</pre>
+
+<h3 id="heading-2.2">Label添加删除和修改</h3>
 <ul>
 <li>
 <p>
- 安装
+ 查看
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">└──╼ brew install rustup
-└──╼ rustup-init
-......
-1<span style="color:#f92672">)</span> Proceed with installation <span style="color:#f92672">(</span>default<span style="color:#f92672">)</span>
-2<span style="color:#f92672">)</span> Customize installation
-3<span style="color:#f92672">)</span> Cancel installation
-&gt;1</pre>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl get node --show-labels</pre>
 </li>
 <li>
 <p>
- 配置 <b>rust</b> 目录
+ 添加
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">└──╼ mkdir $HOME/repo/rust
-└──╼ mv $HOME/.rustup $HOME/repo/rust/rustup
-└──╼ mv $HOME/.cargo $HOME/repo/rust/cargo</pre>
-
-<p>
-     写入 <b>.bashrc</b> 文件
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">export RUSTUP_HOME<span style="color:#f92672">=</span>$HOME/repo/rust/rustup
-export CARGO_HOME<span style="color:#f92672">=</span>$HOME/repo/rust/cargo
-export PATH<span style="color:#f92672">=</span>$PATH:$HOME/repo/rust/cargo/bin</pre>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;=&lt;label-value&gt;</pre>
 </li>
 <li>
 <p>
- 验证
+ 删除
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">└──╼ source .bashrc
-└──╼ cargo --version
-cargo 1.46.0 <span style="color:#f92672">(</span>149022b1d 2020-07-17<span style="color:#f92672">)</span></pre>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;-</pre>
 </li>
+<li>
+<p>
+ 修改
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;=&lt;label-value&gt; --overwrite</pre></li>
 </ul>
-<h2 id="heading-2">更新</h2>
-<p>
-   最近在测试时发现无法安装 <b>tauri-app</b>, 需要更新 <b>cargo</b>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">Caused by:
-  failed to parse the `edition` key
-
-Caused by:
-  this version of Cargo is older than the `2021` edition, and only supports `2015` and `2018` editions.</pre>
-
-<p>
-   解决方式
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">└──╼ rustc --version
-rustc 1.46.0 (04488afe3 2020-08-24)
-└──╼ rustup update stable
-...
-└──╼ rustc --version
-rustc 1.64.0 (a55dd71d5 2022-09-19)</pre>
-
-<h2 id="heading-3">交叉编译</h2>
-<blockquote>
-<ul>
-<li>
-<p>
- <a href="https://www.qttc.net/529-rust-cross-compile-mac-to-linux.html">https://www.qttc.net/529-rust-cross-compile-mac-to-linux.html</a>
-</p></li>
-<li>
-<p>
- <a href="https://moevis.github.io/cheatsheet/2018/08/18/%E8%B6%85%E6%96%B9%E4%BE%BF%E7%9A%84-Rust-%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91.html">https://moevis.github.io/cheatsheet/2018/08/18/%E8%B6%85%E6%96%B9%E4%BE%BF%E7%9A%84-Rust-%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91.html</a>
-</p></li>
-</ul>
-</blockquote>
-
-<pre style="color:#f8f8f2;background-color:#272822">brew install FiloSottile/musl-cross/musl-cross
-rustup target add x86_64-unknown-linux-musl</pre>
-
-<p>
-   添加配置 <code>$CARGO_HOME/config.toml</code>
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">[target.x86_64-unknown-linux-musl]
-linker = &#34;x86_64-linux-musl-gcc&#34;</pre>
-
-<pre style="color:#f8f8f2;background-color:#272822">cargo build --target<span style="color:#f92672">=</span>x86_64-unknown-linux-musl</pre>
     </div>
     <div class="entry-copyright">
         <div>
@@ -185,7 +179,7 @@ linker = &#34;x86_64-linux-musl-gcc&#34;</pre>
         </div>
     <div>
       <span><i class="fa fa-link"></i>链接:</span>
-      <a href="https://honmaple.me/articles/2020/09/rust笔记.html">https://honmaple.me/articles/2020/09/rust笔记.html</a>
+      <a href="https://honmaple.me/articles/2020/09/K8S笔记之集群管理.html">https://honmaple.me/articles/2020/09/K8S笔记之集群管理.html</a>
     </div>
     <div>
       <span><i class="fa fa-copyright"></i>版权:</span>
@@ -209,14 +203,14 @@ linker = &#34;x86_64-linux-musl-gcc&#34;</pre>
     <hr class="entry-article-hr" />
     <ul class="entry-pager">
       <li class="prev">
-        <a href="https://honmaple.me/articles/2020/09/golang笔记之struct转map性能比较.html" title="Previous article: golang笔记之struct转map性能比较">
+        <a href="https://honmaple.me/articles/2020/09/rust笔记.html" title="Previous article: rust笔记">
           <i class="fa fa-chevron-left"></i>
-          golang笔记之struct转map性能比较
+          rust笔记
         </a>
       </li>
       <li class="next">
-        <a href="https://honmaple.me/articles/2020/09/K8S笔记之集群管理.html" title="Next article: K8S笔记之集群管理">
-          K8S笔记之集群管理
+        <a href="https://honmaple.me/articles/2020/08/golang笔记之interface类型判断性能.html" title="Next article: golang笔记之interface类型判断性能">
+          golang笔记之interface类型判断性能
           <i class="fa fa-chevron-right"></i>
         </a>
       </li>
@@ -226,7 +220,7 @@ linker = &#34;x86_64-linux-musl-gcc&#34;</pre>
       <div class="entry-btn">
         <a>加载评论</a>
       </div>
-      <div id="comment_thread" issue-term="rust笔记"></div>
+      <div id="comment_thread" issue-term="K8S笔记之集群管理"></div>
     </div>
   </article><div class="footer">
   <ul class="footer-left">
