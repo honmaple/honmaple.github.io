@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Flutter实现本地化多语言 · 紅楓吟</title>
+      <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+      <script src="https://honmaple.me/static/lib/js/before.min.js"></script>
+  </head>
+  <body>
+    <div class="scrollbar"></div>
+
+    <div class="wrapper"><nav class="entry-navbar">
+  <div class="entry-navbar-top">
+    <a href="https://honmaple.me">
+      <img class="entry-navbar-logo" src="https://s.libforest.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="entry-navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+    <button class="entry-navbar-collapse" data-target=".entry-navbar-bottom" data-toggle="collapse">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
+    </button>
+  </div>
+  <div class="entry-navbar-bottom">
+    <ul class="entry-navbar-menu">
+          <li class="entry-dropdown">
+            <a href="https://honmaple.me/categories/life/index.html">生活随笔</a>
+            <ul class="entry-dropdown-content">
+                <li><a href="https://honmaple.me/categories/life/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/categories/life/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li class="entry-dropdown">
+            <a href="https://honmaple.me/categories/tech/index.html">技术分享</a>
+            <ul class="entry-dropdown-content">
+                <li><a href="https://honmaple.me/categories/tech/coding/index.html">代码世界</a></li>
+                <li><a href="https://honmaple.me/categories/tech/geek/index.html">极客安全</a></li>
+                <li><a href="https://honmaple.me/categories/tech/linux/index.html">字符艺术</a></li>
+            </ul>
+          </li>
+          <li class="entry-dropdown">
+            <a href="https://honmaple.me/archives/index.html">文章归档</a>
+            <ul class="entry-dropdown-content">
+                <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+                <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+                <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+            </ul>
+          </li>
+          <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form class="entry-navbar-form" action="https://honmaple.me/search.html">
+      <input name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''" />
+      <i class="fa fa-search"></i>
+    </form>
+  </div>
+</nav>
+
+  <article class="entry-article">
+    <div class="entry-article-header">
+    <h1 class="entry-article-title">
+      <a href="https://honmaple.me/articles/2024/10/fluttershi-xian-ben-di-hua-duo-yu-yan.html" rel="bookmark" title="Permalink to Flutter实现本地化多语言">Flutter实现本地化多语言</a>
+    </h1>
+      <div class="entry-article-info">
+        <span title="Updated at 2024-10-02">
+          <i class="fa fa-calendar-o"></i>
+          2024年10月02日 周三
+        </span>
+          <span class="hidden-xs">|</span>
+          <span class="hidden-xs">
+            <i class="fa fa-user-o"></i>
+            By
+              <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-folder-o"></i>
+            In
+              <a href="https://honmaple.me/categories/tech/coding/flutter/index.html">Tech/Coding/Flutter</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-bookmark-o"></i>
+            0f
+              <a href="https://honmaple.me/tags/flutter/index.html">flutter</a>
+              <a href="https://honmaple.me/tags/l10n/index.html">l10n</a>
+          </span>
+      </div>
+  </div>
+    <hr class="entry-article-hr" />
+    <div class="entry-article-content">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">内置组件本地化</a></li>
+<li><a href="#heading-2">自定义本地化</a></li>
+<li><a href="#heading-3">自定义本地化(非代码自动生成)</a></li>
+<li><a href="#heading-4">本地化多语言的使用</a></li>
+<li><a href="#heading-5">优化多语言选择</a></li>
+<li><a href="#heading-6">参考文档</a></li>
+</ul></div></div>
+
+<h2 id="heading-1">内置组件本地化</h2>
+<ol>
+<li>
+<p>
+ 添加依赖
+</p>
+
+<p>
+      Flutter默认组件的本地化之需要添加
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">flutter_localizations</span>:
+  <span style="color:#66d9ef">sdk</span>: flutter</pre>
+<p>
+      使用命令行添加就是
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">flutter pub add flutter_localizations --sdk=flutter</pre>
+</li>
+<li>
+<p>
+ 修改入口组件 <b>main.dart</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">package:flutter_localizations/flutter_localizations.dart</span><span style="color:#e6db74">&#39;</span>;</pre>
+
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">return</span> <span style="color:#66d9ef">const</span> MaterialApp(
+  title: <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">Localizations Sample App</span><span style="color:#e6db74">&#39;</span>,
+  localizationsDelegates: [
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  supportedLocales: [
+    Locale(<span style="color:#e6db74">&#39;</span><span style="color:#e6db74">en</span><span style="color:#e6db74">&#39;</span>), <span style="color:#75715e">// English
+</span><span style="color:#75715e"></span>    Locale(<span style="color:#e6db74">&#39;</span><span style="color:#e6db74">zh</span><span style="color:#e6db74">&#39;</span>), <span style="color:#75715e">// Chinese
+</span><span style="color:#75715e"></span>  ],
+  home: MyHomePage(),
+);</pre>
+<p>
+      这样Flutter内置组件所显示的语言就能和系统语言保持一致，如果想要手动修改，只需要添加参数
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">return</span> <span style="color:#66d9ef">const</span> MaterialApp(
+  ...
+  locale: Locale(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">zh</span><span style="color:#e6db74">&#34;</span>),
+);</pre>
+
+<p>
+      如果想要修改指定的组件，需要使用到 <code>Localizations.override</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">Widget build(BuildContext context) {
+  <span style="color:#66d9ef">return</span> Scaffold(
+    appBar: AppBar(
+      title: Text(widget.title),
+    ),
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <span style="color:#f92672">&lt;</span>Widget<span style="color:#f92672">&gt;</span>[
+          Localizations.override(
+            context: context,
+            locale: <span style="color:#66d9ef">const</span> Locale(<span style="color:#e6db74">&#39;</span><span style="color:#e6db74">zh</span><span style="color:#e6db74">&#39;</span>),
+            child: Builder(
+              builder: (context) {
+                <span style="color:#66d9ef">return</span> CalendarDatePicker(
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(<span style="color:#ae81ff">1900</span>),
+                  lastDate: DateTime(<span style="color:#ae81ff">2100</span>),
+                  onDateChanged: (value) {},
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}</pre>
+</li>
+</ol>
+<h2 id="heading-2">自定义本地化</h2>
+<p>
+   根据官方文档，可以利用 <code>flutter_localozations</code> 和 <code>intl</code> 来实现。但是如果根据官方文档，那可不是一般的麻烦，而是相当麻烦，操作步骤包括但不限于
+</p>
+<ul>
+<li>
+<p>
+ 修改 <code>pubsepc.yaml</code>
+</p></li>
+<li>
+<p>
+ 添加 <code>l10n.yaml</code>
+</p></li>
+<li>
+<p>
+ 添加 <code>.arb</code> 文件
+</p>
+</li>
+</ul>
+<p>
+   当然，这一切也不能说是很麻烦，毕竟只要第一次改好，后续只用修改 <code>.arb</code> 文件就能自动运行，但根据这个流程生成的多语言本地化，我觉得有几个问题：
+</p>
+<ol>
+<li>
+<p>
+ 自动生成的 <code>.dart</code> 文件是保存在 <code>{项目目录}/.dart_tool/flutter_gen/gen_l10n</code> 目录下的，这会导致项目默认的代码没有多语言相关，只有一些不知所谓的 <code>.arb</code> 文件，毕竟与多语言相关的代码都是自动生成的
+</p></li>
+<li>
+<p>
+ 也是最重要的一点， 我为什么要在默认语言下重复定义一个不能带空格，只允许定义符合 <b>dart方法名称</b> 的关键字以供调用，比如一个简单的字符串
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">Text(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Hello World</span><span style="color:#e6db74">&#34;</span>)</pre>
+
+<p>
+      我必须在默认语言定义一个
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">// app_es.arb
+&#34;helloWorld&#34;: &#34;Hello World&#34;</pre>
+
+<p>
+      然后在其它语言定义
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">// app_zh.arb
+&#34;helloWorld&#34;: &#34;你好 世界&#34;</pre>
+<p>
+      最后再修改默认的调用
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">Text(AppLocations.of(context).helloWorld)</pre>
+<p>
+      我为什么不能直接使用原有的字符串呢，这样就不用再为默认的语言添加额外的翻译，比如
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">Text(AppLocations.of(context).tr(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Hello World</span><span style="color:#e6db74">&#34;</span>))</pre>
+</li>
+</ol>
+<p>
+   所以，我仔细研究了一下，大抵不用如此麻烦
+</p>
+
+<h2 id="heading-3">自定义本地化(非代码自动生成)</h2>
+<ol>
+<li>
+<p>
+ 首先添加 <b>l10n.dart</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">dart:async</span><span style="color:#e6db74">&#39;</span>;
+
+<span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">package:flutter/foundation.dart</span><span style="color:#e6db74">&#39;</span>;
+<span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">package:flutter/widgets.dart</span><span style="color:#e6db74">&#39;</span>;
+<span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">package:flutter_localizations/flutter_localizations.dart</span><span style="color:#e6db74">&#39;</span>;
+<span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">package:intl/intl.dart</span><span style="color:#e6db74">&#39;</span> <span style="color:#66d9ef">as</span> intl;
+
+<span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">l10n_en.dart</span><span style="color:#e6db74">&#39;</span>;
+<span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">l10n_zh.dart</span><span style="color:#e6db74">&#39;</span>;
+
+<span style="color:#66d9ef">abstract</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">L10n</span> {
+  L10n(<span style="color:#66d9ef">String</span> locale)
+  <span style="color:#f92672">:</span> localeName <span style="color:#f92672">=</span> intl.Intl.canonicalizedLocale(locale.toString());
+
+  <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">String</span> localeName;
+
+  <span style="color:#66d9ef">static</span> L10n<span style="color:#f92672">?</span> of(BuildContext context) {
+    <span style="color:#66d9ef">return</span> Localizations.of<span style="color:#f92672">&lt;</span>L10n<span style="color:#f92672">&gt;</span>(context, L10n);
+  }
+
+  <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> LocalizationsDelegate<span style="color:#f92672">&lt;</span>L10n<span style="color:#f92672">&gt;</span> delegate <span style="color:#f92672">=</span> _L10nDelegate();
+
+  <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> List<span style="color:#f92672">&lt;</span>LocalizationsDelegate<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">dynamic</span><span style="color:#f92672">&gt;</span><span style="color:#f92672">&gt;</span> localizationsDelegates <span style="color:#f92672">=</span>
+  <span style="color:#f92672">&lt;</span>LocalizationsDelegate<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">dynamic</span><span style="color:#f92672">&gt;</span><span style="color:#f92672">&gt;</span>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
+
+  <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> List<span style="color:#f92672">&lt;</span>Locale<span style="color:#f92672">&gt;</span> supportedLocales <span style="color:#f92672">=</span> <span style="color:#f92672">&lt;</span>Locale<span style="color:#f92672">&gt;</span>[
+    Locale(<span style="color:#e6db74">&#39;</span><span style="color:#e6db74">en</span><span style="color:#e6db74">&#39;</span>),
+    Locale(<span style="color:#e6db74">&#39;</span><span style="color:#e6db74">zh</span><span style="color:#e6db74">&#39;</span>)
+  ];
+
+  <span style="color:#66d9ef">String</span> tr(<span style="color:#66d9ef">String</span> key);
+}
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">_L10nDelegate</span> <span style="color:#66d9ef">extends</span> LocalizationsDelegate<span style="color:#f92672">&lt;</span>L10n<span style="color:#f92672">&gt;</span> {
+  <span style="color:#66d9ef">const</span> _L10nDelegate();
+
+  <span style="color:#960050;background-color:#1e0010">@</span>override
+  Future<span style="color:#f92672">&lt;</span>L10n<span style="color:#f92672">&gt;</span> load(Locale locale) {
+    <span style="color:#66d9ef">return</span> SynchronousFuture<span style="color:#f92672">&lt;</span>L10n<span style="color:#f92672">&gt;</span>(lookupL10n(locale));
+  }
+
+  <span style="color:#960050;background-color:#1e0010">@</span>override
+  <span style="color:#66d9ef">bool</span> isSupported(Locale locale) <span style="color:#f92672">=</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">String</span><span style="color:#f92672">&gt;</span>[<span style="color:#e6db74">&#39;</span><span style="color:#e6db74">en</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">zh</span><span style="color:#e6db74">&#39;</span>].contains(locale.languageCode);
+
+  <span style="color:#960050;background-color:#1e0010">@</span>override
+  <span style="color:#66d9ef">bool</span> shouldReload(_L10nDelegate old) <span style="color:#f92672">=</span><span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">false</span>;
+}
+
+L10n lookupL10n(Locale locale) {
+  <span style="color:#75715e">// Lookup logic when only language code is specified.
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">switch</span> (locale.languageCode) {
+    <span style="color:#66d9ef">case</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">en</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">:</span>
+    <span style="color:#66d9ef">return</span> L10nEn();
+    <span style="color:#66d9ef">case</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">zh</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">:</span>
+    <span style="color:#66d9ef">return</span> L10nZh();
+  }
+
+  <span style="color:#66d9ef">throw</span> FlutterError(
+    <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">L10n.delegate failed to load unsupported locale &#34;</span><span style="color:#e6db74">$</span>locale<span style="color:#e6db74">&#34;. This is likely </span><span style="color:#e6db74">&#39;</span>
+    <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">an issue with the localizations generation tool. Please file an issue </span><span style="color:#e6db74">&#39;</span>
+    <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">on GitHub with a reproducible sample app and the gen-l10n configuration </span><span style="color:#e6db74">&#39;</span>
+    <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">that was used.</span><span style="color:#e6db74">&#39;</span>);
+}</pre>
+<p>
+      上述代码其实是由根据官方文档自动生成的 <code>.dart</code> 文件转化而来
+</p></li>
+<li>
+<p>
+ 添加默认语言的翻译
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e">// l10n_en.dart
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">l10n.dart</span><span style="color:#e6db74">&#39;</span>;
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">L10nEn</span> <span style="color:#66d9ef">extends</span> L10n {
+  L10nEn([<span style="color:#66d9ef">String</span> locale <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">en</span><span style="color:#e6db74">&#39;</span>]) <span style="color:#f92672">:</span> <span style="color:#66d9ef">super</span>(locale);
+
+  <span style="color:#960050;background-color:#1e0010">@</span>override
+  <span style="color:#66d9ef">String</span> tr(<span style="color:#66d9ef">String</span> key) {
+    <span style="color:#66d9ef">return</span> translations[key] <span style="color:#f92672">?</span><span style="color:#f92672">?</span> key;
+  }
+}
+
+<span style="color:#66d9ef">const</span> translations <span style="color:#f92672">=</span> {};</pre>
+<p>
+      对的，你没有看错， <code>translations</code> 甚至可以是空的，这样就不用重复定义默认语言的翻译
+</p></li>
+<li>
+<p>
+ 添加其它语言的翻译
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e">// l10n_zh.dart
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">l10n.dart</span><span style="color:#e6db74">&#39;</span>;
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">L10nZh</span> <span style="color:#66d9ef">extends</span> L10n {
+  L10nZh([<span style="color:#66d9ef">String</span> locale <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">zh</span><span style="color:#e6db74">&#39;</span>]) <span style="color:#f92672">:</span> <span style="color:#66d9ef">super</span>(locale);
+
+  <span style="color:#960050;background-color:#1e0010">@</span>override
+  <span style="color:#66d9ef">String</span> tr(<span style="color:#66d9ef">String</span> key) {
+    <span style="color:#66d9ef">return</span> translations[key] <span style="color:#f92672">?</span><span style="color:#f92672">?</span> key;
+  }
+}
+
+<span style="color:#66d9ef">const</span> translations <span style="color:#f92672">=</span> {
+  <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Settings</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">设置</span><span style="color:#e6db74">&#34;</span>,
+  <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Basic Settings</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">基础设置</span><span style="color:#e6db74">&#34;</span>,
+  <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Theme</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">主题</span><span style="color:#e6db74">&#34;</span>,
+  <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Language</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">语言</span><span style="color:#e6db74">&#34;</span>,
+  <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">About</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">关于</span><span style="color:#e6db74">&#34;</span>,
+  <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Help</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">帮助</span><span style="color:#e6db74">&#34;</span>,
+};</pre>
+</li>
+<li>
+<p>
+ 修改 <b>main.dart</b> 入口组件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">import</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">app/l10n/l10n.dart</span><span style="color:#e6db74">&#39;</span>;
+
+<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">const</span> MaterialApp(
+  title: <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">Localizations Sample App</span><span style="color:#e6db74">&#39;</span>,
+  localizationsDelegates: L10n.localizationsDelegates,
+  supportedLocales: L10n.supportedLocales,
+  home: MyHomePage(),
+);</pre>
+<p>
+      这样就能使用自定义的翻译了
+</p>
+</li>
+</ol>
+<h2 id="heading-4">本地化多语言的使用</h2>
+<p>
+   最常用的是在 <code>Text</code> 组件里
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">Text(L10n.of(context)<span style="color:#f92672">!</span>.tr(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Hello World</span><span style="color:#e6db74">&#34;</span>))</pre>
+<p>
+   但是所有的字符都要添加 <code>L10n.of(context)!</code> 未免有些麻烦，所以我增加了自定义扩展
+</p>
+
+<ul>
+<li>
+<p>
+ <code>BuildContext</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">extension L10nContext on BuildContext {
+  <span style="color:#66d9ef">String</span> tr(<span style="color:#66d9ef">String</span> key) {
+    <span style="color:#66d9ef">final</span> t <span style="color:#f92672">=</span> L10n.of(<span style="color:#66d9ef">this</span>);
+    <span style="color:#66d9ef">if</span> (t <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>) {
+      <span style="color:#66d9ef">return</span> key;
+    }
+    <span style="color:#66d9ef">return</span> t.tr(key);
+  }
+}</pre>
+
+<p>
+     使用方式
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">Text(context.tr(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Hello World</span><span style="color:#e6db74">&#34;</span>))</pre></li>
+<li>
+<p>
+ <code>String</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">extension L10nString on <span style="color:#66d9ef">String</span> {
+  <span style="color:#66d9ef">String</span> tr(BuildContext context) {
+    <span style="color:#66d9ef">final</span> t <span style="color:#f92672">=</span> L10n.of(context);
+    <span style="color:#66d9ef">if</span> (t <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>) {
+      <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+    }
+    <span style="color:#66d9ef">return</span> t.tr(<span style="color:#66d9ef">this</span>);
+  }
+}</pre>
+
+<p>
+     使用方式
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">Text(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Hello World</span><span style="color:#e6db74">&#34;</span>.tr(context))</pre></li>
+<li>
+<p>
+ <code>Text</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">extension L10nText on Text {
+  Text tr(BuildContext context) {
+    <span style="color:#66d9ef">final</span> t <span style="color:#f92672">=</span> L10n.of(context);
+    <span style="color:#66d9ef">if</span> (t <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span> data <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>) {
+      <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+    }
+    <span style="color:#66d9ef">return</span> Text(t.tr(data <span style="color:#f92672">?</span><span style="color:#f92672">?</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">&#39;</span>),
+      key: key,
+      style: style,
+      strutStyle: strutStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      locale: locale,
+      softWrap: softWrap,
+      overflow: overflow,
+      textScaler: textScaler,
+      maxLines: maxLines,
+      semanticsLabel: semanticsLabel,
+      textWidthBasis: textWidthBasis);
+  }
+}</pre>
+
+<p>
+     使用方式
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">Text(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Hello World</span><span style="color:#e6db74">&#34;</span>).tr(context)</pre>
+
+<p>
+     如此，就能最大限度的较少对原有代码的侵略性修改
+</p>
+</li>
+</ul>
+<h2 id="heading-5">优化多语言选择</h2>
+<p>
+   我这里选用的是 <b>riverpod</b> 进行状态管理，首先定义一个本地语言的状态
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">final</span> localeProvider <span style="color:#f92672">=</span> StateProvider<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">String</span><span style="color:#f92672">&gt;</span>((ref) {
+  <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">zh</span><span style="color:#e6db74">&#34;</span>;
+});</pre>
+
+<p>
+   接着修改 <b>main.dart</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyApp</span> <span style="color:#66d9ef">extends</span> ConsumerWidget {
+  <span style="color:#66d9ef">const</span> MyApp({<span style="color:#66d9ef">super</span>.key});
+
+  <span style="color:#960050;background-color:#1e0010">@</span>override
+  Widget build(BuildContext context, WidgetRef ref) {
+    <span style="color:#66d9ef">final</span> localeCode <span style="color:#f92672">=</span> ref.watch(localeProvider);
+
+    <span style="color:#66d9ef">return</span> MaterialApp(
+      locale: L10n.delegate.isSupported(localeCode) <span style="color:#f92672">?</span> Locale(localeCode) <span style="color:#f92672">:</span> <span style="color:#66d9ef">null</span>,
+      ...
+    );
+  }
+}</pre>
+
+<p>
+   这样就能很方便地修改应用的显示语言
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">ref.read(localeProvider.notifier).state <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">zh</span><span style="color:#e6db74">&#34;</span>;</pre>
+
+<h2 id="heading-6">参考文档</h2>
+<ul>
+<li>
+<p>
+ <a href="https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization">https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization</a>
+</p></li>
+<li>
+<p>
+ <a href="https://docs.flutter.cn/ui/accessibility-and-internationalization/internationalization">https://docs.flutter.cn/ui/accessibility-and-internationalization/internationalization</a>
+</p></li>
+</ul>
+    </div>
+    <div class="entry-copyright">
+        <div>
+          <span><i class="fa fa-user-o"></i>作者:</span>
+            <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+        </div>
+    <div>
+      <span><i class="fa fa-link"></i>链接:</span>
+      <a href="https://honmaple.me/articles/2024/10/fluttershi-xian-ben-di-hua-duo-yu-yan.html">https://honmaple.me/articles/2024/10/fluttershi-xian-ben-di-hua-duo-yu-yan.html</a>
+    </div>
+    <div>
+      <span><i class="fa fa-copyright"></i>版权:</span>
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+        <img src="https://s.libforest.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+        知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+      </a>
+    </div>
+  </div>
+  <div class="entry-honor">
+    <button data-target=".entry-honor-content" data-toggle="collapse" aria-expanded="false">赞</button>
+    <div class="entry-honor-content collapse">
+      <div class="entry-honor-wechat">
+        <img class="lazyload" data-src="https://s.libforest.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+      <div class="entry-honor-alipay">
+        <img class="lazyload" data-src="https://s.libforest.com/images/pic/alipay.png" alt="alipay" />
+      </div>
+    </div>
+  </div>
+    <hr class="entry-article-hr" />
+    <ul class="entry-pager">
+      <li class="next">
+        <a href="https://honmaple.me/articles/2024/04/wei-maple-translatezeng-jia-geng-you-hao-de-sdcvchi-xian-fan-yi.html" title="Next article: 为maple-translate增加更友好的sdcv离线翻译">
+          为maple-translate增加更友好的sdcv离线翻译
+          <i class="fa fa-chevron-right"></i>
+        </a>
+      </li>
+  </ul>
+    
+    <div class="entry-comment">
+      <div class="entry-btn">
+        <a>加载评论</a>
+      </div>
+      <div id="comment_thread" issue-term="Flutter实现本地化多语言"></div>
+    </div>
+  </article><div class="footer">
+  <ul class="footer-left">
+    <li class="hidden-xs">© 2015-2024 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+        <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/timeline.html">时间轴</a>
+    </li>
+  </ul>
+  <ul class="footer-right">
+    <li><a class="entry-switch-theme" title="切换主题" onclick="switchTheme()"><i class="fa fa-moon-o"></i></a></li>
+      <li><a href="https://honmaple.me/pages/music.html" title="音乐"><i class="fa fa-music"></i></a></li>
+      <li><a href="https://honmaple.me/pages/travel.html" title="旅行"><i class="fa fa-camera"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>
+  </ul>
+</div>
+<div class="back-to-top on">
+  <i class="fa fa-hand-o-up" title="back to top"></i>
+</div>
+
+    </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-88401692-2"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'UA-88401692-2');
+  </script>
+
+
+      <script src="https://s.libforest.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
+  </body>
+</html>
