@@ -5,8 +5,287 @@
   <link href="https://honmaple.me/categories/tech/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Sat, 05 Oct 2024 20:13:59 +0000</updated>
+    <updated>Sat, 14 Dec 2024 18:09:47 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>开源一个离线版Alist，无需服务端部署即可管理云盘文件</title>
+      <link href="https://honmaple.me/articles/2024/12/kai-yuan-ge-chi-xian-ban-alist-wu-xu-fu-wu-duan-bu-shu-ji-ke-guan-li-yun-pan-wen-jian.html" rel="alternate"></link>
+      <published>Mon, 02 Dec 2024 13:09:48 +0000</published>
+      <updated>Sat, 14 Dec 2024 18:09:47 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2024/12/kai-yuan-ge-chi-xian-ban-alist-wu-xu-fu-wu-duan-bu-shu-ji-ke-guan-li-yun-pan-wen-jian.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2024/12/kai-yuan-ge-chi-xian-ban-alist-wu-xu-fu-wu-duan-bu-shu-ji-ke-guan-li-yun-pan-wen-jian.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;b&gt;Alist&lt;/b&gt; 是一个非常不错的云盘文件管理程序，不过需要一台服务器或者 &lt;b&gt;Nas&lt;/b&gt; 进行部署，当然，这也同样便于在网络分享文件。但如果只是个人使用，服务器部署以及多账户系统未免有些麻烦。我是一个怕麻烦的人，虽然我自己也在 &lt;b&gt;Nas&lt;/b&gt; 中部署了一个 &lt;b&gt;Alist&lt;/b&gt; 服务，但还是想要一个单独的 &lt;b&gt;离线版APP&lt;/b&gt;，&lt;b&gt;红枫云盘&lt;/b&gt; 就由此诞生。
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;红枫云盘&lt;/b&gt; 即 &lt;a href=&quot;https://github.com/honmaple/maple-file&quot;&gt;maple-file&lt;/a&gt;，名称由 &lt;b&gt;maple(枫叶)&lt;/b&gt; + &lt;b&gt;file(文件)&lt;/b&gt; 组成， 这原本是我很早之前写的一个基于 &lt;b&gt;Flask&lt;/b&gt; 的项目，主要用于图片上传，还有相册的功能，但已经很久没有使用和维护过了...&lt;/p&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;功能&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;使用&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;开发&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;b&gt;Alist&lt;/b&gt; 是一个非常不错的云盘文件管理程序，不过需要一台服务器或者 &lt;b&gt;Nas&lt;/b&gt; 进行部署，当然，这也同样便于在网络分享文件。但如果只是个人使用，服务器部署以及多账户系统未免有些麻烦。我是一个怕麻烦的人，虽然我自己也在 &lt;b&gt;Nas&lt;/b&gt; 中部署了一个 &lt;b&gt;Alist&lt;/b&gt; 服务，但还是想要一个单独的 &lt;b&gt;离线版APP&lt;/b&gt;，&lt;b&gt;红枫云盘&lt;/b&gt; 就由此诞生。
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;红枫云盘&lt;/b&gt; 即 &lt;a href=&quot;https://github.com/honmaple/maple-file&quot;&gt;maple-file&lt;/a&gt;，名称由 &lt;b&gt;maple(枫叶)&lt;/b&gt; + &lt;b&gt;file(文件)&lt;/b&gt; 组成， 这原本是我很早之前写的一个基于 &lt;b&gt;Flask&lt;/b&gt; 的项目，主要用于图片上传，还有相册的功能，但已经很久没有使用和维护过了。本来我准备把新项目起名为 &lt;b&gt;Filesea&lt;/b&gt;，但又和我的另一个类似 &lt;b&gt;Alist&lt;/b&gt; 的项目名相同(未开源)，而且 &lt;b&gt;Filesea&lt;/b&gt; 和一个知名项目 &lt;b&gt;Seafile&lt;/b&gt; 过于相似，所以还是继续沿用之前的名称，毕竟对比之前的纯API也算得上是一个全新的升级和改版
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;功能&lt;/h2&gt;
+&lt;p&gt;
+   目前已经支持的存储：
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ local(本地文件)
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ smb
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ ftp
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ sftp
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ webdav
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ alist
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 又拍云
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+   包括了文件上传、下载、重命名、移动、复制、创建文件夹、预览等功能，虽然部分功能比如预览还比较简陋，但持续优化中，未来可能会添加相册，文件同步和备份等功能
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 文件列表
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 文件预览: 支持文本文件，图片，音频，视频
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_16.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_16.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_17.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_17.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_08.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_08.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_09.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_09.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 上传和下载
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_10.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_10.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_11.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_11.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 重命名、移动、复制(包括多选)
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 添加修改存储
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_14.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_14.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_13.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_13.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 设置
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_18.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_18.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_12.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_12.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_15.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_15.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;使用&lt;/h2&gt;
+&lt;p&gt;
+   目前提供了Android版本和MacOS版本的下载，下载地址: &lt;a href=&quot;https://github.com/honmaple/maple-file/releases/tag/v1.0.0&quot;&gt;https://github.com/honmaple/maple-file/releases/tag/v1.0.0&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;开发&lt;/h2&gt;
+&lt;p&gt;
+   我参考了 &lt;a href=&quot;https://github.com/GopeedLab/gopeed&quot;&gt;Gopeed&lt;/a&gt; 和 &lt;a href=&quot;https://github.com/fregie/pho&quot;&gt;Pho&lt;/a&gt; 两个项目，客户端使用 &lt;b&gt;Flutter&lt;/b&gt;，后端服务使用 &lt;b&gt;Go&lt;/b&gt;，通过 &lt;code&gt;gomobile&lt;/code&gt; 把 &lt;b&gt;Go&lt;/b&gt; 服务打包成 &lt;code&gt;aar(安卓)&lt;/code&gt;，或者利用 &lt;code&gt;buildmode&lt;/code&gt; 打包成 &lt;code&gt;.dylib(MacOS)&lt;/code&gt;, 这样就能把服务端嵌入到本地客户端，来达到 &lt;b&gt;serverless&lt;/b&gt; 的目的。
+&lt;/p&gt;
+
+&lt;p&gt;
+   如果想要添加更多存储，只需要使用 &lt;b&gt;Go&lt;/b&gt; 创建一个文件系统接口
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;type&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;FS&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;interface&lt;/span&gt; {
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;WalkDir&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;WalkDirFunc&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;List&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) ([]&lt;span style=&quot;color:#a6e22e&quot;&gt;File&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Move&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Copy&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Rename&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Remove&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;MakeDir&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Get&lt;/span&gt;(&lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;File&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Open&lt;/span&gt;(&lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;FileReader&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Create&lt;/span&gt;(&lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;FileWriter&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Close&lt;/span&gt;() &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+}&lt;/pre&gt;
+
+&lt;p&gt;
+   然后注册一个新的存储名称
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;// 注册服务
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;func&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;init&lt;/span&gt;() {
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;driver&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Register&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;alist&amp;#34;&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;func&lt;/span&gt;() &lt;span style=&quot;color:#a6e22e&quot;&gt;driver&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Option&lt;/span&gt; {
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;Option&lt;/span&gt;{}
+    })
+}
+
+
+&lt;span style=&quot;color:#75715e&quot;&gt;// 加载服务
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; (
+   &lt;span style=&quot;color:#a6e22e&quot;&gt;_&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;github.com/honmaple/maple-file/server/pkg/driver/alist&amp;#34;&lt;/span&gt;
+)&lt;/pre&gt;
+
+&lt;p&gt;
+   最后在客户端创建一个用于提交配置的表单即可，扩展性足够简单，也足够方便
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;...
+DriverFormField(
+  label: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;用户&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;.tr(context),
+  value: _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;username&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;],
+  isRequired: &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;,
+  onTap: (result) {
+    setState(() {
+      _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;username&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; result;
+    });
+
+    widget.form.option &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; jsonEncode(_option);
+  },
+),
+DriverFormField(
+  type: DriverFormFieldType.password,
+  label: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;密码&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;.tr(context),
+  value: _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;password&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;],
+  onTap: (result) {
+    setState(() {
+      _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;password&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; result;
+    });
+
+    widget.form.option &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; jsonEncode(_option);
+  },
+),&lt;/pre&gt;</content>
+        <category term="Tech/Coding/Flutter"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>Flutter实现本地化多语言</title>
       <link href="https://honmaple.me/articles/2024/10/fluttershi-xian-ben-di-hua-duo-yu-yan.html" rel="alternate"></link>
@@ -595,7 +874,7 @@ L10n lookupL10n(Locale locale) {
       <title>使用Homebrew Tap发布个人工具</title>
       <link href="https://honmaple.me/articles/2024/03/shi-yong-homebrew-tapfa-bu-ge-ren-gong-ju.html" rel="alternate"></link>
       <published>Thu, 28 Mar 2024 09:31:23 +0000</published>
-      <updated>Thu, 28 Mar 2024 10:56:02 +0000</updated>
+      <updated>Wed, 09 Oct 2024 10:35:59 +0000</updated>
       <author>
         <name>honmaple</name>
       </author>
@@ -717,7 +996,7 @@ Formula name [snow]:
 &lt;span style=&quot;color:#66d9ef&quot;&gt;end&lt;/span&gt;&lt;/pre&gt;
 
 &lt;p&gt;
-   从模版文件中就能看出，如果我们需要发布下一版本，只需要修改 &lt;code&gt;url&lt;/code&gt; 和 &lt;code&gt;sha256&lt;/code&gt; 两个参数，其中 &lt;code&gt;sha256&lt;/code&gt; 可以使用 &lt;code&gt;sh256sum v0.1.2/snow-darwin.tar.gz&lt;/code&gt; 获得
+   从模版文件中就能看出，如果我们需要发布下一版本，只需要修改 &lt;code&gt;url&lt;/code&gt; 和 &lt;code&gt;sha256&lt;/code&gt; 两个参数，其中 &lt;code&gt;sha256&lt;/code&gt; 可以使用 &lt;code&gt;sha256sum v0.1.2/snow-darwin.tar.gz&lt;/code&gt; 获得
 &lt;/p&gt;
 
 &lt;h2 id=&quot;heading-4&quot;&gt;安装软件&lt;/h2&gt;
@@ -2322,203 +2601,6 @@ curl 192.168.100.3&lt;/pre&gt;
  &lt;a href=&quot;https://docs.zerotier.com/zerotier/zerotier.conf/&quot;&gt;https://docs.zerotier.com/zerotier/zerotier.conf/&lt;/a&gt;
 &lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</content>
-        <category term="Tech/Geek"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>绿联云Nas新版本v3.4.0固件开启SSH</title>
-      <link href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html" rel="alternate"></link>
-      <published>Fri, 14 Jul 2023 17:51:50 +0000</published>
-      <updated>Mon, 11 Mar 2024 15:17:54 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2023/07/绿联云Nas新版本v3.4.0固件开启SSH.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;p&gt;
-之前老的方式&lt;b&gt;固定前缀加远程协助验证码&lt;/b&gt;在更新到最新版本的&lt;b&gt;v3.4.0&lt;/b&gt;后已经失效，想要开启ssh只能使用另一种方式，也希望绿联云官方在系统更加完善(&lt;b&gt;权限管理、软件卸载&lt;/b&gt;)前不要再继续封堵开启的方式，当然，如果能提供官方的开启方式更好
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-&lt;b&gt;免责声明：本教程所提供的内容仅供学习交流使用，请勿用于商业及非法用途，因此产生的任何法律纠纷均与本人无关！如有侵权，请您联系我，我将立刻删除该内容&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-&lt;b&gt;注：此教程可能会造成未知的后果，在此期间所造成的系统风险请自行承担&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;创建随机镜像&lt;/h2&gt;
-&lt;p&gt;
-   首先拉取一个镜像，我这里选择 &lt;code&gt;nginx:stable-alpine&lt;/code&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   然后点击创建容器，存储空间&lt;b&gt;添加一个任意目录&lt;/b&gt;，挂载到 &lt;code&gt;/data&lt;/code&gt; 下...&lt;/p&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;创建随机镜像&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;抓包获取Token&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;手动创建容器&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;修改SSH配置&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;SSH登录&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-6&quot;&gt;问题排查&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-7&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-之前老的方式&lt;b&gt;固定前缀加远程协助验证码&lt;/b&gt;在更新到最新版本的&lt;b&gt;v3.4.0&lt;/b&gt;后已经失效，想要开启ssh只能使用另一种方式，也希望绿联云官方在系统更加完善(&lt;b&gt;权限管理、软件卸载&lt;/b&gt;)前不要再继续封堵开启的方式，当然，如果能提供官方的开启方式更好
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-&lt;b&gt;免责声明：本教程所提供的内容仅供学习交流使用，请勿用于商业及非法用途，因此产生的任何法律纠纷均与本人无关！如有侵权，请您联系我，我将立刻删除该内容&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-&lt;b&gt;注：此教程可能会造成未知的后果，在此期间所造成的系统风险请自行承担&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;创建随机镜像&lt;/h2&gt;
-&lt;p&gt;
-   首先拉取一个镜像，我这里选择 &lt;code&gt;nginx:stable-alpine&lt;/code&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   然后点击创建容器，存储空间&lt;b&gt;添加一个任意目录&lt;/b&gt;，挂载到 &lt;code&gt;/data&lt;/code&gt; 下，&lt;b&gt;其它参数为默认&lt;/b&gt;，然后下一步，先&lt;b&gt;不要点击完成&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-02.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;抓包获取Token&lt;/h2&gt;
-&lt;p&gt;
-   打开 &lt;b&gt;wireshark&lt;/b&gt; 进行抓包，输入筛选参数
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;ip.dst_host == 192.168.31.65 and http and http.request.method==POST&lt;/pre&gt;
-
-&lt;p&gt;
-   然后返回绿联云，点击完成，这时会在 &lt;b&gt;wireshark&lt;/b&gt; 窗口看到一条HTTP请求
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-03.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   点击这条请求，然后 &lt;b&gt;右键 -&amp;gt; Follow -&amp;gt; HTTP Stream&lt;/b&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-04.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   这时会看到具体的&lt;b&gt;HTTP请求头和请求参数&lt;/b&gt;，在下方的Find里输入 &lt;code&gt;create&lt;/code&gt; 进行查找，然后将红色内容复制到本地，将请求参数 &lt;code&gt;{&amp;#34;_query&amp;#34;...}&lt;/code&gt; 复制到一个 &lt;b&gt;json&lt;/b&gt; 文件
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-05.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   接着修改 &lt;b&gt;json&lt;/b&gt; 文件，找到&lt;b&gt;HostConfig -&amp;gt; Mounts&lt;/b&gt;，将里面的 &lt;b&gt;Source&lt;/b&gt; 参数修改为 &lt;code&gt;/&lt;/code&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-06.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;手动创建容器&lt;/h2&gt;
-&lt;p&gt;
-   首先到绿联云删除刚开始创建的容器
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-07.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   然后使用命令行手动请求创建容器，其中 &lt;b&gt;ugreen.json&lt;/b&gt; 为抓包获取并修改后的参数文件，请求头保持一致
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-08.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   创建完成后，返回绿联云，刷新并查看详情，可以看到绿联系统的根目录已经挂载到容器内部
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-09.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-4&quot;&gt;修改SSH配置&lt;/h2&gt;
-&lt;p&gt;
-   使用终端进入Docker内部
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-10.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   然后添加公钥到root目录，怎么生成公私钥这里不再叙述。
-   查看sshd的配置，默认是不允许使用公钥匙登录的，所以需要修改 &lt;code&gt;PubkeyAuthentication no&lt;/code&gt; 为 &lt;code&gt;PubkeyAuthentication yes&lt;/code&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-11.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-   接着到&lt;b&gt;设备管理 -&amp;gt; 远程协助 -&amp;gt; 开启远程调试功能&lt;/b&gt;，重启sshd就是关闭远程调试然后重新打开
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-5&quot;&gt;SSH登录&lt;/h2&gt;
-&lt;p&gt;
-   最后就可以使用ssh公钥登录绿联云系统了
-   
-&lt;a href=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2023/07/DX4600Pro-SSH-12.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-6&quot;&gt;问题排查&lt;/h2&gt;
-&lt;p&gt;
-   如果无法使用ssh公钥登录，可以查看系统的ssh登录日志
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;grep ssh /data/data/nas_server/log/system/*syslog | less&lt;/pre&gt;
-
-&lt;p&gt;
-   如果提示 &lt;code&gt;Authentication refused: bad ownership or modes for directory /root&lt;/code&gt;，则执行
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;chmod go-w /data/root&lt;/pre&gt;
-
-&lt;p&gt;
-   如果提示 &lt;code&gt;ssh-rsa: signature algorithm not supported&lt;/code&gt;，则添加下面配置到&lt;b&gt;sshd_config&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;PubkeyAcceptedKeyTypes=+ssh-rsa&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-7&quot;&gt;其它&lt;/h2&gt;
-&lt;p&gt;
-   升级到&lt;b&gt;v3.4.0&lt;/b&gt;后，目前觉得还不错，其中&lt;b&gt;批量重命名，TMDB接口，自定义Hosts&lt;/b&gt;等都是非常有用的功能，也希望绿联能再接再厉，我们这些用户也能和绿联Nas一同成长。
-&lt;/p&gt;
-
-&lt;p&gt;
-   对了，之前文件同步会修改源文件权限的问题已经被修复，&lt;b&gt;Very Good&lt;/b&gt;
-&lt;/p&gt;</content>
         <category term="Tech/Geek"></category>
     </entry>
 </feed>

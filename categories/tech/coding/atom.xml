@@ -5,8 +5,287 @@
   <link href="https://honmaple.me/categories/tech/coding/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Sat, 05 Oct 2024 20:13:59 +0000</updated>
+    <updated>Sat, 14 Dec 2024 18:09:47 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>开源一个离线版Alist，无需服务端部署即可管理云盘文件</title>
+      <link href="https://honmaple.me/articles/2024/12/kai-yuan-ge-chi-xian-ban-alist-wu-xu-fu-wu-duan-bu-shu-ji-ke-guan-li-yun-pan-wen-jian.html" rel="alternate"></link>
+      <published>Mon, 02 Dec 2024 13:09:48 +0000</published>
+      <updated>Sat, 14 Dec 2024 18:09:47 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2024/12/kai-yuan-ge-chi-xian-ban-alist-wu-xu-fu-wu-duan-bu-shu-ji-ke-guan-li-yun-pan-wen-jian.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2024/12/kai-yuan-ge-chi-xian-ban-alist-wu-xu-fu-wu-duan-bu-shu-ji-ke-guan-li-yun-pan-wen-jian.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;b&gt;Alist&lt;/b&gt; 是一个非常不错的云盘文件管理程序，不过需要一台服务器或者 &lt;b&gt;Nas&lt;/b&gt; 进行部署，当然，这也同样便于在网络分享文件。但如果只是个人使用，服务器部署以及多账户系统未免有些麻烦。我是一个怕麻烦的人，虽然我自己也在 &lt;b&gt;Nas&lt;/b&gt; 中部署了一个 &lt;b&gt;Alist&lt;/b&gt; 服务，但还是想要一个单独的 &lt;b&gt;离线版APP&lt;/b&gt;，&lt;b&gt;红枫云盘&lt;/b&gt; 就由此诞生。
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;红枫云盘&lt;/b&gt; 即 &lt;a href=&quot;https://github.com/honmaple/maple-file&quot;&gt;maple-file&lt;/a&gt;，名称由 &lt;b&gt;maple(枫叶)&lt;/b&gt; + &lt;b&gt;file(文件)&lt;/b&gt; 组成， 这原本是我很早之前写的一个基于 &lt;b&gt;Flask&lt;/b&gt; 的项目，主要用于图片上传，还有相册的功能，但已经很久没有使用和维护过了...&lt;/p&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;功能&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;使用&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;开发&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;b&gt;Alist&lt;/b&gt; 是一个非常不错的云盘文件管理程序，不过需要一台服务器或者 &lt;b&gt;Nas&lt;/b&gt; 进行部署，当然，这也同样便于在网络分享文件。但如果只是个人使用，服务器部署以及多账户系统未免有些麻烦。我是一个怕麻烦的人，虽然我自己也在 &lt;b&gt;Nas&lt;/b&gt; 中部署了一个 &lt;b&gt;Alist&lt;/b&gt; 服务，但还是想要一个单独的 &lt;b&gt;离线版APP&lt;/b&gt;，&lt;b&gt;红枫云盘&lt;/b&gt; 就由此诞生。
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;红枫云盘&lt;/b&gt; 即 &lt;a href=&quot;https://github.com/honmaple/maple-file&quot;&gt;maple-file&lt;/a&gt;，名称由 &lt;b&gt;maple(枫叶)&lt;/b&gt; + &lt;b&gt;file(文件)&lt;/b&gt; 组成， 这原本是我很早之前写的一个基于 &lt;b&gt;Flask&lt;/b&gt; 的项目，主要用于图片上传，还有相册的功能，但已经很久没有使用和维护过了。本来我准备把新项目起名为 &lt;b&gt;Filesea&lt;/b&gt;，但又和我的另一个类似 &lt;b&gt;Alist&lt;/b&gt; 的项目名相同(未开源)，而且 &lt;b&gt;Filesea&lt;/b&gt; 和一个知名项目 &lt;b&gt;Seafile&lt;/b&gt; 过于相似，所以还是继续沿用之前的名称，毕竟对比之前的纯API也算得上是一个全新的升级和改版
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;功能&lt;/h2&gt;
+&lt;p&gt;
+   目前已经支持的存储：
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ local(本地文件)
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ smb
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ ftp
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ sftp
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ webdav
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ alist
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 又拍云
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+   包括了文件上传、下载、重命名、移动、复制、创建文件夹、预览等功能，虽然部分功能比如预览还比较简陋，但持续优化中，未来可能会添加相册，文件同步和备份等功能
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 文件列表
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 文件预览: 支持文本文件，图片，音频，视频
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_16.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_16.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_17.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_17.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_08.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_08.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_09.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_09.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 上传和下载
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_10.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_10.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_11.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_11.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 重命名、移动、复制(包括多选)
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 添加修改存储
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_14.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_14.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_13.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_13.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 设置
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_18.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_18.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_12.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_12.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_15.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_15.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;使用&lt;/h2&gt;
+&lt;p&gt;
+   目前提供了Android版本和MacOS版本的下载，下载地址: &lt;a href=&quot;https://github.com/honmaple/maple-file/releases/tag/v1.0.0&quot;&gt;https://github.com/honmaple/maple-file/releases/tag/v1.0.0&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;开发&lt;/h2&gt;
+&lt;p&gt;
+   我参考了 &lt;a href=&quot;https://github.com/GopeedLab/gopeed&quot;&gt;Gopeed&lt;/a&gt; 和 &lt;a href=&quot;https://github.com/fregie/pho&quot;&gt;Pho&lt;/a&gt; 两个项目，客户端使用 &lt;b&gt;Flutter&lt;/b&gt;，后端服务使用 &lt;b&gt;Go&lt;/b&gt;，通过 &lt;code&gt;gomobile&lt;/code&gt; 把 &lt;b&gt;Go&lt;/b&gt; 服务打包成 &lt;code&gt;aar(安卓)&lt;/code&gt;，或者利用 &lt;code&gt;buildmode&lt;/code&gt; 打包成 &lt;code&gt;.dylib(MacOS)&lt;/code&gt;, 这样就能把服务端嵌入到本地客户端，来达到 &lt;b&gt;serverless&lt;/b&gt; 的目的。
+&lt;/p&gt;
+
+&lt;p&gt;
+   如果想要添加更多存储，只需要使用 &lt;b&gt;Go&lt;/b&gt; 创建一个文件系统接口
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;type&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;FS&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;interface&lt;/span&gt; {
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;WalkDir&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;WalkDirFunc&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;List&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) ([]&lt;span style=&quot;color:#a6e22e&quot;&gt;File&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Move&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Copy&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Rename&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Remove&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;MakeDir&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Get&lt;/span&gt;(&lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;File&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Open&lt;/span&gt;(&lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;FileReader&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Create&lt;/span&gt;(&lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;FileWriter&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Close&lt;/span&gt;() &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+}&lt;/pre&gt;
+
+&lt;p&gt;
+   然后注册一个新的存储名称
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;// 注册服务
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;func&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;init&lt;/span&gt;() {
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;driver&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Register&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;alist&amp;#34;&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;func&lt;/span&gt;() &lt;span style=&quot;color:#a6e22e&quot;&gt;driver&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Option&lt;/span&gt; {
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;Option&lt;/span&gt;{}
+    })
+}
+
+
+&lt;span style=&quot;color:#75715e&quot;&gt;// 加载服务
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; (
+   &lt;span style=&quot;color:#a6e22e&quot;&gt;_&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;github.com/honmaple/maple-file/server/pkg/driver/alist&amp;#34;&lt;/span&gt;
+)&lt;/pre&gt;
+
+&lt;p&gt;
+   最后在客户端创建一个用于提交配置的表单即可，扩展性足够简单，也足够方便
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;...
+DriverFormField(
+  label: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;用户&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;.tr(context),
+  value: _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;username&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;],
+  isRequired: &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;,
+  onTap: (result) {
+    setState(() {
+      _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;username&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; result;
+    });
+
+    widget.form.option &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; jsonEncode(_option);
+  },
+),
+DriverFormField(
+  type: DriverFormFieldType.password,
+  label: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;密码&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;.tr(context),
+  value: _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;password&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;],
+  onTap: (result) {
+    setState(() {
+      _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;password&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; result;
+    });
+
+    widget.form.option &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; jsonEncode(_option);
+  },
+),&lt;/pre&gt;</content>
+        <category term="Tech/Coding/Flutter"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>Flutter实现本地化多语言</title>
       <link href="https://honmaple.me/articles/2024/10/fluttershi-xian-ben-di-hua-duo-yu-yan.html" rel="alternate"></link>
@@ -2337,145 +2616,5 @@ BenchmarkInterfaceListSwitch2-8          60193         20142 ns/op
 PASS
 ok    log2	14.670s&lt;/pre&gt;</content>
         <category term="Tech/Coding/Go"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>Flask支持多语言站点</title>
-      <link href="https://honmaple.me/articles/2019/01/Flask支持多语言站点.html" rel="alternate"></link>
-      <published>Sun, 13 Jan 2019 01:32:11 +0000</published>
-      <updated>Wed, 06 Mar 2024 15:18:34 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2019/01/Flask支持多语言站点.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2019/01/Flask支持多语言站点.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;p&gt;
-Flask的多语言国际化可以使用&lt;b&gt;Flask-Babel&lt;/b&gt;插件，在此不再细述，但对于所谓的多语言站点(即形如&lt;b&gt;example.com/zh/uri、example.com/en/uri&lt;/b&gt;或者&lt;b&gt;zh.example.com、en.example.com&lt;/b&gt;)文档上却未作细述
-&lt;/p&gt;
-
-&lt;p&gt;
-有一个 &lt;a href=&quot;https://flask.palletsprojects.com/en/1.1.x/patterns/urlprocessors/&quot;&gt;Flask URL Processors&lt;/a&gt; 需要对所有的&lt;b&gt;uri&lt;/b&gt;都额外增加一个&lt;b&gt;lang_code&lt;/b&gt;的前缀，路由数较少时没什么问题，但路由数较多时太过麻烦
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-实现...&lt;/p&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;使用nginx重定向uri&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;使用uri获取对应非302响应&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;使用url_map复制并alias路由&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;演示效果&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-Flask的多语言国际化可以使用&lt;b&gt;Flask-Babel&lt;/b&gt;插件，在此不再细述，但对于所谓的多语言站点(即形如&lt;b&gt;example.com/zh/uri、example.com/en/uri&lt;/b&gt;或者&lt;b&gt;zh.example.com、en.example.com&lt;/b&gt;)文档上却未作细述
-&lt;/p&gt;
-
-&lt;p&gt;
-有一个 &lt;a href=&quot;https://flask.palletsprojects.com/en/1.1.x/patterns/urlprocessors/&quot;&gt;Flask URL Processors&lt;/a&gt; 需要对所有的&lt;b&gt;uri&lt;/b&gt;都额外增加一个&lt;b&gt;lang_code&lt;/b&gt;的前缀，路由数较少时没什么问题，但路由数较多时太过麻烦
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-实现&lt;b&gt;example.com/en/uri&lt;/b&gt;可以有多种方式，除了使用&lt;b&gt;Flask URL Processors&lt;/b&gt;中介绍的外，还可以
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;使用nginx重定向uri&lt;/h2&gt;
-&lt;p&gt;
-   这应该是各种方式里最简单的一种
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;location&lt;/span&gt; ~ &lt;span style=&quot;color:#e6db74&quot;&gt;^/en/&lt;/span&gt; {
-    &lt;span style=&quot;color:#f92672&quot;&gt;rewrite&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;^/en/(.*)&lt;/span&gt;$ &lt;span style=&quot;color:#e6db74&quot;&gt;/&lt;/span&gt;$1 &lt;span style=&quot;color:#e6db74&quot;&gt;last&lt;/span&gt;;
-}
-&lt;span style=&quot;color:#66d9ef&quot;&gt;location&lt;/span&gt; = &lt;span style=&quot;color:#e6db74&quot;&gt;/en&lt;/span&gt; {
-    &lt;span style=&quot;color:#f92672&quot;&gt;rewrite&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;^/(.*)&lt;/span&gt;$ &lt;span style=&quot;color:#e6db74&quot;&gt;/index&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;last&lt;/span&gt;;
-}&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;使用uri获取对应非302响应&lt;/h2&gt;
-&lt;p&gt;
-   即增加一个url为&lt;b&gt;/en/&amp;lt;path:uri&amp;gt;&lt;/b&gt;的路由，在此路由&lt;b&gt;func&lt;/b&gt;中，根据&lt;b&gt;&amp;lt;path:uri&amp;gt;&lt;/b&gt;信息获取已注册路由的&lt;b&gt;view_function&lt;/b&gt;，不使用重定向，而是直接调用&lt;b&gt;view_function&lt;/b&gt;返回实际响应
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;# https://stackoverflow.com/questions/38488134/get-the-flask-view-function-that-matches-a-url&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;get_view_function&lt;/span&gt;(url, method&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;GET&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;):
-    adapter &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; current_app&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;url_map&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;bind(&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;localhost&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;)
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;try&lt;/span&gt;:
-        match &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; adapter&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;match(url, method&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;method)
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;except&lt;/span&gt; RequestRedirect &lt;span style=&quot;color:#66d9ef&quot;&gt;as&lt;/span&gt; e:
-        &lt;span style=&quot;color:#75715e&quot;&gt;# recursively match redirects&lt;/span&gt;
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; get_view_function(e&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;new_url, method)
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;except&lt;/span&gt; (MethodNotAllowed, NotFound):
-        &lt;span style=&quot;color:#75715e&quot;&gt;# no match&lt;/span&gt;
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; None
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;try&lt;/span&gt;:
-        &lt;span style=&quot;color:#75715e&quot;&gt;# return the view function and arguments&lt;/span&gt;
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; current_app&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;view_functions[match[&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;]], match[&lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;]
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;except&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;KeyError&lt;/span&gt;:
-        &lt;span style=&quot;color:#75715e&quot;&gt;# no view is associated with the endpoint&lt;/span&gt;
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; None&lt;/pre&gt;
-
-&lt;p&gt;
-   提高查找对应&lt;code&gt;view-function&lt;/code&gt;的性能，增加缓存到内存中
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;FUNCTION &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; dict()
-
-&lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;view_function_cache&lt;/span&gt;(func):
-    &lt;span style=&quot;color:#a6e22e&quot;&gt;@wraps&lt;/span&gt;(func)
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;_view_function&lt;/span&gt;(url, method&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;GET&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;&lt;/span&gt;):
-        &lt;span style=&quot;color:#75715e&quot;&gt;# 避免故意访问&lt;/span&gt;
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; len(FUNCTION) &lt;span style=&quot;color:#f92672&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&quot;color:#ae81ff&quot;&gt;100&lt;/span&gt;:
-            &lt;span style=&quot;color:#66d9ef&quot;&gt;for&lt;/span&gt; k, v &lt;span style=&quot;color:#f92672&quot;&gt;in&lt;/span&gt; FUNCTION&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;items():
-                &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; v &lt;span style=&quot;color:#f92672&quot;&gt;is&lt;/span&gt; None:
-                    FUNCTION&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;pop(k)
-
-        key &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; method &lt;span style=&quot;color:#f92672&quot;&gt;+&lt;/span&gt; url
-        key &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; str(hashlib&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;md5(key&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;encode(&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;UTF-8&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;hexdigest())
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; key &lt;span style=&quot;color:#f92672&quot;&gt;in&lt;/span&gt; FUNCTION:
-            &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; FUNCTION[key]
-        FUNCTION[key] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; func(url, method)
-        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; FUNCTION[key]
-
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; _view_function&lt;/pre&gt;
-
-&lt;p&gt;
-   这样就可以定义&lt;b&gt;/en/&amp;lt;uri&amp;gt;&lt;/b&gt;实际的&lt;code&gt;view_function&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;redirect_en&lt;/span&gt;(uri):
-    view_function &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; get_view_function(
-        &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;+&lt;/span&gt; uri,
-        request&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;method,
-    )
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; view_function &lt;span style=&quot;color:#f92672&quot;&gt;is&lt;/span&gt; None:
-        abort(&lt;span style=&quot;color:#ae81ff&quot;&gt;404&lt;/span&gt;)
-    &lt;span style=&quot;color:#75715e&quot;&gt;# 注：因为我使用Flask-Babel是根据accept_language来区别不同语言&lt;/span&gt;
-    request&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;environ[&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;HTTP_ACCEPT_LANGUAGE&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;en-US,en;q=0.5&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; view_function[&lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt;](&lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt;view_function[&lt;span style=&quot;color:#ae81ff&quot;&gt;1&lt;/span&gt;])&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;使用url_map复制并alias路由&lt;/h2&gt;
-&lt;p&gt;
-   原理同&lt;b&gt;Flask URL Processors&lt;/b&gt; ，为所有的路由都额外增加&lt;b&gt;/en&lt;/b&gt;前缀，并在&lt;code&gt;before_request&lt;/code&gt;中匹配到以&lt;b&gt;/en&lt;/b&gt;开头的请求就修改对应&lt;b&gt;accept_language&lt;/b&gt;信息
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;@app.before_request&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;before_request&lt;/span&gt;():
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;if&lt;/span&gt; request&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;path&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;startswith(&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;/en/&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;):
-        request&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;environ[&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;HTTP_ACCEPT_LANGUAGE&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;en-US,en;q=0.5&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-
-url_map &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; list(app&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;url_map&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;iter_rules())
-&lt;span style=&quot;color:#66d9ef&quot;&gt;for&lt;/span&gt; rule &lt;span style=&quot;color:#f92672&quot;&gt;in&lt;/span&gt; url_map:
-    app&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;add_url_rule(&lt;span style=&quot;color:#e6db74&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;/en&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;+&lt;/span&gt; rule&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;rule, rule&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;endpoint, alias&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;True)&lt;/pre&gt;
-
-&lt;p&gt;
-   咦，感觉这种方式更简单一些，但最好还是能够对一些特殊的路由比如: &lt;b&gt;static&lt;/b&gt;, &lt;b&gt;admin&lt;/b&gt;, &lt;b&gt;subdomain&lt;/b&gt;等进行特殊处理
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-4&quot;&gt;演示效果&lt;/h2&gt;
-&lt;p&gt;
-   &lt;a href=&quot;https://honmaple.com/en/article&quot;&gt;切换成English&lt;/a&gt;
-&lt;/p&gt;</content>
-        <category term="Tech/Coding/Python"></category>
     </entry>
 </feed>

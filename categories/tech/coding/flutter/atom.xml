@@ -5,8 +5,287 @@
   <link href="https://honmaple.me/categories/tech/coding/flutter/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Sat, 05 Oct 2024 20:13:59 +0000</updated>
+    <updated>Sat, 14 Dec 2024 18:09:47 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>开源一个离线版Alist，无需服务端部署即可管理云盘文件</title>
+      <link href="https://honmaple.me/articles/2024/12/kai-yuan-ge-chi-xian-ban-alist-wu-xu-fu-wu-duan-bu-shu-ji-ke-guan-li-yun-pan-wen-jian.html" rel="alternate"></link>
+      <published>Mon, 02 Dec 2024 13:09:48 +0000</published>
+      <updated>Sat, 14 Dec 2024 18:09:47 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2024/12/kai-yuan-ge-chi-xian-ban-alist-wu-xu-fu-wu-duan-bu-shu-ji-ke-guan-li-yun-pan-wen-jian.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2024/12/kai-yuan-ge-chi-xian-ban-alist-wu-xu-fu-wu-duan-bu-shu-ji-ke-guan-li-yun-pan-wen-jian.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;b&gt;Alist&lt;/b&gt; 是一个非常不错的云盘文件管理程序，不过需要一台服务器或者 &lt;b&gt;Nas&lt;/b&gt; 进行部署，当然，这也同样便于在网络分享文件。但如果只是个人使用，服务器部署以及多账户系统未免有些麻烦。我是一个怕麻烦的人，虽然我自己也在 &lt;b&gt;Nas&lt;/b&gt; 中部署了一个 &lt;b&gt;Alist&lt;/b&gt; 服务，但还是想要一个单独的 &lt;b&gt;离线版APP&lt;/b&gt;，&lt;b&gt;红枫云盘&lt;/b&gt; 就由此诞生。
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;红枫云盘&lt;/b&gt; 即 &lt;a href=&quot;https://github.com/honmaple/maple-file&quot;&gt;maple-file&lt;/a&gt;，名称由 &lt;b&gt;maple(枫叶)&lt;/b&gt; + &lt;b&gt;file(文件)&lt;/b&gt; 组成， 这原本是我很早之前写的一个基于 &lt;b&gt;Flask&lt;/b&gt; 的项目，主要用于图片上传，还有相册的功能，但已经很久没有使用和维护过了...&lt;/p&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;功能&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;使用&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;开发&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+&lt;b&gt;Alist&lt;/b&gt; 是一个非常不错的云盘文件管理程序，不过需要一台服务器或者 &lt;b&gt;Nas&lt;/b&gt; 进行部署，当然，这也同样便于在网络分享文件。但如果只是个人使用，服务器部署以及多账户系统未免有些麻烦。我是一个怕麻烦的人，虽然我自己也在 &lt;b&gt;Nas&lt;/b&gt; 中部署了一个 &lt;b&gt;Alist&lt;/b&gt; 服务，但还是想要一个单独的 &lt;b&gt;离线版APP&lt;/b&gt;，&lt;b&gt;红枫云盘&lt;/b&gt; 就由此诞生。
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;b&gt;红枫云盘&lt;/b&gt; 即 &lt;a href=&quot;https://github.com/honmaple/maple-file&quot;&gt;maple-file&lt;/a&gt;，名称由 &lt;b&gt;maple(枫叶)&lt;/b&gt; + &lt;b&gt;file(文件)&lt;/b&gt; 组成， 这原本是我很早之前写的一个基于 &lt;b&gt;Flask&lt;/b&gt; 的项目，主要用于图片上传，还有相册的功能，但已经很久没有使用和维护过了。本来我准备把新项目起名为 &lt;b&gt;Filesea&lt;/b&gt;，但又和我的另一个类似 &lt;b&gt;Alist&lt;/b&gt; 的项目名相同(未开源)，而且 &lt;b&gt;Filesea&lt;/b&gt; 和一个知名项目 &lt;b&gt;Seafile&lt;/b&gt; 过于相似，所以还是继续沿用之前的名称，毕竟对比之前的纯API也算得上是一个全新的升级和改版
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;功能&lt;/h2&gt;
+&lt;p&gt;
+   目前已经支持的存储：
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ local(本地文件)
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ smb
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ ftp
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ sftp
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ webdav
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ alist
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 又拍云
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+   包括了文件上传、下载、重命名、移动、复制、创建文件夹、预览等功能，虽然部分功能比如预览还比较简陋，但持续优化中，未来可能会添加相册，文件同步和备份等功能
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 文件列表
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 文件预览: 支持文本文件，图片，音频，视频
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_16.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_16.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_17.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_17.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_07.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_07.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_08.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_08.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_09.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_09.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 上传和下载
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_10.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_10.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_11.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_11.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 重命名、移动、复制(包括多选)
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_04.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_04.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_05.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_05.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_06.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_06.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 添加修改存储
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_14.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_14.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_13.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_13.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 设置
+&lt;/p&gt;
+     &lt;div class=&quot;img-layout&quot;&gt;
+&lt;p&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_18.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_18.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_12.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_12.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+     
+&lt;a href=&quot;https://s.libforest.com/images/2024/12/flutter_15.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2024/12/flutter_15.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-2&quot;&gt;使用&lt;/h2&gt;
+&lt;p&gt;
+   目前提供了Android版本和MacOS版本的下载，下载地址: &lt;a href=&quot;https://github.com/honmaple/maple-file/releases/tag/v1.0.0&quot;&gt;https://github.com/honmaple/maple-file/releases/tag/v1.0.0&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-3&quot;&gt;开发&lt;/h2&gt;
+&lt;p&gt;
+   我参考了 &lt;a href=&quot;https://github.com/GopeedLab/gopeed&quot;&gt;Gopeed&lt;/a&gt; 和 &lt;a href=&quot;https://github.com/fregie/pho&quot;&gt;Pho&lt;/a&gt; 两个项目，客户端使用 &lt;b&gt;Flutter&lt;/b&gt;，后端服务使用 &lt;b&gt;Go&lt;/b&gt;，通过 &lt;code&gt;gomobile&lt;/code&gt; 把 &lt;b&gt;Go&lt;/b&gt; 服务打包成 &lt;code&gt;aar(安卓)&lt;/code&gt;，或者利用 &lt;code&gt;buildmode&lt;/code&gt; 打包成 &lt;code&gt;.dylib(MacOS)&lt;/code&gt;, 这样就能把服务端嵌入到本地客户端，来达到 &lt;b&gt;serverless&lt;/b&gt; 的目的。
+&lt;/p&gt;
+
+&lt;p&gt;
+   如果想要添加更多存储，只需要使用 &lt;b&gt;Go&lt;/b&gt; 创建一个文件系统接口
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;type&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;FS&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;interface&lt;/span&gt; {
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;WalkDir&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#a6e22e&quot;&gt;WalkDirFunc&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;List&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) ([]&lt;span style=&quot;color:#a6e22e&quot;&gt;File&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Move&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Copy&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Rename&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Remove&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;MakeDir&lt;/span&gt;(&lt;span style=&quot;color:#a6e22e&quot;&gt;context&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Context&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Get&lt;/span&gt;(&lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;File&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Open&lt;/span&gt;(&lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;FileReader&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Create&lt;/span&gt;(&lt;span style=&quot;color:#66d9ef&quot;&gt;string&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;FileWriter&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;)
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;Close&lt;/span&gt;() &lt;span style=&quot;color:#66d9ef&quot;&gt;error&lt;/span&gt;
+}&lt;/pre&gt;
+
+&lt;p&gt;
+   然后注册一个新的存储名称
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;// 注册服务
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;func&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;init&lt;/span&gt;() {
+    &lt;span style=&quot;color:#a6e22e&quot;&gt;driver&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Register&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;alist&amp;#34;&lt;/span&gt;, &lt;span style=&quot;color:#66d9ef&quot;&gt;func&lt;/span&gt;() &lt;span style=&quot;color:#a6e22e&quot;&gt;driver&lt;/span&gt;.&lt;span style=&quot;color:#a6e22e&quot;&gt;Option&lt;/span&gt; {
+        &lt;span style=&quot;color:#66d9ef&quot;&gt;return&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;Option&lt;/span&gt;{}
+    })
+}
+
+
+&lt;span style=&quot;color:#75715e&quot;&gt;// 加载服务
+&lt;/span&gt;&lt;span style=&quot;color:#75715e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;import&lt;/span&gt; (
+   &lt;span style=&quot;color:#a6e22e&quot;&gt;_&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;github.com/honmaple/maple-file/server/pkg/driver/alist&amp;#34;&lt;/span&gt;
+)&lt;/pre&gt;
+
+&lt;p&gt;
+   最后在客户端创建一个用于提交配置的表单即可，扩展性足够简单，也足够方便
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;...
+DriverFormField(
+  label: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;用户&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;.tr(context),
+  value: _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;username&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;],
+  isRequired: &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;,
+  onTap: (result) {
+    setState(() {
+      _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;username&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; result;
+    });
+
+    widget.form.option &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; jsonEncode(_option);
+  },
+),
+DriverFormField(
+  type: DriverFormFieldType.password,
+  label: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;密码&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;.tr(context),
+  value: _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;password&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;],
+  onTap: (result) {
+    setState(() {
+      _option[&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;password&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;] &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; result;
+    });
+
+    widget.form.option &lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt; jsonEncode(_option);
+  },
+),&lt;/pre&gt;</content>
+        <category term="Tech/Coding/Flutter"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>Flutter实现本地化多语言</title>
       <link href="https://honmaple.me/articles/2024/10/fluttershi-xian-ben-di-hua-duo-yu-yan.html" rel="alternate"></link>
