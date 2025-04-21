@@ -62,7 +62,7 @@
       <a href="https://honmaple.me/articles/2025/04/macoshuan-jing-pei-zhi.html" rel="bookmark" title="Permalink to MacOS环境配置">MacOS环境配置</a>
     </h1>
       <div class="entry-article-info">
-        <span title="Updated at 2025-04-18">
+        <span title="Updated at 2025-04-21">
           <i class="fa fa-calendar-o"></i>
           2025年04月18日 周五
         </span>
@@ -294,18 +294,96 @@ export PATH<span style="color:#f92672">=</span>$HOME/repo/golang/bin:$PATH</pre>
 <pre style="color:#f8f8f2;background-color:#272822">brew install --cask android-studio</pre>
 
 <p>
+    然后打开 <b>android-studio</b>, 并配置 <b>HTTP手动代理</b>，设置sdk目录为 <code>$HOME/repo/android/sdk</code>，设置完成后到达 <code>Welcome to Android Studio</code> 界面，点击 <code>More Actions -&gt; SDK Manager</code>
+</p>
+<ul>
+<li>
+<p>
+ SDK Platforms: 勾选 <code>Android 12.0</code>
+</p></li>
+<li>
+<p>
+ SDK Tools: 勾选 <code>NDK(Side by side)</code> 和 <code>Android SDK Command-line Tools (latest)</code>
+</p>
+</li>
+</ul>
+<p>
     <code>~/.bashrc</code>配置
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">export ANDROID_HOME<span style="color:#f92672">=</span>$HOME/repo/android/sdk
 export NDK_HOME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$ANDROID_HOME<span style="color:#e6db74">/ndk/26.2.11394342</span><span style="color:#e6db74">&#34;</span>
 export JAVA_HOME<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;/Applications/Android Studio.app/Contents/jbr/Contents/Home&#39;</span>
-export PATH<span style="color:#f92672">=</span>$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$PATH</pre>
+export PATH<span style="color:#f92672">=</span>$ANDROID_HOME/platform-tools:$PATH</pre>
 
 <h3 id="heading-3.7">Flutter</h3>
 <p>
-    下载 <code>flutter_macos_arm64_3.29.3-stable.zip</code> 并解压到 <code>~/repo</code>
+    下载 <a href="https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/flutter_macos_arm64_3.29.3-stable.zip">flutter_macos_arm64_3.29.3-stable.zip</a> 并解压到 <code>~/repo</code>
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">unzip ~/Downloads/flutter_macos_arm64_3.29.3-stable.zip-d ~/repo/</pre>
+
+<p>
+    安装 <b>rosetta</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">sudo softwareupdate --install-rosetta --agree-to-license</pre>
+
+<p>
+    安装 <b>cocoapods</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">export GEM_HOME=$HOME/repo/ruby/gem
+export PATH=$GEM_HOME/bin:$PATH
+
+gem install cocoapods --user-install -V</pre>
+<p>
+    因为系统内置的ruby版本是 <code>2.6.10</code>，这导致 <b>cocoapods</b> 的部分依赖无法安装，并出现类似下面的错误
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">ERROR:  Error installing cocoapods:
+    The last version of securerandom (&gt;= 0.3) to support your Ruby &amp; RubyGems was 0.3.2. Try installing it with `gem install securerandom -v 0.3.2` and then running the current command again
+    securerandom requires Ruby version &gt;= 3.1.0. The current ruby version is 2.6.10.210.</pre>
+<p>
+    本来还想按照提示处理，但处理完一个又来一个，处理完一个又来一个，太过麻烦。还有一种方法是安装新版本的ruby
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">brew install ruby</pre>
+<p>
+    然后使用新版本ruby的gem安装 <b>cocoapods</b>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">/opt/homebrew/Cellar/ruby/3.4.3/bin/gem install cocoapods -V</pre>
+
+<p>
+    这时使用 <code>flutter doctor</code> 会出现下面错误
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">[!] Xcode - develop for iOS and macOS (Xcode 16.3)
+    ✗ CocoaPods installed but not working.
+        You appear to have CocoaPods installed but it is not working.
+        This can happen if the version of Ruby that CocoaPods was installed with is different from the one being used to invoke it.
+        This can usually be fixed by re-installing CocoaPods.
+      For re-installation instructions, see https://guides.cocoapods.org/using/getting-started.html#installation
+[✓] Chrome - develop for the web</pre>
+
+<p>
+    通过使用 <code>pod --version</code> 查看
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">/opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1421:in &#39;block in Gem::Specification#activate_dependencies&#39;: Could not find &#39;nkf&#39; (&gt;= 0) among 100 total gem(s) (Gem::MissingSpecError)
+Checked in &#39;GEM_PATH=/Users/xxxx/repo/ruby/gem&#39; at: /Users/xxxx/repo/ruby/gem/specifications/CFPropertyList-3.0.7.gemspec, execute `gem env` for more information
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1407:in &#39;Array#each&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1407:in &#39;Gem::Specification#activate_dependencies&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1389:in &#39;Gem::Specification#activate&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1423:in &#39;block in Gem::Specification#activate_dependencies&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1407:in &#39;Array#each&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1407:in &#39;Gem::Specification#activate_dependencies&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1389:in &#39;Gem::Specification#activate&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1423:in &#39;block in Gem::Specification#activate_dependencies&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1407:in &#39;Array#each&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1407:in &#39;Gem::Specification#activate_dependencies&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems/specification.rb:1389:in &#39;Gem::Specification#activate&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems.rb:290:in &#39;block in Gem.activate_bin_path&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems.rb:289:in &#39;Thread::Mutex#synchronize&#39;
+    from /opt/homebrew/Cellar/ruby/3.4.3/lib/ruby/3.4.0/rubygems.rb:289:in &#39;Gem.activate_bin_path&#39;
+    from /Users/xxxx/repo/ruby/gem/bin/pod:25:in &#39;&lt;main&gt;&#39;</pre>
+
+<p>
+    尝试安装 <code>nkf</code> 终于解决了 <b>cocoapods</b> 的安装问题
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">/opt/homebrew/Cellar/ruby/3.4.3/bin/gem install nkf -V</pre>
 
 <p>
     <code>~/.bashrc</code>配置
