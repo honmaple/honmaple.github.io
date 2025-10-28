@@ -1,36 +1,33 @@
 function switchTheme(n) {
-    const themeList = ["theme-light", "theme-tree"];
+    const themes = ["light", "dark"];
     const themeStorage = localStorage;
 
     let oldTheme = themeStorage.getItem("theme");
     // don't switch theme
     if (n) {
         if (oldTheme) {
-            document.documentElement.classList.add(oldTheme);
+            window.document.documentElement.setAttribute('data-theme', oldTheme);
         }
-        return
+        return;
     }
-    let newTheme;
+    let newTheme = "";
     if (oldTheme) {
-        let index = themeList.indexOf(oldTheme);
-        if (index == themeList.length - 1) {
-            newTheme = "default";
+        let index = themes.indexOf(oldTheme);
+        if (index == themes.length - 1) {
+            newTheme = "";
         } else {
-            newTheme = themeList[index + 1];
+            newTheme = themes[index + 1];
         }
     } else {
-        newTheme = themeList[0]
+        newTheme = themes[0];
     }
-    if (oldTheme && document.documentElement.classList.contains(oldTheme)) {
-        document.documentElement.classList.remove(oldTheme);
-    }
-    if (oldTheme == newTheme || newTheme == "default") {
+    if (newTheme == "") {
         themeStorage.removeItem("theme");
+        window.document.documentElement.removeAttribute('data-theme');
     } else {
-        if (!document.documentElement.classList.contains(newTheme)) {
-            document.documentElement.classList.add(newTheme);
-        }
         themeStorage.setItem("theme", newTheme);
+        window.document.documentElement.setAttribute('data-theme', newTheme);
     }
 }
-switchTheme(true)
+
+switchTheme(true);
