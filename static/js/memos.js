@@ -85,7 +85,7 @@ async function usememos(api) {
         for (let memo of memos) {
             let date = formatTime(memo.createTime);
             let template = `
-<div style="display: flex; align-items: start; justify-items: start; gap: 1rem; background-color: var(--bg-color1); border-radius: 0.5rem; padding: 0.5rem;">
+<div style="display: flex; align-items: start; justify-items: start; gap: 1rem; background-image: linear-gradient(135deg, var(--bg-color6), transparent); border-radius: 0.5rem; padding: 0.5rem 1rem;">
   <img src="https://s.libforest.com/images/header/header.png" style="width: 3rem; height: 3rem" />
   <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
     ${renderTitle(memo)}
