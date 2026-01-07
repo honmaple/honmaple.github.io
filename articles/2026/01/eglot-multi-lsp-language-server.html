@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>让Eglot支持tailwindcss以及多个LSP服务 · 紅楓吟</title>
+    <link rel="canonical" href="https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html" />
+      <link href="https://s.libforest.com/static/css/lib.min.css" rel="stylesheet">
+        <link href="https://honmaple.me/static/lib/css/style.min.css" rel="stylesheet">
+      <script src="https://honmaple.me/static/lib/js/before.min.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNGNDGB8F8"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'G-YNGNDGB8F8');
+  </script>
+
+</head>
+  <body>
+    <div class="scrollbar"></div>
+
+    <div class="wrapper"><nav class="entry-navbar">
+  <div class="entry-navbar-top">
+    <a href="https://honmaple.me">
+      <img class="entry-navbar-logo" src="https://s.libforest.com/images/header/header-logo.png" alt="楓">
+    </a>
+      <p class="entry-navbar-text">—— 风落花语风落天，花落风雨花落田.</p>
+    <button class="entry-navbar-collapse" data-target=".entry-navbar-bottom" data-toggle="collapse">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
+    </button>
+  </div>
+  <div class="entry-navbar-bottom">
+    <ul class="entry-navbar-menu">
+          <li class="entry-dropdown">
+            <a href="https://honmaple.me/categories/tech/index.html">技术分享</a>
+            <ul class="entry-dropdown-content">
+                <li><a href="https://honmaple.me/categories/tech/coding/index.html">代码世界</a></li>
+                <li><a href="https://honmaple.me/categories/tech/geek/index.html">极客安全</a></li>
+                <li><a href="https://honmaple.me/categories/tech/linux/index.html">字符艺术</a></li>
+            </ul>
+          </li>
+          <li class="entry-dropdown">
+            <a href="https://honmaple.me/categories/life/index.html">生活随笔</a>
+            <ul class="entry-dropdown-content">
+                <li><a href="https://honmaple.me/categories/life/love/index.html">你不懂我</a></li>
+                <li><a href="https://honmaple.me/categories/life/recall/index.html">我不怪你</a></li>
+            </ul>
+          </li>
+          <li><a href="https://honmaple.me/pages/memos.html">闲言碎语</a></li>
+          <li class="entry-dropdown">
+            <a href="https://honmaple.me/archives/index.html">文章归档</a>
+            <ul class="entry-dropdown-content">
+                <li><a href="https://honmaple.me/tags/index.html">标签</a></li>
+                <li><a href="https://honmaple.me/categories/index.html">分类</a></li>
+                <li><a href="https://honmaple.me/authors/index.html">作者</a></li>
+            </ul>
+          </li>
+          <li><a href="https://honmaple.me/pages/about.html">关于</a></li>
+    </ul>
+    <form class="entry-navbar-form" action="https://honmaple.me/search.html">
+      <input name="q" type="text" onfocus="this.placeholder='搜索'" onblur="this.placeholder=''" />
+      <i class="fa fa-search"></i>
+    </form>
+  </div>
+</nav>
+
+  <article class="entry-article">
+    <div class="entry-article-header">
+    <h1 class="entry-article-title">
+      <a href="https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html" rel="bookmark" title="Permalink to 让Eglot支持tailwindcss以及多个LSP服务">让Eglot支持tailwindcss以及多个LSP服务</a>
+    </h1>
+      <div class="entry-article-info">
+        <span title="Updated at 2026-01-07">
+          <i class="fa fa-calendar-o"></i>
+          2026年01月02日 周五
+        </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-folder-o"></i>
+            分类
+              <a href="https://honmaple.me/categories/tech/linux/emacs/index.html">Emacs</a>
+          </span>
+          <span>|</span>
+          <span>
+            <i class="fa fa-bookmark-o"></i>
+            标签
+              <a href="https://honmaple.me/tags/emacs/index.html">emacs</a>
+              <a href="https://honmaple.me/tags/eglot/index.html">eglot</a>
+              <a href="https://honmaple.me/tags/lsp/index.html">lsp</a>
+          </span>
+      </div>
+  </div>
+    <hr class="entry-article-hr" />
+    <div class="entry-article-content">
+      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
+<li><a href="#heading-1">前言</a></li>
+<li><a href="#heading-2">如何使用？</a></li>
+<li><a href="#heading-3">示例</a></li>
+</ul></div></div>
+
+<h2 id="heading-1">前言</h2>
+<p>
+   虽然我不是专业的前端开发人员，但偶尔还是会写一下 <code>HTML/CSS/Javascript</code> 或者<code>Vue</code>。在一个 <b>HTML</b> 文件中，我需要使用多个 <b>LSP服务</b>，比如使用 <code>vscode-html-language-server</code> 补全css样式，使用<code>tailwindcss-language-server</code> 补全tailwindcss的class名称，使用 <code>vscode-eslint-language-server</code> 检查语法
+</p>
+
+<p>
+   但我目前使用的Emacs lSP客户端 <b>Eglot</b> 一直不支持多个LSP服务，目前的解决方式有两种，一是把 <b>Eglot</b> 更换为 <b>lsp-mode</b> 或者 <b>lsp-bridge</b>， 二是使用第三方命令行代理服务，比如:
+</p>
+<ul>
+<li>
+<p>
+ <a href="https://github.com/thefrontside/lspx">https://github.com/thefrontside/lspx</a>
+</p></li>
+<li>
+<p>
+ <a href="https://github.com/joaotavora/rassumfrassum">https://github.com/joaotavora/rassumfrassum</a>
+</p>
+</li>
+</ul>
+<p>
+   <b>lspx</b> 是因为我的电脑上没有相关环境，无法编译，<b>rass</b> 是由 <b>Eglot</b> 的作者开发，不过看情况他是准备把 <b>rass</b> 作为一个通用的LSP代理，所以配置文件会单独放置到 <b>HOME</b> 目录，这一点我不是很喜欢，另一方面是 <b>rass</b> 由Python开发，使用起来不如单独的二进制文件方便。
+</p>
+
+<blockquote>
+<p>
+   算了，找来找去还不如自己写一个，<a href="https://github.com/honmaple/eglot-lspx">eglot-lspx</a>，使用Go写的一个多LSP代理服务，用于解决 <b>Eglot</b> 无法使用 <code>tailwindcss</code> 以及不支持多个LSP服务的问题
+</p>
+</blockquote>
+
+<h2 id="heading-2">如何使用？</h2>
+<ul>
+<li>
+<p>
+ 编译
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">git clone https://github.com/honmaple/eglot-lspx
+cd eglot-lspx
+go build .</pre>
+<p>
+     然后把编译好的 <code>eglot-lspx</code> 文件放到可执行路径下，比如我放到了 <code>~/.emacs.d/bin</code> 目录，并添加路径到Emacs配置
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">(add-to-list &#39;exec-path (expand-file-name &#34;bin&#34; user-emacs-directory) t)</pre>
+</li>
+<li>
+<p>
+ 配置Eglot
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">(defvar eglot-lspx-command (executable-find <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">eglot-lspx</span><span style="color:#e6db74">&#34;</span>))
+
+(when eglot-lspx-command
+  (add-to-list <span style="color:#e6db74">&#39;eglot-server-programs</span> <span style="color:#f92672">`</span>((web-mode :language-id <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">html</span><span style="color:#e6db74">&#34;</span>)
+                                        <span style="color:#f92672">.</span> (<span style="color:#f92672">,</span>eglot-lspx-command
+                                           <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">--</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">vscode-html-language-server</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">--stdio</span><span style="color:#e6db74">&#34;</span>
+                                           <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">--</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">tailwindcss-language-server</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">--stdio</span><span style="color:#e6db74">&#34;</span>)))
+  (add-to-list <span style="color:#e6db74">&#39;eglot-server-programs</span> <span style="color:#f92672">`</span>((vue-mode :language-id <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">html</span><span style="color:#e6db74">&#34;</span>)
+                                        <span style="color:#f92672">.</span> (<span style="color:#f92672">,</span>eglot-lspx-command
+                                           <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">--</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">vue-language-server</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">--stdio</span><span style="color:#e6db74">&#34;</span>
+                                           <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">--</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">vscode-html-language-server</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">--stdio</span><span style="color:#e6db74">&#34;</span>
+                                           <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">--</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">tailwindcss-language-server</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">--stdio</span><span style="color:#e6db74">&#34;</span>
+                                           :initializationOptions
+                                           (lambda (server) (<span style="color:#a6e22e">list</span> :vue-language-server (eglot-volar-options server)))))))</pre>
+</li>
+</ul>
+<h2 id="heading-3">示例</h2>
+<p>
+   
+<a href="https://s.libforest.com/images/2026/01/eglot-lspx-02.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2026/01/eglot-lspx-02.png-thumb" class="lazyload" />
+</a>
+   
+<a href="https://s.libforest.com/images/2026/01/eglot-lspx-01.png-show" data-fancybox="image">
+  <img data-src="https://s.libforest.com/images/2026/01/eglot-lspx-01.png-thumb" class="lazyload" />
+</a>
+</p>
+    </div>
+    <div class="entry-copyright">
+        <div>
+          <span><i class="fa fa-user-o"></i>作者:</span>
+            <a href="https://honmaple.me/authors/honmaple/index.html">honmaple</a>
+        </div>
+    <div>
+      <span><i class="fa fa-link"></i>链接:</span>
+      <a href="https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html">https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html</a>
+    </div>
+    <div>
+      <span><i class="fa fa-copyright"></i>版权:</span>
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">
+        <img src="https://s.libforest.com/images/pic/license.png" alt="CC BY-NC-SA 4.0" />
+        知识共享署名-非商业性使用-相同方式共享4.0国际许可协议
+      </a>
+    </div>
+  </div>
+  <div class="entry-honor">
+    <button data-target=".entry-honor-content" data-toggle="collapse" aria-expanded="false">赞</button>
+    <div class="entry-honor-content collapse">
+      <div class="entry-honor-wechat">
+        <img class="lazyload" data-src="https://s.libforest.com/images/pic/wechat.png" alt="wechat" />
+      </div>
+      <div class="entry-honor-alipay">
+        <img class="lazyload" data-src="https://s.libforest.com/images/pic/alipay.png" alt="alipay" />
+      </div>
+    </div>
+  </div>
+    <hr class="entry-article-hr" />
+    <ul class="entry-pager">
+      <li class="next">
+        <a href="https://honmaple.me/articles/2025/11/博客SEO优化.html" title="Next article: 博客SEO优化">
+          博客SEO优化
+          <i class="fa fa-chevron-right"></i>
+        </a>
+      </li>
+  </ul>
+    
+    <div class="entry-comment">
+      <div class="entry-btn">
+        <a>加载评论</a>
+      </div>
+      <div id="comment_thread" issue-term="让Eglot支持tailwindcss以及多个LSP服务"></div>
+    </div>
+  </article><div class="footer">
+  <ul class="footer-left">
+    <li class="hidden-xs">© 2015-2026 honmaple</li>
+    <li class="hidden-xs">·</li>
+    <li>
+        <a href="https://honmaple.me/pages/friends.html">友链</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/contact.html">联系</a>
+    </li>
+  </ul>
+  <ul class="footer-right">
+    <li><a class="entry-switch-theme" title="切换主题" onclick="switchTheme()"><i class="fa fa-moon-o"></i></a></li>
+      <li><a href="https://honmaple.me/pages/music.html" title="音乐"><i class="fa fa-music"></i></a></li>
+      <li><a href="https://honmaple.me/pages/travel.html" title="旅行"><i class="fa fa-camera"></i></a></li>
+      <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
+      <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>
+  </ul>
+</div>
+<div class="back-to-top on">
+  <i class="fa fa-hand-o-up" title="back to top"></i>
+</div>
+
+    </div>
+      <script src="https://s.libforest.com/static/js/lib.min.js"></script>
+        <script src="https://honmaple.me/static/lib/js/script.min.js"></script>
+  </body>
+</html>

@@ -5,8 +5,108 @@
   <link href="https://honmaple.me/categories/tech/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Sat, 11 Oct 2025 19:19:38 +0000</updated>
+    <updated>Wed, 07 Jan 2026 16:07:24 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>让Eglot支持tailwindcss以及多个LSP服务</title>
+      <link href="https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html" rel="alternate"></link>
+      <published>Fri, 02 Jan 2026 00:39:44 +0000</published>
+      <updated>Wed, 07 Jan 2026 16:07:24 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html</id>
+      <summary type="html">
+&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
+&lt;p&gt;
+   虽然我不是专业的前端开发人员，但偶尔还是会写一下 &lt;code&gt;HTML/CSS/Javascript&lt;/code&gt; 或者&lt;code&gt;Vue&lt;/code&gt;。在一个 &lt;b&gt;HTML&lt;/b&gt; 文件中，我需要使用多个 &lt;b&gt;LSP服务&lt;/b&gt;，比如使用 &lt;code&gt;vscode-html-language-server&lt;/code&gt; 补全css样式，使用&lt;code&gt;tailwindcss-language-server&lt;/code&gt; 补全tailwindcss的class名称，使用 &lt;code&gt;vscode-eslint-language-server&lt;/code&gt; 检查语法
+&lt;/p&gt;
+
+&lt;p&gt;
+   但我目前使用的Emacs lSP客户端 &lt;b&gt;Eglot&lt;/b&gt; 一直不支持多个LSP服务，目前的解决方式有两种，一是把...&lt;/p&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;前言&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;如何使用？&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;示例&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
+&lt;p&gt;
+   虽然我不是专业的前端开发人员，但偶尔还是会写一下 &lt;code&gt;HTML/CSS/Javascript&lt;/code&gt; 或者&lt;code&gt;Vue&lt;/code&gt;。在一个 &lt;b&gt;HTML&lt;/b&gt; 文件中，我需要使用多个 &lt;b&gt;LSP服务&lt;/b&gt;，比如使用 &lt;code&gt;vscode-html-language-server&lt;/code&gt; 补全css样式，使用&lt;code&gt;tailwindcss-language-server&lt;/code&gt; 补全tailwindcss的class名称，使用 &lt;code&gt;vscode-eslint-language-server&lt;/code&gt; 检查语法
+&lt;/p&gt;
+
+&lt;p&gt;
+   但我目前使用的Emacs lSP客户端 &lt;b&gt;Eglot&lt;/b&gt; 一直不支持多个LSP服务，目前的解决方式有两种，一是把 &lt;b&gt;Eglot&lt;/b&gt; 更换为 &lt;b&gt;lsp-mode&lt;/b&gt; 或者 &lt;b&gt;lsp-bridge&lt;/b&gt;， 二是使用第三方命令行代理服务，比如:
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;https://github.com/thefrontside/lspx&quot;&gt;https://github.com/thefrontside/lspx&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;https://github.com/joaotavora/rassumfrassum&quot;&gt;https://github.com/joaotavora/rassumfrassum&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+   &lt;b&gt;lspx&lt;/b&gt; 是因为我的电脑上没有相关环境，无法编译，&lt;b&gt;rass&lt;/b&gt; 是由 &lt;b&gt;Eglot&lt;/b&gt; 的作者开发，不过看情况他是准备把 &lt;b&gt;rass&lt;/b&gt; 作为一个通用的LSP代理，所以配置文件会单独放置到 &lt;b&gt;HOME&lt;/b&gt; 目录，这一点我不是很喜欢，另一方面是 &lt;b&gt;rass&lt;/b&gt; 由Python开发，使用起来不如单独的二进制文件方便。
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+   算了，找来找去还不如自己写一个，&lt;a href=&quot;https://github.com/honmaple/eglot-lspx&quot;&gt;eglot-lspx&lt;/a&gt;，使用Go写的一个多LSP代理服务，用于解决 &lt;b&gt;Eglot&lt;/b&gt; 无法使用 &lt;code&gt;tailwindcss&lt;/code&gt; 以及不支持多个LSP服务的问题
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;如何使用？&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 编译
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;git clone https://github.com/honmaple/eglot-lspx
+cd eglot-lspx
+go build .&lt;/pre&gt;
+&lt;p&gt;
+     然后把编译好的 &lt;code&gt;eglot-lspx&lt;/code&gt; 文件放到可执行路径下，比如我放到了 &lt;code&gt;~/.emacs.d/bin&lt;/code&gt; 目录，并添加路径到Emacs配置
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(add-to-list &amp;#39;exec-path (expand-file-name &amp;#34;bin&amp;#34; user-emacs-directory) t)&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 配置Eglot
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defvar eglot-lspx-command (executable-find &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;eglot-lspx&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))
+
+(when eglot-lspx-command
+  (add-to-list &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;eglot-server-programs&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;`&lt;/span&gt;((web-mode :language-id &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;html&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+                                        &lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt; (&lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;eglot-lspx-command
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;vscode-html-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;tailwindcss-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))
+  (add-to-list &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;eglot-server-programs&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;`&lt;/span&gt;((vue-mode :language-id &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;html&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+                                        &lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt; (&lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;eglot-lspx-command
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;vue-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;vscode-html-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;tailwindcss-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           :initializationOptions
+                                           (lambda (server) (&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; :vue-language-server (eglot-volar-options server)))))))&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-3&quot;&gt;示例&lt;/h2&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;</content>
+        <category term="Tech/Linux/Emacs"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>Windows优化记录</title>
       <link href="https://honmaple.me/articles/2025/10/windowsyou-hua-ji-lu.html" rel="alternate"></link>
@@ -101,7 +201,7 @@ taskkill /f /im explorer.exe &amp;amp; &lt;span style=&quot;color:#66d9ef&quot;&
       <title>MacOS环境配置</title>
       <link href="https://honmaple.me/articles/2025/04/macoshuan-jing-pei-zhi.html" rel="alternate"></link>
       <published>Fri, 18 Apr 2025 15:53:20 +0000</published>
-      <updated>Thu, 30 Oct 2025 14:51:54 +0000</updated>
+      <updated>Wed, 07 Jan 2026 16:06:55 +0000</updated>
       <author>
         <name>honmaple</name>
       </author>
@@ -126,12 +226,13 @@ taskkill /f /im explorer.exe &amp;amp; &lt;span style=&quot;color:#66d9ef&quot;&
 &lt;li&gt;&lt;a href=&quot;#heading-2.1&quot;&gt;homebrew&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;#heading-2.2&quot;&gt;betterdisplay&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;#heading-2.3&quot;&gt;clash-verge-rev&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;google-chrome&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.5&quot;&gt;yabai&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.6&quot;&gt;hammerspoon&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.7&quot;&gt;Localsend&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.8&quot;&gt;inkscape&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2.9&quot;&gt;wireshark&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.4&quot;&gt;folo&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.5&quot;&gt;google-chrome&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.6&quot;&gt;yabai&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.7&quot;&gt;hammerspoon&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.8&quot;&gt;Localsend&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.9&quot;&gt;inkscape&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2.10&quot;&gt;wireshark&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;开发软件&lt;/a&gt;
 &lt;ul&gt;
@@ -145,7 +246,8 @@ taskkill /f /im explorer.exe &amp;amp; &lt;span style=&quot;color:#66d9ef&quot;&
 &lt;li&gt;&lt;a href=&quot;#heading-3.8&quot;&gt;Flutter&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;#heading-3.9&quot;&gt;Node&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;#heading-3.10&quot;&gt;Rust&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3.11&quot;&gt;Other&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.11&quot;&gt;Ai&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3.12&quot;&gt;Other&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
 
@@ -229,20 +331,26 @@ PS1&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quo
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew install --cask clash-verge-rev&lt;/pre&gt;
 
-&lt;h3 id=&quot;heading-2.4&quot;&gt;google-chrome&lt;/h3&gt;
+&lt;h3 id=&quot;heading-2.4&quot;&gt;folo&lt;/h3&gt;
+&lt;p&gt;
+    RSS信息聚合阅读器
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew install --cask folo&lt;/pre&gt;
+
+&lt;h3 id=&quot;heading-2.5&quot;&gt;google-chrome&lt;/h3&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew install --cask google-chrome&lt;/pre&gt;
 &lt;p&gt;
     如果在登陆账号时总是提示请求取消，并且登陆失败，开启全局代理即可
 &lt;/p&gt;
 
-&lt;h3 id=&quot;heading-2.5&quot;&gt;yabai&lt;/h3&gt;
+&lt;h3 id=&quot;heading-2.6&quot;&gt;yabai&lt;/h3&gt;
 &lt;p&gt;
     macos端的平铺窗口管理
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew install koekeishiya/formulae/yabai
 yabai --start-service&lt;/pre&gt;
 
-&lt;h3 id=&quot;heading-2.6&quot;&gt;hammerspoon&lt;/h3&gt;
+&lt;h3 id=&quot;heading-2.7&quot;&gt;hammerspoon&lt;/h3&gt;
 &lt;p&gt;
     主要用于搭配 &lt;b&gt;yabai&lt;/b&gt; 使用
 &lt;/p&gt;
@@ -252,19 +360,19 @@ yabai --start-service&lt;/pre&gt;
     我的配置在 &lt;a href=&quot;https://github.com/honmaple/dotfiles/tree/master/macos&quot;&gt;https://github.com/honmaple/dotfiles/tree/master/macos&lt;/a&gt;
 &lt;/p&gt;
 
-&lt;h3 id=&quot;heading-2.7&quot;&gt;Localsend&lt;/h3&gt;
+&lt;h3 id=&quot;heading-2.8&quot;&gt;Localsend&lt;/h3&gt;
 &lt;p&gt;
     一个内网文件传输工具，可以在商店直接下载，或者使用
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew install --cask localsend&lt;/pre&gt;
 
-&lt;h3 id=&quot;heading-2.8&quot;&gt;inkscape&lt;/h3&gt;
+&lt;h3 id=&quot;heading-2.9&quot;&gt;inkscape&lt;/h3&gt;
 &lt;p&gt;
     一个矢量图绘制软件
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew install --cask inkscape&lt;/pre&gt;
 
-&lt;h3 id=&quot;heading-2.9&quot;&gt;wireshark&lt;/h3&gt;
+&lt;h3 id=&quot;heading-2.10&quot;&gt;wireshark&lt;/h3&gt;
 &lt;p&gt;
     抓包工具
 &lt;/p&gt;
@@ -526,7 +634,15 @@ export RUSTUP_DIST_SERVER&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&
 export RUSTUP_UPDATE_ROOT&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;https://rsproxy.cn/rustup
 
 export PATH&lt;span style=&quot;color:#f92672&quot;&gt;=&lt;/span&gt;$HOME/repo/rust/cargo/bin:$PATH&lt;/pre&gt;
-&lt;h3 id=&quot;heading-3.11&quot;&gt;Other&lt;/h3&gt;
+
+&lt;h3 id=&quot;heading-3.11&quot;&gt;Ai&lt;/h3&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;npm install -g opencode-ai&lt;/pre&gt;
+&lt;p&gt;
+    注意，不要使用 &lt;code&gt;brew install opencode&lt;/code&gt; 安装，会报错误
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;It&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;seems&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;that&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;your&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;package&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;manager&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;failed&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;to&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;install&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;the&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;right&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;version&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;of&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;the&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;opencode&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;CLI&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;for&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;your&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;platform&lt;/span&gt;. &lt;span style=&quot;color:#a6e22e&quot;&gt;You&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;can&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;try&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;manually&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;installing&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;the&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;opencode-darwin-arm64&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;package&lt;/span&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;heading-3.12&quot;&gt;Other&lt;/h3&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew install rg
 brew install tree htop
 brew install --cask visual-studio-code&lt;/pre&gt;
@@ -1838,195 +1954,5 @@ L10n lookupL10n(Locale locale) {
 &lt;b&gt;maple-translate&lt;/b&gt;的具体修改可见: &lt;a href=&quot;https://github.com/honmaple/emacs-maple-translate/commit/dfd0eae6486d62c26a3fa3fb07ee7e5f4640eb16&quot;&gt;dfd0eae&lt;/a&gt;
 &lt;/p&gt;</content>
         <category term="Tech/Linux/Emacs"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>使用Homebrew Tap发布个人工具</title>
-      <link href="https://honmaple.me/articles/2024/03/shi-yong-homebrew-tapfa-bu-ge-ren-gong-ju.html" rel="alternate"></link>
-      <published>Thu, 28 Mar 2024 09:31:23 +0000</published>
-      <updated>Wed, 09 Oct 2024 10:35:59 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2024/03/shi-yong-homebrew-tapfa-bu-ge-ren-gong-ju.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2024/03/shi-yong-homebrew-tapfa-bu-ge-ren-gong-ju.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;p&gt;
-作为MacOS用户，&lt;b&gt;Homebrew&lt;/b&gt; 是必不可少的工具之一，正如它的描述所示 &lt;code&gt;The missing package manager for macOS&lt;/code&gt; —— 它提供了很多 &lt;b&gt;App Store&lt;/b&gt; 没有的软件和工具。
-&lt;/p&gt;
-
-&lt;p&gt;
-而什么是 &lt;b&gt;Tap&lt;/b&gt;？&lt;b&gt;Tap&lt;/b&gt; 全称 &lt;code&gt;Third-Party Repositories&lt;/code&gt;，顾名思义为第三方仓库，它可以创建属于自己的软件集合，不用将软件发布到官方仓库，避免了和官方仓库的其它软件同名，也不用发PR，等审核等诸多优势。此次，我将创建一个 &lt;b&gt;Homebrew Tap&lt;/b&gt;，用于为我自己开发的部分软件和工具提供更加方便的安装方式。
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;创建Tap&lt;/h2&gt;
-&lt;p&gt;
-   使用 &lt;code&gt;brew&lt;/code&gt; 命令创建...&lt;/p&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;创建Tap&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;生成模版&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;修改模版&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;安装软件&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;上传到Github&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-6&quot;&gt;结语&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-作为MacOS用户，&lt;b&gt;Homebrew&lt;/b&gt; 是必不可少的工具之一，正如它的描述所示 &lt;code&gt;The missing package manager for macOS&lt;/code&gt; —— 它提供了很多 &lt;b&gt;App Store&lt;/b&gt; 没有的软件和工具。
-&lt;/p&gt;
-
-&lt;p&gt;
-而什么是 &lt;b&gt;Tap&lt;/b&gt;？&lt;b&gt;Tap&lt;/b&gt; 全称 &lt;code&gt;Third-Party Repositories&lt;/code&gt;，顾名思义为第三方仓库，它可以创建属于自己的软件集合，不用将软件发布到官方仓库，避免了和官方仓库的其它软件同名，也不用发PR，等审核等诸多优势。此次，我将创建一个 &lt;b&gt;Homebrew Tap&lt;/b&gt;，用于为我自己开发的部分软件和工具提供更加方便的安装方式。
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;创建Tap&lt;/h2&gt;
-&lt;p&gt;
-   使用 &lt;code&gt;brew&lt;/code&gt; 命令创建
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew tap-new honmaple/tap
-Initialized empty Git repository in /usr/local/Homebrew/Library/Taps/honmaple/homebrew-tap/.git/
-[main (root-commit) 7d893ca] Create honmaple/tap tap
- 3 files changed, 90 insertions(+)
- create mode 100644 .github/workflows/publish.yml
- create mode 100644 .github/workflows/tests.yml
- create mode 100644 README.md
-==&amp;gt; Created honmaple/tap
-/usr/local/Homebrew/Library/Taps/honmaple/homebrew-tap
-
-When a pull request making changes to a formula (or formulae) becomes green
-(all checks passed), then you can publish the built bottles.
-To do so, label your PR as `pr-pull` and the workflow will be triggered.&lt;/pre&gt;
-
-&lt;p&gt;
-   创建后会提示在 &lt;code&gt;/usr/local/Homebrew/Library/Taps/honmaple/homebrew-tap/&lt;/code&gt; 目录生成一个 &lt;b&gt;Git&lt;/b&gt; 仓库
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;生成模版&lt;/h2&gt;
-&lt;p&gt;
-   比如我想要为已经打包好的工具 &lt;b&gt;Snow 0.1.2&lt;/b&gt; 生成模版，注意指定 &lt;code&gt;--tap&lt;/code&gt; 参数
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;└──╼ brew create https://github.com/honmaple/snow/releases/download/v0.1.2/snow-darwin.tar.gz --tap honmaple/tap
-Formula name [snow]:
-...&lt;/pre&gt;
-&lt;p&gt;
-   在输入提示的工具名称后（也可以保持默认），这时会生成并使用默认编辑器打开 &lt;code&gt;/usr/local/Homebrew/Library/Taps/honmaple/homebrew-tap/Formula/snow.rb&lt;/code&gt;，内容如下:
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;# Documentation: https://docs.brew.sh/Formula-Cookbook&lt;/span&gt;
-&lt;span style=&quot;color:#75715e&quot;&gt;#                https://rubydoc.brew.sh/Formula&lt;/span&gt;
-&lt;span style=&quot;color:#75715e&quot;&gt;# PLEASE REMOVE ALL GENERATED COMMENTS BEFORE SUBMITTING YOUR PULL REQUEST!&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;Snow&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;Formula&lt;/span&gt;
-  desc &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;static site generator&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  homepage &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  url &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;https://github.com/honmaple/snow/releases/download/v0.1.2/snow-darwin.tar.gz&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  sha256 &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;78a65c740eff24193132e063654bd1d7023f6687c94ce852e50a03a43eaba558&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  license &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;BSD-3-Clause&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-
-  &lt;span style=&quot;color:#75715e&quot;&gt;# depends_on &amp;#34;cmake&amp;#34; =&amp;gt; :build&lt;/span&gt;
-
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;install&lt;/span&gt;
-    &lt;span style=&quot;color:#75715e&quot;&gt;# Remove unrecognized options if they cause configure to fail&lt;/span&gt;
-    &lt;span style=&quot;color:#75715e&quot;&gt;# https://rubydoc.brew.sh/Formula.html#std_configure_args-instance_method&lt;/span&gt;
-    system &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;./configure&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;, &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--disable-silent-rules&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;, &lt;span style=&quot;color:#f92672&quot;&gt;*&lt;/span&gt;std_configure_args
-    &lt;span style=&quot;color:#75715e&quot;&gt;# system &amp;#34;cmake&amp;#34;, &amp;#34;-S&amp;#34;, &amp;#34;.&amp;#34;, &amp;#34;-B&amp;#34;, &amp;#34;build&amp;#34;, *std_cmake_args&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;end&lt;/span&gt;
-
-  test &lt;span style=&quot;color:#66d9ef&quot;&gt;do&lt;/span&gt;
-    &lt;span style=&quot;color:#75715e&quot;&gt;# `test do` will create, run in and delete a temporary directory.&lt;/span&gt;
-    &lt;span style=&quot;color:#75715e&quot;&gt;# ...&lt;/span&gt;
-    system &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;false&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;end&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;end&lt;/span&gt;&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;修改模版&lt;/h2&gt;
-&lt;p&gt;
-   因为我此次发布的只是一个 &lt;b&gt;Go&lt;/b&gt; 编译的二进制文件，只用将文件添加到可执行目录即可。如需其它操作，请查阅&lt;a href=&quot;https://docs.brew.sh/Taps&quot;&gt;Homebrew Tap官方文档&lt;/a&gt;。
-&lt;/p&gt;
-
-&lt;p&gt;
-   修改模版后内容如下：
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;class&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;Snow&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;Formula&lt;/span&gt;
-  homepage &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;https://github.com/honmaple/snow&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  desc &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;static site generator&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  url &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;https://github.com/honmaple/snow/releases/download/v0.1.2/snow-darwin.tar.gz&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  sha256 &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;78a65c740eff24193132e063654bd1d7023f6687c94ce852e50a03a43eaba558&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  license &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;BSD-3-Clause&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;def&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#f92672&quot;&gt;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;install&lt;/span&gt;
-    bin&lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt;install &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;snow&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;end&lt;/span&gt;
-
-  test &lt;span style=&quot;color:#66d9ef&quot;&gt;do&lt;/span&gt;
-    assert_match &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;snow version &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;#{&lt;/span&gt;version&lt;span style=&quot;color:#e6db74&quot;&gt;}&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;, shell_output(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;#{&lt;/span&gt;bin&lt;span style=&quot;color:#e6db74&quot;&gt;}&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;/snow --version&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;end&lt;/span&gt;
-&lt;span style=&quot;color:#66d9ef&quot;&gt;end&lt;/span&gt;&lt;/pre&gt;
-
-&lt;p&gt;
-   从模版文件中就能看出，如果我们需要发布下一版本，只需要修改 &lt;code&gt;url&lt;/code&gt; 和 &lt;code&gt;sha256&lt;/code&gt; 两个参数，其中 &lt;code&gt;sha256&lt;/code&gt; 可以使用 &lt;code&gt;sha256sum v0.1.2/snow-darwin.tar.gz&lt;/code&gt; 获得
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-4&quot;&gt;安装软件&lt;/h2&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew install honmaple/tap/snow&lt;/pre&gt;
-&lt;p&gt;
-   &lt;b&gt;注意&lt;/b&gt;：不能直接使用 &lt;code&gt;brew install snow&lt;/code&gt;，因为如果在 &lt;code&gt;homebrew/core&lt;/code&gt; 有相同名称的包，默认将会安装 &lt;code&gt;homebrew/core&lt;/code&gt; 上的包，所以必须指明使用哪个 &lt;b&gt;Tap&lt;/b&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-5&quot;&gt;上传到Github&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;
- 首先需要到 &lt;b&gt;Github&lt;/b&gt; 创建一个公共仓库，取名 &lt;code&gt;homebrew-{Tap名称}&lt;/code&gt;, 比如我的是 &lt;code&gt;honmaple/homebrew-tap&lt;/code&gt;，注意名称必须是 &lt;code&gt;homebrew-&lt;/code&gt; 开头，方便后续直接使用 &lt;code&gt;{用户名}/{Tap名称}&lt;/code&gt;。创建好后先不要克隆到本地
-      
-&lt;a href=&quot;https://s.libforest.com/images/2024/03/homebrew-tap-01.jpg-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2024/03/homebrew-tap-01.jpg-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 复制之前创建好的 &lt;code&gt;honmaple/tap&lt;/code&gt; 目录，方便后续维护
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;cp -r /usr/local/Homebrew/Library/Taps/honmaple/homebrew-tap ~/Git/&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 修改仓库
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;cd ~/Git/homebrew-tap
-# 删除默认的Github Action
-rm -rf .github
-# 添加远程
-git remote add origin git@github.com:honmaple/homebrew-tap.git
-# 添加软件
-git add Formula/snow.rb
-git commit -m &amp;#34;add snow.rb&amp;#34;
-git push origin master&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 重置本地tap，首先需要卸载之前创建好的 &lt;code&gt;honmaple/tap&lt;/code&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew untap honmaple/tap&lt;/pre&gt;
-&lt;p&gt;
-      如果已经安装了 &lt;code&gt;homebrew/tap/snow&lt;/code&gt;, 需要先卸载
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew uninstall honmaple/tap/snow&lt;/pre&gt;
-
-&lt;p&gt;
-      在执行完 &lt;b&gt;修改仓库&lt;/b&gt; 这一步后，就可以重新添加 &lt;b&gt;tap&lt;/b&gt;
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew tap honmaple/tap&lt;/pre&gt;
-&lt;p&gt;
-      并重新安装想要的软件
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;brew install honample/tap/snow&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&quot;heading-6&quot;&gt;结语&lt;/h2&gt;
-&lt;p&gt;
-   至此，创建一个私人使用的 MacOS 软件包集合就此结束，我可以往里面添加一些自己写的软件和工具，可以是 &lt;b&gt;Bash&lt;/b&gt; 脚本，也可以是 &lt;b&gt;Go&lt;/b&gt; 编译好的二进制等，后面就不用再指定具体目录或者手动复制文件到 &lt;code&gt;$PATH/bin&lt;/code&gt; 目录下了。OK
-&lt;/p&gt;</content>
-        <category term="Tech"></category>
     </entry>
 </feed>

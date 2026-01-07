@@ -5,8 +5,108 @@
   <link href="https://honmaple.me/categories/tech/linux/emacs/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Mon, 22 Apr 2024 23:14:41 +0000</updated>
+    <updated>Wed, 07 Jan 2026 16:07:24 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>让Eglot支持tailwindcss以及多个LSP服务</title>
+      <link href="https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html" rel="alternate"></link>
+      <published>Fri, 02 Jan 2026 00:39:44 +0000</published>
+      <updated>Wed, 07 Jan 2026 16:07:24 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html</id>
+      <summary type="html">
+&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
+&lt;p&gt;
+   虽然我不是专业的前端开发人员，但偶尔还是会写一下 &lt;code&gt;HTML/CSS/Javascript&lt;/code&gt; 或者&lt;code&gt;Vue&lt;/code&gt;。在一个 &lt;b&gt;HTML&lt;/b&gt; 文件中，我需要使用多个 &lt;b&gt;LSP服务&lt;/b&gt;，比如使用 &lt;code&gt;vscode-html-language-server&lt;/code&gt; 补全css样式，使用&lt;code&gt;tailwindcss-language-server&lt;/code&gt; 补全tailwindcss的class名称，使用 &lt;code&gt;vscode-eslint-language-server&lt;/code&gt; 检查语法
+&lt;/p&gt;
+
+&lt;p&gt;
+   但我目前使用的Emacs lSP客户端 &lt;b&gt;Eglot&lt;/b&gt; 一直不支持多个LSP服务，目前的解决方式有两种，一是把...&lt;/p&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;前言&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;如何使用？&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;示例&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
+&lt;p&gt;
+   虽然我不是专业的前端开发人员，但偶尔还是会写一下 &lt;code&gt;HTML/CSS/Javascript&lt;/code&gt; 或者&lt;code&gt;Vue&lt;/code&gt;。在一个 &lt;b&gt;HTML&lt;/b&gt; 文件中，我需要使用多个 &lt;b&gt;LSP服务&lt;/b&gt;，比如使用 &lt;code&gt;vscode-html-language-server&lt;/code&gt; 补全css样式，使用&lt;code&gt;tailwindcss-language-server&lt;/code&gt; 补全tailwindcss的class名称，使用 &lt;code&gt;vscode-eslint-language-server&lt;/code&gt; 检查语法
+&lt;/p&gt;
+
+&lt;p&gt;
+   但我目前使用的Emacs lSP客户端 &lt;b&gt;Eglot&lt;/b&gt; 一直不支持多个LSP服务，目前的解决方式有两种，一是把 &lt;b&gt;Eglot&lt;/b&gt; 更换为 &lt;b&gt;lsp-mode&lt;/b&gt; 或者 &lt;b&gt;lsp-bridge&lt;/b&gt;， 二是使用第三方命令行代理服务，比如:
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;https://github.com/thefrontside/lspx&quot;&gt;https://github.com/thefrontside/lspx&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;https://github.com/joaotavora/rassumfrassum&quot;&gt;https://github.com/joaotavora/rassumfrassum&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+   &lt;b&gt;lspx&lt;/b&gt; 是因为我的电脑上没有相关环境，无法编译，&lt;b&gt;rass&lt;/b&gt; 是由 &lt;b&gt;Eglot&lt;/b&gt; 的作者开发，不过看情况他是准备把 &lt;b&gt;rass&lt;/b&gt; 作为一个通用的LSP代理，所以配置文件会单独放置到 &lt;b&gt;HOME&lt;/b&gt; 目录，这一点我不是很喜欢，另一方面是 &lt;b&gt;rass&lt;/b&gt; 由Python开发，使用起来不如单独的二进制文件方便。
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+   算了，找来找去还不如自己写一个，&lt;a href=&quot;https://github.com/honmaple/eglot-lspx&quot;&gt;eglot-lspx&lt;/a&gt;，使用Go写的一个多LSP代理服务，用于解决 &lt;b&gt;Eglot&lt;/b&gt; 无法使用 &lt;code&gt;tailwindcss&lt;/code&gt; 以及不支持多个LSP服务的问题
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;如何使用？&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 编译
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;git clone https://github.com/honmaple/eglot-lspx
+cd eglot-lspx
+go build .&lt;/pre&gt;
+&lt;p&gt;
+     然后把编译好的 &lt;code&gt;eglot-lspx&lt;/code&gt; 文件放到可执行路径下，比如我放到了 &lt;code&gt;~/.emacs.d/bin&lt;/code&gt; 目录，并添加路径到Emacs配置
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(add-to-list &amp;#39;exec-path (expand-file-name &amp;#34;bin&amp;#34; user-emacs-directory) t)&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 配置Eglot
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defvar eglot-lspx-command (executable-find &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;eglot-lspx&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))
+
+(when eglot-lspx-command
+  (add-to-list &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;eglot-server-programs&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;`&lt;/span&gt;((web-mode :language-id &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;html&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+                                        &lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt; (&lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;eglot-lspx-command
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;vscode-html-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;tailwindcss-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))
+  (add-to-list &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;eglot-server-programs&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;`&lt;/span&gt;((vue-mode :language-id &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;html&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+                                        &lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt; (&lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;eglot-lspx-command
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;vue-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;vscode-html-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;tailwindcss-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           :initializationOptions
+                                           (lambda (server) (&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; :vue-language-server (eglot-volar-options server)))))))&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-3&quot;&gt;示例&lt;/h2&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;</content>
+        <category term="Tech/Linux/Emacs"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>为maple-translate增加更友好的sdcv离线翻译</title>
       <link href="https://honmaple.me/articles/2024/04/wei-maple-translatezeng-jia-geng-you-hao-de-sdcvchi-xian-fan-yi.html" rel="alternate"></link>
@@ -1027,308 +1127,6 @@ static char * XFACE[] = {
 &lt;p&gt;
    &lt;a href=&quot;https://github.com/honmaple/emacs-maple-xpm&quot;&gt;完整代码及更多XPM图片&lt;/a&gt;
 &lt;/p&gt;</content>
-        <category term="Tech/Linux/Emacs"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>关于ivy的使用技巧</title>
-      <link href="https://honmaple.me/articles/2019/05/关于ivy的使用技巧.html" rel="alternate"></link>
-      <published>Tue, 14 May 2019 02:32:02 +0000</published>
-      <updated>Wed, 21 Aug 2024 15:36:24 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2019/05/关于ivy的使用技巧.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2019/05/关于ivy的使用技巧.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;p&gt;
-ivy默认的配置已经足够了，但还是可以通过一些技巧来提升使用体验
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h1 id=&quot;heading-1&quot;&gt;ivy中的tab&lt;/h1&gt;
-&lt;p&gt;
-  ivy提供了好几个有关补全的命令，分别是&lt;b&gt;ivy-done&lt;/b&gt;, &lt;b&gt;ivy-partial-or-done&lt;/b&gt;, &lt;b&gt;ivy-immediate-done&lt;/b&gt;, &lt;b&gt;ivy-dispatching-done&lt;/b&gt;, 但不幸，想要获得高效的补全，我不得不记住这n多个命令，这常常使效率变得更低，
-  所以，我自定义了一个 &lt;b&gt;maple/ivy-done&lt;/b&gt;, 仅使用 &lt;code&gt;tab&lt;/code&gt; 这一个按键就可以获得以上所有的体验
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/ivy-done()
-  (interactive)
-  (let ((dir...&lt;/pre&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;ivy中的tab&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;ivy中的C-h&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;ivy-occur批量操作&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3.1&quot;&gt;自动打开wgrep-mode&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3.2&quot;&gt;批量修改文件名&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;counsel-find-file&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4.1&quot;&gt;重命名&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4.2&quot;&gt;自动创建不存在的目录&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;ivy自动使用选中的内容&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-6&quot;&gt;搜索某个目录&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-7&quot;&gt;ivy的显示避免出现在视线外&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-8&quot;&gt;counsel-ag指定文件后缀&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-ivy默认的配置已经足够了，但还是可以通过一些技巧来提升使用体验
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h1 id=&quot;heading-1&quot;&gt;ivy中的tab&lt;/h1&gt;
-&lt;p&gt;
-  ivy提供了好几个有关补全的命令，分别是&lt;b&gt;ivy-done&lt;/b&gt;, &lt;b&gt;ivy-partial-or-done&lt;/b&gt;, &lt;b&gt;ivy-immediate-done&lt;/b&gt;, &lt;b&gt;ivy-dispatching-done&lt;/b&gt;, 但不幸，想要获得高效的补全，我不得不记住这n多个命令，这常常使效率变得更低，
-  所以，我自定义了一个 &lt;b&gt;maple/ivy-done&lt;/b&gt;, 仅使用 &lt;code&gt;tab&lt;/code&gt; 这一个按键就可以获得以上所有的体验
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/ivy-done()
-  (interactive)
-  (let ((dir ivy--directory))
-    (ivy-partial-or-done)
-    (when (string= dir ivy--directory)
-      (ivy-insert-current)
-      (when (and (&lt;span style=&quot;color:#a6e22e&quot;&gt;eq&lt;/span&gt; (ivy-state-collection ivy-last) &lt;span style=&quot;color:#a6e22e&quot;&gt;#&amp;#39;&lt;/span&gt;read-file-name-internal)
-                 (setq dir (ivy-expand-file-if-directory (ivy-state-current ivy-last))))
-        (ivy--cd dir)
-        (setq this-command &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;ivy-cd&lt;/span&gt;)))))&lt;/pre&gt;
-
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 预设场景一
-    dirs目录下有
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;init-a.el
-init-b.el
-init-c.el&lt;/pre&gt;
-&lt;p&gt;
-    等多个文件, 我需要把&lt;b&gt;init-c.el&lt;/b&gt;重命名为&lt;b&gt;init-c.el.bak&lt;/b&gt;, 默认的ivy会怎么做呢
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 输入 &lt;b&gt;init c&lt;/b&gt; 进行查找
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 使用 &lt;code&gt;C-M-j&lt;/code&gt; &lt;b&gt;(ivy-immediate-done)&lt;/b&gt; 插入当前选中项
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 修改
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-    而使用 &lt;b&gt;maple/ivy-done&lt;/b&gt; 后呢
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 输入 &lt;b&gt;init c&lt;/b&gt; 进行查找
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 使用 &lt;code&gt;tab&lt;/code&gt; 插入当前选中项
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 修改
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 预设场景二
-    有一个n级子目录，需要切换到第n个子目录下, 默认的ivy会怎么做呢
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 使用 &lt;code&gt;tab&lt;/code&gt; 选中
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 再次使用 &lt;code&gt;tab&lt;/code&gt; 切换目录
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-    而使用 &lt;b&gt;maple/ivy-done&lt;/b&gt; 后呢
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 使用 &lt;code&gt;tab&lt;/code&gt; 选中并切换目录
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h1 id=&quot;heading-2&quot;&gt;ivy中的C-h&lt;/h1&gt;
-&lt;p&gt;
-  由于我是邪恶的 &lt;b&gt;evil&lt;/b&gt; 用户, 所以我正常情况会使用 &lt;code&gt;C-j&lt;/code&gt;, &lt;code&gt;C-k&lt;/code&gt;来选择待选项，同样的，我希望能够使用 &lt;code&gt;C-h&lt;/code&gt; 来进行某些操作,比如在&lt;b&gt;counsel-ag&lt;/b&gt;中使用&lt;code&gt;C-h&lt;/code&gt;代替&lt;code&gt;backspace&lt;/code&gt;删除输入的字符，而在&lt;b&gt;counsel-find-file&lt;/b&gt;中使用&lt;code&gt;C-h&lt;/code&gt;切换到上一级目录
-&lt;/p&gt;
-
-&lt;p&gt;
-  ivy默认提供了 &lt;b&gt;counsel-up-directory&lt;/b&gt; 命令可以切换到上级目录, 我希望能更进一步，当有插入的字符时, 调用&lt;code&gt;C-h&lt;/code&gt;能够直接清除插入的字符,再次调用才切换到上一级目录
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/ivy-c-h ()
-  (interactive)
-  (if (&lt;span style=&quot;color:#a6e22e&quot;&gt;eq&lt;/span&gt; (ivy-state-collection ivy-last) &lt;span style=&quot;color:#a6e22e&quot;&gt;#&amp;#39;&lt;/span&gt;read-file-name-internal)
-      (if (&lt;span style=&quot;color:#a6e22e&quot;&gt;string-equal&lt;/span&gt; (ivy--input) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
-          (counsel-up-directory)
-        (delete-minibuffer-contents))
-    (ivy-backward-delete-char)))&lt;/pre&gt;
-
-&lt;h1 id=&quot;heading-3&quot;&gt;ivy-occur批量操作&lt;/h1&gt;
-&lt;h2 id=&quot;heading-3.1&quot;&gt;自动打开wgrep-mode&lt;/h2&gt;
-&lt;p&gt;
-   ivy默认调用&lt;b&gt;ivy-occur&lt;/b&gt;后, 还需要调用&lt;b&gt;ivy-wgrep-change-to-wgrep-mode&lt;/b&gt;才能进行批量修改
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#75715e&quot;&gt;;; ivy-occur custom&lt;/span&gt;
-(defun maple/ivy-edit ()
-  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Edit the current search results in a buffer using wgrep.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  (interactive)
-  (run-with-idle-timer &lt;span style=&quot;color:#ae81ff&quot;&gt;0&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;ivy-wgrep-change-to-wgrep-mode&lt;/span&gt;)
-  (ivy-occur))&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-3.2&quot;&gt;批量修改文件名&lt;/h2&gt;
-&lt;p&gt;
-   预设场景: 当某个项目下有许多使用 &lt;b&gt;aaa.py&lt;/b&gt;的文件,我需要把 &lt;b&gt;aaa.py&lt;/b&gt; 全部修改为 &lt;b&gt;bbb.py&lt;/b&gt;, 也许某个 &lt;b&gt;aaa.py&lt;/b&gt; 需要修改成 &lt;b&gt;ccc.py&lt;/b&gt;，我在使用 &lt;b&gt;projectile-find-file&lt;/b&gt; 搜索完全部的 &lt;b&gt;aaa.py&lt;/b&gt; 后，打开ivy默认的&lt;b&gt;ivy-occur&lt;/b&gt;并不能对文件进行修改(提示&lt;code&gt;Text read only&lt;/code&gt;), 所以我采用 &lt;b&gt;find-name-dired&lt;/b&gt; 来批量修改文件名(目前还有些问题)
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/ivy-dired-occur()
-  (interactive)
-  (find-name-dired
-   (or (projectile-project-root) default-directory) (&lt;span style=&quot;color:#a6e22e&quot;&gt;concat&lt;/span&gt; (ivy--input) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))
-  (ivy-exit-with-action
-   (lambda (_)
-     (pop-to-buffer (&lt;span style=&quot;color:#a6e22e&quot;&gt;get-buffer&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;*Find*&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))
-     (dired-hide-details-mode)
-     (wdired-change-to-wdired-mode)
-     (when (bound-and-true-p evil-local-mode) (evil-normal-state)))))&lt;/pre&gt;
-
-&lt;h1 id=&quot;heading-4&quot;&gt;counsel-find-file&lt;/h1&gt;
-&lt;h2 id=&quot;heading-4.1&quot;&gt;重命名&lt;/h2&gt;
-&lt;p&gt;
-   预设场景: 有一个dirs目录, 我需要在同级目录下创建一个 &lt;b&gt;dirs-aa.el&lt;/b&gt; 的文件, 默认的ivy会怎么做呢
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 切换到 dirs 目录的上级目录
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 使用 &lt;b&gt;ivy-immediate-done&lt;/b&gt; 插入目录名
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 新建文件
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-   但还有一种方式
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 切换到 dirs 目录
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 使用 &lt;code&gt;backspace&lt;/code&gt; 键删除目录末尾的 &lt;code&gt;/&lt;/code&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 新建文件
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-   不幸的是，ivy中 &lt;code&gt;backspace&lt;/code&gt; 的按键绑定了 &lt;b&gt;ivy-backward-delete-char&lt;/b&gt;, 在 &lt;b&gt;counsel-find-file&lt;/b&gt; 中使用 ivy会直接返回上级目录, 所以需要对 &lt;b&gt;ivy-backward-delete-char&lt;/b&gt; 作简单的修改
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/ivy-backward-delete-char ()
-  (interactive)
-  (let ((dir ivy--directory)
-        (p (and ivy--directory (&lt;span style=&quot;color:#a6e22e&quot;&gt;=&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;minibuffer-prompt-end&lt;/span&gt;) (&lt;span style=&quot;color:#a6e22e&quot;&gt;point&lt;/span&gt;)))))
-    (ivy-backward-delete-char)
-    (when p (&lt;span style=&quot;color:#a6e22e&quot;&gt;insert&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;file-name-nondirectory&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;directory-file-name&lt;/span&gt; dir))))))&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-4.2&quot;&gt;自动创建不存在的目录&lt;/h2&gt;
-&lt;p&gt;
-   不仅用于ivy, 其它文件操作命令也需要
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/ivy-make-directory-maybe ()
-  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Create parent directory if not exists while visiting file.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  (let ((dir (&lt;span style=&quot;color:#a6e22e&quot;&gt;file-name-directory&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;buffer-file-name&lt;/span&gt;)))
-    (unless (&lt;span style=&quot;color:#a6e22e&quot;&gt;file-exists-p&lt;/span&gt; dir)
-      (if (y-or-n-p (&lt;span style=&quot;color:#a6e22e&quot;&gt;format&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Directory %s does not exist,do you want you create it? &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; dir))
-          (make-directory dir &lt;span style=&quot;color:#66d9ef&quot;&gt;t&lt;/span&gt;)
-        (keyboard-quit)))))
-
-(add-to-list &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;find-file-not-found-functions&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;maple/ivy-make-directory-maybe&lt;/span&gt; &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; &lt;span style=&quot;color:#a6e22e&quot;&gt;#&amp;#39;&lt;/span&gt;&lt;span style=&quot;color:#a6e22e&quot;&gt;eq&lt;/span&gt;)&lt;/pre&gt;
-
-&lt;h1 id=&quot;heading-5&quot;&gt;ivy自动使用选中的内容&lt;/h1&gt;
-&lt;p&gt;
-  在使用 &lt;b&gt;counsel-ag&lt;/b&gt; 或者 &lt;b&gt;swiper&lt;/b&gt;, 我需要快速搜索选中的关键词，然而，ivy默认并不支持这么做，ivy需要打开&lt;b&gt;counsel-ag&lt;/b&gt;后使用 &lt;code&gt;M-n&lt;/code&gt; 插入选中的关键词，当然，也许是作者认为这样的方式很方便，但我并不认同，我为何需要重复一次操作呢，为何还需要记住 &lt;code&gt;M-n&lt;/code&gt; 这样的按键呢？
-&lt;/p&gt;
-
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/region-string()
-  &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Get region string.&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-  (if (not (use-region-p)) &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-    (let* ((beg (&lt;span style=&quot;color:#a6e22e&quot;&gt;region-beginning&lt;/span&gt;))
-           (end (&lt;span style=&quot;color:#a6e22e&quot;&gt;region-end&lt;/span&gt;))
-           (eol (save-excursion (&lt;span style=&quot;color:#a6e22e&quot;&gt;goto-char&lt;/span&gt; beg) (&lt;span style=&quot;color:#a6e22e&quot;&gt;line-end-position&lt;/span&gt;))))
-      (deactivate-mark) (&lt;span style=&quot;color:#a6e22e&quot;&gt;buffer-substring-no-properties&lt;/span&gt; beg (&lt;span style=&quot;color:#a6e22e&quot;&gt;min&lt;/span&gt; end eol)))))
-
-&lt;span style=&quot;color:#75715e&quot;&gt;;; custom counsel-ag&lt;/span&gt;
-(defun maple/counsel-ag(-counsel-ag &lt;span style=&quot;color:#66d9ef&quot;&gt;&amp;amp;optional&lt;/span&gt; initial-input initial-directory extra-ag-args ag-prompt)
-  (&lt;span style=&quot;color:#a6e22e&quot;&gt;funcall&lt;/span&gt; -counsel-ag
-           (or initial-input (maple/region-string))
-           (or initial-directory default-directory)
-           extra-ag-args
-           ag-prompt))
-
-(advice-add &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;counsel-ag&lt;/span&gt; :around &lt;span style=&quot;color:#a6e22e&quot;&gt;#&amp;#39;&lt;/span&gt;maple/counsel-ag)&lt;/pre&gt;
-
-&lt;p&gt;
-  这样，调用 &lt;b&gt;counsel-ag&lt;/b&gt; 时，如何已经有选中的关键词，就会直接调用该关键词进行查找，避免重复操作, 同样的对于&lt;b&gt;swiper&lt;/b&gt; 也可以使用另一种方式
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/ivy-search-at-point (func)
-  (let ((ivy-initial-inputs-alist (&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; (&lt;span style=&quot;color:#a6e22e&quot;&gt;cons&lt;/span&gt; func (maple/region-string)))))
-    (&lt;span style=&quot;color:#a6e22e&quot;&gt;funcall&lt;/span&gt; func)))
-
-(defun maple/swiper()
-  (interactive)
-  (maple/ivy-search-at-point &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;swiper&lt;/span&gt;))&lt;/pre&gt;
-
-&lt;h1 id=&quot;heading-6&quot;&gt;搜索某个目录&lt;/h1&gt;
-&lt;p&gt;
-  &lt;b&gt;counsel-ag&lt;/b&gt;默认搜索当前目录，想要搜索某个目录，需要切换到该目录下调用&lt;b&gt;counsel-ag&lt;/b&gt;，无疑的，这非常不方便，所以，我希望可以选择某个目录进行搜索
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defun maple/counsel-ag-directory()
-  (interactive)
-  (counsel-ag &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; (read-directory-name &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;Search in directory: &lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))&lt;/pre&gt;
-
-&lt;h1 id=&quot;heading-7&quot;&gt;ivy的显示避免出现在视线外&lt;/h1&gt;
-&lt;p&gt;
-  详见 &lt;a href=&quot;https://honmaple.me/articles/2018/06/自定义helm式的ivy.html&quot;&gt;自定义helm式的ivy.html&lt;/a&gt; 中的
-&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;
-  &lt;b&gt;吐嘈六: minibuffer&lt;/b&gt;
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h1 id=&quot;heading-8&quot;&gt;counsel-ag指定文件后缀&lt;/h1&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;关键词 -- -Ggo&lt;/pre&gt;</content>
         <category term="Tech/Linux/Emacs"></category>
     </entry>
 </feed>

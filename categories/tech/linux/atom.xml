@@ -5,8 +5,108 @@
   <link href="https://honmaple.me/categories/tech/linux/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Mon, 22 Apr 2024 23:14:41 +0000</updated>
+    <updated>Wed, 07 Jan 2026 16:07:24 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>让Eglot支持tailwindcss以及多个LSP服务</title>
+      <link href="https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html" rel="alternate"></link>
+      <published>Fri, 02 Jan 2026 00:39:44 +0000</published>
+      <updated>Wed, 07 Jan 2026 16:07:24 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html</id>
+      <summary type="html">
+&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
+&lt;p&gt;
+   虽然我不是专业的前端开发人员，但偶尔还是会写一下 &lt;code&gt;HTML/CSS/Javascript&lt;/code&gt; 或者&lt;code&gt;Vue&lt;/code&gt;。在一个 &lt;b&gt;HTML&lt;/b&gt; 文件中，我需要使用多个 &lt;b&gt;LSP服务&lt;/b&gt;，比如使用 &lt;code&gt;vscode-html-language-server&lt;/code&gt; 补全css样式，使用&lt;code&gt;tailwindcss-language-server&lt;/code&gt; 补全tailwindcss的class名称，使用 &lt;code&gt;vscode-eslint-language-server&lt;/code&gt; 检查语法
+&lt;/p&gt;
+
+&lt;p&gt;
+   但我目前使用的Emacs lSP客户端 &lt;b&gt;Eglot&lt;/b&gt; 一直不支持多个LSP服务，目前的解决方式有两种，一是把...&lt;/p&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;前言&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;如何使用？&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;示例&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;前言&lt;/h2&gt;
+&lt;p&gt;
+   虽然我不是专业的前端开发人员，但偶尔还是会写一下 &lt;code&gt;HTML/CSS/Javascript&lt;/code&gt; 或者&lt;code&gt;Vue&lt;/code&gt;。在一个 &lt;b&gt;HTML&lt;/b&gt; 文件中，我需要使用多个 &lt;b&gt;LSP服务&lt;/b&gt;，比如使用 &lt;code&gt;vscode-html-language-server&lt;/code&gt; 补全css样式，使用&lt;code&gt;tailwindcss-language-server&lt;/code&gt; 补全tailwindcss的class名称，使用 &lt;code&gt;vscode-eslint-language-server&lt;/code&gt; 检查语法
+&lt;/p&gt;
+
+&lt;p&gt;
+   但我目前使用的Emacs lSP客户端 &lt;b&gt;Eglot&lt;/b&gt; 一直不支持多个LSP服务，目前的解决方式有两种，一是把 &lt;b&gt;Eglot&lt;/b&gt; 更换为 &lt;b&gt;lsp-mode&lt;/b&gt; 或者 &lt;b&gt;lsp-bridge&lt;/b&gt;， 二是使用第三方命令行代理服务，比如:
+&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;https://github.com/thefrontside/lspx&quot;&gt;https://github.com/thefrontside/lspx&lt;/a&gt;
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ &lt;a href=&quot;https://github.com/joaotavora/rassumfrassum&quot;&gt;https://github.com/joaotavora/rassumfrassum&lt;/a&gt;
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+   &lt;b&gt;lspx&lt;/b&gt; 是因为我的电脑上没有相关环境，无法编译，&lt;b&gt;rass&lt;/b&gt; 是由 &lt;b&gt;Eglot&lt;/b&gt; 的作者开发，不过看情况他是准备把 &lt;b&gt;rass&lt;/b&gt; 作为一个通用的LSP代理，所以配置文件会单独放置到 &lt;b&gt;HOME&lt;/b&gt; 目录，这一点我不是很喜欢，另一方面是 &lt;b&gt;rass&lt;/b&gt; 由Python开发，使用起来不如单独的二进制文件方便。
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+   算了，找来找去还不如自己写一个，&lt;a href=&quot;https://github.com/honmaple/eglot-lspx&quot;&gt;eglot-lspx&lt;/a&gt;，使用Go写的一个多LSP代理服务，用于解决 &lt;b&gt;Eglot&lt;/b&gt; 无法使用 &lt;code&gt;tailwindcss&lt;/code&gt; 以及不支持多个LSP服务的问题
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;如何使用？&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 编译
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;git clone https://github.com/honmaple/eglot-lspx
+cd eglot-lspx
+go build .&lt;/pre&gt;
+&lt;p&gt;
+     然后把编译好的 &lt;code&gt;eglot-lspx&lt;/code&gt; 文件放到可执行路径下，比如我放到了 &lt;code&gt;~/.emacs.d/bin&lt;/code&gt; 目录，并添加路径到Emacs配置
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(add-to-list &amp;#39;exec-path (expand-file-name &amp;#34;bin&amp;#34; user-emacs-directory) t)&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 配置Eglot
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(defvar eglot-lspx-command (executable-find &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;eglot-lspx&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))
+
+(when eglot-lspx-command
+  (add-to-list &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;eglot-server-programs&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;`&lt;/span&gt;((web-mode :language-id &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;html&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+                                        &lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt; (&lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;eglot-lspx-command
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;vscode-html-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;tailwindcss-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)))
+  (add-to-list &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#39;eglot-server-programs&lt;/span&gt; &lt;span style=&quot;color:#f92672&quot;&gt;`&lt;/span&gt;((vue-mode :language-id &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;html&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
+                                        &lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt; (&lt;span style=&quot;color:#f92672&quot;&gt;,&lt;/span&gt;eglot-lspx-command
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;vue-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;vscode-html-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;tailwindcss-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;--stdio&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
+                                           :initializationOptions
+                                           (lambda (server) (&lt;span style=&quot;color:#a6e22e&quot;&gt;list&lt;/span&gt; :vue-language-server (eglot-volar-options server)))))))&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-3&quot;&gt;示例&lt;/h2&gt;
+&lt;p&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+   
+&lt;a href=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-01.png-show&quot; data-fancybox=&quot;image&quot;&gt;
+  &lt;img data-src=&quot;https://s.libforest.com/images/2026/01/eglot-lspx-01.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
+&lt;/a&gt;
+&lt;/p&gt;</content>
+        <category term="Tech/Linux/Emacs"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>为maple-translate增加更友好的sdcv离线翻译</title>
       <link href="https://honmaple.me/articles/2024/04/wei-maple-translatezeng-jia-geng-you-hao-de-sdcvchi-xian-fan-yi.html" rel="alternate"></link>
@@ -1169,87 +1269,6 @@ maple-explorer-project   ;; 已打开的项目浏览&lt;/pre&gt;
 &lt;/p&gt;
 &lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(maple-run:script &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;bash&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;-c&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;python file.py&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)&lt;/pre&gt;&lt;/li&gt;
 &lt;/ul&gt;</content>
-        <category term="Tech/Linux/Emacs"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>Emacs环境隔离之——maple-env</title>
-      <link href="https://honmaple.me/articles/2019/07/Emacs环境隔离之——maple-env.html" rel="alternate"></link>
-      <published>Mon, 15 Jul 2019 13:34:27 +0000</published>
-      <updated>Wed, 03 Apr 2024 13:04:05 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2019/07/Emacs环境隔离之——maple-env.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2019/07/Emacs环境隔离之——maple-env.html</id>
-      <summary type="html">
-&lt;p&gt;
-在使用Emacs时，会有很多依赖，比如:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- Python依赖于&lt;code&gt;flake8&lt;/code&gt;，&lt;code&gt;isort&lt;/code&gt;，&lt;code&gt;python-language-server&lt;/code&gt;等
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- Golang依赖于&lt;code&gt;golang.org/x/tools/cmd/gopls&lt;/code&gt;，&lt;code&gt;github.com/haya14busa/gopkgs/cmd/gopkgs&lt;/code&gt;等
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-想要安装这些依赖，必须手动进行安装，&lt;b&gt;use-package&lt;/b&gt;用户可使用&lt;b&gt;ensure-system-package&lt;/b&gt;，但非常不幸的是，这些依赖很大程度上会污染我的电脑环境，毕竟像&lt;code&gt;python...&lt;/code&gt;&lt;/p&gt;</summary>
-      <content type="html">
-&lt;p&gt;
-在使用Emacs时，会有很多依赖，比如:
-&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- Python依赖于&lt;code&gt;flake8&lt;/code&gt;，&lt;code&gt;isort&lt;/code&gt;，&lt;code&gt;python-language-server&lt;/code&gt;等
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- Golang依赖于&lt;code&gt;golang.org/x/tools/cmd/gopls&lt;/code&gt;，&lt;code&gt;github.com/haya14busa/gopkgs/cmd/gopkgs&lt;/code&gt;等
-&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-想要安装这些依赖，必须手动进行安装，&lt;b&gt;use-package&lt;/b&gt;用户可使用&lt;b&gt;ensure-system-package&lt;/b&gt;，但非常不幸的是，这些依赖很大程度上会污染我的电脑环境，毕竟像&lt;code&gt;python-language-server&lt;/code&gt;，&lt;code&gt;flake8&lt;/code&gt;这类的package，我除了在Emacs里会用到，平时根本用不到（除非同时使用Emacs和其它编辑器或IDE）
-&lt;/p&gt;
-
-&lt;p&gt;
-所以，我写了一个&lt;b&gt;maple-env&lt;/b&gt;用来实现Emacs依赖环境隔离，使用方式:
-&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- 安装
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;git clone https://github.com/honmaple/emacs-maple-env ~/.emacs/site-lisp/maple-env&lt;/pre&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 配置
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;(use-package maple-env
-  :ensure &lt;span style=&quot;color:#66d9ef&quot;&gt;nil&lt;/span&gt;
-  :hook (after-init &lt;span style=&quot;color:#f92672&quot;&gt;.&lt;/span&gt; maple-env-mode)
-  :config
-  (setq maple-env:python-packages
-        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;yapf&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;flake8&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;isort&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;python-language-server&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
-        maple-env:golang-packages
-        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;github.com/rogpeppe/godef&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-          &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;github.com/golang/lint/golint&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-          &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;github.com/haya14busa/gopkgs/cmd/gopkgs&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;
-          &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;golang.org/x/tools/cmd/gopls&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;)
-        maple-env:npm-packages
-        &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#39;&lt;/span&gt;(&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;js-beautify&lt;/span&gt;&lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;&lt;/span&gt;))
-  &lt;span style=&quot;color:#75715e&quot;&gt;;; 手动调用(maple-env:init)以安装依赖环境&lt;/span&gt;
-  )&lt;/pre&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;
-更多自定义详见&lt;b&gt;customize-group maple-env&lt;/b&gt;
-&lt;/p&gt;</content>
         <category term="Tech/Linux/Emacs"></category>
     </entry>
 </feed>
