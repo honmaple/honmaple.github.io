@@ -5,8 +5,254 @@
   <link href="https://honmaple.me/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me/index.html"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Wed, 07 Jan 2026 16:59:33 +0000</updated>
+    <updated>Thu, 05 Feb 2026 13:53:16 +0000</updated>
   <id>https://honmaple.me</id>
+    <entry xml:lang="zh">
+      <title>ubuntu24.04环境配置</title>
+      <link href="https://honmaple.me/articles/2026/01/ubuntu-note.html" rel="alternate"></link>
+      <published>Fri, 02 Jan 2026 18:51:48 +0000</published>
+      <updated>Thu, 05 Feb 2026 13:53:16 +0000</updated>
+      <author>
+        <name>honmaple</name>
+      </author>
+      <link rel="alternate" href="https://honmaple.me/articles/2026/01/ubuntu-note.html" type="text/html"/>
+      <id>https://honmaple.me/articles/2026/01/ubuntu-note.html</id>
+      <summary type="html">
+&lt;blockquote&gt;
+&lt;p&gt;
+最近我在腾讯云的服务器快过期了，但是续费又太贵，所以趁着活动又买了一台3年的轻量云。这台服务器上也没有什么服务，主要还是因为有一个已经备案的域名需要保一下，否则备案掉了之后再次备案太过麻烦。
+&lt;/p&gt;
+
+&lt;p&gt;
+我之前的服务器还在用着 &lt;b&gt;ubuntu18.04 LTS&lt;/b&gt;，此次迁移准备升级一下系统到 &lt;b&gt;ubuntu24.04 LTS&lt;/b&gt;，故此记录
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+注意: 以下命令以 &lt;code&gt;#&lt;/code&gt; 开头则使用的是root账户，以 &lt;code&gt;$&lt;/code&gt; 开头则为普通账户
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;修改主机名称&lt;/h2&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;# hostnamectl set-hostname [名称]&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;创建新用户&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 删除已存在的用户
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;# deluser --remove-home ubuntu
+# deluser --remove-home lighthouse...&lt;/pre&gt;&lt;/li&gt;&lt;/ul&gt;</summary>
+      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;修改主机名称&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;创建新用户&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;ssh&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;unattended-upgrades&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;snap&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-6&quot;&gt;连接数限制&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-7&quot;&gt;安装Docker&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-8&quot;&gt;卸载腾讯云组件&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+最近我在腾讯云的服务器快过期了，但是续费又太贵，所以趁着活动又买了一台3年的轻量云。这台服务器上也没有什么服务，主要还是因为有一个已经备案的域名需要保一下，否则备案掉了之后再次备案太过麻烦。
+&lt;/p&gt;
+
+&lt;p&gt;
+我之前的服务器还在用着 &lt;b&gt;ubuntu18.04 LTS&lt;/b&gt;，此次迁移准备升级一下系统到 &lt;b&gt;ubuntu24.04 LTS&lt;/b&gt;，故此记录
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+注意: 以下命令以 &lt;code&gt;#&lt;/code&gt; 开头则使用的是root账户，以 &lt;code&gt;$&lt;/code&gt; 开头则为普通账户
+&lt;/p&gt;
+
+&lt;h2 id=&quot;heading-1&quot;&gt;修改主机名称&lt;/h2&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;# hostnamectl set-hostname [名称]&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-2&quot;&gt;创建新用户&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 删除已存在的用户
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;# deluser --remove-home ubuntu
+# deluser --remove-home lighthouse&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 添加新用户
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;# adduser myuser&lt;/pre&gt;
+&lt;p&gt;
+     用户信息比如全名、房间号等，这些可以直接按 &lt;code&gt;Enter&lt;/code&gt; 跳过
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 添加sudo权限
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;# usermod -aG sudo myuser&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 添加公钥
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;# su - 用户名
+$ mkdir ~/.ssh
+$ chmod 700 ~/.ssh
+$ vi ~/.ssh/authorized_keys
+$ chmod 600 ~/.ssh/authorized_keys&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-3&quot;&gt;ssh&lt;/h2&gt;
+&lt;p&gt;
+   修改配置 &lt;code&gt;/etc/ssh/sshd_config&lt;/code&gt;
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 修改端口
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;Port 22&lt;/pre&gt;
+&lt;p&gt;
+     取消注释并修改为想要的端口，然后在腾讯云控制台防火墙添加放行策略
+&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 禁用root登陆
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;PermitRootLogin no&lt;/pre&gt;
+&lt;p&gt;
+     请在添加完成&lt;b&gt;普通用户&lt;/b&gt;后再操作
+&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 重启服务
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo systemctl restart ssh&lt;/pre&gt;
+
+&lt;p&gt;
+     如果修改 &lt;code&gt;sshd_config&lt;/code&gt; 不生效
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo systemctl stop ssh.socket
+$ sudo systemctl disable ssh.socket
+$ sudo systemctl restart ssh&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-4&quot;&gt;unattended-upgrades&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 停止服务
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo systemctl stop unattended-upgrades
+$ sudo systemctl disable unattended-upgrades&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 卸载
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo apt remove --purge unattended-upgrades&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-5&quot;&gt;snap&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 停止服务
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo systemctl stop snapd.service
+$ sudo systemctl disable snapd.service
+$ sudo systemctl mask snapd.service&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 查看已安装软件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ snap list&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 卸载安装软件(把使用 &lt;b&gt;snap&lt;/b&gt; 安装的软件依次卸载)
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo snap remove --purge [软件名称]&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 卸载 &lt;b&gt;snap&lt;/b&gt;
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo apt autoremove --purge snapd&lt;/pre&gt;
+&lt;p&gt;
+     清理目录
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo rm -rf /var/cache/snapd
+$ sudo rm -rf /var/snap
+$ sudo rm -rf /var/lib/snapd&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 阻止 &lt;b&gt;snapd&lt;/b&gt; 被自动重新安装
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo cat &amp;lt;&amp;lt;EOF | sudo tee /etc/apt/preferences.d/nosnap.pref
+Package: snapd
+Pin: release a=*
+Pin-Priority: -10
+EOF&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-6&quot;&gt;连接数限制&lt;/h2&gt;
+&lt;p&gt;
+   编辑文件 &lt;code&gt;/etc/security/limits.conf&lt;/code&gt;，在文件末尾添加以下内容：
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;* soft nofile 65535
+* hard nofile 65535
+* soft nproc 20480
+* hard nproc 20480&lt;/pre&gt;
+&lt;p&gt;
+   注：&lt;b&gt;nofile&lt;/b&gt; 是文件打开数，&lt;b&gt;nproc&lt;/b&gt; 是最大进程数。&lt;code&gt;*&lt;/code&gt; 代表除 &lt;b&gt;root&lt;/b&gt; 外的所有用户，如果需要添加 &lt;b&gt;root&lt;/b&gt;，则增加
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;root soft nofile 65535
+root hard nofile 65535&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-7&quot;&gt;安装Docker&lt;/h2&gt;
+&lt;p&gt;
+   官方文档: &lt;a href=&quot;https://docs.docker.com/engine/install/ubuntu/&quot;&gt;https://docs.docker.com/engine/install/ubuntu/&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 设置apt仓库
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo apt update
+$ sudo apt install ca-certificates curl
+$ sudo install -m 0755 -d /etc/apt/keyrings
+$ sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+$ sudo chmod a+r /etc/apt/keyrings/docker.asc
+$ sudo tee /etc/apt/sources.list.d/docker.sources &amp;lt;&amp;lt;EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release &amp;amp;&amp;amp; echo &amp;#34;${UBUNTU_CODENAME:-$VERSION_CODENAME}&amp;#34;)
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+$ sudo apt update&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 安装
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 普通用户权限
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo usermod -aG docker [用户名]&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;heading-8&quot;&gt;卸载腾讯云组件&lt;/h2&gt;
+&lt;p&gt;
+   卸载腾讯云内置的组件
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo /usr/local/qcloud/monitor/barad/admin/uninstall.sh
+$ sudo /usr/local/qcloud/stargate/admin/uninstall.sh
+$ sudo /usr/local/qcloud/YunJing/uninst.sh&lt;/pre&gt;</content>
+        <category term="Linux"></category>
+    </entry>
     <entry xml:lang="zh">
       <title>让Eglot支持tailwindcss以及多个LSP服务</title>
       <link href="https://honmaple.me/articles/2026/01/eglot-multi-lsp-language-server.html" rel="alternate"></link>
@@ -1494,187 +1740,5 @@ brew install --cask visual-studio-code&lt;/pre&gt;
     除此之外，最近很少使用的lua等环境待后续补充吧
 &lt;/p&gt;</content>
         <category term="Tech"></category>
-    </entry>
-    <entry xml:lang="zh">
-      <title>红枫云盘正式上线App Store</title>
-      <link href="https://honmaple.me/articles/2025/03/hong-feng-yun-pan-zheng-shi-shang-xian-app-store.html" rel="alternate"></link>
-      <published>Sat, 15 Mar 2025 17:25:17 +0000</published>
-      <updated>Tue, 18 Mar 2025 15:04:49 +0000</updated>
-      <author>
-        <name>honmaple</name>
-      </author>
-      <link rel="alternate" href="https://honmaple.me/articles/2025/03/hong-feng-yun-pan-zheng-shi-shang-xian-app-store.html" type="text/html"/>
-      <id>https://honmaple.me/articles/2025/03/hong-feng-yun-pan-zheng-shi-shang-xian-app-store.html</id>
-      <summary type="html">
-&lt;blockquote&gt;
-&lt;p&gt;
-
-&lt;a href=&quot;https://s.libforest.com/images/2025/03/maple-file-app-store.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2025/03/maple-file-app-store.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-欢迎大家下载使用 &lt;a href=&quot;https://apps.apple.com/us/app/maplefile/id6743229674&quot;&gt;https://apps.apple.com/us/app/maplefile/id6743229674&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-第一次上线APP，虽然走了不少弯路，不过总体上线过程还是挺顺利的。3月12日注册的开发者账号，今天（3月15日）即成功上线，大概的流程就是
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;注册开发者账号&lt;/h2&gt;
-&lt;p&gt;
-   首先登陆 &lt;a href=&quot;https://developer.apple.com&quot;&gt;https://developer.apple.com&lt;/a&gt;。注意，这里只能使用国区的Apple ID进行注册，我第一次使用美区ID，但是需要美国的身份证明，换成国区ID后才成功注册。
-&lt;/p&gt;
-
-&lt;p&gt;
-   第一天注册苹果会在48小时内进行审核，我刚开始还以为在成功缴费 &lt;b&gt;688元&lt;/b&gt; 后就行，但一直没有下一步，后来联系了苹果的支持，收到回复注册的开发者账号会在48小时内审核...&lt;/p&gt;</summary>
-      <content type="html">&lt;div id=&quot;table-of-contents&quot;&gt;&lt;h2&gt;Table of Contents&lt;/h2&gt;&lt;div id=&quot;text-table-of-contents&quot;&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-1&quot;&gt;注册开发者账号&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-2&quot;&gt;软件准备(Flutter)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;图标设计&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;IPA上传&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;提交审核&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-6&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-
-&lt;a href=&quot;https://s.libforest.com/images/2025/03/maple-file-app-store.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2025/03/maple-file-app-store.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-欢迎大家下载使用 &lt;a href=&quot;https://apps.apple.com/us/app/maplefile/id6743229674&quot;&gt;https://apps.apple.com/us/app/maplefile/id6743229674&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-第一次上线APP，虽然走了不少弯路，不过总体上线过程还是挺顺利的。3月12日注册的开发者账号，今天（3月15日）即成功上线，大概的流程就是
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-1&quot;&gt;注册开发者账号&lt;/h2&gt;
-&lt;p&gt;
-   首先登陆 &lt;a href=&quot;https://developer.apple.com&quot;&gt;https://developer.apple.com&lt;/a&gt;。注意，这里只能使用国区的Apple ID进行注册，我第一次使用美区ID，但是需要美国的身份证明，换成国区ID后才成功注册。
-&lt;/p&gt;
-
-&lt;p&gt;
-   第一天注册苹果会在48小时内进行审核，我刚开始还以为在成功缴费 &lt;b&gt;688元&lt;/b&gt; 后就行，但一直没有下一步，后来联系了苹果的支持，收到回复注册的开发者账号会在48小时内审核。不过也不用48小时，我头天下午注册的，第二天早上9点多就收到了身份验证的邮件，因为注册用的是国区的ID，所以需要提交身份证照片，提交后一个小时内即审核通过。
-&lt;/p&gt;
-
-&lt;p&gt;
-   审核通过后就能在开发者页面看到 &lt;b&gt;计划资源&lt;/b&gt;，否则会提示需要审核
-&lt;/p&gt;
-
-&lt;p&gt;
-   
-&lt;a href=&quot;https://s.libforest.com/images/2025/03/maple-file-app-store-02.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2025/03/maple-file-app-store-02.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-2&quot;&gt;软件准备(Flutter)&lt;/h2&gt;
-&lt;p&gt;
-   这里我走了不少弯路，在网上搜索相关教程时又要本地创建证书，又要申请Profile的，其实不必这么麻烦。
-&lt;/p&gt;
-
-&lt;p&gt;
-   首先点击 &lt;b&gt;计划资源&lt;/b&gt; 里的 &lt;b&gt;标识符 (英文)&lt;/b&gt;，然后点击 + 号，依次选择 &lt;b&gt;App IDs&lt;/b&gt; -&amp;gt; &lt;b&gt;App&lt;/b&gt;，然后输入 &lt;b&gt;Bundle ID&lt;/b&gt; 及 &lt;b&gt;Description&lt;/b&gt;。如果需要在手机上进行测试，则需要在设备(Devices)里添加相应的设备，其中 &lt;b&gt;Device ID (UDID)&lt;/b&gt; 可以使用 Xcode，选择&lt;b&gt;Windows&lt;/b&gt; -&amp;gt; &lt;b&gt;Devices And Simulators&lt;/b&gt;查看。
-&lt;/p&gt;
-
-&lt;p&gt;
-   接下来就不需要在网页上创建证书，只需要打开 Xcode，选择 &lt;b&gt;Runner(TARGETS)&lt;/b&gt; -&amp;gt; &lt;b&gt;Signing &amp;amp; Capabilities&lt;/b&gt;, 勾选 &lt;b&gt;Automatically manage signing&lt;/b&gt; 并选择 &lt;b&gt;Team&lt;/b&gt;，然后输入 &lt;b&gt;Bundle Identifier&lt;/b&gt; 即可
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-3&quot;&gt;图标设计&lt;/h2&gt;
-&lt;p&gt;
-   相关的环境准备好后，就到了最耗时也最难（对于我而言）的 &lt;b&gt;图标设计&lt;/b&gt;。
-&lt;/p&gt;
-
-&lt;p&gt;
-   对于一个没有学过UI设计的人来说，这确实是难题，虽然现在已有了AI的加持，但生成的设计图都不太符合我的审美，更重要的是，即使生成了一张符合的图片，但要把它转换为可用的APP图标还需要进行一系列的裁剪和修改，比如在MacOS上一个 &lt;code&gt;1024 * 1024&lt;/code&gt; 的图标就需要设置外边缘为&lt;code&gt;10%&lt;/code&gt;，即图标大小应为 &lt;code&gt;819.2像素&lt;/code&gt;，底部图层为透明色，除此之外，还需要设置图标的圆角大小为 &lt;code&gt;179.649&lt;/code&gt;，这些对于设计人员非常常见的参数，对于我却花费了不少时间。
-&lt;/p&gt;
-
-&lt;p&gt;
-   在经过对AI生成的原图片进行不断地抠图、裁剪，但还是不满意之后，最后我还是决定自己绘制矢量图(SVG)，于是我通过搜索找到了 &lt;a href=&quot;https://inkscape.org&quot;&gt;Inkscape&lt;/a&gt;  这个软件，并在B站学习了两天半的时间，简单上手之后参考原图片自己绘制了红枫云盘的图标，还算不错（个人觉得，哈哈）。
-&lt;/p&gt;
-
-&lt;p&gt;
-   有了图标后，就能使用 &lt;code&gt;flutter_launcher_icons&lt;/code&gt; 这个插件就能快速生成IOS/MacOS/Android的图标
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;flutter_launcher_icons&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;android&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;launcher_icon&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;image_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;assets/icon/icon.png&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;web&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;generate&lt;/span&gt;: &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;image_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;assets/icon/icon.png&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;windows&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;generate&lt;/span&gt;: &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;image_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;assets/icon/icon.png&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;ios&lt;/span&gt;: &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;image_path_ios&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;assets/icon/icon.png&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;remove_alpha_ios&lt;/span&gt;: &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;background_color_ios&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;#ffffff&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;macos&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;generate&lt;/span&gt;: &lt;span style=&quot;color:#66d9ef&quot;&gt;true&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;image_path&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;assets/icon/icon-macos.png&amp;#34;&lt;/span&gt;&lt;/pre&gt;
-&lt;p&gt;
-   同样的，也能使用 &lt;code&gt;flutter_native_splash&lt;/code&gt; 快速生成启动图
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&lt;span style=&quot;color:#66d9ef&quot;&gt;flutter_native_splash&lt;/span&gt;:
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;color&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;#ffffff&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;color_dark&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;#121212&amp;#34;&lt;/span&gt;
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;image&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;assets/icon/icon.png&amp;#34;&lt;/span&gt;
-
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;android_12&lt;/span&gt;:
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;image&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;assets/icon/icon.png&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;icon_background_color&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;#ffffff&amp;#34;&lt;/span&gt;
-    &lt;span style=&quot;color:#66d9ef&quot;&gt;icon_background_color_dark&lt;/span&gt;: &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;#121212&amp;#34;&lt;/span&gt;
-
-  &lt;span style=&quot;color:#66d9ef&quot;&gt;web&lt;/span&gt;: &lt;span style=&quot;color:#66d9ef&quot;&gt;false&lt;/span&gt;&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-4&quot;&gt;IPA上传&lt;/h2&gt;
-&lt;p&gt;
-   使用 &lt;code&gt;flutter build ipa&lt;/code&gt; 生成ipa文件，不需要在Xcode上操作，然后使用 &lt;b&gt;Transporter&lt;/b&gt; 这个苹果官方的软件进行上传，上传后的文件可在下一步里的 &lt;b&gt;构建版本&lt;/b&gt; 中选择。
-&lt;/p&gt;
-
-&lt;p&gt;
-  
-&lt;a href=&quot;https://s.libforest.com/images/2025/03/maple-file-app-store-03.png-show&quot; data-fancybox=&quot;image&quot;&gt;
-  &lt;img data-src=&quot;https://s.libforest.com/images/2025/03/maple-file-app-store-03.png-thumb&quot; class=&quot;lazyload&quot; /&gt;
-&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-5&quot;&gt;提交审核&lt;/h2&gt;
-&lt;p&gt;
-   首先登陆 &lt;a href=&quot;https://appstoreconnect.apple.com/apps&quot;&gt;https://appstoreconnect.apple.com/apps&lt;/a&gt;，创建好APP，并填写好相关的表单，上传好对应的截图，在 &lt;b&gt;构建版本&lt;/b&gt; 中选择上传的IPA文件。
-&lt;/p&gt;
-
-&lt;p&gt;
-   这一步确实有很多表单要填写，包括 &lt;b&gt;App信息&lt;/b&gt;、&lt;b&gt;App隐私&lt;/b&gt;、&lt;b&gt;价格与销售范围&lt;/b&gt;，如果是付费App，还需要签署一些协议，添加银行卡，不过只要认真填写，在审核这一步能减少非常多与客服掰扯的时间，就像我一样，提交审核后一次就能通过，不需要反复地修改
-&lt;/p&gt;
-
-&lt;p&gt;
-   注意：如果想上架国区，还需要进行&lt;b&gt;App备案&lt;/b&gt;，虽然我已经有了一个已备案的域名和服务器，但App备案是要重新提交并申请的，挺麻烦的，大概吧，所以红枫云盘是未上架国区的，也是唯一未上架的区域，如果想要下载使用，则需要使用其它区的Apple ID
-&lt;/p&gt;
-
-&lt;h2 id=&quot;heading-6&quot;&gt;其它&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;
- CNAPS(联行号)查看: &lt;a href=&quot;https://www.cwjyz.com.cn/bank/index.html&quot;&gt;https://www.cwjyz.com.cn/bank/index.html&lt;/a&gt;
-&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;
- 缺少出口合规证明: &lt;code&gt;Info.plist&lt;/code&gt;中添加
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;&amp;lt;key&amp;gt;ITSAppUsesNonExemptEncryption&amp;lt;/key&amp;gt;&amp;lt;false/&amp;gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;/ul&gt;</content>
-        <category term="Tech/Coding/Flutter"></category>
     </entry>
 </feed>
