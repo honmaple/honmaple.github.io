@@ -72,7 +72,7 @@
       <a href="https://honmaple.me/articles/2026/01/ubuntu-note.html" rel="bookmark" title="Permalink to ubuntu24.04环境配置">ubuntu24.04环境配置</a>
     </h1>
       <div class="entry-article-info">
-        <span title="Updated at 2026-02-05">
+        <span title="Updated at 2026-02-11">
           <i class="fa fa-calendar-o"></i>
           2026年01月02日 周五
         </span>
@@ -100,9 +100,10 @@
 <li><a href="#heading-3">ssh</a></li>
 <li><a href="#heading-4">unattended-upgrades</a></li>
 <li><a href="#heading-5">snap</a></li>
-<li><a href="#heading-6">连接数限制</a></li>
-<li><a href="#heading-7">安装Docker</a></li>
-<li><a href="#heading-8">卸载腾讯云组件</a></li>
+<li><a href="#heading-6">docker</a></li>
+<li><a href="#heading-7">其它软件</a></li>
+<li><a href="#heading-8">连接数限制</a></li>
+<li><a href="#heading-9">卸载腾讯云组件</a></li>
 </ul></div></div>
 
 <blockquote>
@@ -246,21 +247,7 @@ Pin-Priority: -10
 EOF</pre>
 </li>
 </ul>
-<h2 id="heading-6">连接数限制</h2>
-<p>
-   编辑文件 <code>/etc/security/limits.conf</code>，在文件末尾添加以下内容：
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">* soft nofile 65535
-* hard nofile 65535
-* soft nproc 20480
-* hard nproc 20480</pre>
-<p>
-   注：<b>nofile</b> 是文件打开数，<b>nproc</b> 是最大进程数。<code>*</code> 代表除 <b>root</b> 外的所有用户，如果需要添加 <b>root</b>，则增加
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">root soft nofile 65535
-root hard nofile 65535</pre>
-
-<h2 id="heading-7">安装Docker</h2>
+<h2 id="heading-6">docker</h2>
 <p>
    官方文档: <a href="https://docs.docker.com/engine/install/ubuntu/">https://docs.docker.com/engine/install/ubuntu/</a>
 </p>
@@ -292,10 +279,41 @@ $ sudo apt update</pre></li>
 <p>
  普通用户权限
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">$ sudo usermod -aG docker [用户名]</pre>
+<pre style="color:#f8f8f2;background-color:#272822">$ sudo usermod -aG docker [用户名]</pre></li>
+<li>
+<p>
+ 镜像
+     由于官方仓库无法连接，修改 <code>/etc/docker/daemon.json</code> 添加下面配置
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">{
+    <span style="color:#f92672">&#34;registry-mirrors&#34;</span>: [
+        <span style="color:#e6db74">&#34;https://mirror.ccs.tencentyun.com&#34;</span>
+    ]
+}</pre>
+<p>
+     然后重启docker即可
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">$ sudo systemctl restart docker</pre>
 </li>
 </ul>
-<h2 id="heading-8">卸载腾讯云组件</h2>
+<h2 id="heading-7">其它软件</h2>
+<pre style="color:#f8f8f2;background-color:#272822">$ sudo apt install tree</pre>
+
+<h2 id="heading-8">连接数限制</h2>
+<p>
+   编辑文件 <code>/etc/security/limits.conf</code>，在文件末尾添加以下内容：
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">* soft nofile 65535
+* hard nofile 65535
+* soft nproc 20480
+* hard nproc 20480</pre>
+<p>
+   注：<b>nofile</b> 是文件打开数，<b>nproc</b> 是最大进程数。<code>*</code> 代表除 <b>root</b> 外的所有用户，如果需要添加 <b>root</b>，则增加
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">root soft nofile 65535
+root hard nofile 65535</pre>
+
+<h2 id="heading-9">卸载腾讯云组件</h2>
 <p>
    卸载腾讯云内置的组件
 </p>

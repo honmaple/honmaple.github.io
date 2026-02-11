@@ -5,13 +5,13 @@
   <link href="https://honmaple.me/categories/linux/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://honmaple.me"/>
   <generator uri="https://github.com/honmaple/snow">Snow</generator>
-    <updated>Thu, 05 Feb 2026 13:53:16 +0000</updated>
+    <updated>Wed, 11 Feb 2026 22:34:17 +0000</updated>
   <id>https://honmaple.me</id>
     <entry xml:lang="zh">
       <title>ubuntu24.04环境配置</title>
       <link href="https://honmaple.me/articles/2026/01/ubuntu-note.html" rel="alternate"></link>
       <published>Fri, 02 Jan 2026 18:51:48 +0000</published>
-      <updated>Thu, 05 Feb 2026 13:53:16 +0000</updated>
+      <updated>Wed, 11 Feb 2026 22:34:17 +0000</updated>
       <author>
         <name>honmaple</name>
       </author>
@@ -49,9 +49,10 @@
 &lt;li&gt;&lt;a href=&quot;#heading-3&quot;&gt;ssh&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;#heading-4&quot;&gt;unattended-upgrades&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;#heading-5&quot;&gt;snap&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-6&quot;&gt;连接数限制&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-7&quot;&gt;安装Docker&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;#heading-8&quot;&gt;卸载腾讯云组件&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-6&quot;&gt;docker&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-7&quot;&gt;其它软件&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-8&quot;&gt;连接数限制&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#heading-9&quot;&gt;卸载腾讯云组件&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;blockquote&gt;
@@ -195,21 +196,7 @@ Pin-Priority: -10
 EOF&lt;/pre&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&quot;heading-6&quot;&gt;连接数限制&lt;/h2&gt;
-&lt;p&gt;
-   编辑文件 &lt;code&gt;/etc/security/limits.conf&lt;/code&gt;，在文件末尾添加以下内容：
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;* soft nofile 65535
-* hard nofile 65535
-* soft nproc 20480
-* hard nproc 20480&lt;/pre&gt;
-&lt;p&gt;
-   注：&lt;b&gt;nofile&lt;/b&gt; 是文件打开数，&lt;b&gt;nproc&lt;/b&gt; 是最大进程数。&lt;code&gt;*&lt;/code&gt; 代表除 &lt;b&gt;root&lt;/b&gt; 外的所有用户，如果需要添加 &lt;b&gt;root&lt;/b&gt;，则增加
-&lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;root soft nofile 65535
-root hard nofile 65535&lt;/pre&gt;
-
-&lt;h2 id=&quot;heading-7&quot;&gt;安装Docker&lt;/h2&gt;
+&lt;h2 id=&quot;heading-6&quot;&gt;docker&lt;/h2&gt;
 &lt;p&gt;
    官方文档: &lt;a href=&quot;https://docs.docker.com/engine/install/ubuntu/&quot;&gt;https://docs.docker.com/engine/install/ubuntu/&lt;/a&gt;
 &lt;/p&gt;
@@ -241,10 +228,41 @@ $ sudo apt update&lt;/pre&gt;&lt;/li&gt;
 &lt;p&gt;
  普通用户权限
 &lt;/p&gt;
-&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo usermod -aG docker [用户名]&lt;/pre&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo usermod -aG docker [用户名]&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;
+ 镜像
+     由于官方仓库无法连接，修改 &lt;code&gt;/etc/docker/daemon.json&lt;/code&gt; 添加下面配置
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;{
+    &lt;span style=&quot;color:#f92672&quot;&gt;&amp;#34;registry-mirrors&amp;#34;&lt;/span&gt;: [
+        &lt;span style=&quot;color:#e6db74&quot;&gt;&amp;#34;https://mirror.ccs.tencentyun.com&amp;#34;&lt;/span&gt;
+    ]
+}&lt;/pre&gt;
+&lt;p&gt;
+     然后重启docker即可
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo systemctl restart docker&lt;/pre&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&quot;heading-8&quot;&gt;卸载腾讯云组件&lt;/h2&gt;
+&lt;h2 id=&quot;heading-7&quot;&gt;其它软件&lt;/h2&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;$ sudo apt install tree&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-8&quot;&gt;连接数限制&lt;/h2&gt;
+&lt;p&gt;
+   编辑文件 &lt;code&gt;/etc/security/limits.conf&lt;/code&gt;，在文件末尾添加以下内容：
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;* soft nofile 65535
+* hard nofile 65535
+* soft nproc 20480
+* hard nproc 20480&lt;/pre&gt;
+&lt;p&gt;
+   注：&lt;b&gt;nofile&lt;/b&gt; 是文件打开数，&lt;b&gt;nproc&lt;/b&gt; 是最大进程数。&lt;code&gt;*&lt;/code&gt; 代表除 &lt;b&gt;root&lt;/b&gt; 外的所有用户，如果需要添加 &lt;b&gt;root&lt;/b&gt;，则增加
+&lt;/p&gt;
+&lt;pre style=&quot;color:#f8f8f2;background-color:#272822&quot;&gt;root soft nofile 65535
+root hard nofile 65535&lt;/pre&gt;
+
+&lt;h2 id=&quot;heading-9&quot;&gt;卸载腾讯云组件&lt;/h2&gt;
 &lt;p&gt;
    卸载腾讯云内置的组件
 &lt;/p&gt;
