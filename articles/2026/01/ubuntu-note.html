@@ -72,7 +72,7 @@
       <a href="https://honmaple.me/articles/2026/01/ubuntu-note.html" rel="bookmark" title="Permalink to ubuntu24.04环境配置">ubuntu24.04环境配置</a>
     </h1>
       <div class="entry-article-info">
-        <span title="Updated at 2026-02-11">
+        <span title="Updated at 2026-02-14">
           <i class="fa fa-calendar-o"></i>
           2026年01月02日 周五
         </span>
@@ -95,15 +95,27 @@
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
       <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">修改主机名称</a></li>
-<li><a href="#heading-2">创建新用户</a></li>
-<li><a href="#heading-3">ssh</a></li>
-<li><a href="#heading-4">unattended-upgrades</a></li>
-<li><a href="#heading-5">snap</a></li>
-<li><a href="#heading-6">docker</a></li>
-<li><a href="#heading-7">其它软件</a></li>
-<li><a href="#heading-8">连接数限制</a></li>
-<li><a href="#heading-9">卸载腾讯云组件</a></li>
+<li><a href="#heading-1">系统设置</a>
+<ul>
+<li><a href="#heading-1.1">修改主机名称</a></li>
+<li><a href="#heading-1.2">创建新用户</a></li>
+<li><a href="#heading-1.3">连接数限制</a></li>
+<li><a href="#heading-1.4">交换内存</a></li>
+<li><a href="#heading-1.5">启用BBR</a></li>
+</ul></li>
+<li><a href="#heading-2">系统服务</a>
+<ul>
+<li><a href="#heading-2.1">motd</a></li>
+<li><a href="#heading-2.2">ssh</a></li>
+<li><a href="#heading-2.3">unattended-upgrades</a></li>
+<li><a href="#heading-2.4">snap</a></li>
+</ul></li>
+<li><a href="#heading-3">其它服务</a>
+<ul>
+<li><a href="#heading-3.1">docker</a></li>
+<li><a href="#heading-3.2">other</a></li>
+<li><a href="#heading-3.3">腾讯云组件</a></li>
+</ul></li>
 </ul></div></div>
 
 <blockquote>
@@ -120,10 +132,11 @@
 注意: 以下命令以 <code>#</code> 开头则使用的是root账户，以 <code>$</code> 开头则为普通账户
 </p>
 
-<h2 id="heading-1">修改主机名称</h2>
+<h2 id="heading-1">系统设置</h2>
+<h3 id="heading-1.1">修改主机名称</h3>
 <pre style="color:#f8f8f2;background-color:#272822"># hostnamectl set-hostname [名称]</pre>
 
-<h2 id="heading-2">创建新用户</h2>
+<h3 id="heading-1.2">创建新用户</h3>
 <ul>
 <li>
 <p>
@@ -137,7 +150,7 @@
 </p>
 <pre style="color:#f8f8f2;background-color:#272822"># adduser myuser</pre>
 <p>
-     用户信息比如全名、房间号等，这些可以直接按 <code>Enter</code> 跳过
+      用户信息比如全名、房间号等，这些可以直接按 <code>Enter</code> 跳过
 </p></li>
 <li>
 <p>
@@ -155,9 +168,59 @@ $ vi ~/.ssh/authorized_keys
 $ chmod 600 ~/.ssh/authorized_keys</pre>
 </li>
 </ul>
-<h2 id="heading-3">ssh</h2>
+<h3 id="heading-1.3">连接数限制</h3>
 <p>
-   修改配置 <code>/etc/ssh/sshd_config</code>
+    编辑文件 <code>/etc/security/limits.conf</code>，在文件末尾添加以下内容：
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">* soft nofile 65535
+* hard nofile 65535
+* soft nproc 20480
+* hard nproc 20480</pre>
+<p>
+    注：<b>nofile</b> 是文件打开数，<b>nproc</b> 是最大进程数。<code>*</code> 代表除 <b>root</b> 外的所有用户，如果需要添加 <b>root</b>，则增加
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">root soft nofile 65535
+root hard nofile 65535</pre>
+
+<h3 id="heading-1.4">交换内存</h3>
+<p>
+    默认的 <code>vm.swappiness</code> 为 <b>60</b>，表示内存使用率超过 <b>100%-60%=40%</b> 时就开始使用交换分区
+</p>
+<ul>
+<li>
+<p>
+ 查看当前swappiness
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">$ cat /proc/sys/vm/swappiness</pre></li>
+<li>
+<p>
+ 临时修改
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">$ sudo sysctl vm.swappiness=10
+$ cat /proc/sys/vm/swappiness</pre></li>
+<li>
+<p>
+ 永久修改
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">$ echo &#34;vm.swappiness=10&#34; | sudo tee -a /etc/sysctl.conf
+$ sudo sysctl -p</pre>
+</li>
+</ul>
+<h3 id="heading-1.5">启用BBR</h3>
+<pre style="color:#f8f8f2;background-color:#272822">$ echo &#34;net.core.default_qdisc=fq&#34; | sudo tee -a /etc/sysctl.conf
+$ echo &#34;net.ipv4.tcp_congestion_control=bbr&#34; | sudo tee -a /etc/sysctl.conf
+$ sudo sysctl -p</pre>
+
+<h2 id="heading-2">系统服务</h2>
+<h3 id="heading-2.1">motd</h3>
+<p>
+    禁用终端广告
+</p>
+<pre style="color:#f8f8f2;background-color:#272822">sudo sed -i &#39;s/ENABLED=1/ENABLED=0/&#39; /etc/default/motd-news</pre>
+
+<h3 id="heading-2.2">ssh</h3>
+<p>
+    修改配置 <code>/etc/ssh/sshd_config</code>
 </p>
 
 <ul>
@@ -167,16 +230,15 @@ $ chmod 600 ~/.ssh/authorized_keys</pre>
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">Port 22</pre>
 <p>
-     取消注释并修改为想要的端口，然后在腾讯云控制台防火墙添加放行策略
-</p>
-</li>
+      取消注释并修改为想要的端口，然后在腾讯云控制台防火墙添加放行策略
+</p></li>
 <li>
 <p>
  禁用root登陆
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">PermitRootLogin no</pre>
 <p>
-     请在添加完成<b>普通用户</b>后再操作
+      请在添加完成<b>普通用户</b>后再操作
 </p></li>
 <li>
 <p>
@@ -185,14 +247,14 @@ $ chmod 600 ~/.ssh/authorized_keys</pre>
 <pre style="color:#f8f8f2;background-color:#272822">$ sudo systemctl restart ssh</pre>
 
 <p>
-     如果修改 <code>sshd_config</code> 不生效
+      如果修改 <code>sshd_config</code> 不生效
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">$ sudo systemctl stop ssh.socket
 $ sudo systemctl disable ssh.socket
 $ sudo systemctl restart ssh</pre>
 </li>
 </ul>
-<h2 id="heading-4">unattended-upgrades</h2>
+<h3 id="heading-2.3">unattended-upgrades</h3>
 <ul>
 <li>
 <p>
@@ -204,9 +266,10 @@ $ sudo systemctl disable unattended-upgrades</pre></li>
 <p>
  卸载
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">$ sudo apt remove --purge unattended-upgrades</pre></li>
+<pre style="color:#f8f8f2;background-color:#272822">$ sudo apt remove --purge unattended-upgrades</pre>
+</li>
 </ul>
-<h2 id="heading-5">snap</h2>
+<h3 id="heading-2.4">snap</h3>
 <ul>
 <li>
 <p>
@@ -231,7 +294,7 @@ $ sudo systemctl mask snapd.service</pre></li>
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">$ sudo apt autoremove --purge snapd</pre>
 <p>
-     清理目录
+      清理目录
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">$ sudo rm -rf /var/cache/snapd
 $ sudo rm -rf /var/snap
@@ -247,9 +310,10 @@ Pin-Priority: -10
 EOF</pre>
 </li>
 </ul>
-<h2 id="heading-6">docker</h2>
+<h2 id="heading-3">其它服务</h2>
+<h3 id="heading-3.1">docker</h3>
 <p>
-   官方文档: <a href="https://docs.docker.com/engine/install/ubuntu/">https://docs.docker.com/engine/install/ubuntu/</a>
+    官方文档: <a href="https://docs.docker.com/engine/install/ubuntu/">https://docs.docker.com/engine/install/ubuntu/</a>
 </p>
 
 <ul>
@@ -283,7 +347,7 @@ $ sudo apt update</pre></li>
 <li>
 <p>
  镜像
-     由于官方仓库无法连接，修改 <code>/etc/docker/daemon.json</code> 添加下面配置
+      由于官方仓库无法连接，修改 <code>/etc/docker/daemon.json</code> 添加下面配置
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">{
     <span style="color:#f92672">&#34;registry-mirrors&#34;</span>: [
@@ -291,31 +355,17 @@ $ sudo apt update</pre></li>
     ]
 }</pre>
 <p>
-     然后重启docker即可
+      然后重启docker即可
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">$ sudo systemctl restart docker</pre>
 </li>
 </ul>
-<h2 id="heading-7">其它软件</h2>
+<h3 id="heading-3.2">other</h3>
 <pre style="color:#f8f8f2;background-color:#272822">$ sudo apt install tree</pre>
 
-<h2 id="heading-8">连接数限制</h2>
+<h3 id="heading-3.3">腾讯云组件</h3>
 <p>
-   编辑文件 <code>/etc/security/limits.conf</code>，在文件末尾添加以下内容：
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">* soft nofile 65535
-* hard nofile 65535
-* soft nproc 20480
-* hard nproc 20480</pre>
-<p>
-   注：<b>nofile</b> 是文件打开数，<b>nproc</b> 是最大进程数。<code>*</code> 代表除 <b>root</b> 外的所有用户，如果需要添加 <b>root</b>，则增加
-</p>
-<pre style="color:#f8f8f2;background-color:#272822">root soft nofile 65535
-root hard nofile 65535</pre>
-
-<h2 id="heading-9">卸载腾讯云组件</h2>
-<p>
-   卸载腾讯云内置的组件
+    卸载腾讯云内置的组件
 </p>
 <pre style="color:#f8f8f2;background-color:#272822">$ sudo /usr/local/qcloud/monitor/barad/admin/uninstall.sh
 $ sudo /usr/local/qcloud/stargate/admin/uninstall.sh
@@ -370,9 +420,11 @@ $ sudo /usr/local/qcloud/YunJing/uninst.sh</pre>
     <li class="hidden-xs">© 2015-2026 honmaple</li>
     <li class="hidden-xs">·</li>
     <li>
-        <a href="https://honmaple.me/pages/friends.html">友链</a>
+        <a href="https://github.com/honmaple">Github</a>
           <span> | </span>
         <a href="https://honmaple.me/pages/contact.html">联系</a>
+          <span> | </span>
+        <a href="https://honmaple.me/pages/about.html">关于</a>
     </li>
   </ul>
   <ul class="footer-right">
@@ -380,7 +432,6 @@ $ sudo /usr/local/qcloud/YunJing/uninst.sh</pre>
       <li><a href="https://honmaple.me/pages/music.html" title="音乐"><i class="fa fa-music"></i></a></li>
       <li><a href="https://honmaple.me/pages/travel.html" title="旅行"><i class="fa fa-camera"></i></a></li>
       <li class="hidden-xs"><a href="https://honmaple.me/atom.xml" title="Feed"><i class="fa fa-feed"></i></a></li>
-      <li><a href="https://github.com/honmaple" title="Github"><i class="fa fa-github"></i></a></li>
   </ul>
 </div>
 <div class="back-to-top on">
