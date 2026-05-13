@@ -93,21 +93,56 @@
   </div>
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
-      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">安装教程</a>
-<ul>
-<li><a href="#heading-1.1">下载镜像</a></li>
-<li><a href="#heading-1.2">使用ssh登录到后台</a></li>
-<li><a href="#heading-1.3">使用Docker命令行安装</a></li>
-</ul></li>
-<li><a href="#heading-2">折腾教程</a>
-<ul>
-<li><a href="#heading-2.1">群晖本地IP(macvlan)</a></li>
-<li><a href="#heading-2.2">webdav挂载</a></li>
-</ul></li>
-<li><a href="#heading-3">其它</a></li>
-</ul></div></div>
-
+        
+    <div id="table-of-contents">
+      <h2>快速导航</h2>
+      <div id="text-table-of-contents">
+        
+    <ul>
+        <li><a href="#heading-1">安装教程</a>
+          
+    <ul>
+        <li><a href="#heading-1.1">下载镜像</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-1.2">使用ssh登录到后台</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-1.3">使用Docker命令行安装</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+        </li>
+        <li><a href="#heading-2">折腾教程</a>
+          
+    <ul>
+        <li><a href="#heading-2.1">群晖本地IP(macvlan)</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2.2">webdav挂载</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+        </li>
+        <li><a href="#heading-3">其它</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+      </div>
+    </div>
+      
 <p>
 绿联Nas的系统真是一言难尽，所以最近几天我都在寻找一种安装群晖的教程，也知晓群晖其实也没那么容易安装，主要是安装群晖后，有很大的概率<b>导致机器指示灯，风扇，甚至M.2固态失效</b>，也正因为此，虽然已经整理好了安装的教程，但迟迟没有动手，此次在网上搜寻教程时无意中发现了一个超酷超帅的Docker镜像，安装后真的会惊叹为何会有如此棒的东西，它就是
 </p>
@@ -170,7 +205,7 @@
 <p>
     首先需要验证挂载的目录，我这里是找了两个已经创建并挂载了本地存储的镜像，使用
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">docker inspect --format &#34;{{json .HostConfig.Mounts}}&#34; 镜像名</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>docker inspect --format &#34;{{json .HostConfig.Mounts}}&#34; 镜像名</span></span></code></pre>
 <p>
     
 <a href="https://s.libforest.com/images/2023/07/DX4600Pro-DSM-02.png-show" data-fancybox="image">
@@ -181,7 +216,7 @@
 <p>
     查看挂载的实际目录，可以看出Docker实际挂载的目录由
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">/mnt/media_rw/ + 硬盘UUID + /.ugreen_nas/ + 用户ID + 硬盘目录</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>/mnt/media_rw/ + 硬盘UUID + /.ugreen_nas/ + 用户ID + 硬盘目录</span></span></code></pre>
 <p>
     这几部分构成，那么就好办了，首先创建一个<b>DSM的目录</b>，用于存放群晖虚拟机文件，我这里选择<b>固态硬盘</b>，避免使用机械硬盘<b>导致硬盘无法休眠</b>，如果选择其它硬盘，需要先创建一个没什么用的Docker挂载目录，然后使用 <code>inspect</code> 找到实际的路径
 </p>
@@ -269,19 +304,19 @@
 <p>
     按照GitHub上的教程，我原本想要配置一个和局域网内其它设备相同网段的IP给群晖虚拟机，所以我创建了一个基于 <code>macvlan</code> 的网络
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">docker network create -d macvlan --subnet=192.168.31.0/24 --gateway=192.168.31.1 --ip-range=192.168.31.66/32 -o parent=eth0  dsmnet</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>docker network create -d macvlan --subnet=192.168.31.0/24 --gateway=192.168.31.1 --ip-range=192.168.31.66/32 -o parent=eth0  dsmnet</span></span></code></pre>
 
 <p>
     然后使用 <code>--network dsmnet</code> 重新创建Docker，结果怎么着，报错了
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">docker: Error response from daemon: failed to create the macvlan port: operation not supported.</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>docker: Error response from daemon: failed to create the macvlan port: operation not supported.</span></span></code></pre>
 
 <p>
     第一眼我还觉得这是由于docker打包脚本里的 <code>EXPOSE</code> 的锅，甚至去搜索能否禁用该操作，结果也是显而易见的，什么都没找到。后来仔细看了一下报错信息：<code>operation not supported</code>
     好吧，确认一下 <code>macvlan</code> 相关的模块是否被加载
 </p>
 
-<pre style="color:#f8f8f2;background-color:#272822">lsmod | grep macvlan</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>lsmod | grep macvlan</span></span></code></pre>
 
 <p>
     果然，<b>绿联Nas默认是没有macvlan模块的</b>，所以想用绿联Nas部署一个openwrt旁路由的可以先歇了。那么，我能否自己安装macvlan模块呢？
@@ -297,12 +332,12 @@
 <p>
     对不起，打扰了。不对，内核版本不符，那么我去下载一个和内核版本相符的文件，使用 <b>uname -r</b> 看一下绿联用的版本
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">5.10.120</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>5.10.120</span></span></code></pre>
 
 <p>
     我直接去官方库里找，还好找到了，同样使用的 <b>5.10.120-1</b>
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">wget https://downloads.openwrt.org/releases/22.03.0-rc4/targets/x86/64/packages/kmod-macvlan_5.10.120-1_x86_64.ipk</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>wget https:<span style="color:#f92672">/</span><span style="color:#f92672">/</span>downloads<span style="color:#f92672">.</span>openwrt<span style="color:#f92672">.</span>org<span style="color:#f92672">/</span>releases<span style="color:#f92672">/</span><span style="color:#ae81ff">22.03</span><span style="color:#f92672">.</span><span style="color:#ae81ff">0</span><span style="color:#f92672">-</span>rc4<span style="color:#f92672">/</span>targets<span style="color:#f92672">/</span>x86<span style="color:#f92672">/</span><span style="color:#ae81ff">64</span><span style="color:#f92672">/</span>packages<span style="color:#f92672">/</span>kmod<span style="color:#f92672">-</span>macvlan_5<span style="color:#f92672">.</span><span style="color:#ae81ff">10.120</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>_x86_64<span style="color:#f92672">.</span>ipk</span></span></code></pre>
 
 <p>
     继续安装，结果还是一样
@@ -358,7 +393,7 @@
 <p>
     最后搞得实在没办法了，抓包吧，还好群晖默认已经安装了<b>tcpdump</b>，只需要生成<b>pcap</b>文件就行
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">tcpdump -i eth0 host 192.168.31.65 -w ugreen/webdav.pcap</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>tcpdump -i eth0 host 192.168.31.65 -w ugreen/webdav.pcap</span></span></code></pre>
 
 <p>
     终端运行抓包命令，另一边在群晖界面进行添加webdav的操作，等待再次提示连接被服务器拒绝后，再等待5s，暂停抓包，然后把 <b>webdav.pcap</b> 下载到本地，使用 <b>wireshark</b> 查看

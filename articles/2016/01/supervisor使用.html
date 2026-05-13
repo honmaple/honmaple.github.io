@@ -94,93 +94,124 @@
   </div>
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
-      
-<blockquote>
+        
+    <div id="table-of-contents">
+      <h2>快速导航</h2>
+      <div id="text-table-of-contents">
+        
+    <ul>
+        <li><a href="#heading-1">生成配置文件</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2">修改supervisord.conf</a>
+          
+    <ul>
+        <li><a href="#heading-2.1">创建新用户www</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2.2">建立虚拟环境(honmaple.com/目录下)</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2.3">gunicorn配置</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+        </li>
+        <li><a href="#heading-3">简单的web应用</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-4">加载supervisor配置</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-5">supervisor遇到的问题</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+      </div>
+    </div>
+      <blockquote>
 <p>supervisor安装请参考<a href="https://honmaple.com/blog/pages/31">flask应用部署——安装环境</a></p>
 </blockquote>
-
-<h4>生成配置文件</h4>
-<pre style="color:#f8f8f2;background-color:#272822"># cd /etc
-# mkdir -p supervisord/conf.d
-# echo_supervisord_conf &gt; /etc/supervisord/supervisord.conf
-</pre>
-<h4>修改supervisord.conf</h4>
-<pre style="color:#f8f8f2;background-color:#272822"># vim supervisord.conf # G直接跳到最后一行
-</pre>
-<p>取消下面注释并修改</p>
-<pre style="color:#f8f8f2;background-color:#272822">[include]
-files = /etc/supervisord/conf.d/*.ini
-</pre>
-<p>ok，现在可以在/etc/supervisord/conf.d/目录下创建配置文件了</p>
-<pre style="color:#f8f8f2;background-color:#272822"># vim honmaple.com.ini
-</pre>
-<p>输入以下内容</p>
-<pre style="color:#f8f8f2;background-color:#272822"># 进程的名字
-[program:website]
-# 命令
-command=/home/www/honmaple.com/venv/bin/gunicorn run:app -c /home/www/honmaple.com/gunicorn.conf
-# 网站目录
-directory=/home/www/honmaple.com
-# 进程所属用户
-user=www
-# 自动重启设置。
-autostart=true
-autorestart=true
-# 日志存放位置。
-stdout_logfile=/home/www/honmaple.com/logs/gunicorn_supervisor.log
-</pre>
-<p>上面有几处需要注意的地方</p>
-
-<h5>创建新用户www</h5>
-<pre style="color:#f8f8f2;background-color:#272822"># useradd www
-# passwd www #设置密码
-# su - www
-$ cd
-$ mkdir -p honmaple.com/logs
-</pre>
-<h5>建立虚拟环境(honmaple.com/目录下)</h5>
-<pre style="color:#f8f8f2;background-color:#272822">$ virtualenv-3.4 venv
-$ . venv/bin/activate
-</pre>
-<h5>gunicorn配置</h5>
-<pre style="color:#f8f8f2;background-color:#272822"># gunicorn.conf
-workers = 4
-bind = &#39;127.0.0.1:8000&#39;
-</pre>
-<h4>简单的web应用</h4>
-<pre style="color:#f8f8f2;background-color:#272822">#run.py
-from flask import Flask
-app = Flask(__name__)
-
-@app.route(&#39;/&#39;)
-def hello_world():
-    return &#39;Hello World!&#39;
-
-if __name__ == &#39;__main__&#39;:
-    app.run()
-</pre>
-<h4>加载supervisor配置</h4>
-<pre style="color:#f8f8f2;background-color:#272822"># supervisord -c /etc/supervisord/supervisord.conf
-# supervisorctl -c /etc/supervisord/supervisord.conf reload
-</pre>
-<h4>supervisor遇到的问题</h4>
-
+<h4 id="heading-1">生成配置文件</h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span># cd /etc
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span># mkdir -p supervisord/conf.d
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span># echo_supervisord_conf &gt; /etc/supervisord/supervisord.conf
+</span></span></code></pre><h4 id="heading-2">修改supervisord.conf</h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span># vim supervisord.conf # G直接跳到最后一行
+</span></span></code></pre><p>取消下面注释并修改</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>[include]
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>files = /etc/supervisord/conf.d/*.ini
+</span></span></code></pre><p>ok，现在可以在/etc/supervisord/conf.d/目录下创建配置文件了</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span># vim honmaple.com.ini
+</span></span></code></pre><p>输入以下内容</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span># 进程的名字
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>[program:website]
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span># 命令
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>command=/home/www/honmaple.com/venv/bin/gunicorn run:app -c /home/www/honmaple.com/gunicorn.conf
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span># 网站目录
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>directory=/home/www/honmaple.com
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span># 进程所属用户
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>user=www
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span># 自动重启设置。
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>autostart=true
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>autorestart=true
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span># 日志存放位置。
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>stdout_logfile=/home/www/honmaple.com/logs/gunicorn_supervisor.log
+</span></span></code></pre><p>上面有几处需要注意的地方</p>
+<h5 id="heading-2.1">创建新用户www</h5>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span># useradd www
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span># passwd www #设置密码
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span># su - www
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>$ cd
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>$ mkdir -p honmaple.com/logs
+</span></span></code></pre><h5 id="heading-2.2">建立虚拟环境(honmaple.com/目录下)</h5>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ virtualenv-3.4 venv
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>$ . venv/bin/activate
+</span></span></code></pre><h5 id="heading-2.3">gunicorn配置</h5>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span># gunicorn.conf
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>workers = 4
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>bind = &#39;127.0.0.1:8000&#39;
+</span></span></code></pre><h4 id="heading-3">简单的web应用</h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>#run.py
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>from flask import Flask
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>app = Flask(__name__)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>@app.route(&#39;/&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>def hello_world():
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>    return &#39;Hello World!&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>if __name__ == &#39;__main__&#39;:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>    app.run()
+</span></span></code></pre><h4 id="heading-4">加载supervisor配置</h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span><span style="color:#75715e"># supervisord -c /etc/supervisord/supervisord.conf</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span><span style="color:#75715e"># supervisorctl -c /etc/supervisord/supervisord.conf reload</span>
+</span></span></code></pre><h4 id="heading-5">supervisor遇到的问题</h4>
 <p>提示</p>
-<pre style="color:#f8f8f2;background-color:#272822">Error: Another program is already listening on a port that one of our HTTP servers is configured to use.  Shut this program down first before starting supervisord.
-For help, use /usr/bin/supervisord -h
-...fail!
-</pre>
-<p>解决办法</p>
-<pre style="color:#f8f8f2;background-color:#272822"># unlink /tmp/supervisor.sock  
-</pre>
-<p>提示</p>
-<pre style="color:#f8f8f2;background-color:#272822">error: &lt;class &#39;socket.error&#39;&gt;, [Errno 111] Connection refused: file: /usr/lib64/python2.6/socket.py line: 567
-</pre>
-<p>解决办法</p>
-<pre style="color:#f8f8f2;background-color:#272822"># supervisord -c /etc/supervisord/supervisord.conf
-# supervisorctl -c /etc/supervisord/supervisord.conf reload
-</pre>
-<p>提示<br>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>Error: Another program is already listening on a port that one of our HTTP servers is configured to use.  Shut this program down first before starting supervisord.
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>For help, use /usr/bin/supervisord -h
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>...fail!
+</span></span></code></pre><p>解决办法</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span># unlink /tmp/supervisor.sock  
+</span></span></code></pre><p>提示</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>error: &lt;class &#39;socket.error&#39;&gt;, [Errno 111] Connection refused: file: /usr/lib64/python2.6/socket.py line: 567
+</span></span></code></pre><p>解决办法</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span><span style="color:#75715e"># supervisord -c /etc/supervisord/supervisord.conf</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span><span style="color:#75715e"># supervisorctl -c /etc/supervisord/supervisord.conf reload</span>
+</span></span></code></pre><p>提示<br>
 ERROR (no such process),请仔细查看配置文件是否有误</p>
 
     </div>

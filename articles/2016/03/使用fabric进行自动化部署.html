@@ -93,87 +93,114 @@
   </div>
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
+        
+    <div id="table-of-contents">
+      <h2>快速导航</h2>
+      <div id="text-table-of-contents">
+        
+    <ul>
+        <li><a href="#heading-1">安装</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2">使用</a>
+          
+    <ul>
+        <li><a href="#heading-2.1">备份数据</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2.2">代码打包上传</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2.3">重启服务器</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2.4">一键部署</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+        </li>
+    </ul>
+      </div>
+    </div>
       <p>fabric也使用好久了，这次静下心来好好整理一遍，当然这只是很简单的用法<br>
 <a href="http://docs.fabfile.org/en/1.10/">参考文档</a></p>
-
-<h3>安装</h3>
-
+<h3 id="heading-1">安装</h3>
 <p>凡事先从安装说起,fabric不支持python3,所以只能安装python2版本的fabric<br>
 由于我使用了virtualenv，所以先退出虚拟环境</p>
-<pre style="color:#f8f8f2;background-color:#272822">$ deactivate
-</pre>
-<p>安装全局fabric</p>
-<pre style="color:#f8f8f2;background-color:#272822">$ sudo pip2 install fabric
-</pre>
-<h3>使用</h3>
-
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ deactivate
+</span></span></code></pre><p>安装全局fabric</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ sudo pip2 install fabric
+</span></span></code></pre><h3 id="heading-2">使用</h3>
 <p>使用之前先想想以前是怎么部署的，是不是这样:<br>
 先ssh到服务器,进行数据备份,然后退出(或者重新开一个终端),然后上传文件到服务器,
 再ssh到服务器,安装所需要的模块,然后退出，ssh到root账户，重启，再退出···<br>
 <strong>是不是想想都烦</strong><br>
 没关系，有了fabric后就不必这么麻烦了,需求:</p>
-
-<h4>备份数据</h4>
-<pre style="color:#f8f8f2;background-color:#272822"># fabfile.py
-from fabric.api import run, env, cd, local, put, get
-
-def backup():
-    env.user = &#39;root&#39;
-    dirname = &#39;backup_&#39; + datetime.now().strftime(&#39;%Y%m%d&#39;)
-    with cd(&#39;/root/backup/&#39;):
-        run(&#39;./backup-db.sh&#39;)
-        run(&#39;tar zcvf %s.tar.gz %s/&#39; % (dirname, dirname))
-    print &#39;正在下载备份······&#39;
-    get(&#39;/root/backup/%s.tar.gz&#39; % dirname, &#39;backup/&#39;)
-</pre>
-<p>使用<code>fab backup</code>就可以一步备份</p>
-
-<h4>代码打包上传</h4>
-<pre style="color:#f8f8f2;background-color:#272822">def pack():
-    &#39;&#39;&#39;这是我需要打包的文件&#39;&#39;&#39;
-    local(&#39;pip freeze &gt; requirements.txt&#39;)
-    local(&#39;tar zcvf hohai.tar.gz manager.py requirements.txt app/ migrations/\
-          --exclude=&#34;*.pyc&#34; \
-          --exclude=&#34;*.swp&#34; \
-          --exclude=&#34;**/__pycache__&#34; \
-          --exclude=&#34;**/.webassets-cache&#34;&#39;)
-
-def putcode():
-    env.user = &#39;账户名称&#39;
-    print &#39;正在上传代码······&#39;
-    put(&#39;hohai.tar.gz&#39;, &#39;~/hhuc/&#39;)
-    local(&#39;rm hohai.tar.gz&#39;)
-    print &#39;正在备份数据······&#39;
-    run(&#39;cp -r ~/hhuc/app/ ~/backup/hhuc/&#39;)
-    with cd(&#39;~/hhuc/&#39;):
-        run(&#39;rm -rf app/&#39;)
-        run(&#39;tar zxvf hohai.tar.gz&#39;)
-        run(&#39;rm hohai.tar.gz&#39;)
-</pre>
-<p>使用<code>fab pack putcode</code>一步打包上传</p>
-
-<h4>重启服务器</h4>
-<pre style="color:#f8f8f2;background-color:#272822">def restart():
-    &#34;&#34;&#34;重启服务器&#34;&#34;&#34;
-    env.user = &#39;root&#39;
-    run(&#39;supervisorctl restart hhuc&#39;)
-</pre>
-<h4>一键部署</h4>
-<pre style="color:#f8f8f2;background-color:#272822">def deploy():
-    env.user = &#39;honmaple&#39;
-    print &#39;正在上传代码······&#39;
-    put(&#39;hohai.tar.gz&#39;, &#39;~/hhuc/&#39;)
-    local(&#39;rm hohai.tar.gz&#39;)
-    print &#39;正在备份数据······&#39;
-    run(&#39;cp -r ~/hhuc/app/ ~/backup/hhuc/&#39;)
-    with cd(&#39;~/hhuc/&#39;):
-        run(&#39;rm -rf app/&#39;)
-        run(&#39;tar zxvf hohai.tar.gz&#39;)
-        run(&#39;rm hohai.tar.gz&#39;)
-    restart()
-    print &#39;部署成功······&#39;
-</pre>
-<p>使用<code>fab pack deploy</code>就可部署<br>
+<h4 id="heading-2.1">备份数据</h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span># fabfile.py
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>from fabric.api import run, env, cd, local, put, get
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>def backup():
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>    env.user = &#39;root&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>    dirname = &#39;backup_&#39; + datetime.now().strftime(&#39;%Y%m%d&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>    with cd(&#39;/root/backup/&#39;):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>        run(&#39;./backup-db.sh&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>        run(&#39;tar zcvf %s.tar.gz %s/&#39; % (dirname, dirname))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>    print &#39;正在下载备份······&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>    get(&#39;/root/backup/%s.tar.gz&#39; % dirname, &#39;backup/&#39;)
+</span></span></code></pre><p>使用<code>fab backup</code>就可以一步备份</p>
+<h4 id="heading-2.2">代码打包上传</h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>def pack():
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>    &#39;&#39;&#39;这是我需要打包的文件&#39;&#39;&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    local(&#39;pip freeze &gt; requirements.txt&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>    local(&#39;tar zcvf hohai.tar.gz manager.py requirements.txt app/ migrations/\
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>          --exclude=&#34;*.pyc&#34; \
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>          --exclude=&#34;*.swp&#34; \
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>          --exclude=&#34;**/__pycache__&#34; \
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>          --exclude=&#34;**/.webassets-cache&#34;&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>def putcode():
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>    env.user = &#39;账户名称&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>    print &#39;正在上传代码······&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>    put(&#39;hohai.tar.gz&#39;, &#39;~/hhuc/&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>    local(&#39;rm hohai.tar.gz&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>    print &#39;正在备份数据······&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>    run(&#39;cp -r ~/hhuc/app/ ~/backup/hhuc/&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>    with cd(&#39;~/hhuc/&#39;):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>        run(&#39;rm -rf app/&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>        run(&#39;tar zxvf hohai.tar.gz&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>        run(&#39;rm hohai.tar.gz&#39;)
+</span></span></code></pre><p>使用<code>fab pack putcode</code>一步打包上传</p>
+<h4 id="heading-2.3">重启服务器</h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>def restart():
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>    &#34;&#34;&#34;重启服务器&#34;&#34;&#34;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>    env.user = &#39;root&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>    run(&#39;supervisorctl restart hhuc&#39;)
+</span></span></code></pre><h4 id="heading-2.4">一键部署</h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>def deploy():
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>    env.user = &#39;honmaple&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    print &#39;正在上传代码······&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>    put(&#39;hohai.tar.gz&#39;, &#39;~/hhuc/&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>    local(&#39;rm hohai.tar.gz&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>    print &#39;正在备份数据······&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>    run(&#39;cp -r ~/hhuc/app/ ~/backup/hhuc/&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>    with cd(&#39;~/hhuc/&#39;):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>        run(&#39;rm -rf app/&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>        run(&#39;tar zxvf hohai.tar.gz&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>        run(&#39;rm hohai.tar.gz&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>    restart()
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>    print &#39;部署成功······&#39;
+</span></span></code></pre><p>使用<code>fab pack deploy</code>就可部署<br>
 ok,就这样</p>
 
     </div>

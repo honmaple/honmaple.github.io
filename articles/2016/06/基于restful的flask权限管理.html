@@ -94,126 +94,124 @@
   </div>
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
-      
-<h3>为什么需要restful形式的权限管理<a id="orgheadline1"></a></h3>
-
+        
+    <div id="table-of-contents">
+      <h2>快速导航</h2>
+      <div id="text-table-of-contents">
+        
+    <ul>
+        <li><a href="#heading-1">为什么需要restful形式的权限管理</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2">怎么实现restful形式的权限管理</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+      </div>
+    </div>
+      <h3 id="heading-1">为什么需要restful形式的权限管理<!-- raw HTML omitted --><!-- raw HTML omitted --></h3>
 <p>最近在写flask应用时使用了 <strong>restful</strong> 形式的<code>flask.views.MethodView</code>，但是在对其进行权限管理时遇到了一些问题</p>
-
 <p>flask文档上介绍说用</p>
-<pre style="color:#f8f8f2;background-color:#272822">decorators = []
-</pre>
-<p>添加装饰器,但实际使用上,比如</p>
-
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>decorators = []
+</span></span></code></pre><p>添加装饰器,但实际使用上,比如</p>
 <ul>
 <li><strong>get</strong> 和 <strong>post</strong> 采用不同的权限</li>
 </ul>
-
 <blockquote>
 <p>get 不使用 login_required<br>
- post 需要 login_required</p>
+post 需要 login_required</p>
 </blockquote>
-
 <p>这样就不能使用 <strong>decorators</strong> 对视图进行装饰</p>
-
 <ul>
-<li><p><strong>post</strong> ,<strong>delete</strong>, <strong>put</strong> 都需要 login_required,但是<strong>get</strong>不需要
+<li>
+<p><strong>post</strong> ,<strong>delete</strong>, <strong>put</strong> 都需要 login_required,但是<strong>get</strong>不需要
 而 <strong>delete</strong> 又需要更高级别的权限,我们可以这样</p>
-<pre style="color:#f8f8f2;background-color:#272822">class AAA(MethodView):
-
-
-    def get(self,uid):
-        ...
-
-
-    @login_required
-    def post(self):
-        ...
-
-
-    @login_required
-    def put(self,uid):
-        ...
-
-
-    @login_required
-    @more_required
-    def delete(self,uid):
-        ...
-</pre>
-<p>是不是看起来还不错, <strong>但是</strong>,如果再加上<a href="http://www.pythonhosted.org/Flask-Principal/">类似EditBlogPostPermission</a> 这样的权限管理呢?
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>class AAA(MethodView):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    def get(self,uid):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>        ...
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>    @login_required
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>    def post(self):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>        ...
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>    @login_required
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>    def put(self,uid):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>        ...
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>    @login_required
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>    @more_required
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>    def delete(self,uid):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>        ...
+</span></span></code></pre><p>是不是看起来还不错, <strong>但是</strong>,如果再加上<a href="http://www.pythonhosted.org/Flask-Principal/">类似EditBlogPostPermission</a> 这样的权限管理呢?
 是不是还需要这样</p>
-<pre style="color:#f8f8f2;background-color:#272822">@login_required
-def put(self,uid):
-    permission = EditBlogPostPermission(uid)
-    if permission.can():
-        # Save the edits ...
-        return render_template(&#39;edit_post.html&#39;)
-    ...
-</pre>
-<p>先不论样式丑不丑，最重要的代码的 <strong>可维护性</strong> 极差,所以我增加了如下代码</p></li>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span><span style="color:#960050;background-color:#1e0010">@</span>login_required
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>def put(self,uid)<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>    <span style="color:#66d9ef">permission</span> <span style="color:#f92672">=</span> EditBlogPostPermission(uid)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>    if <span style="color:#66d9ef">permission</span>.can()<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>        <span style="color:#960050;background-color:#1e0010">#</span> Save the edits ...
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>        return render_template(<span style="color:#960050;background-color:#1e0010">&#39;</span>edit_post.html<span style="color:#960050;background-color:#1e0010">&#39;</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>    ...
+</span></span></code></pre><p>先不论样式丑不丑，最重要的代码的 <strong>可维护性</strong> 极差,所以我增加了如下代码</p>
+</li>
 </ul>
-
-<h3>怎么实现restful形式的权限管理<a id="orgheadline2"></a></h3>
-
+<h3 id="heading-2">怎么实现restful形式的权限管理<!-- raw HTML omitted --><!-- raw HTML omitted --></h3>
 <p>同样采用装饰器实现,调用 <em>BasePermission</em> 时会自动调用 <em><strong>call</strong></em> 函数</p>
-<pre style="color:#f8f8f2;background-color:#272822">class BasePermission(object):
-
-    def __call__(self, func):
-        @wraps(func)
-        def decorator(*args, **kwargs):
-            meth = getattr(self, request.method.lower(), None)
-            if meth is None and request.method == &#39;HEAD&#39;:
-                meth = getattr(self, &#39;get&#39;, None)
-            assert meth is not None, &#39;Unimplemented method %r&#39; % request.method
-            check = meth(*args, **kwargs)
-            if check:
-                return check
-            else:
-                pass
-            return func(*args, **kwargs)
-
-        return decorator
-</pre>
-<p>举个例子,get方式不需要用户登陆,而其它方式需要,并且put方式需要创建主题的作者才能更改</p>
-<pre style="color:#f8f8f2;background-color:#272822">class TopicPermission(BasePermission):
-    @login_required
-    def post(self):
-        pass
-
-    def get(self, uid):
-        pass
-
-    @login_required
-    def put(self, uid):
-        permission = EditTopicPermission(uid)
-        if not permission.can():
-            flash(&#39;你没有权限&#39;)
-            return redirect(url_for(&#39;topic.topic&#39;, uid=uid))
-
-    @login_required
-    def delete(self,uid):
-        pass
-
-topic_permission = TopicPermission()
-</pre>
-<p>假设四种方式都需要同一种权限,都需要用户登陆,总不能每个函数前都加上装饰器吧
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>class BasePermission(object):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    def __call__(self, func):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>        @wraps(func)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>        def decorator(*args, **kwargs):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>            meth = getattr(self, request.method.lower(), None)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>            if meth is None and request.method == &#39;HEAD&#39;:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>                meth = getattr(self, &#39;get&#39;, None)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>            assert meth is not None, &#39;Unimplemented method %r&#39; % request.method
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>            check = meth(*args, **kwargs)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>            if check:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>                return check
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>            else:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>                pass
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>            return func(*args, **kwargs)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>        return decorator
+</span></span></code></pre><p>举个例子,get方式不需要用户登陆,而其它方式需要,并且put方式需要创建主题的作者才能更改</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>class TopicPermission(BasePermission)<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>    <span style="color:#960050;background-color:#1e0010">@</span>login_required
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    def post(self)<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>        pass
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>    def get(self, uid)<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>        pass
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>    <span style="color:#960050;background-color:#1e0010">@</span>login_required
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>    def put(self, uid)<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>        <span style="color:#66d9ef">permission</span> <span style="color:#f92672">=</span> EditTopicPermission(uid)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>        if not <span style="color:#66d9ef">permission</span>.can()<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>            flash(<span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#960050;background-color:#1e0010">你</span><span style="color:#960050;background-color:#1e0010">没</span><span style="color:#960050;background-color:#1e0010">有</span><span style="color:#960050;background-color:#1e0010">权</span><span style="color:#960050;background-color:#1e0010">限</span><span style="color:#960050;background-color:#1e0010">&#39;</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>            return redirect(url_for(<span style="color:#960050;background-color:#1e0010">&#39;</span>topic.topic<span style="color:#960050;background-color:#1e0010">&#39;</span>, uid<span style="color:#f92672">=</span>uid))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>    <span style="color:#960050;background-color:#1e0010">@</span>login_required
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>    def delete(self,uid)<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>        pass
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>topic_permission <span style="color:#f92672">=</span> TopicPermission()
+</span></span></code></pre><p>假设四种方式都需要同一种权限,都需要用户登陆,总不能每个函数前都加上装饰器吧
 所以稍加修改</p>
-<pre style="color:#f8f8f2;background-color:#272822">decorators = ()
-def __call__(self, func):
-    if self.decorators:
-        for dec in self.decorators:
-            return dec(func)
-</pre>
-<p>OK,这样就可以添加</p>
-<pre style="color:#f8f8f2;background-color:#272822">decorators = [login_required]
-</pre>
-<p>来实现四种请求方式采用同一种权限</p>
-
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>decorators = ()
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>def __call__(self, func):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>    if self.decorators:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>        for dec in self.decorators:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>            return dec(func)
+</span></span></code></pre><p>OK,这样就可以添加</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>decorators = [login_required]
+</span></span></code></pre><p>来实现四种请求方式采用同一种权限</p>
 <p>最后,你就可以在 <em>AAA</em> 这个类里添加</p>
-<pre style="color:#f8f8f2;background-color:#272822">decorators = [topic_permission]
-</pre>
-<p>实现restful形式的权限管理</p>
-
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>decorators = [topic_permission]
+</span></span></code></pre><p>实现restful形式的权限管理</p>
 <p>ok，就这样,可能还不完善或有一些问题，如有问题请联系我</p>
 
     </div>

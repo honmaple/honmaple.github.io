@@ -93,17 +93,46 @@
   </div>
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
-      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">前言</a></li>
-<li><a href="#heading-2">清理</a>
-<ul>
-<li><a href="#heading-2.1">列出所有镜像</a></li>
-<li><a href="#heading-2.2">找出分层(push次数)最多的几个镜像</a></li>
-<li><a href="#heading-2.3">删除某个镜像的untagged的数据</a></li>
-</ul></li>
-<li><a href="#heading-3">参考资料</a></li>
-</ul></div></div>
-
+        
+    <div id="table-of-contents">
+      <h2>快速导航</h2>
+      <div id="text-table-of-contents">
+        
+    <ul>
+        <li><a href="#heading-1">前言</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2">清理</a>
+          
+    <ul>
+        <li><a href="#heading-2.1">列出所有镜像</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2.2">找出分层(push次数)最多的几个镜像</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2.3">删除某个镜像的untagged的数据</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+        </li>
+        <li><a href="#heading-3">参考资料</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+      </div>
+    </div>
+      
 <blockquote>
 <p>
 尝试了几种方式, 算是找到了一个比较方便的清理docker registry的方式
@@ -118,14 +147,14 @@
 
 <h1 id="heading-2">清理</h1>
 <h2 id="heading-2.1">列出所有镜像</h2>
-<pre style="color:#f8f8f2;background-color:#272822">registry garbage-collect --dry-run /etc/docker/registry/config.yml &gt;&gt; res.txt</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>registry garbage-collect --dry-run /etc/docker/registry/config.yml &gt;&gt; res.txt</span></span></code></pre>
 
 <h2 id="heading-2.2">找出分层(push次数)最多的几个镜像</h2>
-<pre style="color:#f8f8f2;background-color:#272822">cat res.txt | awk -F : &#39;{print $1}&#39; | sort | uniq -c | sort -rn -k1 | head -10
-  25871 image1
-  25649 image2
-  16815 image3
-  ...</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>cat res.txt | awk -F : &#39;{print $1}&#39; | sort | uniq -c | sort -rn -k1 | head -10
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>  25871 image1
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>  25649 image2
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>  16815 image3
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>  ...</span></span></code></pre>
 
 <h2 id="heading-2.3">删除某个镜像的untagged的数据</h2>
 <p>
@@ -136,12 +165,12 @@
 <p>
  dry-run
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">REGISTRY_DATA_DIR=/var/lib/registry/docker/registry/v2 python delete_docker_registry_image.py --image image1 -u --dry-run</pre></li>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>REGISTRY_DATA_DIR<span style="color:#f92672">=</span><span style="color:#f92672">/</span><span style="color:#66d9ef">var</span><span style="color:#f92672">/</span>lib<span style="color:#f92672">/</span>registry<span style="color:#f92672">/</span>docker<span style="color:#f92672">/</span>registry<span style="color:#f92672">/</span>v2 python delete_docker_registry_image<span style="color:#f92672">.</span>py <span style="color:#f92672">-</span><span style="color:#f92672">-</span>image image1 <span style="color:#f92672">-</span>u <span style="color:#f92672">-</span><span style="color:#f92672">-</span>dry<span style="color:#f92672">-</span>run</span></span></code></pre></li>
 <li>
 <p>
  实际删除(<b>需要先暂停registry</b>)
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">REGISTRY_DATA_DIR=/var/lib/registry/docker/registry/v2 python delete_docker_registry_image.py --image image1 -u</pre></li>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>REGISTRY_DATA_DIR<span style="color:#f92672">=</span><span style="color:#f92672">/</span><span style="color:#66d9ef">var</span><span style="color:#f92672">/</span>lib<span style="color:#f92672">/</span>registry<span style="color:#f92672">/</span>docker<span style="color:#f92672">/</span>registry<span style="color:#f92672">/</span>v2 python delete_docker_registry_image<span style="color:#f92672">.</span>py <span style="color:#f92672">-</span><span style="color:#f92672">-</span>image image1 <span style="color:#f92672">-</span>u</span></span></code></pre></li>
 <li>
 <p>
  查看磁盘占用(<b>恢复registry</b>)

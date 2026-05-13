@@ -93,71 +93,84 @@
   </div>
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
+        
+    <div id="table-of-contents">
+      <h2>快速导航</h2>
+      <div id="text-table-of-contents">
+        
+    <ul>
+        <li><a href="#heading-1">一对多</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2">级联删除</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+      </div>
+    </div>
       <p>简单的例子<a href="http://flask-sqlalchemy.pocoo.org/2.1/quickstart/">这里</a>已经有了<br>
 <a href="http://www.pythondoc.com/flask-sqlalchemy/index.html">中文</a>
 这里记录一下平时我遇到的一些问题</p>
-
-<h4>一对多</h4>
-
+<h4 id="heading-1">一对多</h4>
 <p>需求:一个问题对应多个回复<br>
 下面给出代码(字段不完整)</p>
-<pre style="color:#f8f8f2;background-color:#272822">class Questions(db.Model):
-    __tablename__ = &#39;questions&#39;
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(50), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-
-    def __init__(self,title,content):
-        self.title = title
-        self.content = content
-
-    def __repr__(self):
-        return &#34;&lt;Questions %r&gt;&#34; % self.title
-
-
-class Replies(db.Model):
-    __tablename__ = &#39;replies&#39;
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text, nullable=False)
-    question_id = db.Column(db.Integer, db.ForeignKey(&#39;questions.id&#39;,
-                                                      ondelete=&#34;CASCADE&#34;))
-    replies = db.relationship(&#39;Questions&#39;,
-                              backref=db.backref(&#39;replies&#39;,
-                                                 cascade=&#39;all,delete-orphan&#39;,
-                                                 lazy=&#39;dynamic&#39;,
-                                                 order_by=&#39;Replies.time&#39;)
-                              )
-
-    def __init__(self, content):
-        self.content = content
-
-    def __repr__(self):
-        return &#34;&lt;Replies %r&gt;&#34; % self.content
-</pre>
-<p>会发现这样的两行(虽然实际上有好几行)</p>
-<pre style="color:#f8f8f2;background-color:#272822">    question_id = db.Column(db.Integer, db.ForeignKey(&#39;questions.id&#39;,
-                                                      ondelete=&#34;CASCADE&#34;))
-    replies = db.relationship(&#39;Questions&#39;,
-                              backref=db.backref(&#39;replies&#39;,
-                                                 cascade=&#39;all,delete-orphan&#39;,
-                                                 lazy=&#39;dynamic&#39;,
-                                                 order_by=&#39;Replies.time&#39;)
-                              )
-</pre>
-<p>question_id为外键,关联着questions这个数据表<br>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>class Questions(db.Model):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>    __tablename__ = &#39;questions&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    id = db.Column(db.Integer, primary_key=True)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>    title = db.Column(db.String(50), nullable=False)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>    content = db.Column(db.Text, nullable=False)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>    def __init__(self,title,content):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>        self.title = title
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>        self.content = content
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>    def __repr__(self):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>        return &#34;&lt;Questions %r&gt;&#34; % self.title
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>class Replies(db.Model):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>    __tablename__ = &#39;replies&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>    id = db.Column(db.Integer, primary_key=True)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>    content = db.Column(db.Text, nullable=False)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>    question_id = db.Column(db.Integer, db.ForeignKey(&#39;questions.id&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>                                                      ondelete=&#34;CASCADE&#34;))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span>    replies = db.relationship(&#39;Questions&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>                              backref=db.backref(&#39;replies&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>                                                 cascade=&#39;all,delete-orphan&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span>                                                 lazy=&#39;dynamic&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span>                                                 order_by=&#39;Replies.time&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26</span><span>                              )
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28</span><span>    def __init__(self, content):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29</span><span>        self.content = content
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31</span><span>    def __repr__(self):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32</span><span>        return &#34;&lt;Replies %r&gt;&#34; % self.content
+</span></span></code></pre><p>会发现这样的两行(虽然实际上有好几行)</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>    question_id = db.Column(db.Integer, db.ForeignKey(&#39;questions.id&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>                                                      ondelete=&#34;CASCADE&#34;))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>    replies = db.relationship(&#39;Questions&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>                              backref=db.backref(&#39;replies&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>                                                 cascade=&#39;all,delete-orphan&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>                                                 lazy=&#39;dynamic&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>                                                 order_by=&#39;Replies.time&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8</span><span>                              )
+</span></span></code></pre><p>question_id为外键,关联着questions这个数据表<br>
 replies这一行我习惯用反代,也就是backref=db.backref<br>
 <strong>调用</strong></p>
-<pre style="color:#f8f8f2;background-color:#272822">question = Questions.query.filter_by(id=1).first()
-print(question.replies)  # 输出该问题的回复
-print(question.replies.content) # 错误
-for reply in question.replies:
-    print(reply.content)  # 正确
-reply = Replies.query.filter_by(id=1).first()
-print(reply.question_id) # 输出该回复的所属问题
-print(reply.question_id.title)
-</pre>
-<h4>级联删除</h4>
-
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>question = Questions.query.filter_by(id=1).first()
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>print(question.replies)  # 输出该问题的回复
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>print(question.replies.content) # 错误
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>for reply in question.replies:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>    print(reply.content)  # 正确
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>reply = Replies.query.filter_by(id=1).first()
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>print(reply.question_id) # 输出该回复的所属问题
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8</span><span>print(reply.question_id.title)
+</span></span></code></pre><h4 id="heading-2">级联删除</h4>
 <p>也就是删除一个问题，也会将该问题下的所有回复删除,而删除问题下的回复将不会影响到具体问题<br>
 具体请google sqlalchemy cascade<br>
 经过测试,上面代码可级联删除回复,而不是将外键置空</p>

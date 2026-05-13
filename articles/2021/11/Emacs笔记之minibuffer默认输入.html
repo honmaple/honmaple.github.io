@@ -103,35 +103,35 @@
 <p>
 我觉得这是一个非常有趣且有用的功能，像 <code>read-string</code> 函数，如果我想要一个默认的输入，可以直接使用
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">(let ((input (<span style="color:#a6e22e">read-string</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">prompt: </span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">默认内容</span><span style="color:#e6db74">&#34;</span>)))
-  (<span style="color:#a6e22e">message</span> input))</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>(let ((input (<span style="color:#a6e22e">read-string</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">prompt: </span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">默认内容</span><span style="color:#e6db74">&#34;</span>)))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>  (<span style="color:#a6e22e">message</span> input))</span></span></code></pre>
 <p>
 但我想覆盖这个默认, 则需要先把 <code>默认内容</code> 删除，再输入我想要的字符, 如果不想先删除默认再输入，还可以使用
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">(let ((input (<span style="color:#a6e22e">read-string</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">prompt: </span><span style="color:#e6db74">&#34;</span> <span style="color:#66d9ef">nil</span> <span style="color:#66d9ef">nil</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">默认内容</span><span style="color:#e6db74">&#34;</span>)))
-  (<span style="color:#a6e22e">message</span> input))</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>(let ((input (<span style="color:#a6e22e">read-string</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">prompt: </span><span style="color:#e6db74">&#34;</span> <span style="color:#66d9ef">nil</span> <span style="color:#66d9ef">nil</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">默认内容</span><span style="color:#e6db74">&#34;</span>)))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>  (<span style="color:#a6e22e">message</span> input))</span></span></code></pre>
 <p>
 但是这样的话我无法看到默认的内容，当然，也许可以把默认内容追加到 <code>prompt</code> 里，我认为这样不太好看，不是吗
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">(let* ((default <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">默认内容</span><span style="color:#e6db74">&#34;</span>)
-       (input (<span style="color:#a6e22e">read-string</span> (<span style="color:#a6e22e">format</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">prompt (default %s): </span><span style="color:#e6db74">&#34;</span> default) <span style="color:#66d9ef">nil</span> <span style="color:#66d9ef">nil</span> default)))
-  (<span style="color:#a6e22e">message</span> input))</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>(let* ((default <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">默认内容</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>       (input (<span style="color:#a6e22e">read-string</span> (<span style="color:#a6e22e">format</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">prompt (default %s): </span><span style="color:#e6db74">&#34;</span> default) <span style="color:#66d9ef">nil</span> <span style="color:#66d9ef">nil</span> default)))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>  (<span style="color:#a6e22e">message</span> input))</span></span></code></pre>
 
 <p>
 <code>evil-ex</code> 提示我一个新的解决方式, 通过查看 <code>evil-ex</code> 源码，可以发现它是使用 <code>minibuffer-with-setup-hook</code> 和 <code>after-change-functions</code> 在<b>minibuffer</b>里插入新内容时先清理默认内容, 再插入新内容, 我简化了相关代码
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">(let ((input (minibuffer-with-setup-hook <span style="color:#e6db74">&#39;maple-input-setup</span>
-               (<span style="color:#a6e22e">read-string</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">prompt: </span><span style="color:#e6db74">&#34;</span> (<span style="color:#a6e22e">propertize</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">默认内容</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#39;face</span> <span style="color:#e6db74">&#39;shadow</span>)))))
-  (<span style="color:#a6e22e">message</span> input))
-
-(defun maple-input-setup()
-  (add-hook <span style="color:#e6db74">&#39;after-change-functions</span> <span style="color:#e6db74">&#39;maple-input-update</span> <span style="color:#66d9ef">nil</span> <span style="color:#66d9ef">t</span>))
-
-(defun maple-input-update(<span style="color:#66d9ef">&amp;optional</span> beg end len <span style="color:#a6e22e">string</span>)
-  (let ((<span style="color:#a6e22e">string</span> (<span style="color:#a6e22e">buffer-substring-no-properties</span> beg end)))
-    (delete-minibuffer-contents)
-    (<span style="color:#a6e22e">insert</span> <span style="color:#a6e22e">string</span>)
-    (remove-hook <span style="color:#e6db74">&#39;after-change-functions</span> <span style="color:#e6db74">&#39;maple-input-update</span> <span style="color:#66d9ef">t</span>)))</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>(let ((input (minibuffer-with-setup-hook <span style="color:#e6db74">&#39;maple-input-setup</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>               (<span style="color:#a6e22e">read-string</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">prompt: </span><span style="color:#e6db74">&#34;</span> (<span style="color:#a6e22e">propertize</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">默认内容</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#39;face</span> <span style="color:#e6db74">&#39;shadow</span>)))))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>  (<span style="color:#a6e22e">message</span> input))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>(defun maple-input-setup()
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>  (add-hook <span style="color:#e6db74">&#39;after-change-functions</span> <span style="color:#e6db74">&#39;maple-input-update</span> <span style="color:#66d9ef">nil</span> <span style="color:#66d9ef">t</span>))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>(defun maple-input-update(<span style="color:#66d9ef">&amp;optional</span> beg end len <span style="color:#a6e22e">string</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>  (let ((<span style="color:#a6e22e">string</span> (<span style="color:#a6e22e">buffer-substring-no-properties</span> beg end)))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>    (delete-minibuffer-contents)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>    (<span style="color:#a6e22e">insert</span> <span style="color:#a6e22e">string</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>    (remove-hook <span style="color:#e6db74">&#39;after-change-functions</span> <span style="color:#e6db74">&#39;maple-input-update</span> <span style="color:#66d9ef">t</span>)))</span></span></code></pre>
 
 <p>
 OK, 就这样

@@ -102,52 +102,52 @@
 <p>
 获取主题列表
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">(setq maple-cycle-themes (<span style="color:#a6e22e">mapcar</span> <span style="color:#e6db74">&#39;symbol-name</span> (custom-available-themes)))</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>(setq maple-cycle-themes (<span style="color:#a6e22e">mapcar</span> <span style="color:#e6db74">&#39;symbol-name</span> (custom-available-themes)))</span></span></code></pre>
 
 <p>
 获取当前主题索引
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">(cl-position (<span style="color:#a6e22e">car</span> (<span style="color:#a6e22e">mapcar</span> <span style="color:#e6db74">&#39;symbol-name</span> custom-enabled-themes)) maple-cycle-themes :test <span style="color:#e6db74">&#39;equal</span>)</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>(cl-position (<span style="color:#a6e22e">car</span> (<span style="color:#a6e22e">mapcar</span> <span style="color:#e6db74">&#39;symbol-name</span> custom-enabled-themes)) maple-cycle-themes :test <span style="color:#e6db74">&#39;equal</span>)</span></span></code></pre>
 
 <p>
 获取下一个主题
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">(setq maple-current-theme-index
-      (<span style="color:#a6e22e">+</span> <span style="color:#ae81ff">1</span> maple-current-theme-index))
-(setq maple-current-theme (<span style="color:#a6e22e">nth</span> maple-current-theme-index maple-cycle-themes))</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>(setq maple-current-theme-index
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>      (<span style="color:#a6e22e">+</span> <span style="color:#ae81ff">1</span> maple-current-theme-index))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>(setq maple-current-theme (<span style="color:#a6e22e">nth</span> maple-current-theme-index maple-cycle-themes))</span></span></code></pre>
 
 <p>
 加载主题
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">(load-theme (<span style="color:#a6e22e">intern</span> maple-current-theme) <span style="color:#66d9ef">t</span>)</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>(load-theme (<span style="color:#a6e22e">intern</span> maple-current-theme) <span style="color:#66d9ef">t</span>)</span></span></code></pre>
 
 <p>
 最后得到这样的函数
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">(defun maple/cycle-theme (num)
-  (interactive)
-  (setq maple-current-theme-index
-        (<span style="color:#a6e22e">+</span> num
-           (cl-position
-            (<span style="color:#a6e22e">car</span> (<span style="color:#a6e22e">mapcar</span> <span style="color:#e6db74">&#39;symbol-name</span> custom-enabled-themes)) maple-cycle-themes :test <span style="color:#e6db74">&#39;equal</span>)))
-  (when (<span style="color:#a6e22e">&gt;=</span> maple-current-theme-index (<span style="color:#a6e22e">length</span> maple-cycle-themes))
-    (setq maple-current-theme-index <span style="color:#ae81ff">0</span>))
-  (setq maple-current-theme (<span style="color:#a6e22e">nth</span> maple-current-theme-index maple-cycle-themes))
-  (<span style="color:#a6e22e">mapc</span> <span style="color:#e6db74">&#39;disable-theme</span> custom-enabled-themes)
-  (let ((progress-reporter
-         (make-progress-reporter
-          (<span style="color:#a6e22e">format</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Loading theme %s...</span><span style="color:#e6db74">&#34;</span> maple-current-theme))))
-    (load-theme (<span style="color:#a6e22e">intern</span> maple-current-theme) <span style="color:#66d9ef">t</span>)
-    (progress-reporter-done progress-reporter)))
-(defun maple/next-theme()
-  (interactive)
-  (maple/cycle-theme <span style="color:#ae81ff">1</span>))
-(defun maple/previous-theme()
-  (interactive)
-  (maple/cycle-theme <span style="color:#ae81ff">-1</span>))
-(defhydra maple/cycle-themes ()
-  (<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">n</span><span style="color:#e6db74">&#34;</span> maple/next-theme <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">next theme</span><span style="color:#e6db74">&#34;</span>)
-  (<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">p</span><span style="color:#e6db74">&#34;</span> maple/previous-theme <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">prev theme</span><span style="color:#e6db74">&#34;</span>))</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>(defun maple/cycle-theme (num)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>  (interactive)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>  (setq maple-current-theme-index
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>        (<span style="color:#a6e22e">+</span> num
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>           (cl-position
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>            (<span style="color:#a6e22e">car</span> (<span style="color:#a6e22e">mapcar</span> <span style="color:#e6db74">&#39;symbol-name</span> custom-enabled-themes)) maple-cycle-themes :test <span style="color:#e6db74">&#39;equal</span>)))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>  (when (<span style="color:#a6e22e">&gt;=</span> maple-current-theme-index (<span style="color:#a6e22e">length</span> maple-cycle-themes))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>    (setq maple-current-theme-index <span style="color:#ae81ff">0</span>))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>  (setq maple-current-theme (<span style="color:#a6e22e">nth</span> maple-current-theme-index maple-cycle-themes))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>  (<span style="color:#a6e22e">mapc</span> <span style="color:#e6db74">&#39;disable-theme</span> custom-enabled-themes)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>  (let ((progress-reporter
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>         (make-progress-reporter
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>          (<span style="color:#a6e22e">format</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Loading theme %s...</span><span style="color:#e6db74">&#34;</span> maple-current-theme))))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>    (load-theme (<span style="color:#a6e22e">intern</span> maple-current-theme) <span style="color:#66d9ef">t</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>    (progress-reporter-done progress-reporter)))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>(defun maple/next-theme()
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>  (interactive)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>  (maple/cycle-theme <span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>(defun maple/previous-theme()
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>  (interactive)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span>  (maple/cycle-theme <span style="color:#ae81ff">-1</span>))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>(defhydra maple/cycle-themes ()
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>  (<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">n</span><span style="color:#e6db74">&#34;</span> maple/next-theme <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">next theme</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span>  (<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">p</span><span style="color:#e6db74">&#34;</span> maple/previous-theme <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">prev theme</span><span style="color:#e6db74">&#34;</span>))</span></span></code></pre>
 
 <p>
 ok,绑定一个快捷键吧

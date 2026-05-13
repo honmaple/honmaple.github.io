@@ -93,61 +93,100 @@
   </div>
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
-      <div id="table-of-contents"><h2>Table of Contents</h2><div id="text-table-of-contents"><ul>
-<li><a href="#heading-1">pod</a>
-<ul>
-<li><a href="#heading-1.1">查看对外开放pod和port</a></li>
-<li><a href="#heading-1.2">清理所有状态为Failed或者Evicted的pod</a></li>
-<li><a href="#heading-1.3">查看pod id</a></li>
-<li><a href="#heading-1.4">查看pod所在节点</a></li>
-<li><a href="#heading-1.5">孤立pod解决</a></li>
-</ul></li>
-<li><a href="#heading-2">节点</a>
-<ul>
-<li><a href="#heading-2.1">禁止节点调度</a></li>
-<li><a href="#heading-2.2">Label添加删除和修改</a></li>
-</ul></li>
-</ul></div></div>
-
+        
+    <div id="table-of-contents">
+      <h2>快速导航</h2>
+      <div id="text-table-of-contents">
+        
+    <ul>
+        <li><a href="#heading-1">pod</a>
+          
+    <ul>
+        <li><a href="#heading-1.1">查看对外开放pod和port</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-1.2">清理所有状态为Failed或者Evicted的pod</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-1.3">查看pod id</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-1.4">查看pod所在节点</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-1.5">孤立pod解决</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+        </li>
+        <li><a href="#heading-2">节点</a>
+          
+    <ul>
+        <li><a href="#heading-2.1">禁止节点调度</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-2.2">Label添加删除和修改</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+        </li>
+    </ul>
+      </div>
+    </div>
+      
 <h2 id="heading-1">pod</h2>
 <h3 id="heading-1.1">查看对外开放pod和port</h3>
-<pre style="color:#f8f8f2;background-color:#272822">kubectl get svc --all-namespaces | grep -v ClusterIP</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubectl get svc --all-namespaces | grep -v ClusterIP</span></span></code></pre>
 
-<pre style="color:#f8f8f2;background-color:#272822">kubectl get svc --all-namespaces -o go-template=&#39;{{range .items}}{{ $save := . }}{{range.spec.ports}}{{if .nodePort}}{{$save.metadata.namespace}}{{&#34;/&#34;}}{{$save.metadata.name}}{{&#34; - &#34;}}{{.name}}{{&#34;: &#34;}}{{.nodePort}}{{&#34;\n&#34;}}{{end}}{{end}}{{end}}&#39;</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubectl get svc --all-namespaces -o go-template=&#39;{{range .items}}{{ $save := . }}{{range.spec.ports}}{{if .nodePort}}{{$save.metadata.namespace}}{{&#34;/&#34;}}{{$save.metadata.name}}{{&#34; - &#34;}}{{.name}}{{&#34;: &#34;}}{{.nodePort}}{{&#34;\n&#34;}}{{end}}{{end}}{{end}}&#39;</span></span></code></pre>
 
 <h3 id="heading-1.2">清理所有状态为Failed或者Evicted的pod</h3>
-<pre style="color:#f8f8f2;background-color:#272822"><span style="color:#75715e">#!/bin/bash
-</span><span style="color:#75715e"></span>kubectl get pods --all-namespaces -o go-template<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;{{range .items}} \
-</span><span style="color:#e6db74">{{if eq .status.phase &#34;Failed&#34;}} {{if eq .status.reason &#34;Evicted&#34;}} {{.metadata.name}}{{&#34; &#34;}} {{.metadata.namespace}}{{&#34;\n&#34;}} \
-</span><span style="color:#e6db74">{{end}} \
-</span><span style="color:#e6db74">{{end}} \
-</span><span style="color:#e6db74">{{end}}&#39;</span> | <span style="color:#66d9ef">while</span> read epod namespace; <span style="color:#66d9ef">do</span> kubectl -n $namespace delete pod $epod; <span style="color:#66d9ef">done</span></pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span><span style="color:#75715e">#!/bin/bash
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>kubectl get pods --all-namespaces -o go-template<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;{{range .items}} \
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span><span style="color:#e6db74">{{if eq .status.phase &#34;Failed&#34;}} {{if eq .status.reason &#34;Evicted&#34;}} {{.metadata.name}}{{&#34; &#34;}} {{.metadata.namespace}}{{&#34;\n&#34;}} \
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span><span style="color:#e6db74">{{end}} \
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span><span style="color:#e6db74">{{end}} \
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span><span style="color:#e6db74">{{end}}&#39;</span> | <span style="color:#66d9ef">while</span> read epod namespace; <span style="color:#66d9ef">do</span> kubectl -n $namespace delete pod $epod; <span style="color:#66d9ef">done</span></span></span></code></pre>
 
 <h3 id="heading-1.3">查看pod id</h3>
-<pre style="color:#f8f8f2;background-color:#272822">kubectl get pods --all-namespaces -o custom-columns=PodName:.metadata.name,PodUID:.metadata.uid,NODE:.spec.nodeName</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubectl get pods --all-namespaces -o custom-columns=PodName:.metadata.name,PodUID:.metadata.uid,NODE:.spec.nodeName</span></span></code></pre>
 
 <h3 id="heading-1.4">查看pod所在节点</h3>
-<pre style="color:#f8f8f2;background-color:#272822">kubectl get pod -o wide --all-namespaces
-# 或者
-kubectl get pod -o=custom-columns=NODE:.spec.nodeName,NAME:.metadata.name --all-namespaces</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubectl get pod -o wide --all-namespaces
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span># 或者
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>kubectl get pod -o=custom-columns=NODE:.spec.nodeName,NAME:.metadata.name --all-namespaces</span></span></code></pre>
 
 <h3 id="heading-1.5">孤立pod解决</h3>
 <p>
     找到所有运行中的pod id
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">kubectl get pods --all-namespaces -o custom-columns=PodUID:.metadata.uid | tail -n +2 &gt; pods.txt</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubectl get pods --all-namespaces -o custom-columns=PodUID:.metadata.uid | tail -n +2 &gt; pods.txt</span></span></code></pre>
 
-<pre style="color:#f8f8f2;background-color:#272822">ls -d1 /var/lib/kubelet/pods/* | xargs -I % bash -c &#39;[ ! -f %/etc-hosts ] &amp;&amp; echo %&#39;</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>ls <span style="color:#f92672">-</span>d1 <span style="color:#f92672">/</span><span style="color:#66d9ef">var</span><span style="color:#f92672">/</span>lib<span style="color:#f92672">/</span>kubelet<span style="color:#f92672">/</span>pods<span style="color:#f92672">/</span><span style="color:#f92672">*</span> <span style="color:#f92672">|</span> xargs <span style="color:#f92672">-</span>I <span style="color:#f92672">%</span> bash <span style="color:#f92672">-</span>c <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">[ ! -f </span><span style="color:#e6db74">%</span><span style="color:#e6db74">/etc-hosts ] &amp;&amp; echo </span><span style="color:#e6db74">%</span><span style="color:#e6db74">&#39;</span></span></span></code></pre>
 
-<pre style="color:#f8f8f2;background-color:#272822">cat /var/log/messages|grep -i &#39;Orphaned pod&#39;|awk -F &#39;&#34;&#39; &#39;{print $2}&#39;|uniq</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>cat <span style="color:#f92672">/</span><span style="color:#66d9ef">var</span><span style="color:#f92672">/</span>log<span style="color:#f92672">/</span>messages<span style="color:#f92672">|</span>grep <span style="color:#f92672">-</span>i <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">Orphaned pod</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">|</span>awk <span style="color:#f92672">-</span>F <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&#39;</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{print $2}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">|</span>uniq</span></span></code></pre>
 
-<pre style="color:#f8f8f2;background-color:#272822">kubectl get pods --all-namespaces -o custom-columns=PodName:.metadata.name,PodUID:.metadata.uid | egrep -f /tmp/pods.txt</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubectl get pods --all-namespaces -o custom-columns=PodName:.metadata.name,PodUID:.metadata.uid | egrep -f /tmp/pods.txt</span></span></code></pre>
 
 <h2 id="heading-2">节点</h2>
 <h3 id="heading-2.1">禁止节点调度</h3>
-<pre style="color:#f8f8f2;background-color:#272822">kubectl cordon master   # 禁止节点调度</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubectl cordon master   # 禁止节点调度</span></span></code></pre>
 
-<pre style="color:#f8f8f2;background-color:#272822">kubeclt uncordon master # 允许节点调度</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubeclt uncordon master # 允许节点调度</span></span></code></pre>
 
 <h3 id="heading-2.2">Label添加删除和修改</h3>
 <ul>
@@ -155,25 +194,25 @@ kubectl get pod -o=custom-columns=NODE:.spec.nodeName,NAME:.metadata.name --all-
 <p>
  查看
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">kubectl get node --show-labels</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubectl get node --show-labels</span></span></code></pre>
 </li>
 <li>
 <p>
  添加
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;=&lt;label-value&gt;</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;=&lt;label-value&gt;</span></span></code></pre>
 </li>
 <li>
 <p>
  删除
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;-</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;-</span></span></code></pre>
 </li>
 <li>
 <p>
  修改
 </p>
-<pre style="color:#f8f8f2;background-color:#272822">kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;=&lt;label-value&gt; --overwrite</pre></li>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;=&lt;label-value&gt; --overwrite</span></span></code></pre></li>
 </ul>
     </div>
     <div class="entry-copyright">

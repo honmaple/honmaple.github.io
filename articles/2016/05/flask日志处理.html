@@ -94,73 +94,93 @@
   </div>
     <hr class="entry-article-hr" />
     <div class="entry-article-content">
+        
+    <div id="table-of-contents">
+      <h2>快速导航</h2>
+      <div id="text-table-of-contents">
+        
+    <ul>
+        <li><a href="#heading-1">应用发生错误时发送邮件</a>
+          
+    <ul>
+        <li><a href="#heading-1.1">原文档</a>
+          
+    <ul>
+    </ul>
+        </li>
+        <li><a href="#heading-1.2">具体代码</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+        </li>
+        <li><a href="#heading-2">记录应用错误到文件</a>
+          
+    <ul>
+    </ul>
+        </li>
+    </ul>
+      </div>
+    </div>
       <p>使用文档上的一句话:</p>
-
 <blockquote>
 <p>Applications fail, servers fail. Sooner or later you will see an exception in production. Even if your code is 100% correct, you will still see exceptions from time to time. Why? Because everything else involved will fail.</p>
 </blockquote>
-
-<h3>应用发生错误时发送邮件<a id="orgheadline3"></a></h3>
-
+<h3 id="heading-1">应用发生错误时发送邮件<!-- raw HTML omitted --><!-- raw HTML omitted --></h3>
 <p>这里文档上个人认为说的不清不楚,毕竟想要使用还要看<a href="https://docs.python.org/2/library/logging.html">logging的文档</a></p>
-
-<h4>原文档<a id="orgheadline1"></a></h4>
-<pre style="color:#f8f8f2;background-color:#272822">ADMINS = [&#39;yourname@example.com&#39;]
-if not app.debug:
-    import logging
-    from logging.handlers import SMTPHandler
-    mail_handler = SMTPHandler(&#39;127.0.0.1&#39;,
-                               &#39;server-error@example.com&#39;,
-                               ADMINS, &#39;YourApplication Failed&#39;)
-    mail_handler.setLevel(logging.ERROR)
-    app.logger.addHandler(mail_handler)
-</pre>
-<p>实际上这里的好多参数没有交代清楚,具体可以看<a href="https://docs.python.org/2/library/logging.handlers.html#smtp-handler">https://docs.python.org/2/library/logging.handlers.html#smtp-handler</a></p>
-
-<h4>具体代码<a id="orgheadline2"></a></h4>
-<pre style="color:#f8f8f2;background-color:#272822">import logging
-from logging.handlers import SMTPHandler
-from logging import Formatter
-config = app.config
-credentials = (config[&#39;MAIL_USERNAME&#39;], config[&#39;MAIL_PASSWORD&#39;])
-mail_handler = SMTPHandler(
-    secure=(),
-    mailhost=(config[&#39;MAIL_SERVER&#39;], config[&#39;MAIL_PORT&#39;]),
-    fromaddr=&#39;&#39;,
-    toaddrs=&#39;&#39;,
-    subject=&#39;YourApplication Failed&#39;,
-    credentials=credentials)
-
-mail_handler.setFormatter(Formatter(&#39;&#39;&#39;
-Message type:       %(levelname)s
-Location:           %(pathname)s:%(lineno)d
-Module:             %(module)s
-Function:           %(funcName)s
-Time:               %(asctime)s
-
-Message:
-
-%(message)s
-&#39;&#39;&#39;))
-mail_handler.setLevel(logging.ERROR)
-app.logger.addHandler(mail_handler)
-</pre>
-<p>其他方面不多说，这个多了一个 <em>secure = ()</em> ，这是因为我的smtp服务需要使用TLS，
+<h4 id="heading-1.1">原文档<!-- raw HTML omitted --><!-- raw HTML omitted --></h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>ADMINS = [&#39;yourname@example.com&#39;]
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>if not app.debug:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>    import logging
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>    from logging.handlers import SMTPHandler
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>    mail_handler = SMTPHandler(&#39;127.0.0.1&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>                               &#39;server-error@example.com&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>                               ADMINS, &#39;YourApplication Failed&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8</span><span>    mail_handler.setLevel(logging.ERROR)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">9</span><span>    app.logger.addHandler(mail_handler)
+</span></span></code></pre><p>实际上这里的好多参数没有交代清楚,具体可以看<a href="https://docs.python.org/2/library/logging.handlers.html#smtp-handler">https://docs.python.org/2/library/logging.handlers.html#smtp-handler</a></p>
+<h4 id="heading-1.2">具体代码<!-- raw HTML omitted --><!-- raw HTML omitted --></h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>import logging
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>from logging.handlers import SMTPHandler
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>from logging import Formatter
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>config = app.config
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>credentials = (config[&#39;MAIL_USERNAME&#39;], config[&#39;MAIL_PASSWORD&#39;])
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>mail_handler = SMTPHandler(
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>    secure=(),
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>    mailhost=(config[&#39;MAIL_SERVER&#39;], config[&#39;MAIL_PORT&#39;]),
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>    fromaddr=&#39;&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>    toaddrs=&#39;&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>    subject=&#39;YourApplication Failed&#39;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>    credentials=credentials)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>mail_handler.setFormatter(Formatter(&#39;&#39;&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>Message type:       %(levelname)s
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>Location:           %(pathname)s:%(lineno)d
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>Module:             %(module)s
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>Function:           %(funcName)s
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>Time:               %(asctime)s
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span>Message:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>%(message)s
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span>&#39;&#39;&#39;))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span>mail_handler.setLevel(logging.ERROR)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26</span><span>app.logger.addHandler(mail_handler)
+</span></span></code></pre><p>其他方面不多说，这个多了一个 <em>secure = ()</em> ，这是因为我的smtp服务需要使用TLS，
 如果不加这行，会出现连接被拒绝的报错</p>
-<pre style="color:#f8f8f2;background-color:#272822">smtplib.SMTPServerDisconnected: Connection unexpectedly closed
-</pre>
-<h3>记录应用错误到文件<a id="orgheadline4"></a></h3>
-
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>smtplib.SMTPServerDisconnected: Connection unexpectedly closed
+</span></span></code></pre><h3 id="heading-2">记录应用错误到文件<!-- raw HTML omitted --><!-- raw HTML omitted --></h3>
 <p>这个是google到的,<a href="http://stackoverflow.com/questions/14037975/how-do-i-write-flasks-excellent-debug-log-message-to-a-file-in-production">参考资料</a><br>
 具体代码</p>
-<pre style="color:#f8f8f2;background-color:#272822">import logging
-from logging.handlers import RotatingFileHandler
-file_handler = RotatingFileHandler(&#39;python.log&#39;, maxBytes=1024 * 1024 * 100, backupCount=20)
-file_handler.setLevel(logging.ERROR)
-formatter = logging.Formatter(&#34;%(asctime)s - %(name)s - %(levelname)s - %(message)s&#34;)
-file_handler.setFormatter(formatter)
-app.logger.addHandler(file_handler)
-</pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><code><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>import logging
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>from logging.handlers import RotatingFileHandler
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>file_handler = RotatingFileHandler(&#39;python.log&#39;, maxBytes=1024 * 1024 * 100, backupCount=20)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>file_handler.setLevel(logging.ERROR)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>formatter = logging.Formatter(&#34;%(asctime)s - %(name)s - %(levelname)s - %(message)s&#34;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>file_handler.setFormatter(formatter)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>app.logger.addHandler(file_handler)
+</span></span></code></pre>
     </div>
     <div class="entry-copyright">
         <div>
