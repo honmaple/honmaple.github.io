@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tornado中session实现 · 红枫吟</title><meta name="description" content="风落花语风落天，花落风雨花落田."><script>
+      (function () {
+        var storageKey = "theme-mode";
+        var root = document.documentElement;
+        var saved = null;
+
+        try {
+          saved = window.localStorage.getItem(storageKey);
+        } catch (error) {}
+
+        var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var theme = saved === "dark" || saved === "light" ? saved : (prefersDark ? "dark" : "light");
+
+        root.dataset.theme = theme;
+        if (theme === "dark") {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="https://honmaple.me/css/style.css">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNGNDGB8F8"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'G-YNGNDGB8F8');
+  </script>
+
+</head>
+  <body>
+    <div class="mx-auto flex w-full max-w-4xl flex-1 flex-col px-0 sm:px-5">
+      <header class="relative z-40">
+        <div class="overflow-visible rounded-b-lg bg-white dark:bg-slate-900">
+          <div class="mx-auto w-full max-w-4xl">
+            <div class="relative px-4 py-3 sm:px-5">
+              <div class="absolute right-4 top-3 flex items-center gap-2 sm:right-5 sm:hidden">
+                <button type="button" data-theme-toggle data-theme-dark-label="暗色" data-theme-light-label="亮色" aria-label="暗色" title="暗色" aria-pressed="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span data-theme-icon aria-hidden="true" class="text-base leading-none">◐</span>
+                </button>
+                <button type="button" data-menu-toggle aria-label="菜单" title="菜单" aria-expanded="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span aria-hidden="true" class="relative h-3.5 w-4">
+                    <span class="absolute left-0 top-0 h-0.5 w-full rounded-full bg-current"></span>
+                    <span class="absolute left-0 top-1.5 h-0.5 w-full rounded-full bg-current"></span>
+                    <span class="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-current"></span>
+                  </span>
+                </button>
+              </div>
+              <div class="absolute right-4 top-3 hidden items-center gap-2 sm:right-5 sm:flex">
+                <button type="button" data-theme-toggle data-theme-dark-label="暗色" data-theme-light-label="亮色" aria-label="暗色" title="暗色" aria-pressed="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span data-theme-icon aria-hidden="true" class="text-base leading-none">◐</span>
+                </button>
+              </div>
+
+              <div class="pr-20 sm:pr-12">
+                <a href="https://honmaple.me/" class="flex items-center gap-3"><img src="https://s.libforest.com/images/header/header.png" alt="红枫吟" class="h-12 w-12 rounded-lg object-cover"><div class="min-w-0">
+                    <h1 class="text-xl font-semibold tracking-[-0.03em]">红枫吟</h1><p class="mt-0.5 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">风落花语风落天，花落风雨花落田.</p></div>
+                </a>
+              </div>
+            </div>
+
+            <div class="sm:pb-2"><nav aria-label="Primary navigation" class="relative">
+                  <div class="hidden items-center justify-between gap-4 sm:flex">
+                    <ul class="flex flex-wrap gap-0"><li class="group relative">
+                          <a href="/categories/tech/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">技术分享</a></li><li class="group relative">
+                          <a href="/categories/life/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">生活随笔</a></li><li class="group relative">
+                          <a href="/pages/memos/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">闲言碎语</a></li><li class="group relative">
+                          <a href="/archives/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">归档</a></li><li class="group relative">
+                          <a href="/pages/about/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">关于</a></li></ul><form action="/search/" method="get" class="flex min-w-0 items-center px-5">
+                        <label class="sr-only" for="nav-search">搜索</label>
+                        <div class="flex w-44 items-center rounded-lg bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
+                          <input id="nav-search" type="search" name="q" placeholder="搜索文章" class="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                          <button type="submit" class="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full hover:text-primary-700 dark:hover:text-primary-500" aria-label="搜索" title="搜索">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current stroke-2">
+                              <path d="m21 21-4.35-4.35"></path>
+                              <circle cx="11" cy="11" r="6"></circle>
+                            </svg>
+                          </button>
+                        </div>
+                      </form></div>
+                  <div data-menu-panel class="hidden px-4 pb-4 pt-1 sm:hidden"><form action="/search/" method="get" class="mb-3">
+                        <label class="sr-only" for="mobile-search">搜索</label>
+                        <div class="flex items-center rounded-lg bg-slate-100 px-3 py-2 dark:bg-slate-800">
+                          <input id="mobile-search" type="search" name="q" placeholder="搜索文章" class="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                          <button type="submit" class="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full hover:text-primary-700 dark:hover:text-primary-500" aria-label="搜索" title="搜索">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current stroke-2">
+                              <path d="m21 21-4.35-4.35"></path>
+                              <circle cx="11" cy="11" r="6"></circle>
+                            </svg>
+                          </button>
+                        </div>
+                      </form><ul class="space-y-2"><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/categories/tech/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">技术分享</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/categories/life/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">生活随笔</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/pages/memos/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">闲言碎语</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/archives/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">归档</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/pages/about/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">关于</a></li></ul>
+                  </div>
+                </nav></div>
+          </div>
+        </div>
+      </header>
+
+      <main class="relative z-0 flex-1 py-5 sm:py-6"><div class="relative">
+    <article class="page-article mx-auto max-w-4xl rounded-lg bg-white px-5 py-5 dark:bg-slate-900 sm:px-6 sm:py-6">
+      <h1 class="mt-2.5 text-2xl font-semibold leading-tight tracking-[-0.025em]">tornado中session实现</h1>
+  <div class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm leading-6 text-slate-500 dark:text-slate-400"><time datetime="2017-08-06" class="font-mono text-xs uppercase tracking-[0.14em]">
+        2017年08月06日 周日
+      </time><span aria-hidden="true" class="mx-1 h-3 w-px bg-slate-200 dark:bg-slate-700"></span><span class="text-sm">阅读约 4 分钟</span><span aria-hidden="true" class="mx-1 h-3 w-px bg-slate-200 dark:bg-slate-700"></span><span class="flex flex-wrap items-center gap-1.5"><a href="https://honmaple.me/tags/python/" class="tag">
+            <span>python</span>
+          </a><a href="https://honmaple.me/tags/tornado/" class="tag">
+            <span>tornado</span>
+          </a></span></div><div class="prose prose-primary dark:prose-invert mt-6">
+        
+<p>
+tornado中默认没有session的实现,虽然默认的 <b>set_secure_cookie</b> 已经足够安全了,但更安全的应该是客户端保存session_id,服务端保存对应的信息
+</p>
+
+<p>
+注:保存在redis中的经测试是可以的,保存在内存中的貌似还不行
+</p>
+
+<p>
+给出源码:
+</p>
+
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">  1</span><span><span style="color:#f92672">from</span> uuid <span style="color:#f92672">import</span> uuid4
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">  2</span><span><span style="color:#f92672">from</span> redis <span style="color:#f92672">import</span> StrictRedis
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">  3</span><span><span style="color:#f92672">from</span> functools <span style="color:#f92672">import</span> wraps
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">  4</span><span><span style="color:#f92672">from</span> datetime <span style="color:#f92672">import</span> datetime, timedelta
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">  5</span><span><span style="color:#f92672">from</span> pytz <span style="color:#f92672">import</span> timezone
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">  6</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">  7</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">  8</span><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">singleton</span>(cls):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">  9</span><span>    instances <span style="color:#f92672">=</span> {}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 10</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 11</span><span>    <span style="color:#a6e22e">@wraps</span>(cls)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 12</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">getinstance</span>(<span style="color:#f92672">*</span>args, <span style="color:#f92672">*</span><span style="color:#f92672">*</span>kw):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 13</span><span>        <span style="color:#66d9ef">if</span> cls <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> instances:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 14</span><span>            instances[cls] <span style="color:#f92672">=</span> cls(<span style="color:#f92672">*</span>args, <span style="color:#f92672">*</span><span style="color:#f92672">*</span>kw)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 15</span><span>        <span style="color:#66d9ef">return</span> instances[cls]
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 16</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 17</span><span>    <span style="color:#66d9ef">return</span> getinstance
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 18</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 19</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 20</span><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">current_time</span>(tz<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 21</span><span>    <span style="color:#66d9ef">if</span> tz <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 22</span><span>        tz <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">UTC</span><span style="color:#e6db74">&#39;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 23</span><span>    <span style="color:#66d9ef">return</span> datetime<span style="color:#f92672">.</span>now(timezone(tz))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 24</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 25</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 26</span><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CoreSession</span>(object):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 27</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__setitem__</span>(self, key, value):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 28</span><span>        <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;&#39;&#39;</span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 29</span><span><span style="color:#e6db74">        session[</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">username</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">] = </span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">hello</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 30</span><span><span style="color:#e6db74">        </span><span style="color:#e6db74">&#39;&#39;&#39;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 31</span><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>set(key, value)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 32</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 33</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__getitem__</span>(self, key):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 34</span><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>get(key)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 35</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 36</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_or_set</span>(self, key, value):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 37</span><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> self<span style="color:#f92672">.</span>get(key):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 38</span><span>            self<span style="color:#f92672">.</span>set(key, value)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 39</span><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>get(key)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 40</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 41</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 42</span><span><span style="color:#a6e22e">@singleton</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 43</span><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MemorySession</span>(CoreSession):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 44</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__init__</span>(self):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 45</span><span>        <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;&#39;&#39;</span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 46</span><span><span style="color:#e6db74">        self._client = </span><span style="color:#e6db74">{</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">session_id1</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">:</span><span style="color:#e6db74">{</span><span style="color:#e6db74">key:value},</span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 47</span><span><span style="color:#e6db74">                        </span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">session_id2</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">:</span><span style="color:#e6db74">{</span><span style="color:#e6db74">key:value}}</span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 48</span><span><span style="color:#e6db74">        </span><span style="color:#e6db74">&#39;&#39;&#39;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 49</span><span>        self<span style="color:#f92672">.</span>_client <span style="color:#f92672">=</span> {}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 50</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 51</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">init</span>(self, session_id, expires_days<span style="color:#f92672">=</span><span style="color:#ae81ff">30</span>):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 52</span><span>        self<span style="color:#f92672">.</span>session_id <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">session:</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">.</span>format(session_id)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 53</span><span>        self<span style="color:#f92672">.</span>expires_days <span style="color:#f92672">=</span> expires_days
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 54</span><span>        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>session_id <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>_client:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 55</span><span>            self<span style="color:#f92672">.</span>_client[self<span style="color:#f92672">.</span>session_id] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 56</span><span>                <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">is_authenticated</span><span style="color:#e6db74">&#39;</span>: <span style="color:#66d9ef">False</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 57</span><span>                <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">expire</span><span style="color:#e6db74">&#39;</span>: current_time() <span style="color:#f92672">+</span> timedelta(days<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>expires_days)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 58</span><span>            }
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 59</span><span>        print(self<span style="color:#f92672">.</span>session_id)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 60</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 61</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">set</span>(self, key, value):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 62</span><span>        self<span style="color:#f92672">.</span>_client[self<span style="color:#f92672">.</span>session_id][key] <span style="color:#f92672">=</span> value
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 63</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 64</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get</span>(self, key):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 65</span><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>_client[self<span style="color:#f92672">.</span>session_id]<span style="color:#f92672">.</span>get(key)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 66</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 67</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">pop</span>(self, key):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 68</span><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>_client[self<span style="color:#f92672">.</span>session_id]<span style="color:#f92672">.</span>pop(key, <span style="color:#66d9ef">None</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 69</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 70</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">remove_expires</span>(self):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 71</span><span>        expire_sessions <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 72</span><span>        <span style="color:#66d9ef">for</span> key, value <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>_client<span style="color:#f92672">.</span>items():
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 73</span><span>            <span style="color:#66d9ef">if</span> value[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">expire</span><span style="color:#e6db74">&#39;</span>] <span style="color:#f92672">&gt;</span> current_time():
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 74</span><span>                expire_sessions<span style="color:#f92672">.</span>append(key)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 75</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 76</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">clear</span>(self):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 77</span><span>        <span style="color:#66d9ef">del</span> self<span style="color:#f92672">.</span>_client[self<span style="color:#f92672">.</span>session_id]
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 78</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 79</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 80</span><span><span style="color:#a6e22e">@singleton</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 81</span><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">RedisSession</span>(CoreSession):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 82</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__init__</span>(self):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 83</span><span>        self<span style="color:#f92672">.</span>_client <span style="color:#f92672">=</span> StrictRedis(
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 84</span><span>            host<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">localhost</span><span style="color:#e6db74">&#39;</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 85</span><span>            port<span style="color:#f92672">=</span><span style="color:#ae81ff">6379</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 86</span><span>            db<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 87</span><span>            password<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">redis</span><span style="color:#e6db74">&#39;</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 88</span><span>            decode_responses<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 89</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 90</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">init</span>(self, session_id, expires_days<span style="color:#f92672">=</span><span style="color:#ae81ff">30</span>):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 91</span><span>        self<span style="color:#f92672">.</span>session_id <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">session:</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">.</span>format(session_id)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 92</span><span>        self<span style="color:#f92672">.</span>expires_days <span style="color:#f92672">=</span> expires_days
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 93</span><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> self<span style="color:#f92672">.</span>_client<span style="color:#f92672">.</span>exists(self<span style="color:#f92672">.</span>session_id):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 94</span><span>            self<span style="color:#f92672">.</span>_client<span style="color:#f92672">.</span>hset(self<span style="color:#f92672">.</span>session_id, <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">is_authenticated</span><span style="color:#e6db74">&#39;</span>, <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 95</span><span>            self<span style="color:#f92672">.</span>_client<span style="color:#f92672">.</span>expire(self<span style="color:#f92672">.</span>session_id, self<span style="color:#f92672">.</span>expires_days <span style="color:#f92672">*</span> <span style="color:#ae81ff">30</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">3600</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 96</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 97</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">set</span>(self, key, value):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 98</span><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>_client<span style="color:#f92672">.</span>hset(self<span style="color:#f92672">.</span>session_id, key, value)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 99</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">100</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get</span>(self, key):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">101</span><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>_client<span style="color:#f92672">.</span>hget(self<span style="color:#f92672">.</span>session_id, key)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">102</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">103</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">pop</span>(self, key):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">104</span><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>_client<span style="color:#f92672">.</span>hdel(self<span style="color:#f92672">.</span>session_id, key)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">105</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">106</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">clear</span>(self):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">107</span><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>_client<span style="color:#f92672">.</span>delete(self<span style="color:#f92672">.</span>session_id)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">108</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">109</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">110</span><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Session</span>(object):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">111</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__init__</span>(self, request_handler):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">112</span><span>        self<span style="color:#f92672">.</span>request_handler <span style="color:#f92672">=</span> request_handler
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">113</span><span>        self<span style="color:#f92672">.</span>session_id <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>request_handler<span style="color:#f92672">.</span>get_secure_cookie(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">session</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">114</span><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> self<span style="color:#f92672">.</span>session_id:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">115</span><span>            self<span style="color:#f92672">.</span>session_id <span style="color:#f92672">=</span> str(uuid4())
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">116</span><span>            self<span style="color:#f92672">.</span>request_handler<span style="color:#f92672">.</span>set_secure_cookie(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">session</span><span style="color:#e6db74">&#34;</span>, self<span style="color:#f92672">.</span>session_id)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">117</span><span>        <span style="color:#75715e"># get cookies is bytes</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">118</span><span>        <span style="color:#66d9ef">if</span> isinstance(self<span style="color:#f92672">.</span>session_id, bytes):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">119</span><span>            self<span style="color:#f92672">.</span>session_id <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>session_id<span style="color:#f92672">.</span>decode()
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">120</span><span>        self<span style="color:#f92672">.</span>_session <span style="color:#f92672">=</span> RedisSession()
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">121</span><span>        <span style="color:#75715e"># self._session = MemorySession()</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">122</span><span>        self<span style="color:#f92672">.</span>_session<span style="color:#f92672">.</span>init(self<span style="color:#f92672">.</span>session_id)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">123</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">124</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__setitem__</span>(self, key, value):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">125</span><span>        self<span style="color:#f92672">.</span>_session[key] <span style="color:#f92672">=</span> value
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">126</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">127</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__getitem__</span>(self, key):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">128</span><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>_session[key]
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">129</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">130</span><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">clear</span>(self):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">131</span><span>        self<span style="color:#f92672">.</span>request_handler<span style="color:#f92672">.</span>clear_cookie(self<span style="color:#f92672">.</span>session_id)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">132</span><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>_session<span style="color:#f92672">.</span>clear()</span></span></pre>
+      </div><nav class="mt-8 grid gap-3 border-t border-slate-200/60 pt-5 dark:border-slate-700/60 sm:grid-cols-2" aria-label="Post navigation"><a href="https://honmaple.me/posts/2017/08/redis集群搭建/" class="rounded-lg bg-slate-100 px-4 py-3 text-left hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+              <span class="block text-xs text-slate-500 dark:text-slate-400">上一篇</span>
+              <span class="mt-1 block text-sm font-medium">redis集群搭建</span>
+            </a><a href="https://honmaple.me/posts/2017/08/明明你也很爱我/" class="rounded-lg bg-slate-100 px-4 py-3 text-left hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500 sm:text-right">
+              <span class="block text-xs text-slate-500 dark:text-slate-400">下一篇</span>
+              <span class="mt-1 block text-sm font-medium">明明你也很爱我</span>
+            </a></nav>
+    <section class="comments" data-giscus>
+      <button type="button" class="comments-button">加载评论</button>
+      <div class="comments-panel"></div>
+      <template data-giscus-template>
+        <script src="https://giscus.app/client.js"
+                data-repo="honmaple/honmaple.github.io"
+                data-repo-id="MDEwOlJlcG9zaXRvcnk0MTY4ODc2MQ=="
+                data-category="Announcements"
+                data-category-id="DIC_kwDOAnweuc4CVokl"
+                data-mapping="specific"
+                data-term="tornado中session实现"
+                data-strict="0"
+                data-reactions-enabled="1"
+                data-emit-metadata="0"
+                data-input-position="bottom"
+                data-lang="zh-CN"
+                crossorigin="anonymous"
+                async>
+        </script>
+      </template>
+    </section>
+    </article>
+  </div></main>
+    </div>
+
+    <footer class="mx-auto mt-auto w-full max-w-4xl px-0 sm:px-5">
+      <div class="flex flex-col gap-3 rounded-t-lg bg-white px-4 py-4 text-sm dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div>&copy; 2026 honmaple</div>
+        <div class="flex flex-wrap items-center gap-2"><a href="https://honmaple.me/pages/contact/" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">联系</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://honmaple.me/pages/about/" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">关于</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://honmaple.me/atom.xml" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">订阅</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://github.com/honmaple" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">Github</a></div>
+      </div>
+    </footer>
+
+    <button type="button" data-back-to-top class="back-to-top pointer-events-none fixed bottom-5 right-5 z-[70] inline-flex h-10 w-10 translate-y-2 items-center justify-center rounded-full bg-white text-sm opacity-0 transition-all duration-200 hover:text-primary-700 dark:bg-slate-900 dark:hover:text-primary-500" aria-label="返回顶部" title="返回顶部">
+      ↑
+    </button>
+
+    <script src="https://honmaple.me/js/main.js"></script></body>
+</html>

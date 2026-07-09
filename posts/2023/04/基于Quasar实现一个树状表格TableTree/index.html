@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于Quasar实现一个树状表格TableTree · 红枫吟</title><meta name="description" content="风落花语风落天，花落风雨花落田."><script>
+      (function () {
+        var storageKey = "theme-mode";
+        var root = document.documentElement;
+        var saved = null;
+
+        try {
+          saved = window.localStorage.getItem(storageKey);
+        } catch (error) {}
+
+        var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var theme = saved === "dark" || saved === "light" ? saved : (prefersDark ? "dark" : "light");
+
+        root.dataset.theme = theme;
+        if (theme === "dark") {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="https://honmaple.me/css/style.css">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNGNDGB8F8"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'G-YNGNDGB8F8');
+  </script>
+
+</head>
+  <body>
+    <div class="mx-auto flex w-full max-w-4xl flex-1 flex-col px-0 sm:px-5">
+      <header class="relative z-40">
+        <div class="overflow-visible rounded-b-lg bg-white dark:bg-slate-900">
+          <div class="mx-auto w-full max-w-4xl">
+            <div class="relative px-4 py-3 sm:px-5">
+              <div class="absolute right-4 top-3 flex items-center gap-2 sm:right-5 sm:hidden">
+                <button type="button" data-theme-toggle data-theme-dark-label="暗色" data-theme-light-label="亮色" aria-label="暗色" title="暗色" aria-pressed="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span data-theme-icon aria-hidden="true" class="text-base leading-none">◐</span>
+                </button>
+                <button type="button" data-menu-toggle aria-label="菜单" title="菜单" aria-expanded="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span aria-hidden="true" class="relative h-3.5 w-4">
+                    <span class="absolute left-0 top-0 h-0.5 w-full rounded-full bg-current"></span>
+                    <span class="absolute left-0 top-1.5 h-0.5 w-full rounded-full bg-current"></span>
+                    <span class="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-current"></span>
+                  </span>
+                </button>
+              </div>
+              <div class="absolute right-4 top-3 hidden items-center gap-2 sm:right-5 sm:flex">
+                <button type="button" data-theme-toggle data-theme-dark-label="暗色" data-theme-light-label="亮色" aria-label="暗色" title="暗色" aria-pressed="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span data-theme-icon aria-hidden="true" class="text-base leading-none">◐</span>
+                </button>
+              </div>
+
+              <div class="pr-20 sm:pr-12">
+                <a href="https://honmaple.me/" class="flex items-center gap-3"><img src="https://s.libforest.com/images/header/header.png" alt="红枫吟" class="h-12 w-12 rounded-lg object-cover"><div class="min-w-0">
+                    <h1 class="text-xl font-semibold tracking-[-0.03em]">红枫吟</h1><p class="mt-0.5 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">风落花语风落天，花落风雨花落田.</p></div>
+                </a>
+              </div>
+            </div>
+
+            <div class="sm:pb-2"><nav aria-label="Primary navigation" class="relative">
+                  <div class="hidden items-center justify-between gap-4 sm:flex">
+                    <ul class="flex flex-wrap gap-0"><li class="group relative">
+                          <a href="/categories/tech/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">技术分享</a></li><li class="group relative">
+                          <a href="/categories/life/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">生活随笔</a></li><li class="group relative">
+                          <a href="/pages/memos/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">闲言碎语</a></li><li class="group relative">
+                          <a href="/archives/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">归档</a></li><li class="group relative">
+                          <a href="/pages/about/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">关于</a></li></ul><form action="/search/" method="get" class="flex min-w-0 items-center px-5">
+                        <label class="sr-only" for="nav-search">搜索</label>
+                        <div class="flex w-44 items-center rounded-lg bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
+                          <input id="nav-search" type="search" name="q" placeholder="搜索文章" class="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                          <button type="submit" class="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full hover:text-primary-700 dark:hover:text-primary-500" aria-label="搜索" title="搜索">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current stroke-2">
+                              <path d="m21 21-4.35-4.35"></path>
+                              <circle cx="11" cy="11" r="6"></circle>
+                            </svg>
+                          </button>
+                        </div>
+                      </form></div>
+                  <div data-menu-panel class="hidden px-4 pb-4 pt-1 sm:hidden"><form action="/search/" method="get" class="mb-3">
+                        <label class="sr-only" for="mobile-search">搜索</label>
+                        <div class="flex items-center rounded-lg bg-slate-100 px-3 py-2 dark:bg-slate-800">
+                          <input id="mobile-search" type="search" name="q" placeholder="搜索文章" class="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                          <button type="submit" class="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full hover:text-primary-700 dark:hover:text-primary-500" aria-label="搜索" title="搜索">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current stroke-2">
+                              <path d="m21 21-4.35-4.35"></path>
+                              <circle cx="11" cy="11" r="6"></circle>
+                            </svg>
+                          </button>
+                        </div>
+                      </form><ul class="space-y-2"><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/categories/tech/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">技术分享</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/categories/life/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">生活随笔</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/pages/memos/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">闲言碎语</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/archives/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">归档</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/pages/about/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">关于</a></li></ul>
+                  </div>
+                </nav></div>
+          </div>
+        </div>
+      </header>
+
+      <main class="relative z-0 flex-1 py-5 sm:py-6"><div class="relative">
+    <article class="page-article mx-auto max-w-4xl rounded-lg bg-white px-5 py-5 dark:bg-slate-900 sm:px-6 sm:py-6">
+      <h1 class="mt-2.5 text-2xl font-semibold leading-tight tracking-[-0.025em]">基于Quasar实现一个树状表格TableTree</h1>
+  <div class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm leading-6 text-slate-500 dark:text-slate-400"><time datetime="2023-04-29" class="font-mono text-xs uppercase tracking-[0.14em]">
+        2023年04月29日 周六
+      </time><span aria-hidden="true" class="mx-1 h-3 w-px bg-slate-200 dark:bg-slate-700"></span><span class="text-sm">阅读约 7 分钟</span><span aria-hidden="true" class="mx-1 h-3 w-px bg-slate-200 dark:bg-slate-700"></span><span class="flex flex-wrap items-center gap-1.5"><a href="https://honmaple.me/tags/coding/" class="tag">
+            <span>coding</span>
+          </a><a href="https://honmaple.me/tags/quasar/" class="tag">
+            <span>quasar</span>
+          </a></span></div><div class="mt-5">
+          <aside class="toc w-full rounded-lg px-4">
+            <p class="py-3 text-sm font-semibold">快速导航</p>
+            <div>
+              
+    <ol>
+        <li>
+          <a href="#heading-1">前言</a>
+        </li>
+        <li>
+          <a href="#heading-2">实现一(废弃)</a>
+        </li>
+        <li>
+          <a href="#heading-3">实现二</a>
+        </li>
+        <li>
+          <a href="#heading-4">最终实现</a>
+        </li>
+    </ol>
+            </div>
+          </aside>
+        </div><div class="prose prose-primary dark:prose-invert mt-6">
+        
+<blockquote>
+<p>
+<a href="https://quasar.dev/">Quasar</a> 是一个基于 <code>Vue3</code> 的前端UI框架，使用的是 <b>Material Design</b>, 对于国内而言(包括我)觉得确实不太好看，但因为之前使用的是 <code>Element-UI</code>，大概是由于审美疲劳，此次升级我的后台管理UI，没有继续使用 <code>Vue3</code> 版本的 <code>Element-Plus</code>。 不久前我也是基于 <code>Quasar</code> 开发了一个 Memos 客户端, 感觉效果还不错
+</p>
+</blockquote>
+
+<h2 id="heading-1">前言</h2>
+<p>
+   <code>Quasar</code> 默认没有树状表格的支持，但我觉得树状表格其实还挺重要的，尤其是在显示一些树状的数据，比如一个部门列表(打比方), 树状表格能够清晰的表明各部门之间的上下关系，目前我看实现树状表格的示例要么是基于 <code>qhierarchy</code> (使用 <code>q-markup-table</code> 实现，定制太困难), 要么就是实现方式太复杂 <a href="https://forum.quasar-framework.org/topic/2428/tree-table-example">tree-table-example</a>, 所以我研究了一下，发现其实还挺简单的，故此记录
+</p>
+
+<h2 id="heading-2">实现一(废弃)</h2>
+<p>
+   虽然 <code>Quasar</code> 没有树状表格的组件, 但 <code>q-table</code> 默认是支持 <code>Expanding rows</code> 的，所以我一开始的想法是使用这个功能实现一个递归的组件, 就像这样
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>&lt;<span style="color:#f92672">template</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>  &lt;<span style="color:#f92672">q-tr</span> <span style="color:#a6e22e">:key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;row.id&#34;</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    &lt;<span style="color:#f92672">slot</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;row&#34;</span> <span style="color:#a6e22e">:status</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;status&#34;</span> <span style="color:#a6e22e">:indent</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indent&#34;</span> <span style="color:#a6e22e">:indentStyle</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indentStyle(indent)&#34;</span>&gt;&lt;/<span style="color:#f92672">slot</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>  &lt;/<span style="color:#f92672">q-tr</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>  &lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">:key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;index&#34;</span> <span style="color:#a6e22e">v-for</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;(child, index) in row.children&#34;</span> <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;status.expand&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>    &lt;<span style="color:#f92672">table-tree</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span> <span style="color:#a6e22e">:indent</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indent + 1&#34;</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;child&#34;</span> <span style="color:#a6e22e">v-slot</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>      &lt;<span style="color:#f92672">slot</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.row&#34;</span> <span style="color:#a6e22e">:status</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status&#34;</span> <span style="color:#a6e22e">:indent</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.indent&#34;</span> <span style="color:#a6e22e">:indentStyle</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;indentStyle(scope.indent)&#34;</span>&gt;&lt;/<span style="color:#f92672">slot</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>    &lt;/<span style="color:#f92672">table-tree</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>  &lt;/<span style="color:#f92672">template</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>&lt;/<span style="color:#f92672">template</span>&gt;</span></span></pre>
+<p>
+   而在父组件中调用只需要把原来的 <code>props</code> 改成 <code>scope</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>&lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:body</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>  &lt;<span style="color:#f92672">table-tree</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span> <span style="color:#a6e22e">:row</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.row&#34;</span> <span style="color:#a6e22e">v-slot</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    &lt;<span style="color:#f92672">q-td</span> <span style="color:#a6e22e">auto-width</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>      &lt;<span style="color:#f92672">q-checkbox</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;sm&#34;</span> <span style="color:#a6e22e">v-model</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status.selected&#34;</span> /&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>    &lt;/<span style="color:#f92672">q-td</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>    &lt;<span style="color:#f92672">q-td</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>      &lt;<span style="color:#f92672">q-btn</span> <span style="color:#a6e22e">flat</span> <span style="color:#a6e22e">round</span> <span style="color:#a6e22e">dense</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xs&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>             <span style="color:#a6e22e">:icon</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status.expand ? &#39;remove&#39; : &#39;add&#39;&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>             <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">click</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.status.expand = !scope.status.expand&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>             <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;scope.row.children &amp;&amp; scope.row.children.length &gt; 0&#34;</span> /&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>      {{ scope.row.name }}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>    &lt;/<span style="color:#f92672">q-td</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>    &lt;<span style="color:#f92672">q-td</span>&gt;{{ scope.row.desc }}&lt;/<span style="color:#f92672">q-td</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>  &lt;/<span style="color:#f92672">table-tree</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>&lt;/<span style="color:#f92672">template</span>&gt;</span></span></pre>
+<p>
+   但是后面发现表格在多选状态下无法和原有的表格选择进行联动，只能自己实现选中和取消选中的方法，虽然也能实现，当很麻烦，只好另寻其它方式
+</p>
+
+<h2 id="heading-3">实现二</h2>
+<p>
+   后面研究了一下 <b>Fernando2684</b> 的实现方式, 虽然他的方式同样复杂，当实现原理其实很简单, 那就是修改原始数据，比如第二行需要进行展开，那我就在原来第二行的数据下把第二行的子数据追加上去，取消展开就把子数据删除，恢复原来的数据。有了这个原理后就好办了，我们可以利用 <code>Expanding rows</code> 时用到的 <code>props.expand</code> 参数来控制是否展开子数据, 然后利用计算属性动态的计算展开后的数据
+</p>
+
+<ul>
+<li>
+<p>
+ 表格模版
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>&lt;<span style="color:#f92672">q-table</span> <span style="color:#a6e22e">flat</span> <span style="color:#a6e22e">bordered</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>         <span style="color:#a6e22e">row-key</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;id&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>         <span style="color:#a6e22e">separator</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;cell&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>         <span style="color:#a6e22e">selection</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;multiple&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>         <span style="color:#a6e22e">-</span> <span style="color:#a6e22e">:rows</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.list&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>         <span style="color:#960050;background-color:#1e0010">+</span> <span style="color:#a6e22e">:rows</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;expandRows&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>         <span style="color:#a6e22e">v-model:expanded</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.expanded&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>         <span style="color:#a6e22e">v-model:selected</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.selected&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>         <span style="color:#a6e22e">v-model:pagination</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;table.pagination&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>  &lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:body</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>    &lt;<span style="color:#f92672">q-tr</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>      &lt;<span style="color:#f92672">q-td</span> <span style="color:#a6e22e">auto-width</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>        &lt;<span style="color:#f92672">q-checkbox</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;sm&#34;</span> <span style="color:#a6e22e">v-model</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.selected&#34;</span> /&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>      &lt;/<span style="color:#f92672">q-td</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>      &lt;<span style="color:#f92672">q-td</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>        &lt;<span style="color:#f92672">q-btn</span> <span style="color:#a6e22e">flat</span> <span style="color:#a6e22e">round</span> <span style="color:#a6e22e">dense</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xs&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>               <span style="color:#a6e22e">:icon</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.expand ? &#39;remove&#39; : &#39;add&#39;&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>               <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">click</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.expand = !props.expand&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>               <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.row.children &amp;&amp; props.row.children.length &gt; 0&#34;</span> /&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>        {{ props.row.name }}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span>      &lt;/<span style="color:#f92672">q-td</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>      &lt;<span style="color:#f92672">q-td</span>&gt;{{ props.row.desc }}&lt;/<span style="color:#f92672">q-td</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>    &lt;/<span style="color:#f92672">q-tr</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span>  &lt;/<span style="color:#f92672">template</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span>&lt;/<span style="color:#f92672">q-table</span>&gt;</span></span></pre></li>
+<li>
+<p>
+ 表格数据
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">table</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">ref</span>({
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>    <span style="color:#a6e22e">list</span><span style="color:#f92672">:</span> [],
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    <span style="color:#a6e22e">expanded</span><span style="color:#f92672">:</span> [],
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>    <span style="color:#a6e22e">selected</span><span style="color:#f92672">:</span> [],
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>    <span style="color:#a6e22e">loading</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>    <span style="color:#a6e22e">pagination</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>        <span style="color:#a6e22e">page</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>        <span style="color:#a6e22e">sortBy</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;desc&#39;</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>        <span style="color:#a6e22e">descending</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>        <span style="color:#a6e22e">rowsPerPage</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>        <span style="color:#a6e22e">rowsNumber</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>    }
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>})
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">expandRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">computed</span>(() =&gt; {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span>, <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">expanded</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>})</span></span></pre>
+<p>
+     这里提一嘴，<code>pagination.rowsPerPage</code> 默认最好设置为0(不限制每页的数量, 但会由由后端控制返回的行数), 否则展开子数据后的数据会被放到第二页, 影响数据查看
+</p></li>
+<li>
+<p>
+ 动态计算展开后的数据
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">rows</span>, <span style="color:#a6e22e">expanded</span>) {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">rows</span>) {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>        <span style="color:#66d9ef">return</span> []
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>    }
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">expanded</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">rows</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>    }
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>    <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">row</span> =&gt; {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>        <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">row</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">expanded</span>.<span style="color:#a6e22e">indexOf</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">id</span>) <span style="color:#f92672">&gt;</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>            <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">concat</span>(<span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">children</span>, <span style="color:#a6e22e">expanded</span>))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>        }
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>    })
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">newRows</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>}</span></span></pre>
+<p>
+     注意，这里因为要递归计算多级子目录，所以不能直接在 <code>setup</code> 上直接用 <code>const</code> 定义
+</p></li>
+<li>
+<p>
+ 缩进：<del>目前缩进确实有些问题，其中一个解决办法是原始数据会带有 <code>parent_id</code> 字段，可以通过判断 <code>parent_id</code> 大于0时增加缩进</del>
+</p>
+
+<p>
+     缩进的计算可以通过<code>makeRows</code>函数在遍历时添加每行数据的层级
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">rows</span>, <span style="color:#a6e22e">expanded</span>, <span style="color:#a6e22e">indent</span>) {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">rows</span>) {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>        <span style="color:#66d9ef">return</span> []
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>    }
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>    <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">row</span> =&gt; {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>        <span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">_indent</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">indent</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>        <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">row</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">expanded</span>.<span style="color:#a6e22e">indexOf</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">id</span>) <span style="color:#f92672">&gt;</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>            <span style="color:#a6e22e">newRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">newRows</span>.<span style="color:#a6e22e">concat</span>(<span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">children</span>, <span style="color:#a6e22e">expanded</span>, <span style="color:#a6e22e">indent</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>        }
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>    })
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">newRows</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">useTable</span>(<span style="color:#a6e22e">table</span>) {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">expandRows</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">computed</span>(() =&gt; {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">makeRows</span>(<span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">list</span>, <span style="color:#a6e22e">table</span>.<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">expanded</span>, <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>    })
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>    <span style="color:#66d9ef">return</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span>        <span style="color:#a6e22e">expandRows</span>,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>    }
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>}</span></span></pre>
+<p>
+     然后在表格中添加对应的偏移即可, 需要注意的是表格对齐方向需要设置为 <code>left</code> (<b>默认值</b>)
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#f92672">template</span> <span style="color:#a6e22e">v-slot:body-cell-name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>  &lt;<span style="color:#f92672">q-td</span> <span style="color:#a6e22e">:props</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props&#34;</span> <span style="color:#a6e22e">:style</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;&#39;padding-left:&#39; + ((props.row._indent || 0) + 1) + &#39;rem&#39;&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>    &lt;<span style="color:#f92672">q-btn</span> <span style="color:#a6e22e">flat</span> <span style="color:#a6e22e">round</span> <span style="color:#a6e22e">dense</span> <span style="color:#a6e22e">size</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xs&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>           <span style="color:#a6e22e">:icon</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.expand ? &#39;remove&#39; : &#39;add&#39;&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>           <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">click</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.expand = !props.expand&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>           <span style="color:#a6e22e">v-if</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;props.row.children &amp;&amp; props.row.children.length &gt; 0&#34;</span> /&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>    {{ props.row.name }}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8</span><span>  &lt;/<span style="color:#f92672">q-td</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">9</span><span>&lt;/<span style="color:#f92672">template</span>&gt;</span></span></pre>
+</li>
+</ul>
+<h2 id="heading-4">最终实现</h2>
+<p>
+   <a
+    href="https://s.libforest.com/images/2023/04/quasar-tree-table.png"
+    data-img-lightbox
+    data-gallery="page-images"
+    data-type="image"
+    
+    
+    class="block w-fit max-w-full no-underline"
+  >
+    <img
+      src="https://s.libforest.com/images/2023/04/quasar-tree-table.png"
+      alt="quasar-tree-table.png"
+      
+      
+      
+      
+      
+      loading="lazy"
+      decoding="async"
+      class="mx-auto my-6 cursor-zoom-in rounded-lg "
+    >
+  </a><script src="https://honmaple.me/js/lightbox.js" data-glightbox-src="https://honmaple.me/js/vendor/glightbox.min.js" data-glightbox-css="https://honmaple.me/css/vendor/glightbox.min.css" defer></script>
+</p>
+      </div><nav class="mt-8 grid gap-3 border-t border-slate-200/60 pt-5 dark:border-slate-700/60 sm:grid-cols-2" aria-label="Post navigation"><a href="https://honmaple.me/posts/2023/05/基于Quasar实现一个树状选择器TreeSelect/" class="rounded-lg bg-slate-100 px-4 py-3 text-left hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+              <span class="block text-xs text-slate-500 dark:text-slate-400">上一篇</span>
+              <span class="mt-1 block text-sm font-medium">基于Quasar实现一个树状选择器TreeSelect</span>
+            </a><a href="https://honmaple.me/posts/2023/03/搭建Memos作为私人笔记/" class="rounded-lg bg-slate-100 px-4 py-3 text-left hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500 sm:text-right">
+              <span class="block text-xs text-slate-500 dark:text-slate-400">下一篇</span>
+              <span class="mt-1 block text-sm font-medium">搭建Memos作为私人笔记</span>
+            </a></nav>
+    <section class="comments" data-giscus>
+      <button type="button" class="comments-button">加载评论</button>
+      <div class="comments-panel"></div>
+      <template data-giscus-template>
+        <script src="https://giscus.app/client.js"
+                data-repo="honmaple/honmaple.github.io"
+                data-repo-id="MDEwOlJlcG9zaXRvcnk0MTY4ODc2MQ=="
+                data-category="Announcements"
+                data-category-id="DIC_kwDOAnweuc4CVokl"
+                data-mapping="specific"
+                data-term="基于Quasar实现一个树状表格TableTree"
+                data-strict="0"
+                data-reactions-enabled="1"
+                data-emit-metadata="0"
+                data-input-position="bottom"
+                data-lang="zh-CN"
+                crossorigin="anonymous"
+                async>
+        </script>
+      </template>
+    </section>
+    </article>
+  </div></main>
+    </div>
+
+    <footer class="mx-auto mt-auto w-full max-w-4xl px-0 sm:px-5">
+      <div class="flex flex-col gap-3 rounded-t-lg bg-white px-4 py-4 text-sm dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div>&copy; 2026 honmaple</div>
+        <div class="flex flex-wrap items-center gap-2"><a href="https://honmaple.me/pages/contact/" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">联系</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://honmaple.me/pages/about/" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">关于</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://honmaple.me/atom.xml" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">订阅</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://github.com/honmaple" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">Github</a></div>
+      </div>
+    </footer>
+
+    <button type="button" data-back-to-top class="back-to-top pointer-events-none fixed bottom-5 right-5 z-[70] inline-flex h-10 w-10 translate-y-2 items-center justify-center rounded-full bg-white text-sm opacity-0 transition-all duration-200 hover:text-primary-700 dark:bg-slate-900 dark:hover:text-primary-500" aria-label="返回顶部" title="返回顶部">
+      ↑
+    </button>
+
+    <script src="https://honmaple.me/js/main.js"></script></body>
+</html>

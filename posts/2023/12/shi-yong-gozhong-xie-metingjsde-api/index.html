@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用Go重写MetingJS的API · 红枫吟</title><meta name="description" content="风落花语风落天，花落风雨花落田."><script>
+      (function () {
+        var storageKey = "theme-mode";
+        var root = document.documentElement;
+        var saved = null;
+
+        try {
+          saved = window.localStorage.getItem(storageKey);
+        } catch (error) {}
+
+        var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var theme = saved === "dark" || saved === "light" ? saved : (prefersDark ? "dark" : "light");
+
+        root.dataset.theme = theme;
+        if (theme === "dark") {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="https://honmaple.me/css/style.css">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNGNDGB8F8"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'G-YNGNDGB8F8');
+  </script>
+
+</head>
+  <body>
+    <div class="mx-auto flex w-full max-w-4xl flex-1 flex-col px-0 sm:px-5">
+      <header class="relative z-40">
+        <div class="overflow-visible rounded-b-lg bg-white dark:bg-slate-900">
+          <div class="mx-auto w-full max-w-4xl">
+            <div class="relative px-4 py-3 sm:px-5">
+              <div class="absolute right-4 top-3 flex items-center gap-2 sm:right-5 sm:hidden">
+                <button type="button" data-theme-toggle data-theme-dark-label="暗色" data-theme-light-label="亮色" aria-label="暗色" title="暗色" aria-pressed="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span data-theme-icon aria-hidden="true" class="text-base leading-none">◐</span>
+                </button>
+                <button type="button" data-menu-toggle aria-label="菜单" title="菜单" aria-expanded="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span aria-hidden="true" class="relative h-3.5 w-4">
+                    <span class="absolute left-0 top-0 h-0.5 w-full rounded-full bg-current"></span>
+                    <span class="absolute left-0 top-1.5 h-0.5 w-full rounded-full bg-current"></span>
+                    <span class="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-current"></span>
+                  </span>
+                </button>
+              </div>
+              <div class="absolute right-4 top-3 hidden items-center gap-2 sm:right-5 sm:flex">
+                <button type="button" data-theme-toggle data-theme-dark-label="暗色" data-theme-light-label="亮色" aria-label="暗色" title="暗色" aria-pressed="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span data-theme-icon aria-hidden="true" class="text-base leading-none">◐</span>
+                </button>
+              </div>
+
+              <div class="pr-20 sm:pr-12">
+                <a href="https://honmaple.me/" class="flex items-center gap-3"><img src="https://s.libforest.com/images/header/header.png" alt="红枫吟" class="h-12 w-12 rounded-lg object-cover"><div class="min-w-0">
+                    <h1 class="text-xl font-semibold tracking-[-0.03em]">红枫吟</h1><p class="mt-0.5 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">风落花语风落天，花落风雨花落田.</p></div>
+                </a>
+              </div>
+            </div>
+
+            <div class="sm:pb-2"><nav aria-label="Primary navigation" class="relative">
+                  <div class="hidden items-center justify-between gap-4 sm:flex">
+                    <ul class="flex flex-wrap gap-0"><li class="group relative">
+                          <a href="/categories/tech/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">技术分享</a></li><li class="group relative">
+                          <a href="/categories/life/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">生活随笔</a></li><li class="group relative">
+                          <a href="/pages/memos/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">闲言碎语</a></li><li class="group relative">
+                          <a href="/archives/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">归档</a></li><li class="group relative">
+                          <a href="/pages/about/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">关于</a></li></ul><form action="/search/" method="get" class="flex min-w-0 items-center px-5">
+                        <label class="sr-only" for="nav-search">搜索</label>
+                        <div class="flex w-44 items-center rounded-lg bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
+                          <input id="nav-search" type="search" name="q" placeholder="搜索文章" class="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                          <button type="submit" class="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full hover:text-primary-700 dark:hover:text-primary-500" aria-label="搜索" title="搜索">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current stroke-2">
+                              <path d="m21 21-4.35-4.35"></path>
+                              <circle cx="11" cy="11" r="6"></circle>
+                            </svg>
+                          </button>
+                        </div>
+                      </form></div>
+                  <div data-menu-panel class="hidden px-4 pb-4 pt-1 sm:hidden"><form action="/search/" method="get" class="mb-3">
+                        <label class="sr-only" for="mobile-search">搜索</label>
+                        <div class="flex items-center rounded-lg bg-slate-100 px-3 py-2 dark:bg-slate-800">
+                          <input id="mobile-search" type="search" name="q" placeholder="搜索文章" class="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                          <button type="submit" class="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full hover:text-primary-700 dark:hover:text-primary-500" aria-label="搜索" title="搜索">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current stroke-2">
+                              <path d="m21 21-4.35-4.35"></path>
+                              <circle cx="11" cy="11" r="6"></circle>
+                            </svg>
+                          </button>
+                        </div>
+                      </form><ul class="space-y-2"><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/categories/tech/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">技术分享</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/categories/life/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">生活随笔</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/pages/memos/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">闲言碎语</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/archives/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">归档</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/pages/about/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">关于</a></li></ul>
+                  </div>
+                </nav></div>
+          </div>
+        </div>
+      </header>
+
+      <main class="relative z-0 flex-1 py-5 sm:py-6"><div class="relative">
+    <article class="page-article mx-auto max-w-4xl rounded-lg bg-white px-5 py-5 dark:bg-slate-900 sm:px-6 sm:py-6">
+      <h1 class="mt-2.5 text-2xl font-semibold leading-tight tracking-[-0.025em]">使用Go重写MetingJS的API</h1>
+  <div class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm leading-6 text-slate-500 dark:text-slate-400"><time datetime="2023-12-26" class="font-mono text-xs uppercase tracking-[0.14em]">
+        2023年12月26日 周二
+      </time><span aria-hidden="true" class="mx-1 h-3 w-px bg-slate-200 dark:bg-slate-700"></span><span class="text-sm">阅读约 5 分钟</span><span aria-hidden="true" class="mx-1 h-3 w-px bg-slate-200 dark:bg-slate-700"></span><span class="flex flex-wrap items-center gap-1.5"><a href="https://honmaple.me/tags/life/" class="tag">
+            <span>life</span>
+          </a><a href="https://honmaple.me/tags/music/" class="tag">
+            <span>music</span>
+          </a><a href="https://honmaple.me/tags/go/" class="tag">
+            <span>go</span>
+          </a></span></div><div class="mt-5">
+          <aside class="toc w-full rounded-lg px-4">
+            <p class="py-3 text-sm font-semibold">快速导航</p>
+            <div>
+              
+    <ol>
+        <li>
+          <a href="#heading-1">功能</a>
+        </li>
+        <li>
+          <a href="#heading-2">使用</a>
+            
+    <ol>
+        <li>
+          <a href="#heading-2.1">手动部署</a>
+        </li>
+        <li>
+          <a href="#heading-2.2">Docker部署</a>
+        </li>
+        <li>
+          <a href="#heading-2.3">配置说明</a>
+        </li>
+        <li>
+          <a href="#heading-2.4">命令行参数</a>
+        </li>
+        <li>
+          <a href="#heading-2.5">网页端设置</a>
+        </li>
+    </ol>
+        </li>
+        <li>
+          <a href="#heading-3">演示</a>
+        </li>
+    </ol>
+            </div>
+          </aside>
+        </div><div class="prose prose-primary dark:prose-invert mt-6">
+        
+<blockquote>
+<p>
+<b>MetingJS</b> 是一款通过获取网易云音乐或者QQ音乐等服务的歌单、歌手、歌曲、歌词等信息，然后使用开源HTML5播放器 <b>APlayer</b> 进行播放的插件。而 <b>MetingJS</b> 是一段很小的JS代码，它提供了一个默认的API接口：<a href="https://api.i-meto.com/meting/api">https://api.i-meto.com/meting/api</a> , 但很不幸，该接口偶尔会出问题，作者也很久没有回复issue了。
+</p>
+
+<p>
+现在也有一个开源的 <a href="https://github.com/injahow/meting-api">injahow/meting-api</a>，该服务同样使用PHP编写，我不太懂PHP，我只是想要设置一个缓存，来缓存所有的歌曲信息，而不仅仅是歌单列表，另外是可以支持内存缓存和本地磁盘缓存，而不是直接从本地文件中读取。
+</p>
+
+<p>
+基于此，与其自己改不是太懂的PHP，说不定会出现一些意想不到的漏洞(源自某安全公司多次CTF换来的教训)，不如使用熟悉的Go重写实现，毕竟核心代码也不是太多
+</p>
+</blockquote>
+
+<h2 id="heading-1">功能</h2>
+<ul>
+<li>
+<p>
+ 支持网易云音乐，QQ音乐
+</p></li>
+<li>
+<p>
+ 支持新服务接口扩展
+</p></li>
+<li>
+<p>
+ 支持所有请求结果的缓存
+</p></li>
+<li>
+<p>
+ 更方便的配置(环境变量+配置文件)，而不用修改源文件
+</p></li>
+<li>
+<p>
+ 基于 <b>Go</b> 编写，一次编译，到处运行
+</p>
+</li>
+</ul>
+<h2 id="heading-2">使用</h2>
+<h3 id="heading-2.1">手动部署</h3>
+<ul>
+<li>
+<p>
+ 下载仓库
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>git clone https://github.com/honmaple/meting-api</span></span></pre></li>
+<li>
+<p>
+ 编译可执行文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>go mod download
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>go build <span style="color:#f92672">-</span>o meting<span style="color:#f92672">-</span>api <span style="color:#f92672">.</span></span></span></pre>
+<p>
+      或者使用 <b>Docker</b> 进行编译, 编译后的文件在 <code>/usr/bin/meting-api</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>docker build -t meting-api .</span></span></pre></li>
+<li>
+<p>
+ 运行
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>./meting-api -D</span></span></pre></li>
+</ul>
+<h3 id="heading-2.2">Docker部署</h3>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>docker run --name meting-api --restart=always -d -p 8000:8000 -v /tmp/meting-cache:/opt/meting-api/cache honmaple/meting-api</span></span></pre>
+<h3 id="heading-2.3">配置说明</h3>
+<p>
+    配置可以使用环境变量或者配置文件设置
+</p>
+<ul>
+<li>
+<p>
+ 环境变量: 使用 <code>METING_XXXX</code>, 比如 <code>METING_CACHE_TTL</code>
+</p></li>
+<li>
+<p>
+ 配置文件: 默认使用当前目录下的 <code>config.yaml</code>, 如果使用 <b>Docker</b> 部署，需要文件挂载到 <code>/opt/meting-api/config.yaml</code>
+</p></li>
+<li>
+<p>
+ 具体配置:
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span><span style="color:#75715e"># 缓存过期时间</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span><span style="color:#f92672">cache.ttl</span>:                  <span style="color:#ae81ff">3600</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span><span style="color:#75715e"># 缓存路径，设置为空是禁用缓存</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span><span style="color:#f92672">cache.path</span>:                 <span style="color:#e6db74">&#34;./cache&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span><span style="color:#75715e"># 是否激活缓存</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span><span style="color:#f92672">cache.enabled</span>:              <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span><span style="color:#75715e"># 服务监听地址，:8000 表示监听 0.0.0.0:8000</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span><span style="color:#f92672">server.addr</span>:                <span style="color:#e6db74">&#34;:8000&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span><span style="color:#75715e"># 对外服务地址，比如 https://api.xxxx.com/meting</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span><span style="color:#f92672">server.host</span>:                <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span><span style="color:#75715e">## cors设置</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span><span style="color:#f92672">server.cors.allow_headers</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>  - <span style="color:#e6db74">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span><span style="color:#f92672">server.cors.allow_origins</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>  - <span style="color:#e6db74">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span><span style="color:#f92672">server.cors.allow_methods</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>  - <span style="color:#e6db74">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span><span style="color:#75715e"># 日志相关, out可选stdout,stderr,file，或者使用|分隔多个，比如stderr|file</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span><span style="color:#f92672">logger.out</span>:                 <span style="color:#e6db74">&#34;stdout&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span><span style="color:#75715e"># 日志级别</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span><span style="color:#f92672">logger.level</span>:               <span style="color:#e6db74">&#34;info&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span><span style="color:#75715e"># 日志文件名格式</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26</span><span><span style="color:#f92672">logger.file_format</span>:         <span style="color:#e6db74">&#34;%Y%m%d&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27</span><span><span style="color:#75715e"># 日志文件保留数量</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28</span><span><span style="color:#f92672">logger.file_rotation_count</span>: <span style="color:#ae81ff">3</span></span></span></pre></li>
+</ul>
+<h3 id="heading-2.4">命令行参数</h3>
+<ul>
+<li>
+<p>
+ 查看支持的服务
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>./meting-api --list</span></span></pre></li>
+<li>
+<p>
+ 指定监听地址
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>./meting-api -a :8001
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>./meting-api --addr :8001</span></span></pre></li>
+<li>
+<p>
+ 显示请求记录
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>./meting-api -D
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>./meting-api --debug</span></span></pre></li>
+<li>
+<p>
+ 指定配置文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>./meting-api -c /etc/meting.yaml
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>./meting-api --config /etc/meting.yaml</span></span></pre></li>
+<li>
+<p>
+ 显示当前配置
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>./meting-api config</span></span></pre></li>
+<li>
+<p>
+ 删除指定缓存
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>./meting-api delete-cache &#39;server:netease:type:${type}:id:${id}&#39;</span></span></pre></li>
+</ul>
+<h3 id="heading-2.5">网页端设置</h3>
+<p>
+    其中 <code>http://localhost:8000/</code> 是对外服务的接口
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>&lt;<span style="color:#f92672">meting-js</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>  <span style="color:#a6e22e">server</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;netease&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>  <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;artist&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>  <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;6452&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>&lt;/<span style="color:#f92672">meting-js</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text/javascript&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">meting</span><span style="color:#a6e22e">_api</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://localhost:8000/?server=:server&amp;type=:type&amp;id=:id&amp;auth=:auth&amp;r=:r&#39;</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>&lt;/<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;</span></span></pre>
+
+<h2 id="heading-3">演示</h2>
+   
+  <meting-js
+    id="9085878380"
+    type="playlist"
+    server="netease"
+    preload="none"
+    api="https://api.honmaple.com/meting?server=:server&type=:type&id=:id&auth=:auth&r=:r"></meting-js>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js" defer></script>
+
+      </div><nav class="mt-8 grid gap-3 border-t border-slate-200/60 pt-5 dark:border-slate-700/60 sm:grid-cols-2" aria-label="Post navigation"><a href="https://honmaple.me/posts/2024/03/shi-yong-homebrew-tapfa-bu-ge-ren-gong-ju/" class="rounded-lg bg-slate-100 px-4 py-3 text-left hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+              <span class="block text-xs text-slate-500 dark:text-slate-400">上一篇</span>
+              <span class="mt-1 block text-sm font-medium">使用Homebrew Tap发布个人工具</span>
+            </a><a href="https://honmaple.me/posts/2023/12/snowjing-tai-bo-ke-chu-li-duo-tu-pai-ban/" class="rounded-lg bg-slate-100 px-4 py-3 text-left hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500 sm:text-right">
+              <span class="block text-xs text-slate-500 dark:text-slate-400">下一篇</span>
+              <span class="mt-1 block text-sm font-medium">Snow静态博客处理多图排版</span>
+            </a></nav>
+    <section class="comments" data-giscus>
+      <button type="button" class="comments-button">加载评论</button>
+      <div class="comments-panel"></div>
+      <template data-giscus-template>
+        <script src="https://giscus.app/client.js"
+                data-repo="honmaple/honmaple.github.io"
+                data-repo-id="MDEwOlJlcG9zaXRvcnk0MTY4ODc2MQ=="
+                data-category="Announcements"
+                data-category-id="DIC_kwDOAnweuc4CVokl"
+                data-mapping="specific"
+                data-term="使用Go重写MetingJS的API"
+                data-strict="0"
+                data-reactions-enabled="1"
+                data-emit-metadata="0"
+                data-input-position="bottom"
+                data-lang="zh-CN"
+                crossorigin="anonymous"
+                async>
+        </script>
+      </template>
+    </section>
+    </article>
+  </div></main>
+    </div>
+
+    <footer class="mx-auto mt-auto w-full max-w-4xl px-0 sm:px-5">
+      <div class="flex flex-col gap-3 rounded-t-lg bg-white px-4 py-4 text-sm dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div>&copy; 2026 honmaple</div>
+        <div class="flex flex-wrap items-center gap-2"><a href="https://honmaple.me/pages/contact/" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">联系</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://honmaple.me/pages/about/" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">关于</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://honmaple.me/atom.xml" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">订阅</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://github.com/honmaple" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">Github</a></div>
+      </div>
+    </footer>
+
+    <button type="button" data-back-to-top class="back-to-top pointer-events-none fixed bottom-5 right-5 z-[70] inline-flex h-10 w-10 translate-y-2 items-center justify-center rounded-full bg-white text-sm opacity-0 transition-all duration-200 hover:text-primary-700 dark:bg-slate-900 dark:hover:text-primary-500" aria-label="返回顶部" title="返回顶部">
+      ↑
+    </button>
+
+    <script src="https://honmaple.me/js/main.js"></script></body>
+</html>

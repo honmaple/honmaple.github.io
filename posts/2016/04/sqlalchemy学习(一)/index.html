@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sqlalchemy学习(一) · 红枫吟</title><meta name="description" content="风落花语风落天，花落风雨花落田."><script>
+      (function () {
+        var storageKey = "theme-mode";
+        var root = document.documentElement;
+        var saved = null;
+
+        try {
+          saved = window.localStorage.getItem(storageKey);
+        } catch (error) {}
+
+        var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var theme = saved === "dark" || saved === "light" ? saved : (prefersDark ? "dark" : "light");
+
+        root.dataset.theme = theme;
+        if (theme === "dark") {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="https://honmaple.me/css/style.css">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNGNDGB8F8"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'G-YNGNDGB8F8');
+  </script>
+
+</head>
+  <body>
+    <div class="mx-auto flex w-full max-w-4xl flex-1 flex-col px-0 sm:px-5">
+      <header class="relative z-40">
+        <div class="overflow-visible rounded-b-lg bg-white dark:bg-slate-900">
+          <div class="mx-auto w-full max-w-4xl">
+            <div class="relative px-4 py-3 sm:px-5">
+              <div class="absolute right-4 top-3 flex items-center gap-2 sm:right-5 sm:hidden">
+                <button type="button" data-theme-toggle data-theme-dark-label="暗色" data-theme-light-label="亮色" aria-label="暗色" title="暗色" aria-pressed="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span data-theme-icon aria-hidden="true" class="text-base leading-none">◐</span>
+                </button>
+                <button type="button" data-menu-toggle aria-label="菜单" title="菜单" aria-expanded="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span aria-hidden="true" class="relative h-3.5 w-4">
+                    <span class="absolute left-0 top-0 h-0.5 w-full rounded-full bg-current"></span>
+                    <span class="absolute left-0 top-1.5 h-0.5 w-full rounded-full bg-current"></span>
+                    <span class="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-current"></span>
+                  </span>
+                </button>
+              </div>
+              <div class="absolute right-4 top-3 hidden items-center gap-2 sm:right-5 sm:flex">
+                <button type="button" data-theme-toggle data-theme-dark-label="暗色" data-theme-light-label="亮色" aria-label="暗色" title="暗色" aria-pressed="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span data-theme-icon aria-hidden="true" class="text-base leading-none">◐</span>
+                </button>
+              </div>
+
+              <div class="pr-20 sm:pr-12">
+                <a href="https://honmaple.me/" class="flex items-center gap-3"><img src="https://s.libforest.com/images/header/header.png" alt="红枫吟" class="h-12 w-12 rounded-lg object-cover"><div class="min-w-0">
+                    <h1 class="text-xl font-semibold tracking-[-0.03em]">红枫吟</h1><p class="mt-0.5 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">风落花语风落天，花落风雨花落田.</p></div>
+                </a>
+              </div>
+            </div>
+
+            <div class="sm:pb-2"><nav aria-label="Primary navigation" class="relative">
+                  <div class="hidden items-center justify-between gap-4 sm:flex">
+                    <ul class="flex flex-wrap gap-0"><li class="group relative">
+                          <a href="/categories/tech/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">技术分享</a></li><li class="group relative">
+                          <a href="/categories/life/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">生活随笔</a></li><li class="group relative">
+                          <a href="/pages/memos/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">闲言碎语</a></li><li class="group relative">
+                          <a href="/archives/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">归档</a></li><li class="group relative">
+                          <a href="/pages/about/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">关于</a></li></ul><form action="/search/" method="get" class="flex min-w-0 items-center px-5">
+                        <label class="sr-only" for="nav-search">搜索</label>
+                        <div class="flex w-44 items-center rounded-lg bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
+                          <input id="nav-search" type="search" name="q" placeholder="搜索文章" class="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                          <button type="submit" class="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full hover:text-primary-700 dark:hover:text-primary-500" aria-label="搜索" title="搜索">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current stroke-2">
+                              <path d="m21 21-4.35-4.35"></path>
+                              <circle cx="11" cy="11" r="6"></circle>
+                            </svg>
+                          </button>
+                        </div>
+                      </form></div>
+                  <div data-menu-panel class="hidden px-4 pb-4 pt-1 sm:hidden"><form action="/search/" method="get" class="mb-3">
+                        <label class="sr-only" for="mobile-search">搜索</label>
+                        <div class="flex items-center rounded-lg bg-slate-100 px-3 py-2 dark:bg-slate-800">
+                          <input id="mobile-search" type="search" name="q" placeholder="搜索文章" class="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                          <button type="submit" class="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full hover:text-primary-700 dark:hover:text-primary-500" aria-label="搜索" title="搜索">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current stroke-2">
+                              <path d="m21 21-4.35-4.35"></path>
+                              <circle cx="11" cy="11" r="6"></circle>
+                            </svg>
+                          </button>
+                        </div>
+                      </form><ul class="space-y-2"><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/categories/tech/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">技术分享</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/categories/life/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">生活随笔</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/pages/memos/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">闲言碎语</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/archives/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">归档</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/pages/about/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">关于</a></li></ul>
+                  </div>
+                </nav></div>
+          </div>
+        </div>
+      </header>
+
+      <main class="relative z-0 flex-1 py-5 sm:py-6"><div class="relative">
+    <article class="page-article mx-auto max-w-4xl rounded-lg bg-white px-5 py-5 dark:bg-slate-900 sm:px-6 sm:py-6">
+      <h1 class="mt-2.5 text-2xl font-semibold leading-tight tracking-[-0.025em]">sqlalchemy学习(一)</h1>
+  <div class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm leading-6 text-slate-500 dark:text-slate-400"><time datetime="2016-04-25" class="font-mono text-xs uppercase tracking-[0.14em]">
+        2016年04月25日 周一
+      </time><span aria-hidden="true" class="mx-1 h-3 w-px bg-slate-200 dark:bg-slate-700"></span><span class="text-sm">阅读约 5 分钟</span><span aria-hidden="true" class="mx-1 h-3 w-px bg-slate-200 dark:bg-slate-700"></span><span class="flex flex-wrap items-center gap-1.5"><a href="https://honmaple.me/tags/python/" class="tag">
+            <span>python</span>
+          </a><a href="https://honmaple.me/tags/sql/" class="tag">
+            <span>sql</span>
+          </a><a href="https://honmaple.me/tags/sqlalchemy/" class="tag">
+            <span>sqlalchemy</span>
+          </a></span></div><div class="mt-5">
+          <aside class="toc w-full rounded-lg px-4">
+            <p class="py-3 text-sm font-semibold">快速导航</p>
+            <div>
+              
+    <ol>
+        <li>
+          <a href="#heading-1">sqlalchemy</a>
+            
+    <ol>
+        <li>
+          <a href="#heading-1.1">数据库连接</a>
+            
+    <ol>
+        <li>
+          <a href="#heading-1.1.1">各种数据库连接方式</a>
+        </li>
+    </ol>
+        </li>
+        <li>
+          <a href="#heading-1.2">声明样式</a>
+            
+    <ol>
+        <li>
+          <a href="#heading-1.2.1">样式参数说明</a>
+        </li>
+        <li>
+          <a href="#heading-1.2.2">字段类型及说明</a>
+        </li>
+    </ol>
+        </li>
+        <li>
+          <a href="#heading-1.3">创建表</a>
+        </li>
+        <li>
+          <a href="#heading-1.4">为表创建实例</a>
+        </li>
+        <li>
+          <a href="#heading-1.5">创建session</a>
+        </li>
+        <li>
+          <a href="#heading-1.6">插入和更新数据</a>
+            
+    <ol>
+        <li>
+          <a href="#heading-1.6.1">插入</a>
+        </li>
+        <li>
+          <a href="#heading-1.6.2">更新</a>
+        </li>
+        <li>
+          <a href="#heading-1.6.3">必须提交才能生效</a>
+        </li>
+    </ol>
+        </li>
+    </ol>
+        </li>
+    </ol>
+            </div>
+          </aside>
+        </div><div class="prose prose-primary dark:prose-invert mt-6">
+        <h2 id="heading-1">sqlalchemy<a id="orgheadline19"></a></h2>
+<p>系统的学一下sqlalchemyA,不过没有中文文档,只能用我的渣英文能力慢慢看原文档了</p>
+<h3 id="heading-1.1">数据库连接<a id="orgheadline6"></a></h3>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&gt;&gt;&gt; from sqlalchemy import create_engine
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>&gt;&gt;&gt; engine = create_engine(&#39;sqlite:///:memory:&#39;, echo=True)
+</span></span></pre><p>echo为True输出日志</p>
+<h4 id="heading-1.1.1">各种数据库连接方式<a id="orgheadline5"></a></h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>dialect+driver://username:password@host:port/database
+</span></span></pre><ol>
+<li>
+<p>Postgresql</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span># default
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>engine = create_engine(&#39;postgresql://scott:tiger@localhost/mydatabase&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span># psycopg2
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>engine = create_engine(&#39;postgresql+psycopg2://scott:tiger@localhost/mydatabase&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span># pg8000
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>engine = create_engine(&#39;postgresql+pg8000://scott:tiger@localhost/mydatabase&#39;)
+</span></span></pre></li>
+<li>
+<p>MySQL</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span># default
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>engine = create_engine(&#39;mysql://scott:tiger@localhost/foo&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span># mysql-python
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>engine = create_engine(&#39;mysql+mysqldb://scott:tiger@localhost/foo&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span># MySQL-connector-python
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>engine = create_engine(&#39;mysql+mysqlconnector://scott:tiger@localhost/foo&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span># OurSQL
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8</span><span>engine = create_engine(&#39;mysql+oursql://scott:tiger@localhost/foo&#39;)
+</span></span></pre></li>
+<li>
+<p>Oracle</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>engine = create_engine(&#39;oracle://scott:tiger@127.0.0.1:1521/sidname&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>engine = create_engine(&#39;oracle+cx_oracle://scott:tiger@tnsname&#39;)
+</span></span></pre></li>
+<li>
+<p>SQLite</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span># sqlite://&lt;nohostname&gt;/&lt;path&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span># where &lt;path&gt; is relative:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>engine = create_engine(&#39;sqlite:///foo.db&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>#Unix/Mac - 4 initial slashes in total
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>engine = create_engine(&#39;sqlite:////absolute/path/to/foo.db&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>#Windows
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>engine = create_engine(&#39;sqlite:///C:\\path\\to\\foo.db&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>#Windows alternative using raw string
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>engine = create_engine(r&#39;sqlite:///C:\path\to\foo.db&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span># To use a SQLite :memory: database, specify an empty URL:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>engine = create_engine(&#39;sqlite://&#39;)
+</span></span></pre></li>
+</ol>
+<h3 id="heading-1.2">声明样式<a id="orgheadline11"></a></h3>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>from sqlalchemy.ext.declarative import declarative_base
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>from sqlalchemy import Column, Integer, String
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>Base = declarative_base()
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>class User(Base):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>     __tablename__ = &#39;users&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>     id = Column(Integer, primary_key=True)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>     name = Column(String)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>     fullname = Column(String)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>     password = Column(String)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>     def __repr__(self):
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>        return &#34;&lt;User(name=&#39;%s&#39;, fullname=&#39;%s&#39;, password=&#39;%s&#39;)&gt;&#34; % (
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>                             self.name, self.fullname, self.password)
+</span></span></pre><h4 id="heading-1.2.1">样式参数说明<a id="orgheadline7"></a></h4>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col  class="org-left" />
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">说明</td>
+</tr>
+<tr>
+<td class="org-left">**\_<sub>tablename</sub>\_\_**</td>
+<td class="org-left">表名</td>
+</tr>
+</tbody>
+</table>
+<h4 id="heading-1.2.2">字段类型及说明<a id="orgheadline10"></a></h4>
+<p><a href="http://docs.sqlalchemy.org/en/rel_1_0/core/type_basics.html#sqlalchemy.types.Integer">字段类型及文档</a></p>
+<ol>
+<li>
+<p>Generic Types</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col  class="org-left" />
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">字段类型</th>
+<th scope="col" class="org-left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">BigInteger</td>
+<td class="org-left">大数</td>
+</tr>
+<tr>
+<td class="org-left">Boolean(create<sub>constraint</sub>=True, name=None, \_create<sub>events</sub>=True)</td>
+<td class="org-left">布尔</td>
+</tr>
+<tr>
+<td class="org-left">Data</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">DateTime(timezone=False)</td>
+<td class="org-left">时间</td>
+</tr>
+<tr>
+<td class="org-left">Enum(\*enums, \*\*kw)</td>
+<td class="org-left">枚举</td>
+</tr>
+<tr>
+<td class="org-left">Float(precision=None, asdecimal=False, decimal<sub>return</sub><sub>scale</sub>=None, \*\*kwargs)</td>
+<td class="org-left">浮点型</td>
+</tr>
+<tr>
+<td class="org-left">Integer</td>
+<td class="org-left">整型</td>
+</tr>
+<tr>
+<td class="org-left">Interval(native=True, second<sub>precision</sub>=None, day<sub>precision</sub>=None)</td>
+<td class="org-left">时间间隔</td>
+</tr>
+<tr>
+<td class="org-left">LargeBinary(length=None)</td>
+<td class="org-left">二进制大对象</td>
+</tr>
+<tr>
+<td class="org-left">MatchType(create<sub>constraint</sub>=True, name=None, \_create<sub>events</sub>=True)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">Numeric(precision=None, scale=None, decimal<sub>return</sub><sub>scale</sub>=None, asdecimal=True)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">PickleType(protocol=2, pickler=None, comparator=None)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">SchemaType(name=None, schema=None, metadata=None, inherit<sub>schema</sub>=False, quote=None, \_create<sub>events</sub>=True)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">SmallInteger</td>
+<td class="org-left">小整型</td>
+</tr>
+<tr>
+<td class="org-left">String(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, \_warn<sub>on</sub><sub>bytestring</sub>=False)</td>
+<td class="org-left">字符串</td>
+</tr>
+<tr>
+<td class="org-left">Text(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, \_warn<sub>on</sub><sub>bytestring</sub>=False)</td>
+<td class="org-left">文本对象</td>
+</tr>
+<tr>
+<td class="org-left">Time(timezone=False)</td>
+<td class="org-left">时间</td>
+</tr>
+<tr>
+<td class="org-left">Unicode(length=None, \*\*kwargs)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">UnicodeText(length=None, \*\*kwargs)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>SQL Standard Types</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col  class="org-left" />
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">字段类型</th>
+<th scope="col" class="org-left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">BIGINT</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">BINARY(length=None)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">BLOB(length=None)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">BOOLEAN(create<sub>constraint</sub>=True, name=None, \_create<sub>events</sub>=True)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">CHAR(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, \_warn<sub>on</sub><sub>bytestring</sub>=False)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">CLOB(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, \_warn<sub>on</sub><sub>bytestring</sub>=False)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">DATE</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">DATETIME(timezone=False)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">DECIMAL(precision=None, scale=None, decimal<sub>return</sub><sub>scale</sub>=None, asdecimal=True)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">FLOAT(precision=None, asdecimal=False, decimal<sub>return</sub><sub>scale</sub>=None, \*\*kwargs)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">INT</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">INTEGER</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">NCHAR(length=None, \*\*kwargs)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">NVARCHAR(length=None, \*\*kwargs)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">NUMERIC(precision=None, scale=None, decimal<sub>return</sub><sub>scale</sub>=None, asdecimal=True)¶</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">REAL(precision=None, asdecimal=False, decimal<sub>return</sub><sub>scale</sub>=None, \*\*kwargs)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">SMALLINT</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">TEXT(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, \_warn<sub>on</sub><sub>bytestring</sub>=False</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">TIME(timezone=False)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">TIMESTAMP(timezone=False)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">VARBINARY(length=None)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+<tr>
+<td class="org-left">VARCHAR(length=None, collation=None, convert<sub>unicode</sub>=False, unicode<sub>error</sub>=None, \_warn<sub>on</sub><sub>bytestring</sub>=False)</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+<h3 id="heading-1.3">创建表<a id="orgheadline12"></a></h3>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>Base.metadata.create_all(engine)
+</span></span></pre><h3 id="heading-1.4">为表创建实例<a id="orgheadline13"></a></h3>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&gt;&gt;&gt; ed_user = User(name=&#39;ed&#39;, fullname=&#39;Ed Jones&#39;, password=&#39;edspassword&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>&gt;&gt;&gt; ed_user.name
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>&#39;ed&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>&gt;&gt;&gt; ed_user.password
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>&#39;edspassword&#39;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>&gt;&gt;&gt; str(ed_user.id)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>&#39;None&#39;
+</span></span></pre><h3 id="heading-1.5">创建session<a id="orgheadline14"></a></h3>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&gt;&gt;&gt; from sqlalchemy.orm import sessionmaker
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>&gt;&gt;&gt; Session = sessionmaker(bind=engine)
+</span></span></pre><p>你也可以先创建Session,在创建应用前</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&gt;&gt;&gt; Session = sessionmaker()
+</span></span></pre><p>当你创建了应用,可以这样配置</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&gt;&gt;&gt; Session.configure(bind=engine)  # once engine is available
+</span></span></pre><h3 id="heading-1.6">插入和更新数据<a id="orgheadline18"></a></h3>
+<h4 id="heading-1.6.1">插入<a id="orgheadline15"></a></h4>
+<p><strong>插入一条数据</strong></p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&gt;&gt;&gt; ed_user = User(name=&#39;ed&#39;, fullname=&#39;Ed Jones&#39;, password=&#39;edspassword&#39;)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>&gt;&gt;&gt; session.add(ed_user)
+</span></span></pre><p><strong>插入多条数据</strong></p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&gt;&gt;&gt; session.add_all([
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>...     User(name=&#39;wendy&#39;, fullname=&#39;Wendy Williams&#39;, password=&#39;foobar&#39;),
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>...     User(name=&#39;mary&#39;, fullname=&#39;Mary Contrary&#39;, password=&#39;xxg527&#39;),
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>...     User(name=&#39;fred&#39;, fullname=&#39;Fred Flinstone&#39;, password=&#39;blah&#39;)])
+</span></span></pre><h4 id="heading-1.6.2">更新<a id="orgheadline16"></a></h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&gt;&gt;&gt; ed_user.password = &#39;f8s7ccs&#39;
+</span></span></pre><p>查看</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&gt;&gt;&gt; session.dirty
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>IdentitySet([&lt;User(name=&#39;ed&#39;, fullname=&#39;Ed Jones&#39;, password=&#39;f8s7ccs&#39;)&gt;])
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>&gt;&gt;&gt; session.new  # doctest: +SKIP
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>IdentitySet([&lt;User(name=&#39;wendy&#39;, fullname=&#39;Wendy Williams&#39;, password=&#39;foobar&#39;)&gt;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>&lt;User(name=&#39;mary&#39;, fullname=&#39;Mary Contrary&#39;, password=&#39;xxg527&#39;)&gt;,
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>&lt;User(name=&#39;fred&#39;, fullname=&#39;Fred Flinstone&#39;, password=&#39;blah&#39;)&gt;])
+</span></span></pre><h4 id="heading-1.6.3">必须提交才能生效<a id="orgheadline17"></a></h4>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&gt;&gt;&gt; session.commit()
+</span></span></pre>
+      </div><nav class="mt-8 grid gap-3 border-t border-slate-200/60 pt-5 dark:border-slate-700/60 sm:grid-cols-2" aria-label="Post navigation"><a href="https://honmaple.me/posts/2016/04/emacs解决evil-visual下剪贴板问题/" class="rounded-lg bg-slate-100 px-4 py-3 text-left hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+              <span class="block text-xs text-slate-500 dark:text-slate-400">上一篇</span>
+              <span class="mt-1 block text-sm font-medium">Emacs解决evil-visual下剪贴板问题</span>
+            </a><a href="https://honmaple.me/posts/2016/04/flask实现分页/" class="rounded-lg bg-slate-100 px-4 py-3 text-left hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500 sm:text-right">
+              <span class="block text-xs text-slate-500 dark:text-slate-400">下一篇</span>
+              <span class="mt-1 block text-sm font-medium">flask实现分页</span>
+            </a></nav>
+    <section class="comments" data-giscus>
+      <button type="button" class="comments-button">加载评论</button>
+      <div class="comments-panel"></div>
+      <template data-giscus-template>
+        <script src="https://giscus.app/client.js"
+                data-repo="honmaple/honmaple.github.io"
+                data-repo-id="MDEwOlJlcG9zaXRvcnk0MTY4ODc2MQ=="
+                data-category="Announcements"
+                data-category-id="DIC_kwDOAnweuc4CVokl"
+                data-mapping="specific"
+                data-term="sqlalchemy学习(一)"
+                data-strict="0"
+                data-reactions-enabled="1"
+                data-emit-metadata="0"
+                data-input-position="bottom"
+                data-lang="zh-CN"
+                crossorigin="anonymous"
+                async>
+        </script>
+      </template>
+    </section>
+    </article>
+  </div></main>
+    </div>
+
+    <footer class="mx-auto mt-auto w-full max-w-4xl px-0 sm:px-5">
+      <div class="flex flex-col gap-3 rounded-t-lg bg-white px-4 py-4 text-sm dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div>&copy; 2026 honmaple</div>
+        <div class="flex flex-wrap items-center gap-2"><a href="https://honmaple.me/pages/contact/" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">联系</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://honmaple.me/pages/about/" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">关于</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://honmaple.me/atom.xml" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">订阅</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://github.com/honmaple" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">Github</a></div>
+      </div>
+    </footer>
+
+    <button type="button" data-back-to-top class="back-to-top pointer-events-none fixed bottom-5 right-5 z-[70] inline-flex h-10 w-10 translate-y-2 items-center justify-center rounded-full bg-white text-sm opacity-0 transition-all duration-200 hover:text-primary-700 dark:bg-slate-900 dark:hover:text-primary-500" aria-label="返回顶部" title="返回顶部">
+      ↑
+    </button>
+
+    <script src="https://honmaple.me/js/main.js"></script></body>
+</html>

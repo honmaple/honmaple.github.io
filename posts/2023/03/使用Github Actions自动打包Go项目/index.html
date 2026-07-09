@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用Github Actions自动打包Go项目 · 红枫吟</title><meta name="description" content="风落花语风落天，花落风雨花落田."><script>
+      (function () {
+        var storageKey = "theme-mode";
+        var root = document.documentElement;
+        var saved = null;
+
+        try {
+          saved = window.localStorage.getItem(storageKey);
+        } catch (error) {}
+
+        var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var theme = saved === "dark" || saved === "light" ? saved : (prefersDark ? "dark" : "light");
+
+        root.dataset.theme = theme;
+        if (theme === "dark") {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="https://honmaple.me/css/style.css">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YNGNDGB8F8"></script>
+  <script>
+     window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+       gtag('config', 'G-YNGNDGB8F8');
+  </script>
+
+</head>
+  <body>
+    <div class="mx-auto flex w-full max-w-4xl flex-1 flex-col px-0 sm:px-5">
+      <header class="relative z-40">
+        <div class="overflow-visible rounded-b-lg bg-white dark:bg-slate-900">
+          <div class="mx-auto w-full max-w-4xl">
+            <div class="relative px-4 py-3 sm:px-5">
+              <div class="absolute right-4 top-3 flex items-center gap-2 sm:right-5 sm:hidden">
+                <button type="button" data-theme-toggle data-theme-dark-label="暗色" data-theme-light-label="亮色" aria-label="暗色" title="暗色" aria-pressed="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span data-theme-icon aria-hidden="true" class="text-base leading-none">◐</span>
+                </button>
+                <button type="button" data-menu-toggle aria-label="菜单" title="菜单" aria-expanded="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span aria-hidden="true" class="relative h-3.5 w-4">
+                    <span class="absolute left-0 top-0 h-0.5 w-full rounded-full bg-current"></span>
+                    <span class="absolute left-0 top-1.5 h-0.5 w-full rounded-full bg-current"></span>
+                    <span class="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-current"></span>
+                  </span>
+                </button>
+              </div>
+              <div class="absolute right-4 top-3 hidden items-center gap-2 sm:right-5 sm:flex">
+                <button type="button" data-theme-toggle data-theme-dark-label="暗色" data-theme-light-label="亮色" aria-label="暗色" title="暗色" aria-pressed="false" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+                  <span data-theme-icon aria-hidden="true" class="text-base leading-none">◐</span>
+                </button>
+              </div>
+
+              <div class="pr-20 sm:pr-12">
+                <a href="https://honmaple.me/" class="flex items-center gap-3"><img src="https://s.libforest.com/images/header/header.png" alt="红枫吟" class="h-12 w-12 rounded-lg object-cover"><div class="min-w-0">
+                    <h1 class="text-xl font-semibold tracking-[-0.03em]">红枫吟</h1><p class="mt-0.5 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">风落花语风落天，花落风雨花落田.</p></div>
+                </a>
+              </div>
+            </div>
+
+            <div class="sm:pb-2"><nav aria-label="Primary navigation" class="relative">
+                  <div class="hidden items-center justify-between gap-4 sm:flex">
+                    <ul class="flex flex-wrap gap-0"><li class="group relative">
+                          <a href="/categories/tech/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">技术分享</a></li><li class="group relative">
+                          <a href="/categories/life/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">生活随笔</a></li><li class="group relative">
+                          <a href="/pages/memos/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">闲言碎语</a></li><li class="group relative">
+                          <a href="/archives/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">归档</a></li><li class="group relative">
+                          <a href="/pages/about/" data-nav-link class="inline-flex items-center justify-center px-4 py-1 text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">关于</a></li></ul><form action="/search/" method="get" class="flex min-w-0 items-center px-5">
+                        <label class="sr-only" for="nav-search">搜索</label>
+                        <div class="flex w-44 items-center rounded-lg bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
+                          <input id="nav-search" type="search" name="q" placeholder="搜索文章" class="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                          <button type="submit" class="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full hover:text-primary-700 dark:hover:text-primary-500" aria-label="搜索" title="搜索">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current stroke-2">
+                              <path d="m21 21-4.35-4.35"></path>
+                              <circle cx="11" cy="11" r="6"></circle>
+                            </svg>
+                          </button>
+                        </div>
+                      </form></div>
+                  <div data-menu-panel class="hidden px-4 pb-4 pt-1 sm:hidden"><form action="/search/" method="get" class="mb-3">
+                        <label class="sr-only" for="mobile-search">搜索</label>
+                        <div class="flex items-center rounded-lg bg-slate-100 px-3 py-2 dark:bg-slate-800">
+                          <input id="mobile-search" type="search" name="q" placeholder="搜索文章" class="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                          <button type="submit" class="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full hover:text-primary-700 dark:hover:text-primary-500" aria-label="搜索" title="搜索">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-none stroke-current stroke-2">
+                              <path d="m21 21-4.35-4.35"></path>
+                              <circle cx="11" cy="11" r="6"></circle>
+                            </svg>
+                          </button>
+                        </div>
+                      </form><ul class="space-y-2"><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/categories/tech/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">技术分享</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/categories/life/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">生活随笔</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/pages/memos/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">闲言碎语</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/archives/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">归档</a></li><li class="border-b border-slate-200/60 pb-2.5 last:border-0 last:pb-0 dark:border-slate-700/60">
+                          <a href="/pages/about/" data-nav-link class="flex min-h-8 items-center text-base font-semibold hover:text-primary-700 dark:hover:text-primary-500">关于</a></li></ul>
+                  </div>
+                </nav></div>
+          </div>
+        </div>
+      </header>
+
+      <main class="relative z-0 flex-1 py-5 sm:py-6"><div class="relative">
+    <article class="page-article mx-auto max-w-4xl rounded-lg bg-white px-5 py-5 dark:bg-slate-900 sm:px-6 sm:py-6">
+      <h1 class="mt-2.5 text-2xl font-semibold leading-tight tracking-[-0.025em]">使用Github Actions自动打包Go项目</h1>
+  <div class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm leading-6 text-slate-500 dark:text-slate-400"><time datetime="2023-03-06" class="font-mono text-xs uppercase tracking-[0.14em]">
+        2023年03月06日 周一
+      </time><span aria-hidden="true" class="mx-1 h-3 w-px bg-slate-200 dark:bg-slate-700"></span><span class="text-sm">阅读约 7 分钟</span><span aria-hidden="true" class="mx-1 h-3 w-px bg-slate-200 dark:bg-slate-700"></span><span class="flex flex-wrap items-center gap-1.5"><a href="https://honmaple.me/tags/linux/" class="tag">
+            <span>linux</span>
+          </a><a href="https://honmaple.me/tags/go/" class="tag">
+            <span>go</span>
+          </a><a href="https://honmaple.me/tags/github/" class="tag">
+            <span>github</span>
+          </a></span></div><div class="mt-5">
+          <aside class="toc w-full rounded-lg px-4">
+            <p class="py-3 text-sm font-semibold">快速导航</p>
+            <div>
+              
+    <ol>
+        <li>
+          <a href="#heading-1">前言</a>
+        </li>
+        <li>
+          <a href="#heading-2">快速开始(Quickstart)</a>
+        </li>
+        <li>
+          <a href="#heading-3">多平台编译(Cross Compile)</a>
+            
+    <ol>
+        <li>
+          <a href="#heading-3.1">交叉编译</a>
+        </li>
+        <li>
+          <a href="#heading-3.2">跨平台编译</a>
+        </li>
+    </ol>
+        </li>
+        <li>
+          <a href="#heading-4">发布(Release)</a>
+        </li>
+        <li>
+          <a href="#heading-5">FAQ</a>
+            
+    <ol>
+        <li>
+          <a href="#heading-5.1">version `GLIBC_2.33&#39; not found</a>
+        </li>
+        <li>
+          <a href="#heading-5.2">Bad CPU type in executable</a>
+        </li>
+    </ol>
+        </li>
+    </ol>
+            </div>
+          </aside>
+        </div><div class="prose prose-primary dark:prose-invert mt-6">
+        
+<h2 id="heading-1">前言</h2>
+<p>
+   如果用过 <b>Gitlab Ci</b>, 相信对此也非常熟悉，<b>GitHub Actions</b> 是 <b>GitHub</b> 推出的持续集成（Continuous Integration，简称 CI）服务，它提供了整套虚拟服务器环境，基于它可以进行构建、测试、打包、部署项目等等操作
+</p>
+
+<h2 id="heading-2">快速开始(Quickstart)</h2>
+<p>
+   在自己的 <code>Github</code> 仓库中找到 <code>Actions</code> 标签页
+   <a
+    href="https://s.libforest.com/images/2023/03/github-actions-01.png"
+    data-img-lightbox
+    data-gallery="page-images"
+    data-type="image"
+    
+    
+    class="block w-fit max-w-full no-underline"
+  >
+    <img
+      src="https://s.libforest.com/images/2023/03/github-actions-01.png"
+      alt="github-actions-01.png"
+      
+      
+      
+      
+      
+      loading="lazy"
+      decoding="async"
+      class="mx-auto my-6 cursor-zoom-in rounded-lg "
+    >
+  </a><script src="https://honmaple.me/js/lightbox.js" data-glightbox-src="https://honmaple.me/js/vendor/glightbox.min.js" data-glightbox-css="https://honmaple.me/css/vendor/glightbox.min.css" defer></script>
+</p>
+
+<p>
+   点击 <code>Configure</code>, 此时会生成一个 <code>.github/workflow/go.yml</code> 文件
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span><span style="color:#75715e"># This workflow will build a golang project</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span><span style="color:#75715e"># For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span><span style="color:#f92672">name</span>: <span style="color:#ae81ff">Go</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span><span style="color:#f92672">on</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>  <span style="color:#f92672">push</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>    <span style="color:#f92672">branches</span>: [ <span style="color:#e6db74">&#34;master&#34;</span> ]
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>  <span style="color:#f92672">pull_request</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>    <span style="color:#f92672">branches</span>: [ <span style="color:#e6db74">&#34;master&#34;</span> ]
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span><span style="color:#f92672">jobs</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>  <span style="color:#f92672">build</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>    <span style="color:#f92672">runs-on</span>: <span style="color:#ae81ff">ubuntu-latest</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>    <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>      - <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/checkout@v3</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Set up Go</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>          <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/setup-go@v3</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>        <span style="color:#f92672">with</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span>          <span style="color:#f92672">go-version</span>: <span style="color:#ae81ff">1.19</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Build</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">go build -v ./...</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Test</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">go test -v ./...</span></span></span></pre>
+
+<h2 id="heading-3">多平台编译(Cross Compile)</h2>
+<h3 id="heading-3.1">交叉编译</h3>
+<p>
+    对于非 <code>CGO</code> 项目，<code>Go</code> 提供了一种十分方便的方式来进行交叉编译，只需要指定 <code>GOOS</code> 和 <code>GOARCH</code> 环境变量
+</p>
+<ul>
+<li>
+<p>
+  Mac下编译Linux, Windows平台的64位可执行程序：
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>linux GOARCH<span style="color:#f92672">=</span>amd64 go build .
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>windows GOARCH<span style="color:#f92672">=</span>amd64 go build .</span></span></pre></li>
+<li>
+<p>
+ Linux下编译Mac, Windows平台的64位可执行程序：
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>darwin GOARCH<span style="color:#f92672">=</span>amd64 go build .
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>$ CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> GOOS<span style="color:#f92672">=</span>windows GOARCH<span style="color:#f92672">=</span>amd64 go build .</span></span></pre>
+</li>
+</ul>
+<p>
+    同样的，我们可以在 <code>Gtihub Actions</code> 中设置环境变量来编译非 <code>CGO</code> 项目，这里需要使用 <code>matrix</code> 策略，让我们基于不同的参数创建并行的任务，比如编译Go时指定不同的环境变量
+</p>
+
+<ul>
+<li>
+<p>
+ 首先编写任务
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span><span style="color:#f92672">jobs</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>  <span style="color:#f92672">build</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    <span style="color:#f92672">strategy</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>      <span style="color:#f92672">matrix</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>        <span style="color:#f92672">goos</span>: [<span style="color:#ae81ff">linux, darwin]</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>        <span style="color:#f92672">goarch</span>: [<span style="color:#ae81ff">amd64]</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>    <span style="color:#f92672">runs-on</span>: <span style="color:#ae81ff">ubuntu-latest</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>    <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Checkout</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>        <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/checkout@v3</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Set up Go</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>        <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/setup-go@v3</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>        <span style="color:#f92672">with</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>          <span style="color:#f92672">go-version</span>: <span style="color:#ae81ff">1.19</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Download dependencies</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">go mod download</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Build</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">go build -v -o snow .</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span>        <span style="color:#75715e"># 指定编译时的环境变量</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>        <span style="color:#f92672">env</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>          <span style="color:#f92672">GOOS</span>: <span style="color:#ae81ff">${{ matrix.goos }}</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span>          <span style="color:#f92672">GOARCH</span>: <span style="color:#ae81ff">${{ matrix.goarch }}</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span>          <span style="color:#f92672">CGO_ENABLED</span>: <span style="color:#ae81ff">0</span></span></span></pre>
+<p>
+      这样就创建了 <code>GOOS=linux GOARCH=amd64</code> 和 <code>GOOS=darwin GOARCH=amd64</code> 的两个任务, 当 <code>goarch</code> 增加一个 <code>arm</code> 的参数后，会组合成四个任务, 如果需要指定或者排除某个选项，可以使用 <code>include</code> 或者 <code>exclude</code>
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span><span style="color:#f92672">matrix</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>  <span style="color:#f92672">goos</span>: [<span style="color:#ae81ff">linux, darwin]</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>  <span style="color:#f92672">goarch</span>: [<span style="color:#ae81ff">amd64, arm]</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>  <span style="color:#75715e"># 只包括linux编译选项</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>  <span style="color:#f92672">include</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>    - <span style="color:#f92672">goos</span>: <span style="color:#ae81ff">linux</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>      <span style="color:#f92672">goarch</span>: <span style="color:#ae81ff">amd64</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>    - <span style="color:#f92672">goos</span>: <span style="color:#ae81ff">linux</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>      <span style="color:#f92672">goarch</span>: <span style="color:#ae81ff">arm</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>  <span style="color:#75715e"># 排除所有关于arm的编译选项</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>  <span style="color:#f92672">exclude</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>    - <span style="color:#f92672">goarch</span>: <span style="color:#ae81ff">arm</span></span></span></pre></li>
+<li>
+<p>
+ 然后执行 <code>git push</code>, 这样就能在 <code>Github</code> 的 <code>Actions</code> 标签页看到执行结果
+</p>
+</li>
+</ul>
+<h3 id="heading-3.2">跨平台编译</h3>
+<p>
+    如果是非 <code>CGO</code> 项目，可以使用Go内置的交叉编译，但如果是 <code>CGO</code> 项目，上述的交叉编译大概率会失败(相关问题:<a href="https://github.com/wellington/go-libsass/issues/67">go-libsass</a>)， 所以我们需要基于不同的平台来进行编译，幸运的是，<code>Github Actions</code> 对此支持的非常好,
+</p>
+
+<ul>
+<li>
+<p>
+ 编写新任务
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span><span style="color:#f92672">jobs</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>  <span style="color:#f92672">build</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    <span style="color:#f92672">strategy</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>      <span style="color:#f92672">matrix</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>        <span style="color:#f92672">build</span>: [<span style="color:#ae81ff">macos, linux]</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>        <span style="color:#f92672">include</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>          - <span style="color:#f92672">build</span>: <span style="color:#ae81ff">macos</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>            <span style="color:#f92672">os</span>: <span style="color:#ae81ff">macos-latest</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>          - <span style="color:#f92672">build</span>: <span style="color:#ae81ff">linux</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>            <span style="color:#f92672">os</span>: <span style="color:#ae81ff">ubuntu-18.04</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>    <span style="color:#f92672">runs-on</span>: <span style="color:#ae81ff">${{ matrix.os }}</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>    <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Checkout</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>        <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/checkout@v3</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Set up Go</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>        <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/setup-go@v3</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>        <span style="color:#f92672">with</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>          <span style="color:#f92672">go-version</span>: <span style="color:#ae81ff">1.19</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Download dependencies</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">go mod download</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Build</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">go build -v -o snow .</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>        <span style="color:#f92672">env</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span>          <span style="color:#f92672">CGO_ENABLED</span>: <span style="color:#ae81ff">1</span></span></span></pre>
+<p>
+      注意 <code>runs-on</code> 使用的 <code>matrix.os</code> 变量, 它允许我们分别使用 <code>ubuntu-18.04</code> 和 <code>macos-latest</code> 两个平台进行编译，这时不用指定 <code>GOOS</code> 和 <code>GOARCH</code> 参数
+</p></li>
+<li>
+<p>
+ 执行 <code>git push</code>, 可以看到执行结果
+      <a
+    href="https://s.libforest.com/images/2023/03/github-actions-02.png"
+    data-img-lightbox
+    data-gallery="page-images"
+    data-type="image"
+    
+    
+    class="block w-fit max-w-full no-underline"
+  >
+    <img
+      src="https://s.libforest.com/images/2023/03/github-actions-02.png"
+      alt="github-actions-02.png"
+      
+      
+      
+      
+      
+      loading="lazy"
+      decoding="async"
+      class="mx-auto my-6 cursor-zoom-in rounded-lg "
+    >
+  </a>
+</p>
+</li>
+</ul>
+<h2 id="heading-4">发布(Release)</h2>
+<p>
+   当编译好一个二进制文件后，需要发布到 <code>Github</code> 的 <code>Release</code> 页，这时就需要添加新的任务, 目前官方的<a href="https://github.com/actions/create-release">actions/create-release</a>已经无人维护，所以此次选择另外一个<a href="https://github.com/ncipollo/release-action">ncipollo/release-action</a>
+</p>
+
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span><span style="color:#f92672">name</span>: <span style="color:#ae81ff">Release</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span><span style="color:#f92672">on</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>  <span style="color:#75715e"># 只在预发布时才执行</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>  <span style="color:#f92672">release</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>    <span style="color:#f92672">types</span>: [<span style="color:#ae81ff">prereleased]</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span><span style="color:#f92672">jobs</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>  <span style="color:#f92672">build</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>    <span style="color:#f92672">strategy</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>      <span style="color:#f92672">matrix</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>        <span style="color:#f92672">build</span>: [<span style="color:#ae81ff">macos, linux]</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>        <span style="color:#f92672">include</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>          - <span style="color:#f92672">build</span>: <span style="color:#ae81ff">macos</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>            <span style="color:#f92672">os</span>: <span style="color:#ae81ff">macos-latest</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>            <span style="color:#f92672">archive-name</span>: <span style="color:#ae81ff">darwin.tar.gz</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>          - <span style="color:#f92672">build</span>: <span style="color:#ae81ff">linux</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>            <span style="color:#f92672">os</span>: <span style="color:#ae81ff">ubuntu-latest</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>            <span style="color:#f92672">archive-name</span>: <span style="color:#ae81ff">linux.tar.gz</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span>    <span style="color:#75715e"># 需要设置写权限才能自动发布</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>    <span style="color:#f92672">permissions</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>      <span style="color:#f92672">contents</span>: <span style="color:#ae81ff">write</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span>    <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26</span><span>      <span style="color:#ae81ff">...</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27</span><span>      <span style="color:#75715e"># 把二进制文件打包成压缩文件</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Prepare Packaging</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29</span><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">tar zcvf snow-${{ matrix.archive-name }}.tar.gz snow LICENSE</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31</span><span>      <span style="color:#75715e"># 上传附件</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Upload Artifacts</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33</span><span>        <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/upload-artifact@v3</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34</span><span>        <span style="color:#f92672">with</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35</span><span>          <span style="color:#f92672">name</span>: <span style="color:#ae81ff">snow-${{ matrix.archive-name }}.tar.gz</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36</span><span>          <span style="color:#f92672">path</span>: <span style="color:#ae81ff">snow-${{ matrix.archive-name }}.tar.gz</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38</span><span>      <span style="color:#75715e"># 发布release版本</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39</span><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Release version</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40</span><span>        <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">ncipollo/release-action@v1</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41</span><span>        <span style="color:#f92672">if</span>: <span style="color:#ae81ff">github.event_name == &#39;release&#39;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42</span><span>        <span style="color:#f92672">with</span>:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43</span><span>          <span style="color:#f92672">allowUpdates</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44</span><span>          <span style="color:#f92672">artifacts</span>: <span style="color:#ae81ff">snow-${{ matrix.archive-name }}.tar.gz</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45</span><span>          <span style="color:#f92672">token</span>: <span style="color:#ae81ff">${{ secrets.GITHUB_TOKEN }}</span></span></span></pre>
+
+<p>
+   当 <code>Github Actions</code> 执行完成后，就能在 <code>Release</code> 页看到我们发布的 <code>Package</code>
+   <a
+    href="https://s.libforest.com/images/2023/03/github-actions-03.png"
+    data-img-lightbox
+    data-gallery="page-images"
+    data-type="image"
+    
+    
+    class="block w-fit max-w-full no-underline"
+  >
+    <img
+      src="https://s.libforest.com/images/2023/03/github-actions-03.png"
+      alt="github-actions-03.png"
+      
+      
+      
+      
+      
+      loading="lazy"
+      decoding="async"
+      class="mx-auto my-6 cursor-zoom-in rounded-lg "
+    >
+  </a>
+</p>
+
+<h2 id="heading-5">FAQ</h2>
+<h3 id="heading-5.1">version `GLIBC_2.33' not found</h3>
+<p>
+    使用 <code>Github Actions</code> 发布一个新的版本，下载到本地执行时报错
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.33&#39; not found (required by ./snow)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.34&#39; not found (required by ./snow)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>./snow: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.32&#39; not found (required by ./snow)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>./snow: /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.29&#39; not found (required by ./snow)</span></span></pre>
+<p>
+    这是由于使用的 <code>ubuntu</code> 版本太高导致, 降低版本即可
+</p>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>include:
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>...
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span><span style="color:#f92672">-   os: ubuntu-latest
+</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span><span style="color:#a6e22e">+   os: ubuntu-18.04
+</span></span></span></pre>
+<h3 id="heading-5.2">Bad CPU type in executable</h3>
+<p>
+    这是由于最新的 <b>macos-latest</b> 仅包括arm64，不再包括x86_64导致，如果需要使用x86_64，请指定版本 <b>macos-13</b>
+</p>
+      </div><nav class="mt-8 grid gap-3 border-t border-slate-200/60 pt-5 dark:border-slate-700/60 sm:grid-cols-2" aria-label="Post navigation"><a href="https://honmaple.me/posts/2023/03/搭建Memos作为私人笔记/" class="rounded-lg bg-slate-100 px-4 py-3 text-left hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500">
+              <span class="block text-xs text-slate-500 dark:text-slate-400">上一篇</span>
+              <span class="mt-1 block text-sm font-medium">搭建Memos作为私人笔记</span>
+            </a><a href="https://honmaple.me/posts/2023/02/Emacs笔记之修复yaml-mode的格式化问题/" class="rounded-lg bg-slate-100 px-4 py-3 text-left hover:text-primary-700 dark:bg-slate-800 dark:hover:text-primary-500 sm:text-right">
+              <span class="block text-xs text-slate-500 dark:text-slate-400">下一篇</span>
+              <span class="mt-1 block text-sm font-medium">Emacs笔记之修复yaml-mode的格式化问题</span>
+            </a></nav>
+    <section class="comments" data-giscus>
+      <button type="button" class="comments-button">加载评论</button>
+      <div class="comments-panel"></div>
+      <template data-giscus-template>
+        <script src="https://giscus.app/client.js"
+                data-repo="honmaple/honmaple.github.io"
+                data-repo-id="MDEwOlJlcG9zaXRvcnk0MTY4ODc2MQ=="
+                data-category="Announcements"
+                data-category-id="DIC_kwDOAnweuc4CVokl"
+                data-mapping="specific"
+                data-term="使用Github Actions自动打包Go项目"
+                data-strict="0"
+                data-reactions-enabled="1"
+                data-emit-metadata="0"
+                data-input-position="bottom"
+                data-lang="zh-CN"
+                crossorigin="anonymous"
+                async>
+        </script>
+      </template>
+    </section>
+    </article>
+  </div></main>
+    </div>
+
+    <footer class="mx-auto mt-auto w-full max-w-4xl px-0 sm:px-5">
+      <div class="flex flex-col gap-3 rounded-t-lg bg-white px-4 py-4 text-sm dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div>&copy; 2026 honmaple</div>
+        <div class="flex flex-wrap items-center gap-2"><a href="https://honmaple.me/pages/contact/" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">联系</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://honmaple.me/pages/about/" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">关于</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://honmaple.me/atom.xml" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">订阅</a><span aria-hidden="true" class="text-slate-300 dark:text-slate-700">|</span><a href="https://github.com/honmaple" target="_blank" rel="noopener noreferrer" class="hover:text-primary-700 dark:hover:text-primary-500">Github</a></div>
+      </div>
+    </footer>
+
+    <button type="button" data-back-to-top class="back-to-top pointer-events-none fixed bottom-5 right-5 z-[70] inline-flex h-10 w-10 translate-y-2 items-center justify-center rounded-full bg-white text-sm opacity-0 transition-all duration-200 hover:text-primary-700 dark:bg-slate-900 dark:hover:text-primary-500" aria-label="返回顶部" title="返回顶部">
+      ↑
+    </button>
+
+    <script src="https://honmaple.me/js/main.js"></script></body>
+</html>
