@@ -63,6 +63,72 @@
     }).format(date);
   };
 
+  const getMemoResources = (memo) => {
+    const candidates = [memo.resources, memo.resourceList, memo.attachments, memo.files];
+
+    return candidates.find(Array.isArray) || [];
+  };
+
+  const getResourceFilename = (resource) => {
+    return resource.filename || resource.name || resource.title || resource.uid || "attachment";
+  };
+
+  const addThumbnailParam = (url) => {
+    try {
+      const nextUrl = new URL(url, window.location.href);
+
+      nextUrl.searchParams.set("thumbnail", "true");
+      return nextUrl.toString();
+    } catch (error) {
+      const separator = String(url).includes("?") ? "&" : "?";
+
+      return `${url}${separator}thumbnail=true`;
+    }
+  };
+
+  const getResourceUrl = (resource, endpoint, thumbnail = false) => {
+    const directUrl = resource.externalLink || resource.external_link || resource.url || resource.publicUrl || resource.downloadUrl || resource.link || resource.src;
+
+    if (directUrl) {
+      return thumbnail ? addThumbnailParam(directUrl) : directUrl;
+    }
+
+    const filename = resource.filename || "";
+    const identifier = resource.name || resource.uid || resource.id;
+
+    if (!identifier || !filename) {
+      return "";
+    }
+
+    try {
+      const origin = new URL(endpoint, window.location.href).origin;
+      const url = `${origin}/file/${identifier}/${encodeURIComponent(filename)}`;
+
+      return thumbnail ? addThumbnailParam(url) : url;
+    } catch (error) {
+      return "";
+    }
+  };
+
+  const isImageResource = (resource) => {
+    const type = resource.type || resource.contentType || resource.mimeType || "";
+    const filename = getResourceFilename(resource);
+
+    return type.startsWith("image/") || /\.(avif|gif|jpe?g|png|svg|webp)$/i.test(filename);
+  };
+
+  const escapeHtml = (value) => {
+    return String(value).replace(/[&<>"']/g, (character) => {
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      }[character];
+    });
+  };
+
   const configureMarked = (marked) => {
     if (window.__shortcodes.memos.markedConfigured) {
       return;
@@ -137,58 +203,109 @@
     });
   };
 
-  const renderMemos = (container, memos) => {
+  const renderResources = (resources, endpoint) => {
+    if (!resources.length) {
+      return "";
+    }
+
+    const images = resources.filter(isImageResource);
+    const links = resources.filter((resource) => !isImageResource(resource));
+    const imageItems = images
+      .map((resource) => {
+        const url = getResourceUrl(resource, endpoint, true);
+
+        if (!url) {
+          return "";
+        }
+
+        return `<img src="${escapeHtml(url)}" alt="${escapeHtml(getResourceFilename(resource))}" loading="lazy" decoding="async" class="h-auto w-full rounded-lg bg-slate-100 object-cover dark:bg-slate-800">`;
+      })
+      .join("");
+    const linkItems = links
+      .map((resource) => {
+        const url = getResourceUrl(resource, endpoint);
+        const filename = escapeHtml(getResourceFilename(resource));
+        const className = "inline-flex items-center rounded-full bg-slate-500/10 px-3 py-1 text-sm font-medium text-slate-500 dark:text-slate-300";
+
+        if (!url) {
+          return `<span class="${className}">${filename}</span>`;
+        }
+
+        return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="${className}">${filename}</a>`;
+      })
+      .join("");
+
+    if (!imageItems && !linkItems) {
+      return "";
+    }
+
+    return `
+      <div class="mt-3 space-y-2">
+        ${imageItems ? `<div class="grid gap-2 sm:grid-cols-3">${imageItems}</div>` : ""}
+        ${linkItems ? `<div class="flex flex-wrap gap-2">${linkItems}</div>` : ""}
+      </div>
+    `;
+  };
+
+  const renderPinnedIcon = (pinned) => {
+    if (pinned !== true) {
+      return "";
+    }
+
+    return `
+      <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-500/10 text-slate-500 dark:text-slate-400">
+        <svg aria-hidden="true" viewBox="0 0 24 24" class="h-3.5 w-3.5 fill-none stroke-current stroke-2">
+          <path d="m14 4 6 6"></path>
+          <path d="m12.5 5.5-4 4L6 9l-2 2 9 9 2-2-.5-2.5 4-4"></path>
+          <path d="m8.5 15.5-4 4"></path>
+        </svg>
+      </span>
+    `;
+  };
+
+  const renderMemoTemplate = ({ meta, contentClass, content, resources }) => {
+    return `
+      <div class="timeline-item relative pb-3 last:pb-0">
+        <div class="rounded-lg bg-white px-3.5 py-3 transition-none dark:bg-slate-900">
+          ${meta}
+          <div class="${contentClass}">${content}</div>
+          ${resources}
+        </div>
+      </div>
+    `;
+  };
+
+  const renderMemo = (memo, endpoint) => {
+    const date = getMemoDate(memo);
+    const dateTime = date && !Number.isNaN(date.getTime()) ? date.toISOString() : "";
+    const formattedDate = formatDate(date);
+    const memoContent = memo.content || memo.text || "";
+    const markdown = renderMarkdown(memoContent, window.marked);
+    const content = markdown || escapeHtml(memoContent);
+    const contentClass = markdown ? "prose prose-primary dark:prose-invert prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-pre:my-3" : "whitespace-pre-wrap text-base leading-7";
+    const meta = formattedDate
+      ? `
+        <div class="mb-2 flex items-center justify-between gap-3 text-slate-500 dark:text-slate-400">
+          <time datetime="${escapeHtml(dateTime)}" class="block font-mono text-xs uppercase tracking-[0.14em] transition-none">${escapeHtml(formattedDate)}</time>
+          ${renderPinnedIcon(memo.pinned)}
+        </div>
+      `
+      : "";
+
+    return renderMemoTemplate({
+      meta,
+      contentClass,
+      content,
+      resources: renderResources(getMemoResources(memo), endpoint),
+    });
+  };
+
+  const renderMemos = (container, memos, endpoint) => {
     const list = container.querySelector("[data-memos-list]");
     const status = container.querySelector("[data-memos-status]");
 
-    list.textContent = "";
     list.className = "relative pl-5";
-
-    memos.forEach((memo) => {
-      const date = getMemoDate(memo);
-      const item = document.createElement("div");
-      const card = document.createElement("div");
-      const meta = document.createElement("div");
-      const time = document.createElement("time");
-      const content = document.createElement("div");
-
-      item.className = "timeline-item relative pb-3 last:pb-0";
-      card.className = "rounded-lg bg-white px-3.5 py-3 transition-none dark:bg-slate-900";
-      meta.className = "mb-2 flex items-center justify-between gap-3 text-slate-500 dark:text-slate-400";
-      time.className = "block font-mono text-xs uppercase tracking-[0.14em] transition-none";
-      content.className = "whitespace-pre-wrap text-base leading-7";
-
-      time.dateTime = date && !Number.isNaN(date.getTime()) ? date.toISOString() : "";
-      time.textContent = formatDate(date);
-      const memoContent = memo.content || memo.text || "";
-      const html = renderMarkdown(memoContent, window.marked);
-
-      if (html) {
-        content.className = "prose prose-primary dark:prose-invert prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-pre:my-3";
-        content.innerHTML = html;
-      } else {
-        content.textContent = memoContent;
-      }
-
-      if (time.textContent) {
-        meta.appendChild(time);
-
-        if (memo.pinned === true) {
-          const pinned = document.createElement("span");
-
-          pinned.className = "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-500/10 text-slate-500 dark:text-slate-400";
-          pinned.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" class="h-3.5 w-3.5 fill-none stroke-current stroke-2"><path d="m14 4 6 6"></path><path d="m12.5 5.5-4 4L6 9l-2 2 9 9 2-2-.5-2.5 4-4"></path><path d="m8.5 15.5-4 4"></path></svg>';
-          meta.appendChild(pinned);
-        }
-
-        card.appendChild(meta);
-      }
-
-      card.appendChild(content);
-      item.appendChild(card);
-      list.appendChild(item);
-    });
-
+    list.innerHTML = memos.map((memo) => renderMemo(memo, endpoint)).join("");
     status.hidden = true;
     list.classList.remove("hidden");
   };
@@ -229,7 +346,7 @@
       const memos = await fetchMemos(endpoint);
 
       const visibleMemos = memos
-        .filter((memo) => memo && (memo.content || memo.text))
+        .filter((memo) => memo && (memo.content || memo.text || getMemoResources(memo).length))
         .sort((left, right) => {
           if (left.pinned !== right.pinned) {
             return right.pinned === true ? 1 : -1;
@@ -244,7 +361,7 @@
         return;
       }
 
-      renderMemos(container, visibleMemos);
+      renderMemos(container, visibleMemos, endpoint);
     } catch (error) {
       status.textContent = container.dataset.error || "";
     }
