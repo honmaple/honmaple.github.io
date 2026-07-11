@@ -265,7 +265,7 @@
 
   const renderMemoTemplate = ({ meta, contentClass, content, resources }) => {
     return `
-      <div class="timeline-item relative pb-3 last:pb-0">
+      <div class="timeline-item relative">
         <div class="rounded-lg bg-white px-3.5 py-3 transition-none dark:bg-slate-900">
           ${meta}
           <div class="${contentClass}">${content}</div>
