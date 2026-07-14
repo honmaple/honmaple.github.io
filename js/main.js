@@ -1,15 +1,8 @@
 (function () {
   const THEME_KEY = "theme-mode";
-  const ACTIVE_NAV_CLASSES = ["text-primary-700", "dark:text-primary-500"];
   const BACK_TO_TOP_VISIBLE_CLASSES = ["pointer-events-auto", "translate-y-0", "opacity-100"];
   const BACK_TO_TOP_HIDDEN_CLASSES = ["pointer-events-none", "translate-y-2", "opacity-0"];
   const SM_BREAKPOINT = 640;
-
-  function normalizePath(path) {
-    if (!path) return "/";
-    const normalized = path.replace(/\/+$/, "");
-    return normalized === "" ? "/" : normalized;
-  }
 
   function getPreferredTheme() {
     let saved = null;
@@ -96,18 +89,6 @@
     toggle.addEventListener("click", function () {
       const isOpen = panel.classList.toggle("hidden") === false;
       toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    });
-  }
-
-  function setupActiveNav() {
-    const current = normalizePath(window.location.pathname);
-    const links = document.querySelectorAll("[data-nav-link]");
-
-    links.forEach(function (link) {
-      const href = normalizePath(link.getAttribute("href"));
-      if (href === "/" ? current === "/" : current.indexOf(href) === 0) {
-        link.classList.add.apply(link.classList, ACTIVE_NAV_CLASSES);
-      }
     });
   }
 
@@ -345,7 +326,6 @@
 
   setupThemeToggle();
   setupMobileMenu();
-  setupActiveNav();
   setupTocHighlight();
   setupFloatingToc();
   setupBackToTop();
