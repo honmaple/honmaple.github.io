@@ -101,19 +101,31 @@
           <a href="#heading-1">解析原始链接</a>
         </li>
         <li>
-          <a href="#heading-2">并排显示</a>
+          <a href="#heading-2">多行显示</a>
         </li>
         <li>
-          <a href="#heading-3">多行显示</a>
+          <a href="#heading-3">图片排版</a>
+            
+    <ol>
+        <li>
+          <a href="#heading-3.1">网格模式(Grid)</a>
         </li>
         <li>
-          <a href="#heading-4">图片懒加载和点击全屏</a>
+          <a href="#heading-3.2">瀑布流模式(Masonry)</a>
+        </li>
+    </ol>
         </li>
         <li>
-          <a href="#heading-5">显示效果</a>
+          <a href="#heading-4">图片画廊</a>
         </li>
         <li>
-          <a href="#heading-6">参考资料</a>
+          <a href="#heading-5">图片懒加载</a>
+        </li>
+        <li>
+          <a href="#heading-6">显示效果</a>
+        </li>
+        <li>
+          <a href="#heading-7">参考资料</a>
         </li>
     </ol>
             </div>
@@ -144,31 +156,62 @@
 
 <h2 id="heading-1">解析原始链接</h2>
 <p>
-   首先在主题下创建一个名为 <code>img-layout</code> 的 <b>shortcode</b>，比如我使用的主题叫做 <b>snow</b>，所以在 <code>themes/snow/templates/shortcodes</code> 目录下创建一个 <code>img-layout.html</code> 文件，并添加 <code>markdown</code> 或者 <code>org</code> 的 <b>filter</b> 将原始文本解析成HTML
+   首先在主题下创建一个名为 <code>gallery</code> 的 <b>shortcode</b>，比如我使用的主题叫做 <b>snow</b>，所以在 <code>themes/snow/templates/shortcodes</code> 目录下创建一个 <code>gallery.html</code> 文件
 </p>
-<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;img-layout&#34;</span>&gt;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>  {%- if params.type == &#34;markdown&#34; %}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>  {{ body | markdown | safe }}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>  {%- else %}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>  {{ body | org | safe }}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>  {%- endif %}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>&lt;/<span style="color:#f92672">div</span>&gt;</span></span></pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;gallery gallery-{% if params.layout %}{{ params.layout }}{% else %}grid{% endif %}&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>  {{ body | safe }}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>&lt;/<span style="color:#f92672">div</span>&gt;</span></span></pre>
 
 <p>
    接着修改原始文章
 </p>
-<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span><span style="color:#75715e">#+begin_export html</span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span><span style="color:#f92672">&lt;</span>shortcode _name<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">img-layout</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">&gt;</span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>[[https:<span style="color:#f92672">/</span><span style="color:#f92672">/</span>s<span style="color:#f92672">.</span>libforest<span style="color:#f92672">.</span>com<span style="color:#f92672">/</span>images<span style="color:#f92672">/</span>pic<span style="color:#f92672">/</span><span style="color:#960050;background-color:#1e0010">西</span><span style="color:#960050;background-color:#1e0010">湖</span><span style="color:#f92672">/</span><span style="color:#960050;background-color:#1e0010">日</span><span style="color:#960050;background-color:#1e0010">落</span>(<span style="color:#960050;background-color:#1e0010">二</span>)<span style="color:#f92672">.</span>jpg]]
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>[[https:<span style="color:#f92672">/</span><span style="color:#f92672">/</span>s<span style="color:#f92672">.</span>libforest<span style="color:#f92672">.</span>com<span style="color:#f92672">/</span>images<span style="color:#f92672">/</span>pic<span style="color:#f92672">/</span><span style="color:#960050;background-color:#1e0010">西</span><span style="color:#960050;background-color:#1e0010">湖</span><span style="color:#f92672">/</span><span style="color:#960050;background-color:#1e0010">日</span><span style="color:#960050;background-color:#1e0010">落</span>(<span style="color:#960050;background-color:#1e0010">三</span>)<span style="color:#f92672">.</span>jpg]]
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>[[https:<span style="color:#f92672">/</span><span style="color:#f92672">/</span>s<span style="color:#f92672">.</span>libforest<span style="color:#f92672">.</span>com<span style="color:#f92672">/</span>images<span style="color:#f92672">/</span>pic<span style="color:#f92672">/</span><span style="color:#960050;background-color:#1e0010">西</span><span style="color:#960050;background-color:#1e0010">湖</span><span style="color:#f92672">/</span><span style="color:#960050;background-color:#1e0010">日</span><span style="color:#960050;background-color:#1e0010">落</span>(<span style="color:#960050;background-color:#1e0010">一</span>)<span style="color:#f92672">.</span>jpg]]
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span><span style="color:#f92672">&lt;</span><span style="color:#f92672">/</span>shortcode<span style="color:#f92672">&gt;</span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span><span style="color:#75715e">#+end_export</span></span></span></pre>
+<div class="tabs" data-tabs-group="tabs-0">
+  
+<input
+  type="radio"
+  name="tabs"
+  class="tabs-radio"
+  aria-label="Markdown"
+  
+>
+<section class="tabs-panel">
+  
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>:::shortcode gallery
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>![](https://s.libforest.com/images/pic/西湖/日落(一).jpg)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>![](https://s.libforest.com/images/pic/西湖/日落(二).jpg)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>![](https://s.libforest.com/images/pic/西湖/日落(三).jpg)
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>:::</span></span></pre>
+
+</section>
+
+
+<input
+  type="radio"
+  name="tabs"
+  class="tabs-radio"
+  aria-label="Org mode"
+  
+>
+<section class="tabs-panel">
+  
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span><span style="color:#75715e">#+html</span><span style="color:#75715e">: &lt;shortcode gallery&gt;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>[[<span style="color:#a6e22e">https://s.libforest.com/images/pic/西湖/日落(一).jpg</span>]]
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>[[<span style="color:#a6e22e">https://s.libforest.com/images/pic/西湖/日落(二).jpg</span>]]
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>[[<span style="color:#a6e22e">https://s.libforest.com/images/pic/西湖/日落(三).jpg</span>]]
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span><span style="color:#75715e">#+html</span><span style="color:#75715e">: &lt;/shortcode&gt;</span></span></span></pre>
+
+</section>
+
+
+</div>
+    <link rel="stylesheet" href="https://honmaple.me/css/tabs.css">
+    <script src="https://honmaple.me/js/tabs.js" defer></script>
+
 
 <p>
-   经过修改，原始文章中的内容将会自动渲染成
+   原始文章中的内容将会自动渲染成
 </p>
-<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;img-layout&#34;</span>&gt;
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;gallery gallery-grid&#34;</span>&gt;
 </span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>  &lt;<span style="color:#f92672">p</span>&gt;
 </span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>    &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://s.libforest.com/images/pic/西湖/日落(二).jpg&#34;</span> /&gt;
 </span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>    &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://s.libforest.com/images/pic/西湖/日落(三).jpg&#34;</span> /&gt;
@@ -176,40 +219,57 @@
 </span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>  &lt;/<span style="color:#f92672">p</span>&gt;
 </span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>&lt;/<span style="color:#f92672">div</span>&gt;</span></span></pre>
 
-<h2 id="heading-2">并排显示</h2>
 <p>
-   有了固定结构的HTML， 接着就可以添加 <b>css</b>，使多张图片可以并排显示
+   或者可以直接使用 <code>HTML</code> 内容
 </p>
-<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>.<span style="color:#a6e22e">img-layout</span> <span style="color:#f92672">p</span> {
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>    <span style="color:#66d9ef">display</span>: <span style="color:#66d9ef">flex</span>;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>    <span style="color:#66d9ef">flex-wrap</span>: <span style="color:#66d9ef">wrap</span>;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>.<span style="color:#a6e22e">img-layout</span> <span style="color:#f92672">p</span> <span style="color:#f92672">&gt;</span> <span style="color:#f92672">img</span> {
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>    <span style="color:#66d9ef">width</span>: <span style="color:#66d9ef">auto</span>;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>    <span style="color:#66d9ef">min-width</span>: <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>    <span style="color:#66d9ef">max-width</span>: <span style="color:#ae81ff">100</span><span style="color:#66d9ef">%</span>;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>    <span style="color:#66d9ef">flex</span>: <span style="color:#ae81ff">10000</span> <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">0</span><span style="color:#66d9ef">%</span>;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span><span style="color:#75715e">/* 处理手机等设备图片显示问题 */</span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>@<span style="color:#66d9ef">media</span> <span style="color:#f92672">screen</span> <span style="color:#f92672">and</span> <span style="color:#f92672">(</span><span style="color:#f92672">max-width</span><span style="color:#f92672">:</span> <span style="color:#f92672">600px</span><span style="color:#f92672">)</span> {
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>    .<span style="color:#a6e22e">img-layout</span> <span style="color:#f92672">p</span> <span style="color:#f92672">&gt;</span> <span style="color:#f92672">img</span> {
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>        <span style="color:#66d9ef">min-width</span>: <span style="color:#ae81ff">100</span><span style="color:#66d9ef">%</span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>    }
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span><span style="color:#75715e">/* 添加图片上下左右间隔 */</span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>.<span style="color:#a6e22e">img-layout</span> <span style="color:#f92672">p</span> {
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>    <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">-0.25</span><span style="color:#66d9ef">rem</span> <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">-0.25</span><span style="color:#66d9ef">rem</span> <span style="color:#75715e">!important</span>;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span>}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26</span><span>.<span style="color:#a6e22e">img-layout</span> <span style="color:#f92672">p</span> <span style="color:#f92672">&gt;</span> <span style="color:#f92672">*</span> {
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27</span><span>    <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">0.5</span><span style="color:#66d9ef">rem</span> <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">0.25</span><span style="color:#66d9ef">rem</span> <span style="color:#75715e">!important</span>;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28</span><span>}</span></span></pre>
+<div class="tabs" data-tabs-group="tabs-1">
+  
+<input
+  type="radio"
+  name="tabs"
+  class="tabs-radio"
+  aria-label="Markdown"
+  
+>
+<section class="tabs-panel">
+  
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#e6db74">shortcode gallery</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>  &lt;<span style="color:#e6db74">p</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>    &lt;<span style="color:#e6db74">img src=&#34;https://s.libforest.com/images/pic/西湖/日落(一).jpg&#34; /</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>    &lt;<span style="color:#e6db74">img src=&#34;https://s.libforest.com/images/pic/西湖/日落(二).jpg&#34; /</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>    &lt;<span style="color:#e6db74">img src=&#34;https://s.libforest.com/images/pic/西湖/日落(三).jpg&#34; /</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>  &lt;<span style="color:#e6db74">/p</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>&lt;<span style="color:#e6db74">/shortcode</span>&gt;</span></span></pre>
 
-<h2 id="heading-3">多行显示</h2>
+</section>
+
+
+<input
+  type="radio"
+  name="tabs"
+  class="tabs-radio"
+  aria-label="Org mode"
+  
+>
+<section class="tabs-panel">
+  
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span><span style="color:#75715e">#+begin_export </span><span style="color:#75715e">html</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>&lt;<span style="color:#f92672">shortcode</span> <span style="color:#a6e22e">gallery</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>  &lt;<span style="color:#f92672">p</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>    &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://s.libforest.com/images/pic/西湖/日落(一).jpg&#34;</span> /&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>    &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://s.libforest.com/images/pic/西湖/日落(二).jpg&#34;</span> /&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>    &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://s.libforest.com/images/pic/西湖/日落(三).jpg&#34;</span> /&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>  &lt;/<span style="color:#f92672">p</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8</span><span>&lt;/<span style="color:#f92672">shortcode</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">9</span><span><span style="color:#75715e">#+end_export</span></span></span></pre>
+
+</section>
+
+
+</div>
+
+
+<h2 id="heading-2">多行显示</h2>
 <p>
    多行显示可以利用文件解析时每次遇到空行都会生成一个新的段落，比如
 </p>
@@ -226,55 +286,187 @@
 </span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>  &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://s.libforest.com/images/pic/西湖/日落(二).jpg&#34;</span> /&gt;
 </span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>&lt;/<span style="color:#f92672">p</span>&gt;</span></span></pre>
 <p>
-   故如果需要多行显示，只用在多张图片中间添加一个空行即可
+   故如果需要多行显示，只用在多张图片中间添加一个空行，然后使用css自定义样式即可
 </p>
 
-<h2 id="heading-4">图片懒加载和点击全屏</h2>
+<h2 id="heading-3">图片排版</h2>
 <p>
-   之前的图片懒加载和点击全屏的功能我也是利用 <b>Snow</b> 中的 <b>shortcode</b> 功能实现的，我在 <code>themes/snow/templates/shortcodes</code> 目录下建立了一个 <code>img.html</code> 的文件
+   有了固定结构的HTML， 接着就可以添加 <b>css</b>，使多张图片可以并排显示
 </p>
-<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ params.src }}&#34;</span> <span style="color:#a6e22e">data-fancybox</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;image&#34;</span>&gt;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>  &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">data-src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ params.src + &#39;-thumb&#39; }}&#34;</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;lazyload&#34;</span> /&gt;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>&lt;/<span style="color:#f92672">a</span>&gt;</span></span></pre>
+
+<h3 id="heading-3.1">网格模式(Grid)</h3>
+<details class="group rounded-lg bg-slate-100 dark:bg-slate-800 [&>summary+*]:mt-0">
+  <summary class="flex cursor-pointer select-none list-none items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 dark:bg-slate-800 [&::-webkit-details-marker]:hidden">
+    <span class="min-w-0">展开详情</span>
+    <svg aria-hidden="true" viewBox="0 0 16 16" class="h-4 w-4 shrink-0 fill-none stroke-current stroke-2 transition-transform duration-200 ease-out group-open:rotate-90">
+      <path d="M6 4l4 4-4 4"></path>
+    </svg>
+  </summary>
+  
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span>.<span style="color:#a6e22e">gallery</span> <span style="color:#f92672">img</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>  <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span><span style="color:#75715e">/* p 统一开启 flex 布局 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>.<span style="color:#a6e22e">gallery-grid</span> <span style="color:#f92672">p</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>  <span style="color:#66d9ef">display</span>: <span style="color:#66d9ef">flex</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>  <span style="color:#66d9ef">flex-wrap</span>: <span style="color:#66d9ef">wrap</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span>  <span style="color:#66d9ef">gap</span>: <span style="color:#ae81ff">0.5</span><span style="color:#66d9ef">rem</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>  <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">0.5</span><span style="color:#66d9ef">rem</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span><span style="color:#75715e">/* 分配单位统一为 img/a/figure,script/link/style 天然被忽略 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>.<span style="color:#a6e22e">gallery-grid</span> <span style="color:#f92672">p</span> <span style="color:#f92672">&gt;</span> :<span style="color:#a6e22e">is</span><span style="color:#f92672">(</span><span style="color:#f92672">img</span><span style="color:#f92672">,</span> <span style="color:#f92672">a</span><span style="color:#f92672">,</span> <span style="color:#f92672">figure</span><span style="color:#f92672">)</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>  <span style="color:#66d9ef">display</span>: <span style="color:#66d9ef">block</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>  <span style="color:#66d9ef">flex</span>: <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">1</span> calc(<span style="color:#ae81ff">33.333</span><span style="color:#66d9ef">%</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">0.5</span><span style="color:#66d9ef">rem</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">3</span>);
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>  <span style="color:#66d9ef">max-width</span>: calc(<span style="color:#ae81ff">33.333</span><span style="color:#66d9ef">%</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">0.5</span><span style="color:#66d9ef">rem</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">3</span>);
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span>  <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span><span style="color:#75715e">/* a 标签重置默认样式 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span>.<span style="color:#a6e22e">gallery-grid</span> <span style="color:#f92672">p</span> <span style="color:#f92672">a</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>  <span style="color:#66d9ef">text-decoration</span>: <span style="color:#66d9ef">none</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>  <span style="color:#66d9ef">color</span>: <span style="color:#66d9ef">inherit</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span>  <span style="color:#66d9ef">display</span>: <span style="color:#66d9ef">block</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27</span><span><span style="color:#75715e">/* figure 内部纵向排列 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28</span><span>.<span style="color:#a6e22e">gallery-grid</span> <span style="color:#f92672">p</span> <span style="color:#f92672">&gt;</span> <span style="color:#f92672">figure</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29</span><span>  <span style="color:#66d9ef">display</span>: <span style="color:#66d9ef">flex</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30</span><span>  <span style="color:#66d9ef">flex-direction</span>: <span style="color:#66d9ef">column</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33</span><span><span style="color:#75715e">/* 所有 img 统一撑满宽度 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34</span><span>.<span style="color:#a6e22e">gallery-grid</span> <span style="color:#f92672">p</span> <span style="color:#f92672">img</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35</span><span>  <span style="color:#66d9ef">display</span>: <span style="color:#66d9ef">block</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36</span><span>  <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37</span><span>  <span style="color:#66d9ef">width</span>: <span style="color:#ae81ff">100</span><span style="color:#66d9ef">%</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38</span><span>  <span style="color:#75715e">/* height: auto; */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39</span><span>  <span style="color:#66d9ef">object-fit</span>: <span style="color:#66d9ef">cover</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40</span><span>  <span style="color:#66d9ef">aspect-ratio</span>: <span style="color:#ae81ff">4</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">3</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43</span><span><span style="color:#75715e">/* figcaption 样式 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44</span><span>.<span style="color:#a6e22e">gallery-grid</span> <span style="color:#f92672">p</span> <span style="color:#f92672">figcaption</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45</span><span>  <span style="color:#66d9ef">margin-top</span>: <span style="color:#ae81ff">0.25</span><span style="color:#66d9ef">rem</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46</span><span>  <span style="color:#66d9ef">font-size</span>: <span style="color:#ae81ff">0.875</span><span style="color:#66d9ef">rem</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47</span><span>  <span style="color:#66d9ef">line-height</span>: <span style="color:#ae81ff">1.4</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48</span><span>  <span style="color:#66d9ef">text-align</span>: <span style="color:#66d9ef">center</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51</span><span><span style="color:#75715e">/* 只有一个 img/a/figure:占满一行 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">52</span><span>.<span style="color:#a6e22e">gallery-grid</span> <span style="color:#f92672">p</span>:<span style="color:#a6e22e">has</span><span style="color:#f92672">(</span><span style="color:#f92672">&gt;</span> :<span style="color:#a6e22e">is</span><span style="color:#f92672">(</span><span style="color:#f92672">img</span><span style="color:#f92672">,</span> <span style="color:#f92672">a</span><span style="color:#f92672">,</span> <span style="color:#f92672">figure</span><span style="color:#f92672">)</span>:<span style="color:#a6e22e">only-of-type</span><span style="color:#f92672">)</span> <span style="color:#f92672">&gt;</span> :<span style="color:#a6e22e">is</span><span style="color:#f92672">(</span><span style="color:#f92672">img</span><span style="color:#f92672">,</span> <span style="color:#f92672">a</span><span style="color:#f92672">,</span> <span style="color:#f92672">figure</span><span style="color:#f92672">)</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">53</span><span>  <span style="color:#66d9ef">flex</span>: <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">100</span><span style="color:#66d9ef">%</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">54</span><span>  <span style="color:#66d9ef">max-width</span>: <span style="color:#ae81ff">100</span><span style="color:#66d9ef">%</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">55</span><span>  <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">56</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">57</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">58</span><span><span style="color:#75715e">/* 正好两个 img/a/figure:各占一半 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">59</span><span>.<span style="color:#a6e22e">gallery-grid</span> <span style="color:#f92672">p</span>:<span style="color:#a6e22e">has</span><span style="color:#f92672">(</span><span style="color:#f92672">&gt;</span> :<span style="color:#a6e22e">is</span><span style="color:#f92672">(</span><span style="color:#f92672">img</span><span style="color:#f92672">,</span> <span style="color:#f92672">a</span><span style="color:#f92672">,</span> <span style="color:#f92672">figure</span><span style="color:#f92672">)</span>:<span style="color:#a6e22e">nth-of-type</span><span style="color:#f92672">(</span><span style="color:#f92672">2</span><span style="color:#f92672">)</span>:<span style="color:#a6e22e">last-of-type</span><span style="color:#f92672">)</span> <span style="color:#f92672">&gt;</span> :<span style="color:#a6e22e">is</span><span style="color:#f92672">(</span><span style="color:#f92672">img</span><span style="color:#f92672">,</span> <span style="color:#f92672">a</span><span style="color:#f92672">,</span> <span style="color:#f92672">figure</span><span style="color:#f92672">)</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">60</span><span>  <span style="color:#66d9ef">flex</span>: <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">1</span> calc(<span style="color:#ae81ff">50</span><span style="color:#66d9ef">%</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">0.25</span><span style="color:#66d9ef">rem</span>);
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">61</span><span>  <span style="color:#66d9ef">max-width</span>: calc(<span style="color:#ae81ff">50</span><span style="color:#66d9ef">%</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">0.25</span><span style="color:#66d9ef">rem</span>);
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">62</span><span>}</span></span></pre>
+
+</details>
+
+
+<h3 id="heading-3.2">瀑布流模式(Masonry)</h3>
+<details class="group rounded-lg bg-slate-100 dark:bg-slate-800 [&>summary+*]:mt-0">
+  <summary class="flex cursor-pointer select-none list-none items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 dark:bg-slate-800 [&::-webkit-details-marker]:hidden">
+    <span class="min-w-0">展开详情</span>
+    <svg aria-hidden="true" viewBox="0 0 16 16" class="h-4 w-4 shrink-0 fill-none stroke-current stroke-2 transition-transform duration-200 ease-out group-open:rotate-90">
+      <path d="M6 4l4 4-4 4"></path>
+    </svg>
+  </summary>
+  
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1</span><span><span style="color:#75715e">/* 默认:三张及以上,三栏瀑布流 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2</span><span>.<span style="color:#a6e22e">gallery-masonry</span> <span style="color:#f92672">p</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3</span><span>  <span style="color:#66d9ef">column-count</span>: <span style="color:#ae81ff">3</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4</span><span>  <span style="color:#66d9ef">column-gap</span>: <span style="color:#ae81ff">0.5</span><span style="color:#66d9ef">rem</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5</span><span>  <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">0.5</span><span style="color:#66d9ef">rem</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8</span><span><span style="color:#75715e">/* 每个图片单元(img/a/figure)作为一个不可拆分的栏内块 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9</span><span>.<span style="color:#a6e22e">gallery-masonry</span> <span style="color:#f92672">p</span> <span style="color:#f92672">&gt;</span> :<span style="color:#a6e22e">is</span><span style="color:#f92672">(</span><span style="color:#f92672">img</span><span style="color:#f92672">,</span> <span style="color:#f92672">a</span><span style="color:#f92672">,</span> <span style="color:#f92672">figure</span><span style="color:#f92672">)</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10</span><span>  <span style="color:#66d9ef">display</span>: <span style="color:#66d9ef">block</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11</span><span>  <span style="color:#66d9ef">width</span>: <span style="color:#ae81ff">100</span><span style="color:#66d9ef">%</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12</span><span>  <span style="color:#66d9ef">break-inside</span>: <span style="color:#66d9ef">avoid</span>; <span style="color:#75715e">/* 避免被截断到两栏之间 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13</span><span>  <span style="color:#66d9ef">-webkit-</span>column-break-inside: <span style="color:#66d9ef">avoid</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14</span><span>  <span style="color:#66d9ef">margin-bottom</span>: <span style="color:#ae81ff">0.5</span><span style="color:#66d9ef">rem</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17</span><span><span style="color:#75715e">/* a 标签重置默认样式 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18</span><span>.<span style="color:#a6e22e">gallery-masonry</span> <span style="color:#f92672">p</span> <span style="color:#f92672">a</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19</span><span>  <span style="color:#66d9ef">text-decoration</span>: <span style="color:#66d9ef">none</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20</span><span>  <span style="color:#66d9ef">color</span>: <span style="color:#66d9ef">inherit</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21</span><span>  <span style="color:#66d9ef">display</span>: <span style="color:#66d9ef">block</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24</span><span><span style="color:#75715e">/* figure 重置默认 margin,内部纵向排列 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25</span><span>.<span style="color:#a6e22e">gallery-masonry</span> <span style="color:#f92672">p</span> <span style="color:#f92672">figure</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26</span><span>  <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29</span><span><span style="color:#75715e">/* 所有 img 统一撑满宽度,高度按原始比例自适应(瀑布流的关键:不裁切) */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30</span><span>.<span style="color:#a6e22e">gallery-masonry</span> <span style="color:#f92672">p</span> <span style="color:#f92672">img</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31</span><span>  <span style="color:#66d9ef">display</span>: <span style="color:#66d9ef">block</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32</span><span>  <span style="color:#66d9ef">width</span>: <span style="color:#ae81ff">100</span><span style="color:#66d9ef">%</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33</span><span>  <span style="color:#66d9ef">height</span>: <span style="color:#66d9ef">auto</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34</span><span>  <span style="color:#66d9ef">margin</span>: <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37</span><span><span style="color:#75715e">/* figcaption 样式 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38</span><span>.<span style="color:#a6e22e">gallery-masonry</span> <span style="color:#f92672">p</span> <span style="color:#f92672">figcaption</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39</span><span>  <span style="color:#66d9ef">margin-top</span>: <span style="color:#ae81ff">0.25</span><span style="color:#66d9ef">rem</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40</span><span>  <span style="color:#66d9ef">font-size</span>: <span style="color:#ae81ff">0.875</span><span style="color:#66d9ef">rem</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41</span><span>  <span style="color:#66d9ef">line-height</span>: <span style="color:#ae81ff">1.4</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42</span><span>  <span style="color:#66d9ef">text-align</span>: <span style="color:#66d9ef">center</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45</span><span><span style="color:#75715e">/* 只有一个 img/a/figure:不分栏,占满一行 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46</span><span>.<span style="color:#a6e22e">gallery-masonry</span> <span style="color:#f92672">p</span>:<span style="color:#a6e22e">has</span><span style="color:#f92672">(</span><span style="color:#f92672">&gt;</span> :<span style="color:#a6e22e">is</span><span style="color:#f92672">(</span><span style="color:#f92672">img</span><span style="color:#f92672">,</span> <span style="color:#f92672">a</span><span style="color:#f92672">,</span> <span style="color:#f92672">figure</span><span style="color:#f92672">)</span>:<span style="color:#a6e22e">only-of-type</span><span style="color:#f92672">)</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47</span><span>  <span style="color:#66d9ef">column-count</span>: <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50</span><span>.<span style="color:#a6e22e">gallery-masonry</span> <span style="color:#f92672">p</span>:<span style="color:#a6e22e">has</span><span style="color:#f92672">(</span><span style="color:#f92672">&gt;</span> :<span style="color:#a6e22e">is</span><span style="color:#f92672">(</span><span style="color:#f92672">img</span><span style="color:#f92672">,</span> <span style="color:#f92672">a</span><span style="color:#f92672">,</span> <span style="color:#f92672">figure</span><span style="color:#f92672">)</span>:<span style="color:#a6e22e">only-of-type</span><span style="color:#f92672">)</span> <span style="color:#f92672">&gt;</span> :<span style="color:#a6e22e">is</span><span style="color:#f92672">(</span><span style="color:#f92672">img</span><span style="color:#f92672">,</span> <span style="color:#f92672">a</span><span style="color:#f92672">,</span> <span style="color:#f92672">figure</span><span style="color:#f92672">)</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51</span><span>  <span style="color:#66d9ef">margin-bottom</span>: <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">52</span><span>}
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">53</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">54</span><span><span style="color:#75715e">/* 正好两个 img/a/figure:两栏 */</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">55</span><span>.<span style="color:#a6e22e">gallery-masonry</span> <span style="color:#f92672">p</span>:<span style="color:#a6e22e">has</span><span style="color:#f92672">(</span><span style="color:#f92672">&gt;</span> :<span style="color:#a6e22e">is</span><span style="color:#f92672">(</span><span style="color:#f92672">img</span><span style="color:#f92672">,</span> <span style="color:#f92672">a</span><span style="color:#f92672">,</span> <span style="color:#f92672">figure</span><span style="color:#f92672">)</span>:<span style="color:#a6e22e">nth-of-type</span><span style="color:#f92672">(</span><span style="color:#f92672">2</span><span style="color:#f92672">)</span>:<span style="color:#a6e22e">last-of-type</span><span style="color:#f92672">)</span> {
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">56</span><span>  <span style="color:#66d9ef">column-count</span>: <span style="color:#ae81ff">2</span>;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">57</span><span>}</span></span></pre>
+
+</details>
+
+
+<h2 id="heading-4">图片画廊</h2>
 <p>
-   这样，文章内所有的 <code>img</code> 标签的图片都会加上懒加载和点击全屏的功能(基于 <b>lazysizes</b> 和 <b>fancybox</b>)
+   <b>图片画廊</b>同样可以利用 <code>shortcode</code> 实现。
 </p>
 
 <p>
-   但是，由于 <b>Snow</b> 中 <b>shortcode</b> 的实现是一次性遍历 <b>HTML DOM</b>，无法在一个 <b>shortcode</b> 内部调用另一个 <b>shortcode</b>。
-   所幸 <b>Snow</b> 是我自己写的，思索片刻，我在 <b>shortcode</b> 实现中加入了三行代码，这样就能在一个 <b>shortcode</b> 中重复调用其它的 <b>shortcode</b>
+   首先在 <code>templates/shortcodes</code> 目录下创建 <code>img.html</code> 重新渲染 <code>img</code>
 </p>
-<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>vars := map[string]interface{}{
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>...
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span><span style="color:#a6e22e">+	&#34;_shortcode&#34;: func(s string) string {
-</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span><span style="color:#a6e22e">+		return self.shortcode(page, s)
-</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span><span style="color:#a6e22e">+	},
-</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>}
-</span></span></pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ params.src }}&#34;</span> <span style="color:#a6e22e">data-img-lightbox</span> <span style="color:#a6e22e">data-gallery</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{% if params.gallery %}{{ params.gallery }}{% else %}page-images{% endif %}&#34;</span> <span style="color:#a6e22e">data-type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;image&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>  &lt;<span style="color:#f92672">img</span> <span style="color:#a6e22e">data-src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ params.src }}&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>       <span style="color:#a6e22e">alt</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{% if params.alt %}{{ params.alt }}{% endif %}&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>       <span style="color:#a6e22e">decoding</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{% if params.decoding %}{{ params.decoding }}{% else %}async{% endif %}&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>&lt;/<span style="color:#f92672">a</span>&gt;</span></span></pre>
 
 <p>
-   然后修改 <code>img-layout.html</code>
+   然后引入对应的画廊库，比如我使用的是 <b>glightbox</b>
 </p>
-<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;img-layout&#34;</span>&gt;
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>  {%- if params.type == &#34;markdown&#34; %}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>  {{ _shortcode(body | markdown) | safe }}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>  {%- else %}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>  {{ _shortcode(body | org) | safe }}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>  {%- endif %}
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>&lt;/<span style="color:#f92672">div</span>&gt;</span></span></pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#f92672">link</span> <span style="color:#a6e22e">rel</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;stylesheet&#34;</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ &#34;</span><span style="color:#a6e22e">libs</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">glightbox</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">glightbox</span><span style="color:#960050;background-color:#1e0010">.</span><span style="color:#a6e22e">min</span><span style="color:#960050;background-color:#1e0010">.</span><span style="color:#a6e22e">css</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#960050;background-color:#1e0010">|</span> <span style="color:#a6e22e">absURL</span> <span style="color:#960050;background-color:#1e0010">}</span><span style="color:#960050;background-color:#1e0010">}</span><span style="color:#960050;background-color:#1e0010">&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ &#34;</span><span style="color:#a6e22e">libs</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">glightbox</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">glightbox</span><span style="color:#960050;background-color:#1e0010">.</span><span style="color:#a6e22e">min</span><span style="color:#960050;background-color:#1e0010">.</span><span style="color:#a6e22e">js</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#960050;background-color:#1e0010">|</span> <span style="color:#a6e22e">absURL</span> <span style="color:#960050;background-color:#1e0010">}</span><span style="color:#960050;background-color:#1e0010">}</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#a6e22e">defer</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;</span></span></pre>
 
+<h2 id="heading-5">图片懒加载</h2>
 <p>
-   最后添加 <b>css</b> 样式
+   引入对应的懒加载库，然后根据对应库的文档初始化即可
 </p>
-<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span><span style="color:#f92672">- .img-layout p &gt; img {
-</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span><span style="color:#a6e22e">+ .img-layout p &gt; img, .img-layout p &gt; a {
-</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>
-</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span><span style="color:#a6e22e">+ .img-layout p &gt; a &gt; img {
-</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span><span style="color:#a6e22e">+     height: 100%;
-</span></span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span><span style="color:#a6e22e">+ }
-</span></span></span></pre>
+<pre style="color:#f8f8f2;background-color:#272822;-webkit-text-size-adjust:none;"><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>&lt;<span style="color:#f92672">img</span> <span style="color:#960050;background-color:#1e0010">.</span><span style="color:#960050;background-color:#1e0010">.</span><span style="color:#960050;background-color:#1e0010">.</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;lazy&#34;</span>&gt;
+</span></span><span style="display:flex;"><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{{ &#34;</span><span style="color:#a6e22e">libs</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">vanilla-lazyload</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">lazyload</span><span style="color:#960050;background-color:#1e0010">.</span><span style="color:#a6e22e">min</span><span style="color:#960050;background-color:#1e0010">.</span><span style="color:#a6e22e">js</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#960050;background-color:#1e0010">|</span> <span style="color:#a6e22e">absURL</span> <span style="color:#960050;background-color:#1e0010">}</span><span style="color:#960050;background-color:#1e0010">}</span><span style="color:#960050;background-color:#1e0010">&#34;</span> <span style="color:#a6e22e">defer</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;</span></span></pre>
 
-<h2 id="heading-5">显示效果</h2>
+<h2 id="heading-6">显示效果</h2>
 <ul>
 <li>
 <p>
@@ -412,10 +604,95 @@
 
 </p>
 
+</div></li>
+<li>
+<p>
+ 瀑布流
+</p>
+<details class="group rounded-lg bg-slate-100 dark:bg-slate-800 [&>summary+*]:mt-0">
+  <summary class="flex cursor-pointer select-none list-none items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 dark:bg-slate-800 [&::-webkit-details-marker]:hidden">
+    <span class="min-w-0">展开详情</span>
+    <svg aria-hidden="true" viewBox="0 0 16 16" class="h-4 w-4 shrink-0 fill-none stroke-current stroke-2 transition-transform duration-200 ease-out group-open:rotate-90">
+      <path d="M6 4l4 4-4 4"></path>
+    </svg>
+  </summary>
+  
+<div class="gallery gallery-masonry">
+  
+<p>
+     
+  <a class="mx-auto block w-fit max-w-full no-underline" href="https://s.libforest.com/images/pic/西湖/日落(一).jpg-show" data-img-lightbox data-gallery="page-images" data-type="image">
+    <img data-src="https://s.libforest.com/images/pic/西湖/日落(一).jpg-thumb"
+         alt="日落(一).jpg"
+         decoding="async"
+         class="lazy mx-auto cursor-zoom-in rounded-md ">
+  </a>
+
+     
+  <a class="mx-auto block w-fit max-w-full no-underline" href="https://s.libforest.com/images/pic/西湖/荷花.jpg-show" data-img-lightbox data-gallery="page-images" data-type="image">
+    <img data-src="https://s.libforest.com/images/pic/西湖/荷花.jpg-thumb"
+         alt="荷花.jpg"
+         decoding="async"
+         class="lazy mx-auto cursor-zoom-in rounded-md ">
+  </a>
+
+     
+  <a class="mx-auto block w-fit max-w-full no-underline" href="https://s.libforest.com/images/pic/西湖/荷花(一).jpg-show" data-img-lightbox data-gallery="page-images" data-type="image">
+    <img data-src="https://s.libforest.com/images/pic/西湖/荷花(一).jpg-thumb"
+         alt="荷花(一).jpg"
+         decoding="async"
+         class="lazy mx-auto cursor-zoom-in rounded-md ">
+  </a>
+
+     
+  <a class="mx-auto block w-fit max-w-full no-underline" href="https://s.libforest.com/images/pic/西湖/荷花.jpg-show" data-img-lightbox data-gallery="page-images" data-type="image">
+    <img data-src="https://s.libforest.com/images/pic/西湖/荷花.jpg-thumb"
+         alt="荷花.jpg"
+         decoding="async"
+         class="lazy mx-auto cursor-zoom-in rounded-md ">
+  </a>
+
+     
+  <a class="mx-auto block w-fit max-w-full no-underline" href="https://s.libforest.com/images/pic/西湖/荷花(一).jpg-show" data-img-lightbox data-gallery="page-images" data-type="image">
+    <img data-src="https://s.libforest.com/images/pic/西湖/荷花(一).jpg-thumb"
+         alt="荷花(一).jpg"
+         decoding="async"
+         class="lazy mx-auto cursor-zoom-in rounded-md ">
+  </a>
+
+     
+  <a class="mx-auto block w-fit max-w-full no-underline" href="https://s.libforest.com/images/pic/西湖/荷花.jpg-show" data-img-lightbox data-gallery="page-images" data-type="image">
+    <img data-src="https://s.libforest.com/images/pic/西湖/荷花.jpg-thumb"
+         alt="荷花.jpg"
+         decoding="async"
+         class="lazy mx-auto cursor-zoom-in rounded-md ">
+  </a>
+
+     
+  <a class="mx-auto block w-fit max-w-full no-underline" href="https://s.libforest.com/images/pic/西湖/荷花(一).jpg-show" data-img-lightbox data-gallery="page-images" data-type="image">
+    <img data-src="https://s.libforest.com/images/pic/西湖/荷花(一).jpg-thumb"
+         alt="荷花(一).jpg"
+         decoding="async"
+         class="lazy mx-auto cursor-zoom-in rounded-md ">
+  </a>
+
+     
+  <a class="mx-auto block w-fit max-w-full no-underline" href="https://s.libforest.com/images/pic/西湖/日落(二).jpg-show" data-img-lightbox data-gallery="page-images" data-type="image">
+    <img data-src="https://s.libforest.com/images/pic/西湖/日落(二).jpg-thumb"
+         alt="日落(二).jpg"
+         decoding="async"
+         class="lazy mx-auto cursor-zoom-in rounded-md ">
+  </a>
+
+</p>
+
 </div>
+
+</details>
+
 </li>
 </ul>
-<h2 id="heading-6">参考资料</h2>
+<h2 id="heading-7">参考资料</h2>
 <ul>
 <li>
 <p>
