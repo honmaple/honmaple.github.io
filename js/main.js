@@ -26,7 +26,6 @@
     const toggles = document.querySelectorAll("[data-theme-toggle]");
 
     toggles.forEach(function (toggle) {
-      const icon = toggle.querySelector("[data-theme-icon]");
       const darkLabel = toggle.getAttribute("data-label-dark");
       const lightLabel = toggle.getAttribute("data-label-light");
 
@@ -34,9 +33,6 @@
       toggle.setAttribute("aria-label", isDark ? lightLabel : darkLabel);
       toggle.setAttribute("title", isDark ? lightLabel : darkLabel);
 
-      if (icon) {
-        icon.textContent = isDark ? "☼" : "☾";
-      }
     });
 
     updateGiscusTheme(isDark ? "dark" : "light");
