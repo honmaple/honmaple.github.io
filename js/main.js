@@ -1,7 +1,5 @@
 (function () {
   const THEME_KEY = "theme-mode";
-  const BACK_TO_TOP_VISIBLE_CLASSES = ["pointer-events-auto", "translate-y-0", "opacity-100"];
-  const BACK_TO_TOP_HIDDEN_CLASSES = ["pointer-events-none", "translate-y-2", "opacity-0"];
   const SM_BREAKPOINT = 640;
 
   function getPreferredTheme() {
@@ -44,7 +42,7 @@
     } catch (error) {}
   }
 
-  function setupThemeToggle() {
+  function setupTheme() {
     const toggles = document.querySelectorAll("[data-theme-toggle]");
     if (!toggles.length) return;
 
@@ -77,6 +75,19 @@
     }
   }
 
+  function setupProgress() {
+    window.addEventListener("scroll", function () {
+      const a = window.pageYOffset;
+      const b = window.innerHeight;
+      const c = document.body.scrollHeight;
+      if (c === b) {
+        document.documentElement.style.setProperty("--scroll-progress", "100%");
+      } else {
+        document.documentElement.style.setProperty("--scroll-progress", a / (c - b) * 100 + "%");
+      }
+    });
+  }
+
   function setupMobileMenu() {
     const toggle = document.querySelector("[data-menu-toggle]");
     const panel = document.querySelector("[data-menu-panel]");
@@ -97,11 +108,11 @@
     if (!tocLinks.length) return;
 
     const headings = tocLinks
-      .map(function (link) {
-        const id = link.getAttribute("href").slice(1);
-        return document.getElementById(id);
-      })
-      .filter(Boolean);
+          .map(function (link) {
+            const id = link.getAttribute("href").slice(1);
+            return document.getElementById(id);
+          })
+          .filter(Boolean);
 
     if (!headings.length) return;
 
@@ -258,6 +269,9 @@
     const button = document.querySelector("[data-back-to-top]");
     if (!button) return;
 
+    const BACK_TO_TOP_VISIBLE_CLASSES = ["pointer-events-auto", "translate-y-0", "opacity-100"];
+    const BACK_TO_TOP_HIDDEN_CLASSES = ["pointer-events-none", "translate-y-2", "opacity-0"];
+
     function syncVisibility() {
       if (window.scrollY > 320) {
         button.classList.remove.apply(button.classList, BACK_TO_TOP_HIDDEN_CLASSES);
@@ -320,7 +334,8 @@
     });
   }
 
-  setupThemeToggle();
+  setupTheme();
+  setupProgress();
   setupMobileMenu();
   setupTocHighlight();
   setupFloatingToc();
